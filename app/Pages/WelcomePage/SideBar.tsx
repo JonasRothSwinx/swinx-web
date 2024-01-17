@@ -1,4 +1,4 @@
-import UserView from "@/app/Components/User";
+import UserView from "@/app/Pages/WelcomePage/User";
 import styles from "./sideBar.module.css";
 import { useEffect, useState } from "react";
 import util from "@/app/util";

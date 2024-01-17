@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import TodosList from "../../todosList";
 import Image from "next/image";
 import styles from "./welcomePage.module.css";
-import UserView from "../../Components/User";
+import UserView from "./User";
 import TodoCreateForm from "@/ui-components/TodoCreateForm";
 import InfluencerList from "../InfluencerMenu/InfluencerList";
 import InfluencerPublicCreateForm from "@/ui-components/InfluencerPublicCreateForm";
@@ -24,7 +24,10 @@ async function createTodo() {
     console.log({ errors, newTodo });
 }
 function WelcomePage({}) {
-    const { signOut, user, authStatus } = useAuthenticator((context) => [context.user, context.authStatus]);
+    const { signOut, user, authStatus } = useAuthenticator((context) => [
+        context.user,
+        context.authStatus,
+    ]);
     const [openMenu, setOpenMenu] = useState<sideBarButtonId>(sideBarButtonId.campaigns);
     if (authStatus !== "authenticated") return null;
 
