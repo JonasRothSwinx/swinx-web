@@ -1,0 +1,48 @@
+.sideBar {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    width: 300px;
+    /* max-width: 200px; */
+    padding: 1em;
+    height: 100%;
+}
+.sideBarButton {
+    display: flex;
+    flex-direction: column;
+    /* justify-content: space-between; */
+    width: 100%;
+    padding: 1rem 1.2rem;
+    border-radius: var(--border-radius);
+    background: rgba(var(--card-rgb), 0);
+    border: 1px solid rgba(var(--card-border-rgb), 0);
+    transition: background 200ms, border 200ms, box-shadow 200ms;
+    cursor: pointer;
+}
+
+.sideBarButton span:first-child {
+    display: inline-block;
+    transition: transform 200ms;
+}
+
+.sideBarButton h2 {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    text-align: right;
+    font-weight: 600;
+    margin-bottom: 0.7rem;
+}
+
+.sideBarButton p {
+    width: 100%;
+    display: none;
+    margin: 0;
+    opacity: 0.6;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    max-width: 30ch;
+}
+.sideBarButton:hover p {
+    display: block;
+}

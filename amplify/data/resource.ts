@@ -1,4 +1,4 @@
-import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
+import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -8,24 +8,48 @@ specify that owners, authenticated via your Auth resource can "create",
 authenticated via an API key, can only "read" records.
 =========================================================================*/
 const schema = a.schema({
-  Todo: a
-    .model({
-      content: a.string(),
-    })
-    .authorization([a.allow.owner(), a.allow.public().to(['read'])]),
+    Todo: a
+        .model({
+            content: a.string(),
+        })
+        .authorization([
+            //
+            a.allow.owner(),
+            a.allow.specificGroup("admin", "userPools"),
+            // a.allow.public(),
+        ]),
+    InfluencerPublic: a
+        .model({
+            firstName: a.string(),
+            lastName: a.string(),
+            topic: a.string().array(),
+            details: a.hasOne("InfluencerPrivate"),
+        })
+        .authorization([
+            //
+            a.allow.public().to(["read"]),
+            a.allow.specificGroup("admin", "userPools"),
+            a.allow.specificGroup("projektmanager", "userPools").to(["create", "update", "read"]),
+        ]),
+    InfluencerPrivate: a
+        .model({
+            email: a.email(),
+        })
+        .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
 
 export const data = defineData({
-  schema,
-  authorizationModes: {
-    defaultAuthorizationMode: 'apiKey',
-    // API Key is used for a.allow.public() rules
-    apiKeyAuthorizationMode: {
-      expiresInDays: 30,
+    schema,
+    authorizationModes: {
+        defaultAuthorizationMode: "userPool",
+        // defaultAuthorizationMode: 'apiKey',
+        // // API Key is used for a.allow.public() rules
+        apiKeyAuthorizationMode: {
+            expiresInDays: 30,
+        },
     },
-  },
 });
 
 /*== STEP 2 ===============================================================
