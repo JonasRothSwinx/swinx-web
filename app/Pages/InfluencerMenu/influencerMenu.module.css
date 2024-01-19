@@ -26,6 +26,9 @@
     padding: -4px;
     margin: 0;
 } */
+.buttonContainer {
+    height: auto;
+}
 .creationForm {
     display: flex;
     flex-wrap: wrap;

@@ -1,7 +1,7 @@
 import UserView from "@/app/Pages/WelcomePage/User";
 import styles from "./sideBar.module.css";
 import { useEffect, useState } from "react";
-import util from "@/app/util";
+import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 
 export interface ISideBarButton {
     id: sideBarButtonId;
@@ -35,7 +35,7 @@ function SideBar(props: ISideBar) {
     const { setMenuCallback } = props;
     const [groups, setGroups] = useState<string[]>([]);
     useEffect(() => {
-        util.getUserGroups().then((result) => setGroups(result));
+        getUserGroups().then((result) => setGroups(result));
 
         return () => {};
     }, []);
@@ -44,7 +44,12 @@ function SideBar(props: ISideBar) {
         <div className={styles.sideBar}>
             <UserView />
             {sideBarButtons.map((sb) => (
-                <SideBarButton key={sb.id.toString()} buttonProps={sb} groups={groups} callback={setMenuCallback} />
+                <SideBarButton
+                    key={sb.id.toString()}
+                    buttonProps={sb}
+                    groups={groups}
+                    callback={setMenuCallback}
+                />
             ))}
         </div>
     );

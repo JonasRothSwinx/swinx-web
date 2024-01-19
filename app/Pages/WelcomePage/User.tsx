@@ -2,7 +2,7 @@ import { useAuthenticator } from "@aws-amplify/ui-react";
 import { FetchUserAttributesOutput } from "aws-amplify/auth";
 import { useEffect, useState } from "react";
 import styles from "./user.module.css";
-import util from "../../util";
+import { getUserAttributes, getUserGroups } from "../../ServerFunctions/serverActions";
 import { Button } from "@mui/material";
 
 function UserView() {
@@ -14,8 +14,9 @@ function UserView() {
     const [groups, setGroups] = useState<string[]>([]);
 
     useEffect(() => {
-        util.getUserAttributes().then((result) => setAttributes(result));
-        util.getUserGroups().then((result) => setGroups(result));
+        // debugger;
+        getUserAttributes().then((result) => setAttributes(result));
+        getUserGroups().then((result) => setGroups(result));
 
         return () => {
             setAttributes({});

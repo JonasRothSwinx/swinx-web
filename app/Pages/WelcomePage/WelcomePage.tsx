@@ -34,8 +34,8 @@ function WelcomePage({}) {
     return (
         <main className={styles.main}>
             <div className={styles.mainContent}>
-                {openMenu}
-                <br />
+                {/* {openMenu}
+                <br /> */}
                 {openMenu === sideBarButtonId.campaigns && <></>}
                 {openMenu === sideBarButtonId.influencers && <InfluencerMenu />}
                 {/* <div className={styles.description}>

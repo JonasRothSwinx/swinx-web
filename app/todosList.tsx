@@ -3,7 +3,7 @@ import { useAuthenticator } from "@aws-amplify/ui-react";
 import { generateClient } from "aws-amplify/api";
 import { fetchAuthSession } from "aws-amplify/auth";
 import { useEffect, useState } from "react";
-import util from "./util";
+import { getUserAttributes, getUserGroups } from "./ServerFunctions/serverActions";
 import { Subscription } from "rxjs";
 
 const client = generateClient<Schema>();
@@ -37,7 +37,7 @@ function TodosList(props: {}) {
     }, [client]);
 
     useEffect(() => {
-        util.getUserGroups().then((result) => setGroups(result));
+        getUserGroups().then((result) => setGroups(result));
         return () => {};
     }, [user]);
 

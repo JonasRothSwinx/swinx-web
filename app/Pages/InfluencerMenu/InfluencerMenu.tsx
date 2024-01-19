@@ -10,9 +10,12 @@ function InfluencerMenu(props: {}) {
     return (
         <>
             {<CreateInfluencerDialog open={showDialog} onClose={() => setShowDialog(false)} />}
-            <div className={commonstyles.buttonContainer}>
-                <Button onClick={() => setShowDialog(true)}>Neuen Influenzer anlegen</Button>
-            </div>
+
+            {/* <div className={commonstyles.buttonContainer}>
+                <Button variant="contained" onClick={() => setShowDialog(true)}>
+                    Neuen Influenzer anlegen
+                </Button>
+            </div> */}
             <InfluencerList />
         </>
     );
