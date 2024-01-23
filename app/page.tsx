@@ -6,8 +6,8 @@ import { ThemeProvider } from "@emotion/react";
 
 import { blue, red } from "@mui/material/colors";
 import { CssBaseline, createTheme } from "@mui/material";
+import { LocalizationProvider } from "@mui/x-date-pickers";
 
-// Amplify.configure(config, { ssr: true });
 const theme = createTheme({
     palette: {
         primary: {
@@ -17,6 +17,7 @@ const theme = createTheme({
     },
     shape: { borderRadius: 20 },
 });
+
 function Home() {
     const { user, authStatus } = useAuthenticator((context) => [context.user, context.authStatus]);
     return (

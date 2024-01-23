@@ -1,4 +1,5 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
+import { campaignTypes, campaignSteps } from "./types.js";
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -18,12 +19,13 @@ const schema = a.schema({
             a.allow.specificGroup("admin", "userPools"),
             // a.allow.public(),
         ]),
+
     InfluencerPublic: a
         .model({
-            firstName: a.string(),
-            lastName: a.string(),
+            firstName: a.string().required(),
+            lastName: a.string().required(),
             topic: a.string().array(),
-            details: a.hasOne("InfluencerPrivate"),
+            details: a.hasOne("InfluencerPrivate").required(),
         })
         .authorization([
             //
@@ -31,9 +33,42 @@ const schema = a.schema({
             a.allow.specificGroup("admin", "userPools"),
             a.allow.specificGroup("projektmanager", "userPools").to(["create", "update", "read"]),
         ]),
+
     InfluencerPrivate: a
         .model({
-            email: a.email(),
+            email: a.email().required(),
+        })
+        .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
+
+    Campaign: a
+        .model({
+            campaignType: a.string().required(),
+            customer: a.hasOne("Customer"),
+            webinarDetails: a.hasOne("Webinar"),
+            campaignStep: a.string(),
+        })
+        .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
+
+    Webinar: a
+        .model({
+            title: a.string(),
+            date: a.datetime().required(),
+        })
+        .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
+
+    Customer: a
+        .model({
+            company: a.string().required(),
+            contactNameFirst: a.string().required(),
+            contactNameLast: a.string().required(),
+            contactPosition: a.string(),
+            contactEmail: a.email().required(),
+        })
+        .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
+
+    TimelineEvent: a
+        .model({
+            timeLineEventType: a.enum(["Invites", "Video", "Post"]),
         })
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
 });

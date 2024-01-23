@@ -14,6 +14,7 @@ import InfluencerPrivateCreateForm from "@/ui-components/InfluencerPrivateCreate
 import InfluencerPublicUpdateForm from "@/ui-components/InfluencerPublicUpdateForm";
 import SideBar, { sideBarButtonId } from "./SideBar";
 import InfluencerMenu from "../InfluencerMenu/InfluencerMenu";
+import CampaignMenu from "../CampaignMenu/CampaignMenu";
 
 const client = generateClient<Schema>();
 
@@ -36,7 +37,7 @@ function WelcomePage({}) {
             <div className={styles.mainContent}>
                 {/* {openMenu}
                 <br /> */}
-                {openMenu === sideBarButtonId.campaigns && <></>}
+                {openMenu === sideBarButtonId.campaigns && <CampaignMenu />}
                 {openMenu === sideBarButtonId.influencers && <InfluencerMenu />}
                 {/* <div className={styles.description}>
                     <TodosList />

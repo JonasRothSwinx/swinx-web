@@ -36,7 +36,6 @@ function SideBar(props: ISideBar) {
     const [groups, setGroups] = useState<string[]>([]);
     useEffect(() => {
         getUserGroups().then((result) => setGroups(result));
-
         return () => {};
     }, []);
 
