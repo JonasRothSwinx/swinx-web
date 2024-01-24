@@ -1,4 +1,3 @@
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import styles from "./campaignMenu.module.css";
 import { generateClient } from "aws-amplify/api";
 import { Schema } from "@/amplify/data/resource";
@@ -18,19 +17,24 @@ import {
     TextField,
 } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import { createNewInfluencer, parseCampaignFormData, updateInfluencer } from "@/app/ServerFunctions/serverActions";
-import { DialogOptions, DialogProps, WebinarCampaign } from "@/app/Definitions/types";
+import {
+    createNewInfluencer,
+    parseCampaignFormData,
+    parseCustomerFormData,
+    updateInfluencer,
+} from "@/app/ServerFunctions/serverActions";
+import { Customer, DialogOptions, DialogProps, WebinarCampaign } from "@/app/Definitions/types";
 import { campaignTypes } from "@/amplify/data/types";
 import { DatePicker, DateTimePicker, LocalizationProvider, TimeClock, TimePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import "dayjs/locale/de";
 
 const client = generateClient<Schema>();
-type DialogType = WebinarCampaign;
+type DialogType = Customer;
 
-function CampaignDialog(props: DialogProps<DialogType> & DialogOptions<DialogType>) {
-    const { open = false, onClose, editing, editingData, rows, setRows, columns, excludeColumns } = props;
-    const [campaignType, setCampaignType] = useState<string>("Webinar");
+function CustomerDialog(props: { props: DialogProps<WebinarCampaign>; options: DialogOptions<DialogType> }) {
+    const { onClose, rows, setRows, columns, excludeColumns } = props.props;
+    const { open = false, editing, editingData } = props.options;
     // const [isModalOpen, setIsModalOpen] = useState(open);
 
     function handleClose() {
@@ -71,7 +75,12 @@ function CampaignDialog(props: DialogProps<DialogType> & DialogOptions<DialogTyp
                     event.preventDefault();
                     const formData = new FormData(event.currentTarget);
                     const formJson = Object.fromEntries((formData as any).entries());
-                    parseCampaignFormData(formJson);
+                    parseCustomerFormData(formJson);
+
+                    const updatedCustomer: Customer = formJson as Customer;
+                    const campaign = rows.find((x) => x.customer.id === updatedCustomer.id);
+                    console.log({ campaign, updatedCustomer });
+                    if (campaign) campaign.customer = updatedCustomer;
                     handleClose();
                 },
             }}
@@ -94,31 +103,21 @@ function CampaignDialog(props: DialogProps<DialogType> & DialogOptions<DialogTyp
                 },
             }}
         >
-            <DialogTitle>{"Neue Kampagne"}</DialogTitle>
+            <DialogTitle>{"Kunde"}</DialogTitle>
             {/* <button onClick={handleCloseModal}>x</button> */}
-            <DialogContent dividers>
-                <FormControl sx={{ margin: "5px", flex: 1, minWidth: "200px" }}>
-                    <InputLabel id="campaignTypeSelect">Kampagnen-Typ</InputLabel>
-                    <Select
-                        name="campaignType"
-                        labelId="campaignTypeSelect"
-                        label="Kampagnen Typ"
-                        defaultValue={campaignTypes[0]}
-                        size="medium"
-                        onChange={(event) => setCampaignType(event.target.value)}
-                    >
-                        {campaignTypes.map((x, i) => {
-                            return (
-                                <MenuItem key={i} value={x}>
-                                    {x}
-                                </MenuItem>
-                            );
-                        })}
-                    </Select>
-                </FormControl>
-            </DialogContent>
+
             <DialogContent dividers sx={{ "& .MuiFormControl-root:has(#customerEmail)": { flexBasis: "100%" } }}>
-                <DialogContentText>Kunde</DialogContentText>
+                <TextField
+                    autoFocus
+                    id="id"
+                    name="id"
+                    className={styles.TextField}
+                    label="ID"
+                    type="text"
+                    defaultValue={editingData?.id}
+                    required
+                    hidden
+                />
                 <TextField
                     autoFocus
                     id="customerNameFirst"
@@ -126,6 +125,7 @@ function CampaignDialog(props: DialogProps<DialogType> & DialogOptions<DialogTyp
                     className={styles.TextField}
                     label="Vorname"
                     type="text"
+                    defaultValue={editingData?.customerNameFirst}
                     required
                 />
 
@@ -135,6 +135,7 @@ function CampaignDialog(props: DialogProps<DialogType> & DialogOptions<DialogTyp
                     className={styles.TextField}
                     label="Nachname"
                     type="text"
+                    defaultValue={editingData?.customerNameLast}
                     required
                 />
                 <TextField
@@ -143,6 +144,7 @@ function CampaignDialog(props: DialogProps<DialogType> & DialogOptions<DialogTyp
                     className={styles.TextField}
                     label="E-Mail"
                     type="email"
+                    defaultValue={editingData?.customerEmail}
                     required
                 />
                 <TextField
@@ -152,6 +154,7 @@ function CampaignDialog(props: DialogProps<DialogType> & DialogOptions<DialogTyp
                     className={styles.TextField}
                     label="Firma"
                     type="text"
+                    defaultValue={editingData?.customerCompany}
                 />
                 <TextField
                     autoFocus
@@ -160,37 +163,10 @@ function CampaignDialog(props: DialogProps<DialogType> & DialogOptions<DialogTyp
                     className={styles.TextField}
                     label="Position in Firma"
                     type="text"
+                    defaultValue={editingData?.customerPosition}
                 />
             </DialogContent>
-            {campaignType === "Webinar" && (
-                <DialogContent dividers sx={{ "& .MuiFormControl-root:has(#webinarTitle)": { flexBasis: "100%" } }}>
-                    <DialogContentText>Webinar</DialogContentText>
-                    <TextField
-                        autoFocus
-                        id="webinarTitle"
-                        name="webinarTitle"
-                        className={styles.TextField}
-                        label="Titel"
-                        type="text"
-                        required
-                        fullWidth
-                        sx={{ color: "red", flexBasis: "100%" }}
-                    />
-                    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
-                        <DateTimePicker
-                            closeOnSelect={false}
-                            label="Termin"
-                            name="webinarDate"
-                            slotProps={{
-                                textField: {
-                                    required: true,
-                                },
-                            }}
-                        />
-                        {/* <TimePicker name="time" /> */}
-                    </LocalizationProvider>
-                </DialogContent>
-            )}
+
             <DialogActions
                 sx={{
                     justifyContent: "space-between",
@@ -206,4 +182,4 @@ function CampaignDialog(props: DialogProps<DialogType> & DialogOptions<DialogTyp
         </Dialog>
     );
 }
-export default CampaignDialog;
+export default CustomerDialog;

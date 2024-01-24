@@ -26,6 +26,7 @@ const schema = a.schema({
             lastName: a.string().required(),
             topic: a.string().array(),
             details: a.hasOne("InfluencerPrivate").required(),
+            assignments: a.hasMany("InfluencerAssignment"),
         })
         .authorization([
             //
@@ -42,10 +43,14 @@ const schema = a.schema({
 
     Campaign: a
         .model({
+            campaignManagerId: a.string(),
             campaignType: a.string().required(),
             customer: a.hasOne("Customer"),
             webinarDetails: a.hasOne("Webinar"),
+            influencerAssignments: a.hasMany("InfluencerAssignment"),
+            campaignTimelineEvents: a.hasMany("TimelineEvent"),
             campaignStep: a.string(),
+            notes: a.string(),
         })
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
 
@@ -53,22 +58,35 @@ const schema = a.schema({
         .model({
             title: a.string(),
             date: a.datetime().required(),
+            notes: a.string(),
         })
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
 
     Customer: a
         .model({
-            company: a.string().required(),
-            contactNameFirst: a.string().required(),
-            contactNameLast: a.string().required(),
-            contactPosition: a.string(),
-            contactEmail: a.email().required(),
+            customerCompany: a.string().required(),
+            customerNameFirst: a.string().required(),
+            customerNameLast: a.string().required(),
+            customerPosition: a.string(),
+            customerEmail: a.email().required(),
+            notes: a.string(),
         })
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
 
     TimelineEvent: a
         .model({
             timeLineEventType: a.enum(["Invites", "Video", "Post"]),
+            influencer: a.hasOne("InfluencerAssignment"),
+            notes: a.string(),
+        })
+        .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
+
+    InfluencerAssignment: a
+        .model({
+            influencer: a.belongsTo("InfluencerPublic"),
+            assignmentType: a.string(),
+            campaign: a.belongsTo("Campaign"),
+            notes: a.string(),
         })
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
 });

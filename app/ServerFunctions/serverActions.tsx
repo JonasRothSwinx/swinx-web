@@ -21,11 +21,10 @@ export async function getUserGroups() {
         operation: async (contextSpec) => {
             const session = await fetchAuthSession(contextSpec);
             // console.log(session);
-            const payloadGroups =
-                (session.tokens?.accessToken.payload["cognito:groups"] as string[]) ?? [];
+            const payloadGroups = (session.tokens?.accessToken.payload["cognito:groups"] as string[]) ?? [];
             // console.log(typeof payloadGroups);
             // if (!payloadGroups || typeof payloadGroups !== Json[]) return [];
-            console.log(payloadGroups);
+            // console.log(payloadGroups);
             return payloadGroups;
             return [];
         },
@@ -37,7 +36,7 @@ export async function getUserAttributes() {
         nextServerContext: { cookies },
         operation: async (contextSpec) => {
             const session = await fetchAuthSession(contextSpec);
-            console.log(session);
+            // console.log(session);
             const attributes = await fetchUserAttributes(contextSpec);
             return attributes;
         },
@@ -52,6 +51,7 @@ interface InfluencerDataNew {
 interface InfluencerDataUpdate extends InfluencerDataNew {
     id: string;
 }
+//#region Influencer
 
 export async function createNewInfluencer(props: { data: InfluencerDataNew }): Promise<void> {
     const { firstName, lastName, email } = props.data;
@@ -68,6 +68,7 @@ export async function createNewInfluencer(props: { data: InfluencerDataNew }): P
         details: privateData,
     });
 }
+
 export async function updateInfluencer(props: { data: InfluencerDataUpdate }) {
     const { id, firstName, lastName, email } = props.data;
     console.log({ firstName, lastName, email });
@@ -82,48 +83,123 @@ export async function updateInfluencer(props: { data: InfluencerDataUpdate }) {
     if (!publicData || !publicData.influencerPublicDetailsId)
         throw new Error(publicErrors?.map((x) => x.message).join(", "));
 
-    const { data: privateData, errors: privateErrors } =
-        await client.models.InfluencerPrivate.update({
-            id: publicData.influencerPublicDetailsId,
-            email,
-        });
+    const { data: privateData, errors: privateErrors } = await client.models.InfluencerPrivate.update({
+        id: publicData.influencerPublicDetailsId,
+        email,
+    });
     return { privateErrors, publicErrors };
 }
-export async function deleteInfluencer(props: {
-    publicId: string;
-    privateId: string;
-}): Promise<void> {
+
+export async function deleteInfluencer(props: { publicId: string; privateId: string }): Promise<void> {
     const { publicId, privateId } = props;
     console.log({ publicId, privateId });
     if (!(publicId && privateId)) {
         return;
     }
-    const { data: privateData, errors: errorsPrivate } =
-        await client.models.InfluencerPrivate.delete({
-            id: privateId,
-        });
+    const { data: privateData, errors: errorsPrivate } = await client.models.InfluencerPrivate.delete({
+        id: privateId,
+    });
     console.log({ privateData, errorsPrivate });
     const { data: publicData, errors: errorsPublic } = await client.models.InfluencerPublic.delete({
         id: publicId,
     });
     console.log({ publicData, errorsPublic });
 }
+//#endregion
+//#region Customer
+interface CustomerNew {
+    customerCompany: string;
+    customerNameFirst: string;
+    customerNameLast: string;
+    customerPosition?: string;
+    customerEmail: string;
+}
+interface CustomerUpdate {
+    id: string;
+    customerCompany?: string;
+    customerNameFirst?: string;
+    customerNameLast?: string;
+    customerPosition?: string;
+    customerEmail?: string;
+}
+export async function parseCustomerFormData(formJson: { [key: string]: any }) {
+    console.log(formJson);
+    const { id, customerCompany, customerEmail, customerNameFirst, customerNameLast, customerPosition } = formJson;
+
+    if (!(customerNameFirst && customerNameLast && customerCompany && customerEmail)) throw new Error("Missing Data");
+    const customer: CustomerUpdate = {
+        id,
+        customerNameFirst,
+        customerNameLast,
+        customerCompany,
+        customerEmail,
+        customerPosition,
+    };
+    const response = await updateCustomer(customer);
+}
+
+export async function createCustomer(props: CustomerNew) {
+    const customer = props;
+    const { data, errors } = await client.models.Customer.create(customer);
+    if (errors) throw new Error(errors.map((x) => x.message).join(";\n"));
+    return data;
+}
+
+export async function updateCustomer(props: CustomerUpdate) {
+    const customer = props;
+    const { data, errors } = await client.models.Customer.update(customer);
+    if (errors) throw new Error(errors.map((x) => x.message).join(";\n"));
+    return data;
+}
+
+//#endregion
+
+//#region Webinar
 interface WebinarNew {
     title: string;
     date: string;
 }
-interface CustomerNew {
-    company: string;
-    contactNameFirst: string;
-    contactNameLast: string;
-    contactPosition?: string;
-    contactEmail: string;
+interface WebinarUpdate {
+    id: string;
+    title?: string;
+    date?: string;
 }
+export async function parseWebinarFormData(formJson: { [key: string]: any }) {
+    console.log(formJson);
+    const { id, title, date: dateRaw } = formJson;
+
+    if (!(id && title && dateRaw)) {
+        throw new Error("Missing Data");
+    }
+    const date = dayjs(dateRaw, "DD.MM.YYYY HH:MM").toISOString();
+    const webinar: WebinarUpdate = {
+        id,
+        title,
+        date,
+    };
+    const response = await updateWebinar(webinar);
+}
+export async function createWebinar(props: WebinarNew) {
+    const customer = props;
+    const { data, errors } = await client.models.Webinar.create(customer);
+    if (errors) throw new Error(errors.map((x) => x.message).join(";\n"));
+    return data;
+}
+
+export async function updateWebinar(props: WebinarUpdate) {
+    const customer = props;
+    const { data, errors } = await client.models.Webinar.update(customer);
+    if (errors) throw new Error(errors.map((x) => x.message).join(";\n"));
+    return data;
+}
+
+//#endregion
 interface CampaignDataNew {
     campaignType: string;
     customer: CustomerNew;
     webinarDetails?: WebinarNew;
 }
+
 export async function parseCampaignFormData(formJson: { [key: string]: any }) {
     console.log(formJson);
     const {
@@ -132,8 +208,8 @@ export async function parseCampaignFormData(formJson: { [key: string]: any }) {
         webinarDate,
         customerCompany,
         customerEmail,
-        customerFirstName,
-        customerLastName,
+        customerNameFirst,
+        customerNameLast,
         customerPosition,
     } = formJson;
     if (!campaignTypes.includes(campaignType)) throw new Error("InvalidCampaignType");
@@ -143,28 +219,23 @@ export async function parseCampaignFormData(formJson: { [key: string]: any }) {
     if (!(webinarTitle && date)) throw new Error("Missing Data");
     const webinar: WebinarNew = { title: webinarTitle, date: date.toISOString() };
 
-    if (!(customerFirstName && customerLastName && customerCompany && customerEmail))
-        throw new Error("Missing Data");
+    if (!(customerNameFirst && customerNameLast && customerCompany && customerEmail)) throw new Error("Missing Data");
     const customer: CustomerNew = {
-        contactNameFirst: customerFirstName,
-        contactNameLast: customerLastName,
-        company: customerCompany,
-        contactEmail: customerEmail,
-        contactPosition: customerPosition,
+        customerCompany,
+        customerEmail,
+        customerNameFirst,
+        customerNameLast,
+        customerPosition,
     };
     const campaign: CampaignDataNew = { campaignType, customer, webinarDetails: webinar };
     const response = await createNewCampaign(campaign);
 }
+
 export async function createNewCampaign(props: CampaignDataNew) {
     const { customer, webinarDetails, campaignType } = props;
-    const { data: customerData } = await client.models.Customer.create(customer);
+    const customerData = await createCustomer(customer);
 
-    let webinarData = undefined;
-    if (webinarDetails) {
-        const { data } = await client.models.Webinar.create(webinarDetails);
-        webinarData = data;
-    }
-
+    const webinarData = webinarDetails ? await createWebinar(webinarDetails) : undefined;
     const campaignNew = await client.models.Campaign.create({
         campaignType,
         customer: customerData,
@@ -173,3 +244,7 @@ export async function createNewCampaign(props: CampaignDataNew) {
     });
     console.log(campaignNew);
 }
+//#region InfluencerAssignments
+export interface InfluencerAssignment {}
+// export async function createInfluencerAssignment(params: type) {}
+//#endregion

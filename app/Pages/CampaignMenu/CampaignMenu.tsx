@@ -3,7 +3,7 @@ import WebinarList from "./CampaignList";
 function CampaignMenu(props: {}) {
     return (
         <>
-            <span>Kampagnen</span>
+            {/* <span>Kampagnen</span> */}
             <WebinarList />
         </>
     );
