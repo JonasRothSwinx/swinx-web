@@ -1,6 +1,8 @@
 version: 1
 backend:
     phases:
+        preBuild:
+            commands: -nvm install 20
         build:
             commands:
                 - nvm use 20
