@@ -30,23 +30,26 @@ import {
     Close as CancelIcon,
 } from "@mui/icons-material";
 import {
+    Influencer,
     createNewInfluencer,
     deleteInfluencer,
     getUserGroups,
+    listInfluencers,
     updateInfluencer,
 } from "@/app/ServerFunctions/serverActions";
-import CreateInfluencerDialog from "./CreateNewInfluencer";
+import InfluencerDialog from "./InfluencerDialog";
 
 import { deDE } from "@mui/x-data-grid";
 import { deDE as pickersDeDE } from "@mui/x-date-pickers/locales";
 import { deDE as coreDeDE } from "@mui/material/locale";
-import { DialogOptions, DialogProps, RowDataInfluencer } from "@/app/Definitions/types";
+import { DialogOptions, DialogProps } from "@/app/Definitions/types";
+import * as queries from "@/ui-components/graphql/queries";
 
 const client = generateClient<Schema>();
 const theme = createTheme({}, { deDE, pickersDeDE, coreDeDE });
 
 interface EditToolbarProps {
-    setDialogOptions: (props: DialogOptions<RowDataInfluencer>) => any;
+    setDialogOptions: (props: DialogOptions<Influencer>) => any;
 }
 function InitInfluencer(props: { id: string }) {
     const { id } = props;
@@ -72,10 +75,11 @@ function EditToolbar(props: EditToolbarProps) {
         </GridToolbarContainer>
     );
 }
+const selectionSet = ["id", "details.id", "details.email"] as const;
 
 function InfluencerList(props: {}) {
     // const [details, setDetails] = useState<Schema["InfluencerPrivate"][]>([]);
-    const [rows, setRows] = useState<RowDataInfluencer[]>();
+    const [rows, setRows] = useState<Influencer[]>();
     const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
 
     const columns: GridColDef[] = [
@@ -110,12 +114,15 @@ function InfluencerList(props: {}) {
 
             headerAlign: "center",
             align: "center",
-            preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
-                const hasError = !String(params.props.value).match(
-                    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-                );
-                return { ...params.props, error: hasError };
+            valueGetter: ({ row }) => {
+                return row.details.email;
             },
+            // preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
+            //     const hasError = !String(params.props.value).match(
+            //         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+            //     );
+            //     return { ...params.props, error: hasError };
+            // },
             // renderEditCell: (params: GridRenderEditCellParams) => (
             //     <TextField
             //         id="email"
@@ -152,14 +159,22 @@ function InfluencerList(props: {}) {
             },
         },
     ];
-    const [dialogOtions, setDialogOptions] = useState<DialogOptions<RowDataInfluencer>>({
+    const [dialogOtions, setDialogOptions] = useState<DialogOptions<Influencer>>({
         open: false,
     });
 
-    const [dialogProps, setDialogProps] = useState<DialogProps<RowDataInfluencer>>({
+    const [dialogProps, setDialogProps] = useState<DialogProps<Influencer>>({
         rows: rows ?? [],
         setRows,
-        onClose: () => setDialogOptions({ open: false }),
+        onClose: () => {
+            setDialogOptions({ open: false }),
+                listInfluencers().then((items) =>
+                    setRows((prev) => {
+                        console.log("ChangingRows", { prev, items });
+                        return items;
+                    }),
+                );
+        },
         columns,
         excludeColumns: ["id"],
     });
@@ -169,29 +184,16 @@ function InfluencerList(props: {}) {
     const [showDialog, setShowDialog] = useState(false);
 
     useEffect(() => {
-        console.log("subscribing to updates");
-        let sub: Subscription;
-        try {
-            if (authStatus !== "authenticated") return;
-            sub = client.models.InfluencerPublic?.observeQuery().subscribe(async ({ items }) => {
-                console.log(items);
-                const details = await Promise.all(
-                    items.map(async (x) => {
-                        const { data: details } = await x.details();
-                        const influencer = { ...x, email: details?.email ?? "", isNew: false };
-                        return influencer;
-                    }),
-                );
-                console.log(details);
-                setRows([...details]);
-            });
-            console.log(sub);
-        } catch (error) {
-            console.log("error", error);
-        }
-
-        return () => sub?.unsubscribe();
+        console.log("getting new data");
+        listInfluencers().then((items) =>
+            setRows((prev) => {
+                console.log("ChangingRows", { prev, items });
+                return items;
+            }),
+        );
+        return () => {};
     }, [client]);
+
     useEffect(() => {
         const dialogPropsNew = { ...dialogProps };
         dialogPropsNew.rows = rows ?? [];
@@ -218,7 +220,8 @@ function InfluencerList(props: {}) {
             const entity = rows?.find((x) => x.id === id);
             if (!entity) return;
             console.log({ entity });
-            const { id: publicId, influencerPublicDetailsId: privateId } = entity;
+            const { id: publicId } = entity;
+            const { id: privateId } = entity.details;
             if (!(publicId && privateId)) return;
             deleteInfluencer({
                 publicId,
@@ -229,7 +232,7 @@ function InfluencerList(props: {}) {
     }
     return (
         <>
-            {<CreateInfluencerDialog {...dialogOtions} {...dialogProps} />}
+            {<InfluencerDialog {...dialogOtions} {...dialogProps} />}
             <ThemeProvider theme={theme}>
                 <DataGrid
                     localeText={deDE.components.MuiDataGrid.defaultProps.localeText}

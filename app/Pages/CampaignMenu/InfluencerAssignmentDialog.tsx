@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import {
+    Influencer,
     createNewInfluencer,
     parseCampaignFormData,
     parseCustomerFormData,
@@ -28,13 +29,19 @@ import {
     Customer,
     DialogOptions,
     DialogProps,
-    Influencer,
+    // Influencer,
     InfluencerAssignment,
     Webinar,
     WebinarCampaign,
 } from "@/app/Definitions/types";
 import { campaignTypes, influencerAssignments } from "@/amplify/data/types";
-import { DatePicker, DateTimePicker, LocalizationProvider, TimeClock, TimePicker } from "@mui/x-date-pickers";
+import {
+    DatePicker,
+    DateTimePicker,
+    LocalizationProvider,
+    TimeClock,
+    TimePicker,
+} from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import "dayjs/locale/de";
 import { useState } from "react";
@@ -76,19 +83,22 @@ function InfluencerAssignmentDialog(props: {
                     const { id, influencer: influencerId, assignmentType } = formJson;
                     if (editing) {
                         const updatedWebinar: Webinar = formJson as Webinar;
-                        updatedWebinar.date = dayjs(updatedWebinar.date, "DD.MM.YYYY HH:MM").toISOString();
+                        updatedWebinar.date = dayjs(
+                            updatedWebinar.date,
+                            "DD.MM.YYYY HH:MM",
+                        ).toISOString();
                         const campaign = rows.find((x) => x.webinar.id === updatedWebinar.id);
                         console.log({ campaign, updatedWebinar });
                         if (campaign) campaign.webinar = updatedWebinar;
                         parseWebinarFormData(formJson);
                     } else {
-                        const influencer = influencers.find((x) => x.public.id === influencerId);
+                        const influencer = influencers.find((x) => x.id === influencerId);
                         if (!influencer) throw new Error("");
 
                         const assignment: InfluencerAssignment = {
                             assignmentType,
                             influencer: async (props) => {
-                                return { data: influencer.public };
+                                return { data: influencer };
                             },
                         } as InfluencerAssignment;
                     }

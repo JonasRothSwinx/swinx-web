@@ -12,13 +12,17 @@ import {
     TextField,
 } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import { createNewInfluencer, updateInfluencer } from "@/app/ServerFunctions/serverActions";
-import { DialogOptions, DialogProps, RowDataInfluencer } from "@/app/Definitions/types";
+import {
+    Influencer,
+    createNewInfluencer,
+    updateInfluencer,
+} from "@/app/ServerFunctions/serverActions";
+import { DialogOptions, DialogProps } from "@/app/Definitions/types";
 
 const client = generateClient<Schema>();
-type DialogType = RowDataInfluencer;
+type DialogType = Influencer;
 
-function CreateInfluencerDialog(props: DialogProps<DialogType> & DialogOptions<DialogType>) {
+function InfluencerDialog(props: DialogProps<DialogType> & DialogOptions<DialogType>) {
     const {
         open = false,
         onClose,
@@ -71,17 +75,19 @@ function CreateInfluencerDialog(props: DialogProps<DialogType> & DialogOptions<D
                     const formData = new FormData(event.currentTarget);
                     const formJson = Object.fromEntries((formData as any).entries());
                     const { id, firstName, lastName, email } = formJson;
+                    let updatedRows = [...rows];
                     if (editing && editingData) {
-                        const updatedInfluencer = { ...editingData };
-                        updatedInfluencer.email = email;
-                        updatedInfluencer.firstName = firstName;
-                        updatedInfluencer.lastName = lastName;
-                        updatedInfluencer.email = email;
-                        const updatedRows = rows.map((row) =>
+                        const updatedInfluencer: Influencer = {
+                            ...editingData,
+                            firstName,
+                            lastName,
+                            details: { ...editingData.details, email },
+                        };
+                        updatedRows = rows.map((row) =>
                             row.id === updatedInfluencer.id ? updatedInfluencer : row,
                         );
-                        console.log({ rows, updatedRows });
-                        setRows(updatedRows);
+                        // console.log({ rows, updatedRows });
+                        console.log("Setting Rows");
 
                         updateInfluencer({
                             data: {
@@ -92,14 +98,37 @@ function CreateInfluencerDialog(props: DialogProps<DialogType> & DialogOptions<D
                             },
                         });
                     } else {
+                        const newInfluencer: Influencer = {
+                            id: "new",
+                            firstName,
+                            lastName,
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString(),
+                            details: { id: "new", email },
+                        };
+                        updatedRows.push(newInfluencer);
                         createNewInfluencer({ data: { firstName, lastName, email } });
                     }
+                    setRows(updatedRows);
                     handleClose();
                 },
             }}
             sx={{
                 "& .MuiDialogContent-root": {
-                    width: "520px",
+                    maxWidth: "80vw",
+                    display: "flex",
+                    flexWrap: "wrap",
+                    // width: "520px",
+                },
+                "& .MuiFormControl-root": {
+                    // padding: "5px",
+                    minWidth: "20ch",
+                    margin: "5px",
+                    flex: 1,
+                },
+                "& .MuiDialogContentText-root": {
+                    flexBasis: "100%",
+                    flexShrink: 0,
                 },
             }}
         >
@@ -113,9 +142,10 @@ function CreateInfluencerDialog(props: DialogProps<DialogType> & DialogOptions<D
                         margin: "5px",
                         flex: 1,
                     },
+                    "& .MuiFormControl-root:has(#email)": { flexBasis: "100%" },
                 }}
             >
-                {columns.map((column, idx) => {
+                {/* {columns.map((column, idx) => {
                     const { field, headerName: label, type: colType } = column;
                     const hidden = excludeColumns.includes(field);
                     const required = !hidden;
@@ -150,15 +180,24 @@ function CreateInfluencerDialog(props: DialogProps<DialogType> & DialogOptions<D
                             hidden={hidden}
                         />
                     );
-                })}
-                {/* <TextField
+                })} */}
+                <TextField
+                    id="id"
+                    name="id"
+                    type="text"
+                    label="ID"
+                    className={styles.TextField}
+                    defaultValue={editingData?.id ?? ""}
+                    hidden
+                ></TextField>
+                <TextField
                     autoFocus
                     id="firstName"
                     name="firstName"
                     className={styles.TextField}
                     label="Vorname"
                     type="text"
-                    defaultValue={editingData?.firstName?.toString() ?? ""}
+                    defaultValue={editingData?.firstName ?? ""}
                     required
                 />
                 <TextField
@@ -167,6 +206,7 @@ function CreateInfluencerDialog(props: DialogProps<DialogType> & DialogOptions<D
                     className={styles.TextField}
                     label="Nachname"
                     type="text"
+                    defaultValue={editingData?.lastName ?? ""}
                     required
                 />
                 <TextField
@@ -175,8 +215,9 @@ function CreateInfluencerDialog(props: DialogProps<DialogType> & DialogOptions<D
                     className={styles.TextField}
                     label="E-Mail"
                     type="email"
+                    defaultValue={editingData?.details.email ?? ""}
                     required
-                /> */}
+                />
                 <Button type="submit" />
                 <DialogActions
                     sx={{
@@ -194,4 +235,4 @@ function CreateInfluencerDialog(props: DialogProps<DialogType> & DialogOptions<D
         </Dialog>
     );
 }
-export default CreateInfluencerDialog;
+export default InfluencerDialog;

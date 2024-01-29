@@ -10,6 +10,7 @@ import { campaignSteps, campaignTypes } from "@/amplify/data/types";
 import dayjs from "dayjs";
 import "dayjs/locale/de";
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import { SelectionSet } from "aws-amplify/api";
 dayjs.extend(customParseFormat);
 
 // export default { getUserGroups, getUserAttributes };
@@ -21,7 +22,8 @@ export async function getUserGroups() {
         operation: async (contextSpec) => {
             const session = await fetchAuthSession(contextSpec);
             // console.log(session);
-            const payloadGroups = (session.tokens?.accessToken.payload["cognito:groups"] as string[]) ?? [];
+            const payloadGroups =
+                (session.tokens?.accessToken.payload["cognito:groups"] as string[]) ?? [];
             // console.log(typeof payloadGroups);
             // if (!payloadGroups || typeof payloadGroups !== Json[]) return [];
             // console.log(payloadGroups);
@@ -71,7 +73,7 @@ export async function createNewInfluencer(props: { data: InfluencerDataNew }): P
 
 export async function updateInfluencer(props: { data: InfluencerDataUpdate }) {
     const { id, firstName, lastName, email } = props.data;
-    console.log({ firstName, lastName, email });
+    console.log({ id, firstName, lastName, email });
     if (!(firstName && lastName && email)) {
         return;
     }
@@ -80,30 +82,54 @@ export async function updateInfluencer(props: { data: InfluencerDataUpdate }) {
         firstName,
         lastName,
     });
-    if (!publicData || !publicData.influencerPublicDetailsId)
+    if (!publicData || !publicData.influencerPublicDetailsId || publicErrors) {
+        console.log(publicErrors);
         throw new Error(publicErrors?.map((x) => x.message).join(", "));
+    }
 
-    const { data: privateData, errors: privateErrors } = await client.models.InfluencerPrivate.update({
-        id: publicData.influencerPublicDetailsId,
-        email,
-    });
+    const { data: privateData, errors: privateErrors } =
+        await client.models.InfluencerPrivate.update({
+            id: publicData.influencerPublicDetailsId,
+            email,
+        });
     return { privateErrors, publicErrors };
 }
 
-export async function deleteInfluencer(props: { publicId: string; privateId: string }): Promise<void> {
+export async function deleteInfluencer(props: {
+    publicId: string;
+    privateId: string;
+}): Promise<void> {
     const { publicId, privateId } = props;
     console.log({ publicId, privateId });
     if (!(publicId && privateId)) {
         return;
     }
-    const { data: privateData, errors: errorsPrivate } = await client.models.InfluencerPrivate.delete({
-        id: privateId,
-    });
+    const { data: privateData, errors: errorsPrivate } =
+        await client.models.InfluencerPrivate.delete({
+            id: privateId,
+        });
     console.log({ privateData, errorsPrivate });
     const { data: publicData, errors: errorsPublic } = await client.models.InfluencerPublic.delete({
         id: publicId,
     });
     console.log({ publicData, errorsPublic });
+}
+
+const selectionSetInfluencer = [
+    "id",
+    "firstName",
+    "lastName",
+    "createdAt",
+    "updatedAt",
+    "details.id",
+    "details.email",
+] as const;
+export type Influencer = SelectionSet<Schema["InfluencerPublic"], typeof selectionSetInfluencer>;
+export async function listInfluencers() {
+    const { data } = await client.models.InfluencerPublic.list({
+        selectionSet: selectionSetInfluencer,
+    });
+    return data;
 }
 //#endregion
 //#region Customer
@@ -124,9 +150,17 @@ interface CustomerUpdate {
 }
 export async function parseCustomerFormData(formJson: { [key: string]: any }) {
     console.log(formJson);
-    const { id, customerCompany, customerEmail, customerNameFirst, customerNameLast, customerPosition } = formJson;
+    const {
+        id,
+        customerCompany,
+        customerEmail,
+        customerNameFirst,
+        customerNameLast,
+        customerPosition,
+    } = formJson;
 
-    if (!(customerNameFirst && customerNameLast && customerCompany && customerEmail)) throw new Error("Missing Data");
+    if (!(customerNameFirst && customerNameLast && customerCompany && customerEmail))
+        throw new Error("Missing Data");
     const customer: CustomerUpdate = {
         id,
         customerNameFirst,
@@ -179,6 +213,7 @@ export async function parseWebinarFormData(formJson: { [key: string]: any }) {
     };
     const response = await updateWebinar(webinar);
 }
+
 export async function createWebinar(props: WebinarNew) {
     const customer = props;
     const { data, errors } = await client.models.Webinar.create(customer);
@@ -219,7 +254,8 @@ export async function parseCampaignFormData(formJson: { [key: string]: any }) {
     if (!(webinarTitle && date)) throw new Error("Missing Data");
     const webinar: WebinarNew = { title: webinarTitle, date: date.toISOString() };
 
-    if (!(customerNameFirst && customerNameLast && customerCompany && customerEmail)) throw new Error("Missing Data");
+    if (!(customerNameFirst && customerNameLast && customerCompany && customerEmail))
+        throw new Error("Missing Data");
     const customer: CustomerNew = {
         customerCompany,
         customerEmail,

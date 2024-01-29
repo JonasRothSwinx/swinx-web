@@ -2,7 +2,7 @@ import InfluencerList from "./InfluencerList";
 import commonstyles from "../sharedStyles.module.css";
 import styles from "./influencerMenu.module.css";
 import { useState } from "react";
-import CreateInfluencerDialog from "./CreateNewInfluencer";
+import InfluencerDialog from "./InfluencerDialog";
 import { Button } from "@mui/material";
 
 function InfluencerMenu(props: {}) {

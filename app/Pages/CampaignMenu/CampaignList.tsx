@@ -32,20 +32,15 @@ import {
     Close as CancelIcon,
 } from "@mui/icons-material";
 import {
+    listInfluencers,
     createNewInfluencer,
     deleteInfluencer,
     getUserGroups,
     updateInfluencer,
+    Influencer,
 } from "@/app/ServerFunctions/serverActions";
 import CampaignDialog from "./CampaignDialog";
-import {
-    Customer,
-    DialogOptions,
-    DialogProps,
-    Influencer,
-    RowDataInfluencer,
-    WebinarCampaign,
-} from "@/app/Definitions/types";
+import { Customer, DialogOptions, DialogProps, WebinarCampaign } from "@/app/Definitions/types";
 import { deDE } from "@mui/x-data-grid";
 import styles from "./campaignMenu.module.css";
 import CustomerDialog from "./CustomerDialog";
@@ -116,7 +111,11 @@ function WebinarList(props: {}) {
                             <Typography>{customer.customerCompany}</Typography>
                             <br />
                             <Typography>{params.value}</Typography>
-                            {customer.customerPosition ? <Typography>({customer.customerPosition})</Typography> : <></>}
+                            {customer.customerPosition ? (
+                                <Typography>({customer.customerPosition})</Typography>
+                            ) : (
+                                <></>
+                            )}
                         </div>
                         <div>
                             <GridActionsCellItem
@@ -252,32 +251,9 @@ function WebinarList(props: {}) {
     const [showDialog, setShowDialog] = useState(false);
 
     useEffect(() => {
-        console.log("subscribing to influencer updates");
-        let sub: Subscription;
-        try {
-            if (authStatus !== "authenticated") return;
-            sub = client.models.InfluencerPublic?.observeQuery().subscribe(async ({ items }) => {
-                console.log(items);
-                const influencer = await Promise.all(
-                    items.map(async (x) => {
-                        const { data: privateData } = await x.details();
-                        const influencer: Influencer = {
-                            public: x,
-                            private: privateData ?? undefined,
-                        };
-                        return influencer;
-                    })
-                );
-                console.log(influencer);
-                setInfluencers([...influencer]);
-            });
-            console.log(sub);
-        } catch (error) {
-            console.log("error", error);
-        }
-
-        return () => sub?.unsubscribe();
-    }, [client]);
+        listInfluencers().then((items) => setInfluencers(items));
+        return () => {};
+    }, [client, rows]);
     useEffect(() => {
         console.log("subscribing to campaign updates");
         let sub: Subscription;
@@ -290,8 +266,10 @@ function WebinarList(props: {}) {
                         items.map(async (campaign: Schema["Campaign"]) => {
                             const { data: webinar } = await campaign.webinarDetails();
                             const { data: customer } = await campaign.customer();
-                            const { data: influencers = [] } = await campaign.influencerAssignments();
-                            const { data: timelineEvents = [] } = await campaign.campaignTimelineEvents();
+                            const { data: influencers = [] } =
+                                await campaign.influencerAssignments();
+                            const { data: timelineEvents = [] } =
+                                await campaign.campaignTimelineEvents();
                             if (!(webinar && customer)) throw new Error("");
 
                             return {
@@ -302,12 +280,12 @@ function WebinarList(props: {}) {
                                 influencers,
                                 timelineEvents: [],
                             } satisfies WebinarCampaign;
-                        })
+                        }),
                     );
                     console.log({ campaigns });
                     // console.log(details);
                     setRows([...campaigns]);
-                }
+                },
             );
             console.log(sub);
         } catch (error) {
@@ -317,9 +295,9 @@ function WebinarList(props: {}) {
         return () => sub?.unsubscribe();
     }, [client]);
     useEffect(() => {
-        const dialogPropsNew = { ...dialogProps };
-        dialogPropsNew.rows = rows ?? [];
-        setDialogProps(dialogPropsNew);
+        // const dialogPropsNew = { ...dialogProps };
+        // dialogPropsNew.rows = rows ?? [];
+        setDialogProps((prev) => ({ ...prev, rows: rows ?? [] }));
 
         return () => {};
     }, [rows]);
@@ -391,10 +369,18 @@ function WebinarList(props: {}) {
     return (
         <>
             {dialog === Dialogs.campaign && <CampaignDialog {...dialogOtions} {...dialogProps} />}
-            {dialog === Dialogs.customer && <CustomerDialog props={dialogProps} options={dialogOtions} />}
-            {dialog === Dialogs.webinar && <WebinarDialog props={dialogProps} options={dialogOtions} />}
+            {dialog === Dialogs.customer && (
+                <CustomerDialog props={dialogProps} options={dialogOtions} />
+            )}
+            {dialog === Dialogs.webinar && (
+                <WebinarDialog props={dialogProps} options={dialogOtions} />
+            )}
             {dialog === Dialogs.influencer && (
-                <InfluencerAssignmentDialog props={dialogProps} options={dialogOtions} influencers={influencers} />
+                <InfluencerAssignmentDialog
+                    props={dialogProps}
+                    options={dialogOtions}
+                    influencers={influencers}
+                />
             )}
             <DataGrid
                 localeText={deDE.components.MuiDataGrid.defaultProps.localeText}
