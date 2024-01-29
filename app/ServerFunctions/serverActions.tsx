@@ -286,7 +286,18 @@ export interface InfluencerAssignment {}
 // export async function createInfluencerAssignment(params: type) {}
 //#endregion
 //#region TimelineEvent
-const selectionSetTimelineEvent = ["id", "timelineEventType", "createdAt", "updatedAt"] as const;
+const selectionSetTimelineEvent = [
+    "id",
+
+    "timelineEventInfluencerId",
+    "timelineEventType",
+
+    "inviteEvent.id",
+    "inviteEvent.invites",
+
+    "createdAt",
+    "updatedAt",
+] as const;
 export type TimelineEvent = SelectionSet<Schema["TimelineEvent"], typeof selectionSetTimelineEvent>;
 
 export async function listTimelineEvents() {
@@ -301,6 +312,10 @@ interface TimelineEventNew {
     date: string;
     influencerId?: string;
     notes?: string;
+}
+interface InviteEvent {
+    id?: string;
+    invites: number;
 }
 export async function createTimelineEvent(props: TimelineEventNew) {
     const { type, date, influencerId, notes } = props;

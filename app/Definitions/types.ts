@@ -21,6 +21,11 @@ export type Customer = Schema["Customer"];
 export type InfluencerPrivate = Schema["InfluencerPrivate"];
 export type InfluencerPublic = Schema["InfluencerPublic"];
 
+export type InviteEvent = {
+    id?: string;
+    invites: number;
+};
+
 // export type RowDataInfluencer = Schema["InfluencerPrivate"] & Schema["InfluencerPublic"];
 
 // export type Influencer = {

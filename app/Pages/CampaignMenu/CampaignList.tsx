@@ -45,7 +45,7 @@ import { deDE } from "@mui/x-data-grid";
 import styles from "./campaignMenu.module.css";
 import CustomerDialog from "./CustomerDialog";
 import WebinarDialog from "./WebinarDialog";
-import InfluencerAssignmentDialog from "./InfluencerAssignmentDialog";
+// import InfluencerAssignmentDialog from "./InfluencerAssignmentDialog";
 import TimeLineEventDialog from "../Timeline/TimeLineDialog";
 
 const client = generateClient<Schema>();
