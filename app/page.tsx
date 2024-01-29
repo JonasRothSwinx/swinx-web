@@ -24,7 +24,6 @@ function Home() {
         <ThemeProvider theme={theme}>
             {/* <CssBaseline /> */}
             <Authenticator.Provider>
-                {" "}
                 <>{authStatus === "authenticated" && <WelcomePage />}</>
             </Authenticator.Provider>
         </ThemeProvider>

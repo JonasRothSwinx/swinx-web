@@ -2,21 +2,22 @@
 import { Schema } from "@/amplify/data/resource";
 import { GridColDef } from "@mui/x-data-grid";
 import { Dispatch, SetStateAction } from "react";
+import { TimelineEvent } from "../ServerFunctions/serverActions";
 
 export type WebinarCampaign = {
     id: string;
     campaign: Campaign;
     webinar: Webinar;
     customer: Customer;
-    influencers: InfluencerAssignment[];
+    // influencers: InfluencerAssignment[];
+
     timelineEvents: TimelineEvent[];
 };
 
 export type Campaign = Schema["Campaign"];
 export type Webinar = Schema["Webinar"];
 export type Customer = Schema["Customer"];
-export type InfluencerAssignment = Schema["InfluencerAssignment"];
-export type TimelineEvent = Schema["TimelineEvent"];
+// export type InfluencerAssignment = Schema["InfluencerAssignment"];
 export type InfluencerPrivate = Schema["InfluencerPrivate"];
 export type InfluencerPublic = Schema["InfluencerPublic"];
 

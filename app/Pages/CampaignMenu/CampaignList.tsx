@@ -46,6 +46,7 @@ import styles from "./campaignMenu.module.css";
 import CustomerDialog from "./CustomerDialog";
 import WebinarDialog from "./WebinarDialog";
 import InfluencerAssignmentDialog from "./InfluencerAssignmentDialog";
+import TimeLineEventDialog from "../Timeline/TimeLineDialog";
 
 const client = generateClient<Schema>();
 
@@ -183,7 +184,7 @@ function WebinarList(props: {}) {
                                 icon={<AddIcon />}
                                 label="Edit"
                                 className="textPrimary"
-                                onClick={handleEditClickInfluencer(id)}
+                                onClick={handleAddClickInfluencer(id)}
                                 color="inherit"
                             />
                         </div>
@@ -266,8 +267,6 @@ function WebinarList(props: {}) {
                         items.map(async (campaign: Schema["Campaign"]) => {
                             const { data: webinar } = await campaign.webinarDetails();
                             const { data: customer } = await campaign.customer();
-                            const { data: influencers = [] } =
-                                await campaign.influencerAssignments();
                             const { data: timelineEvents = [] } =
                                 await campaign.campaignTimelineEvents();
                             if (!(webinar && customer)) throw new Error("");
@@ -277,7 +276,6 @@ function WebinarList(props: {}) {
                                 campaign,
                                 webinar,
                                 customer,
-                                influencers,
                                 timelineEvents: [],
                             } satisfies WebinarCampaign;
                         }),
@@ -376,7 +374,7 @@ function WebinarList(props: {}) {
                 <WebinarDialog props={dialogProps} options={dialogOtions} />
             )}
             {dialog === Dialogs.influencer && (
-                <InfluencerAssignmentDialog
+                <TimeLineEventDialog
                     props={dialogProps}
                     options={dialogOtions}
                     influencers={influencers}

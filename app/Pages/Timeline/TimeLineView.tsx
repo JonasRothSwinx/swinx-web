@@ -1,4 +1,4 @@
-import { TimelineEvent } from "@/app/Definitions/types";
+import { TimelineEvent } from "@/app/ServerFunctions/serverActions";
 import { randomDate, randomId } from "@mui/x-data-grid-generator";
 
 export interface TimelineViewProps {

@@ -45,6 +45,7 @@ export async function getUserAttributes() {
     });
     return result;
 }
+//#region Influencer
 interface InfluencerDataNew {
     firstName: string;
     lastName: string;
@@ -53,7 +54,6 @@ interface InfluencerDataNew {
 interface InfluencerDataUpdate extends InfluencerDataNew {
     id: string;
 }
-//#region Influencer
 
 export async function createNewInfluencer(props: { data: InfluencerDataNew }): Promise<void> {
     const { firstName, lastName, email } = props.data;
@@ -187,7 +187,6 @@ export async function updateCustomer(props: CustomerUpdate) {
 }
 
 //#endregion
-
 //#region Webinar
 interface WebinarNew {
     title: string;
@@ -229,6 +228,7 @@ export async function updateWebinar(props: WebinarUpdate) {
 }
 
 //#endregion
+//#region Campaign
 interface CampaignDataNew {
     campaignType: string;
     customer: CustomerNew;
@@ -280,7 +280,39 @@ export async function createNewCampaign(props: CampaignDataNew) {
     });
     console.log(campaignNew);
 }
+//#endregion
 //#region InfluencerAssignments
 export interface InfluencerAssignment {}
 // export async function createInfluencerAssignment(params: type) {}
+//#endregion
+//#region TimelineEvent
+const selectionSetTimelineEvent = ["id", "timelineEventType", "createdAt", "updatedAt"] as const;
+export type TimelineEvent = SelectionSet<Schema["TimelineEvent"], typeof selectionSetTimelineEvent>;
+
+export async function listTimelineEvents() {
+    const { data, errors } = await client.models.TimelineEvent.list({
+        selectionSet: selectionSetTimelineEvent,
+    });
+    return data;
+}
+
+interface TimelineEventNew {
+    type: string;
+    date: string;
+    influencerId?: string;
+    notes?: string;
+}
+export async function createTimelineEvent(props: TimelineEventNew) {
+    const { type, date, influencerId, notes } = props;
+    if (!(type && date)) {
+        return;
+    }
+    const { data, errors } = await client.models.TimelineEvent.create({
+        timelineEventType: type,
+        date,
+        timelineEventInfluencerId: influencerId,
+        notes,
+    });
+}
+
 //#endregion

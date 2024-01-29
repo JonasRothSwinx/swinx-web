@@ -1,5 +1,5 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
-import { campaignTypes, campaignSteps } from "./types.js";
+import { campaignTypes, campaignSteps, timelineEventTypes } from "./types.js";
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -26,7 +26,6 @@ const schema = a.schema({
             lastName: a.string().required(),
             topic: a.string().array(),
             details: a.hasOne("InfluencerPrivate").required(),
-            assignments: a.hasMany("InfluencerAssignment"),
         })
         .authorization([
             //
@@ -47,7 +46,6 @@ const schema = a.schema({
             campaignType: a.string().required(),
             customer: a.hasOne("Customer"),
             webinarDetails: a.hasOne("Webinar"),
-            influencerAssignments: a.hasMany("InfluencerAssignment"),
             campaignTimelineEvents: a.hasMany("TimelineEvent"),
             campaignStep: a.string(),
             notes: a.string(),
@@ -75,18 +73,17 @@ const schema = a.schema({
 
     TimelineEvent: a
         .model({
-            timeLineEventType: a.enum(["Invites", "Video", "Post"]),
-            influencer: a.hasOne("InfluencerAssignment"),
+            timelineEventType: a.string().required(),
+            influencer: a.hasOne("InfluencerPublic").required(),
+            inviteEvent: a.hasOne("InvitesEvent"),
+            date: a.date().required(),
             notes: a.string(),
         })
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
 
-    InfluencerAssignment: a
+    InvitesEvent: a
         .model({
-            influencer: a.belongsTo("InfluencerPublic"),
-            assignmentType: a.string(),
-            campaign: a.belongsTo("Campaign"),
-            notes: a.string(),
+            invites: a.integer().required(),
         })
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
 });

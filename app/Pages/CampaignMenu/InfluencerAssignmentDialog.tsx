@@ -95,12 +95,12 @@ function InfluencerAssignmentDialog(props: {
                         const influencer = influencers.find((x) => x.id === influencerId);
                         if (!influencer) throw new Error("");
 
-                        const assignment: InfluencerAssignment = {
-                            assignmentType,
-                            influencer: async (props) => {
-                                return { data: influencer };
-                            },
-                        } as InfluencerAssignment;
+                        // const assignment: InfluencerAssignment = {
+                        //     assignmentType,
+                        //     influencer: async (props) => {
+                        //         return { data: influencer };
+                        //     },
+                        // } as InfluencerAssignment;
                     }
 
                     handleClose();
@@ -151,8 +151,8 @@ function InfluencerAssignmentDialog(props: {
                         <MenuItem key={-1} value={undefined}></MenuItem>
                         {influencers.map((x, i) => {
                             return (
-                                <MenuItem key={x.public.id} value={x.public.id}>
-                                    {`${x.public.firstName} ${x.public.lastName}`}
+                                <MenuItem key={x.id} value={x.id}>
+                                    {`${x.firstName} ${x.lastName}`}
                                 </MenuItem>
                             );
                         })}
