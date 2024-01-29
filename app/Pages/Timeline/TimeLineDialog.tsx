@@ -32,7 +32,6 @@ import {
     DialogOptions,
     DialogProps,
     // Influencer,
-    InfluencerAssignment,
     Webinar,
     WebinarCampaign,
 } from "@/app/Definitions/types";
@@ -68,7 +67,10 @@ function TimeLineEventDialog(props: {
     const [timelineEventForm, setTimelineEventForm] = useState<TimelineEvent>(
         editingData ?? initEvent,
     );
-    const [dates, setDates] = useState<dayjs.Dayjs[]>([]);
+    const [dates, setDates] = useState<{ number: number; dates: dayjs.Dayjs[] }>({
+        number: 1,
+        dates: [dayjs()],
+    });
     // const [isModalOpen, setIsModalOpen] = useState(open);
 
     function handleClose() {
@@ -104,6 +106,11 @@ function TimeLineEventDialog(props: {
         }
 
         handleClose();
+    }
+    function handleAddDateClick() {
+        setDates((prev) => {
+            return { number: prev.number + 1, dates: [...prev.dates, dayjs()] };
+        });
     }
 
     return (
@@ -200,24 +207,30 @@ function TimeLineEventDialog(props: {
                     </Select>
                 </FormControl>
                 <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
-                    {dates.map((date, index) => {
-                        return (
-                            <DateTimePicker
-                                key={index}
-                                closeOnSelect={false}
-                                label="Termin"
-                                name="date"
-                                slotProps={{
-                                    textField: {
-                                        required: true,
-                                    },
-                                }}
-                            />
-                        );
-                    })}
+                    <div>
+                        {dates.dates.map((date, index) => {
+                            return (
+                                <>
+                                    <DateTimePicker
+                                        key={index}
+                                        closeOnSelect={false}
+                                        label="Termin"
+                                        name="date"
+                                        slotProps={{
+                                            textField: {
+                                                required: true,
+                                            },
+                                        }}
+                                    />
+                                    {dates.number > 1 && <Button>Remove</Button>}
+                                </>
+                            );
+                        })}
+                    </div>
 
                     {/* <TimePicker name="time" /> */}
                 </LocalizationProvider>
+                <Button onClick={handleAddDateClick}>Add</Button>
             </DialogContent>
 
             {timelineEventForm.timelineEventType === "Invites" && (
