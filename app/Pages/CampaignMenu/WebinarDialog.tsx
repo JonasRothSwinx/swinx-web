@@ -16,26 +16,21 @@ import {
     Select,
     TextField,
 } from "@mui/material";
-import { GridColDef } from "@mui/x-data-grid";
-import {
-    createNewInfluencer,
-    parseCampaignFormData,
-    parseCustomerFormData,
-    parseWebinarFormData,
-    updateInfluencer,
-} from "@/app/ServerFunctions/serverActions";
-import { Customer, DialogOptions, DialogProps, Webinar, WebinarCampaign } from "@/app/Definitions/types";
-import { campaignTypes } from "@/amplify/data/types";
-import { DatePicker, DateTimePicker, LocalizationProvider, TimeClock, TimePicker } from "@mui/x-date-pickers";
+import { parseWebinarFormData } from "@/app/ServerFunctions/serverActions";
+import { DialogOptions, DialogProps } from "@/app/Definitions/types";
+import { Webinar, Campaign, Customer } from "@/app/ServerFunctions/databaseTypes";
+import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import "dayjs/locale/de";
 import { useState } from "react";
-import dayjs from "dayjs";
+import dayjs from "@/app/configuredDayJs";
 
 const client = generateClient<Schema>();
 type DialogType = Webinar;
 
-function WebinarDialog(props: { props: DialogProps<WebinarCampaign>; options: DialogOptions<DialogType> }) {
+function WebinarDialog(props: {
+    props: DialogProps<Campaign.Campaign>;
+    options: DialogOptions<DialogType>;
+}) {
     const { onClose, rows, setRows, columns, excludeColumns } = props.props;
     const { open = false, editing, editingData } = props.options;
     const [date, setDate] = useState(dayjs(editingData?.date ?? ""));
@@ -82,8 +77,15 @@ function WebinarDialog(props: { props: DialogProps<WebinarCampaign>; options: Di
                     parseWebinarFormData(formJson);
 
                     const updatedWebinar: Webinar = formJson as Webinar;
-                    updatedWebinar.date = dayjs(updatedWebinar.date, "DD.MM.YYYY HH:MM").toISOString();
-                    const campaign = rows.find((x) => x.webinar.id === updatedWebinar.id);
+                    updatedWebinar.date = dayjs(
+                        updatedWebinar.date,
+                        "DD.MM.YYYY HH:MM",
+                    ).toISOString();
+                    const campaign = rows.find(
+                        (campaign): campaign is Campaign.WebinarCampaign =>
+                            Campaign.isWebinar(campaign) &&
+                            campaign.webinar.id === updatedWebinar.id,
+                    );
                     console.log({ campaign, updatedWebinar });
                     if (campaign) campaign.webinar = updatedWebinar;
                     handleClose();

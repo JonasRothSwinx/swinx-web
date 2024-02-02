@@ -2,40 +2,42 @@ import styles from "./campaignMenu.module.css";
 import { generateClient } from "aws-amplify/api";
 import { Schema } from "@/amplify/data/resource";
 import {
-    Box,
     Button,
     Dialog,
     DialogActions,
     DialogContent,
-    DialogContentText,
     DialogTitle,
-    FormControl,
-    FormHelperText,
-    InputLabel,
-    MenuItem,
-    Select,
     TextField,
 } from "@mui/material";
-import { GridColDef } from "@mui/x-data-grid";
-import {
-    createNewInfluencer,
-    parseCampaignFormData,
-    parseCustomerFormData,
-    updateInfluencer,
-} from "@/app/ServerFunctions/serverActions";
-import { Customer, DialogOptions, DialogProps, WebinarCampaign } from "@/app/Definitions/types";
-import { campaignTypes } from "@/amplify/data/types";
-import { DatePicker, DateTimePicker, LocalizationProvider, TimeClock, TimePicker } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import "dayjs/locale/de";
+import { DialogOptions, DialogProps } from "@/app/Definitions/types";
+import { Campaign, Customer } from "@/app/ServerFunctions/databaseTypes";
+import { ChangeEvent, useEffect, useState } from "react";
+import { updateCustomer } from "@/app/ServerFunctions/serverActions";
 
 const client = generateClient<Schema>();
 type DialogType = Customer;
 
-function CustomerDialog(props: { props: DialogProps<WebinarCampaign>; options: DialogOptions<DialogType> }) {
+const initialData: DialogType = {
+    firstName: "",
+    lastName: "",
+    company: "",
+    email: "",
+};
+
+function CustomerDialog(props: {
+    props: DialogProps<Campaign.Campaign>;
+    options: DialogOptions<DialogType>;
+}) {
     const { onClose, rows, setRows, columns, excludeColumns } = props.props;
     const { open = false, editing, editingData } = props.options;
+    const [customer, setCustomer] = useState(editingData ?? initialData);
+
     // const [isModalOpen, setIsModalOpen] = useState(open);
+    useEffect(() => {
+        return () => {
+            setCustomer(initialData);
+        };
+    }, [open]);
 
     function handleClose() {
         if (onClose) {
@@ -73,14 +75,11 @@ function CustomerDialog(props: { props: DialogProps<WebinarCampaign>; options: D
                 component: "form",
                 onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
                     event.preventDefault();
-                    const formData = new FormData(event.currentTarget);
-                    const formJson = Object.fromEntries((formData as any).entries());
-                    parseCustomerFormData(formJson);
-
-                    const updatedCustomer: Customer = formJson as Customer;
-                    const campaign = rows.find((x) => x.customer.id === updatedCustomer.id);
-                    console.log({ campaign, updatedCustomer });
-                    if (campaign) campaign.customer = updatedCustomer;
+                    if (!customer) return;
+                    updateCustomer(customer);
+                    const campaign = rows.find((x) => x.customer?.id === customer.id);
+                    console.log({ campaign, customer });
+                    if (campaign) campaign.customer = customer;
                     handleClose();
                 },
             }}
@@ -106,7 +105,10 @@ function CustomerDialog(props: { props: DialogProps<WebinarCampaign>; options: D
             <DialogTitle>{"Kunde"}</DialogTitle>
             {/* <button onClick={handleCloseModal}>x</button> */}
 
-            <DialogContent dividers sx={{ "& .MuiFormControl-root:has(#customerEmail)": { flexBasis: "100%" } }}>
+            <DialogContent
+                dividers
+                sx={{ "& .MuiFormControl-root:has(#customerEmail)": { flexBasis: "100%" } }}
+            >
                 <TextField
                     autoFocus
                     id="id"
@@ -125,7 +127,16 @@ function CustomerDialog(props: { props: DialogProps<WebinarCampaign>; options: D
                     className={styles.TextField}
                     label="Vorname"
                     type="text"
-                    defaultValue={editingData?.customerNameFirst}
+                    value={customer?.firstName}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                        setCustomer(
+                            (prev) =>
+                                ({
+                                    ...prev,
+                                    firstName: e.target.value,
+                                } satisfies Customer),
+                        );
+                    }}
                     required
                 />
 
@@ -135,7 +146,16 @@ function CustomerDialog(props: { props: DialogProps<WebinarCampaign>; options: D
                     className={styles.TextField}
                     label="Nachname"
                     type="text"
-                    defaultValue={editingData?.customerNameLast}
+                    value={customer?.lastName}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                        setCustomer(
+                            (prev) =>
+                                ({
+                                    ...prev,
+                                    lastName: e.target.value,
+                                } satisfies Customer),
+                        );
+                    }}
                     required
                 />
                 <TextField
@@ -144,7 +164,16 @@ function CustomerDialog(props: { props: DialogProps<WebinarCampaign>; options: D
                     className={styles.TextField}
                     label="E-Mail"
                     type="email"
-                    defaultValue={editingData?.customerEmail}
+                    value={customer?.email}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                        setCustomer(
+                            (prev) =>
+                                ({
+                                    ...prev,
+                                    email: e.target.value,
+                                } satisfies Customer),
+                        );
+                    }}
                     required
                 />
                 <TextField
@@ -154,7 +183,16 @@ function CustomerDialog(props: { props: DialogProps<WebinarCampaign>; options: D
                     className={styles.TextField}
                     label="Firma"
                     type="text"
-                    defaultValue={editingData?.customerCompany}
+                    value={customer?.company}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                        setCustomer(
+                            (prev) =>
+                                ({
+                                    ...prev,
+                                    company: e.target.value,
+                                } satisfies Customer),
+                        );
+                    }}
                 />
                 <TextField
                     autoFocus
@@ -163,7 +201,16 @@ function CustomerDialog(props: { props: DialogProps<WebinarCampaign>; options: D
                     className={styles.TextField}
                     label="Position in Firma"
                     type="text"
-                    defaultValue={editingData?.customerPosition}
+                    value={customer?.companyPosition}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                        setCustomer(
+                            (prev) =>
+                                ({
+                                    ...prev,
+                                    companyPosition: e.target.value,
+                                } satisfies Customer),
+                        );
+                    }}
                 />
             </DialogContent>
 

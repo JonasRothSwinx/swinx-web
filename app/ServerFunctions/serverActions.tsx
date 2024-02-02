@@ -11,6 +11,7 @@ import dayjs from "dayjs";
 import "dayjs/locale/de";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { SelectionSet } from "aws-amplify/api";
+import { Campaign, Customer, TimelineEvent } from "./databaseTypes";
 dayjs.extend(customParseFormat);
 
 // export default { getUserGroups, getUserAttributes };
@@ -115,75 +116,72 @@ export async function deleteInfluencer(props: {
     console.log({ publicData, errorsPublic });
 }
 
-const selectionSetInfluencer = [
-    "id",
-    "firstName",
-    "lastName",
-    "createdAt",
-    "updatedAt",
-    "details.id",
-    "details.email",
-] as const;
-export type Influencer = SelectionSet<Schema["InfluencerPublic"], typeof selectionSetInfluencer>;
 export async function listInfluencers() {
     const { data } = await client.models.InfluencerPublic.list({
-        selectionSet: selectionSetInfluencer,
+        selectionSet: [
+            "id",
+            "firstName",
+            "lastName",
+            "createdAt",
+            "updatedAt",
+            "details.id",
+            "details.email",
+        ],
     });
     return data;
 }
 //#endregion
 //#region Customer
-interface CustomerNew {
-    customerCompany: string;
-    customerNameFirst: string;
-    customerNameLast: string;
-    customerPosition?: string;
-    customerEmail: string;
+// export async function parseCustomerFormData(formJson: { [key: string]: any }) {
+//     console.log(formJson);
+//     const {
+//         id,
+//         customerCompany,
+//         customerEmail,
+//         customerNameFirst,
+//         customerNameLast,
+//         customerPosition,
+//     } = formJson;
+
+//     if (!(customerNameFirst && customerNameLast && customerCompany && customerEmail))
+//         throw new Error("Missing Data");
+//     const customer: CustomerUpdate = {
+//         id,
+//         customerNameFirst,
+//         customerNameLast,
+//         customerCompany,
+//         customerEmail,
+//         customerPosition,
+//     };
+//     const response = await updateCustomer(customer);
+// }
+
+export async function createCustomer(customer: Customer) {
+    const { company, firstName, lastName, email, companyPosition, notes } = customer;
+    const { data, errors } = await client.models.Customer.create({
+        company,
+        firstName,
+        lastName,
+        email,
+        companyPosition,
+        notes,
+    });
+    return { data, errors };
 }
-interface CustomerUpdate {
-    id: string;
-    customerCompany?: string;
-    customerNameFirst?: string;
-    customerNameLast?: string;
-    customerPosition?: string;
-    customerEmail?: string;
-}
-export async function parseCustomerFormData(formJson: { [key: string]: any }) {
-    console.log(formJson);
-    const {
+
+export async function updateCustomer(customer: Customer) {
+    const { id, company, firstName, lastName, email, companyPosition, notes } = customer;
+    if (!id) throw new Error("Missing Data");
+    const { data, errors } = await client.models.Customer.update({
         id,
-        customerCompany,
-        customerEmail,
-        customerNameFirst,
-        customerNameLast,
-        customerPosition,
-    } = formJson;
-
-    if (!(customerNameFirst && customerNameLast && customerCompany && customerEmail))
-        throw new Error("Missing Data");
-    const customer: CustomerUpdate = {
-        id,
-        customerNameFirst,
-        customerNameLast,
-        customerCompany,
-        customerEmail,
-        customerPosition,
-    };
-    const response = await updateCustomer(customer);
-}
-
-export async function createCustomer(props: CustomerNew) {
-    const customer = props;
-    const { data, errors } = await client.models.Customer.create(customer);
-    if (errors) throw new Error(errors.map((x) => x.message).join(";\n"));
-    return data;
-}
-
-export async function updateCustomer(props: CustomerUpdate) {
-    const customer = props;
-    const { data, errors } = await client.models.Customer.update(customer);
-    if (errors) throw new Error(errors.map((x) => x.message).join(";\n"));
-    return data;
+        company,
+        firstName,
+        lastName,
+        email,
+        companyPosition,
+        notes,
+    });
+    return { data, errors };
 }
 
 //#endregion
@@ -229,56 +227,115 @@ export async function updateWebinar(props: WebinarUpdate) {
 
 //#endregion
 //#region Campaign
-interface CampaignDataNew {
-    campaignType: string;
-    customer: CustomerNew;
-    webinarDetails?: WebinarNew;
+
+// export async function parseCampaignFormData(formJson: { [key: string]: any }) {
+//     console.log(formJson);
+//     const {
+//         campaignType,
+//         webinarTitle,
+//         webinarDate,
+//         customerCompany,
+//         customerEmail,
+//         customerNameFirst,
+//         customerNameLast,
+//         customerPosition,
+//     } = formJson;
+//     if (!campaignTypes.includes(campaignType)) throw new Error("InvalidCampaignType");
+
+//     const date = dayjs(webinarDate, "DD.MM.YYYY HH:MM");
+//     console.log({ date });
+//     if (!(webinarTitle && date)) throw new Error("Missing Data");
+//     const webinar: WebinarNew = { title: webinarTitle, date: date.toISOString() };
+
+//     if (!(customerNameFirst && customerNameLast && customerCompany && customerEmail))
+//         throw new Error("Missing Data");
+//     const customer: CustomerNew = {
+//         customerCompany,
+//         customerEmail,
+//         customerNameFirst,
+//         customerNameLast,
+//         customerPosition,
+//     };
+//     const campaign: CampaignDataNew = { campaignType, customer, webinarDetails: webinar };
+//     const response = await createNewCampaign(campaign);
+// }
+
+export async function createNewCampaign(campaign: Campaign.Campaign) {
+    const { campaignType, campaignManagerId, customer, campaignStep, notes } = campaign;
+    // if (!customer) throw new Error("Missing Data");
+
+    const customerResponse = createCustomer(customer);
+
+    switch (true) {
+        case Campaign.isWebinar(campaign):
+            const webinarData = createWebinar(campaign.webinar);
+            const { data, errors } = await client.models.Campaign.create({
+                campaignType,
+                campaignManagerId,
+                customer: (await customerResponse).data,
+                webinar: await webinarData,
+                campaignStep: campaignSteps[0],
+                notes,
+            });
+            return { errors };
+
+        default:
+            break;
+    }
+    // const campaignNew = await client.models.Campaign.create({
+    //     campaignType,
+    //     customer: customerData,
+    //     webinar: webinarData,
+    //     campaignStep: campaignSteps[0],
+    // });
+    // console.log(campaignNew);
 }
+export async function listCampaigns() {
+    const { data, errors } = await client.models.Campaign.list({
+        selectionSet: [
+            //
+            "id",
+            "campaignType",
+            "campaignManagerId",
+            "campaignStep",
+            "notes",
 
-export async function parseCampaignFormData(formJson: { [key: string]: any }) {
-    console.log(formJson);
-    const {
-        campaignType,
-        webinarTitle,
-        webinarDate,
-        customerCompany,
-        customerEmail,
-        customerNameFirst,
-        customerNameLast,
-        customerPosition,
-    } = formJson;
-    if (!campaignTypes.includes(campaignType)) throw new Error("InvalidCampaignType");
+            "customer.id",
+            "customer.firstName",
+            "customer.lastName",
+            "customer.email",
+            "customer.company",
+            "customer.companyPosition",
 
-    const date = dayjs(webinarDate, "DD.MM.YYYY HH:MM");
-    console.log({ date });
-    if (!(webinarTitle && date)) throw new Error("Missing Data");
-    const webinar: WebinarNew = { title: webinarTitle, date: date.toISOString() };
+            "campaignTimelineEvents.influencer.id",
+            "campaignTimelineEvents.influencer.firstName",
+            "campaignTimelineEvents.influencer.lastName",
+            "campaignTimelineEvents.id",
+            "campaignTimelineEvents.date",
+            "campaignTimelineEvents.campaign.id",
+            "campaignTimelineEvents.timelineEventType",
+            "campaignTimelineEvents.notes",
+            "campaignTimelineEvents.inviteEvent.*",
 
-    if (!(customerNameFirst && customerNameLast && customerCompany && customerEmail))
-        throw new Error("Missing Data");
-    const customer: CustomerNew = {
-        customerCompany,
-        customerEmail,
-        customerNameFirst,
-        customerNameLast,
-        customerPosition,
-    };
-    const campaign: CampaignDataNew = { campaignType, customer, webinarDetails: webinar };
-    const response = await createNewCampaign(campaign);
-}
-
-export async function createNewCampaign(props: CampaignDataNew) {
-    const { customer, webinarDetails, campaignType } = props;
-    const customerData = await createCustomer(customer);
-
-    const webinarData = webinarDetails ? await createWebinar(webinarDetails) : undefined;
-    const campaignNew = await client.models.Campaign.create({
-        campaignType,
-        customer: customerData,
-        webinarDetails: webinarData,
-        campaignStep: campaignSteps[0],
+            "webinar.id",
+            "webinar.title",
+            "webinar.date",
+        ],
     });
-    console.log(campaignNew);
+
+    data.map((raw) => {
+        return {
+            id: raw.id,
+            campaignType: raw.campaignType,
+            campaignManagerId: raw.campaignManagerId,
+            customer: raw.customer,
+            campaignTimelineEvents: raw.campaignTimelineEvents,
+            campaignStep: raw.campaignStep,
+            notes: raw.notes,
+        } satisfies Campaign.Campaign;
+    });
+
+    return { data, errors };
 }
 //#endregion
 //#region InfluencerAssignments
@@ -286,48 +343,71 @@ export interface InfluencerAssignment {}
 // export async function createInfluencerAssignment(params: type) {}
 //#endregion
 //#region TimelineEvent
-const selectionSetTimelineEvent = [
-    "id",
+// const selectionSetTimelineEvent = [
+//     "id",
 
-    "timelineEventInfluencerId",
-    "timelineEventType",
+//     "timelineEventInfluencerId",
+//     "timelineEventType",
 
-    "inviteEvent.id",
-    "inviteEvent.invites",
+//     "inviteEvent.id",
+//     "inviteEvent.invites",
 
-    "createdAt",
-    "updatedAt",
-] as const;
-export type TimelineEvent = SelectionSet<Schema["TimelineEvent"], typeof selectionSetTimelineEvent>;
+//     "createdAt",
+//     "updatedAt",
+// ] as const;
 
 export async function listTimelineEvents() {
     const { data, errors } = await client.models.TimelineEvent.list({
-        selectionSet: selectionSetTimelineEvent,
+        selectionSet: [
+            "id",
+            "timelineEventType",
+            "timelineEventInfluencerId",
+
+            "campaign.id",
+
+            "inviteEvent.id",
+            "inviteEvent.invites",
+
+            "createdAt",
+            "updatedAt",
+        ],
     });
     return data;
 }
+export async function createTimelineEvent(props: TimelineEvent.TimelineEvent) {
+    const { timelineEventType, date, notes } = props;
+    const { id: campaignCampaignTimelineEventsId } = props.campaign;
+    const { id: timelineEventInfluencerId } = props.influencer;
+    const { inviteEvent = undefined } = props as TimelineEvent.TimeLineEventInvites;
 
-interface TimelineEventNew {
-    type: string;
-    date: string;
-    influencerId?: string;
-    notes?: string;
-}
-interface InviteEvent {
-    id?: string;
-    invites: number;
-}
-export async function createTimelineEvent(props: TimelineEventNew) {
-    const { type, date, influencerId, notes } = props;
-    if (!(type && date)) {
-        return;
+    if (!(timelineEventInfluencerId && date && campaignCampaignTimelineEventsId)) {
+        throw new Error("Missing Data");
     }
+    const { data: inviteEventData, errors: inviteEventErrors } = await createInviteEvent(
+        inviteEvent,
+    );
+
     const { data, errors } = await client.models.TimelineEvent.create({
-        timelineEventType: type,
+        timelineEventType,
         date,
-        timelineEventInfluencerId: influencerId,
+        campaignCampaignTimelineEventsId,
+        inviteEvent: inviteEventData,
+        timelineEventInfluencerId,
         notes,
     });
+
+    return { errors };
+}
+async function createInviteEvent(props: TimelineEvent.InviteEvent | undefined) {
+    if (props === undefined) return { data: undefined, errors: undefined };
+    const { invites } = props;
+    if (!invites) {
+        throw new Error("Missing Data");
+    }
+    const { data, errors } = await client.models.InvitesEvent.create({
+        invites,
+    });
+    return { data, errors };
 }
 
 //#endregion

@@ -12,15 +12,12 @@ import {
     TextField,
 } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import {
-    Influencer,
-    createNewInfluencer,
-    updateInfluencer,
-} from "@/app/ServerFunctions/serverActions";
+import { createNewInfluencer, updateInfluencer } from "@/app/ServerFunctions/serverActions";
+import { Influencer } from "@/app/ServerFunctions/databaseTypes";
 import { DialogOptions, DialogProps } from "@/app/Definitions/types";
 
 const client = generateClient<Schema>();
-type DialogType = Influencer;
+type DialogType = Influencer.InfluencerFull;
 
 function InfluencerDialog(props: DialogProps<DialogType> & DialogOptions<DialogType>) {
     const {
@@ -77,7 +74,7 @@ function InfluencerDialog(props: DialogProps<DialogType> & DialogOptions<DialogT
                     const { id, firstName, lastName, email } = formJson;
                     let updatedRows = [...rows];
                     if (editing && editingData) {
-                        const updatedInfluencer: Influencer = {
+                        const updatedInfluencer: Influencer.InfluencerFull = {
                             ...editingData,
                             firstName,
                             lastName,
@@ -98,7 +95,7 @@ function InfluencerDialog(props: DialogProps<DialogType> & DialogOptions<DialogT
                             },
                         });
                     } else {
-                        const newInfluencer: Influencer = {
+                        const newInfluencer: Influencer.InfluencerFull = {
                             id: "new",
                             firstName,
                             lastName,

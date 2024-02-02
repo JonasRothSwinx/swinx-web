@@ -30,13 +30,13 @@ import {
     Close as CancelIcon,
 } from "@mui/icons-material";
 import {
-    Influencer,
     createNewInfluencer,
     deleteInfluencer,
     getUserGroups,
     listInfluencers,
     updateInfluencer,
 } from "@/app/ServerFunctions/serverActions";
+import { Influencer } from "@/app/ServerFunctions/databaseTypes";
 import InfluencerDialog from "./InfluencerDialog";
 
 import { deDE } from "@mui/x-data-grid";
@@ -49,7 +49,7 @@ const client = generateClient<Schema>();
 const theme = createTheme({}, { deDE, pickersDeDE, coreDeDE });
 
 interface EditToolbarProps {
-    setDialogOptions: (props: DialogOptions<Influencer>) => any;
+    setDialogOptions: (props: DialogOptions<Influencer.Influencer>) => any;
 }
 function InitInfluencer(props: { id: string }) {
     const { id } = props;
@@ -79,7 +79,7 @@ const selectionSet = ["id", "details.id", "details.email"] as const;
 
 function InfluencerList(props: {}) {
     // const [details, setDetails] = useState<Schema["InfluencerPrivate"][]>([]);
-    const [rows, setRows] = useState<Influencer[]>();
+    const [rows, setRows] = useState<Influencer.InfluencerFull[]>();
     const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
 
     const columns: GridColDef[] = [
@@ -159,11 +159,11 @@ function InfluencerList(props: {}) {
             },
         },
     ];
-    const [dialogOtions, setDialogOptions] = useState<DialogOptions<Influencer>>({
+    const [dialogOtions, setDialogOptions] = useState<DialogOptions<Influencer.InfluencerFull>>({
         open: false,
     });
 
-    const [dialogProps, setDialogProps] = useState<DialogProps<Influencer>>({
+    const [dialogProps, setDialogProps] = useState<DialogProps<Influencer.InfluencerFull>>({
         rows: rows ?? [],
         setRows,
         onClose: () => {

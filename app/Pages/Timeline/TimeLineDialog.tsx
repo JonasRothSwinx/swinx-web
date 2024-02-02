@@ -21,25 +21,17 @@ import {
     TextField,
 } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
+import { Influencer, TimelineEvent } from "@/app/ServerFunctions/databaseTypes";
+import { createTimelineEvent, listTimelineEvents } from "@/app/ServerFunctions/serverActions";
+import { DialogOptions, DialogProps } from "@/app/Definitions/types";
+import { Webinar, Campaign } from "@/app/ServerFunctions/databaseTypes";
+
 import {
-    Influencer,
-    TimelineEvent,
-    createNewInfluencer,
-    parseCampaignFormData,
-    parseCustomerFormData,
-    parseWebinarFormData,
-    updateInfluencer,
-} from "@/app/ServerFunctions/serverActions";
-import {
-    Customer,
-    DialogOptions,
-    DialogProps,
-    InviteEvent,
-    // Influencer,
-    Webinar,
-    WebinarCampaign,
-} from "@/app/Definitions/types";
-import { campaignTypes, influencerAssignments, timelineEventTypes } from "@/amplify/data/types";
+    campaignTypes,
+    influencerAssignments,
+    timelineEventTypes,
+    timelineEventTypesType,
+} from "@/amplify/data/types";
 import {
     DatePicker,
     DateTimePicker,
@@ -50,7 +42,7 @@ import {
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import "dayjs/locale/de";
 import { ChangeEvent, MouseEvent, MouseEventHandler, useState } from "react";
-import dayjs, { Dayjs } from "dayjs";
+import dayjs, { Dayjs } from "@/app/configuredDayJs";
 import {
     Add as AddIcon,
     Edit as EditIcon,
@@ -60,30 +52,28 @@ import {
 } from "@mui/icons-material";
 import { CustomIconButton } from "@/app/Components/IconButton";
 
-type DialogType = Partial<TimelineEvent>;
+type DialogType = TimelineEvent.TimelineEvent;
 const initEvent: DialogType = {
-    timelineEventType: "",
-    id: "",
-    timelineEventInfluencerId: "",
-    createdAt: "",
-    updatedAt: "",
+    timelineEventType: "Generic",
+    influencer: { id: "", firstName: "", lastName: "" },
+    campaign: { id: "" },
 };
 function TimeLineEventDialog(props: {
-    props: DialogProps<WebinarCampaign>;
+    props: DialogProps<Campaign.Campaign>;
     options: DialogOptions<DialogType>;
-    influencers: Influencer[];
+    influencers: Influencer.Influencer[];
 }) {
     const { influencers } = props;
     const { onClose, rows, setRows, columns, excludeColumns } = props.props;
-    const { open = false, editing, editingData } = props.options;
-    const [timelineEvent, setTimelineEvent] = useState<Partial<TimelineEvent>>(
-        editingData ?? initEvent,
+    const { open = false, editing, editingData, campaignId = "" } = props.options;
+    const [timelineEvent, setTimelineEvent] = useState<DialogType>(
+        editingData ?? { ...initEvent, campaign: { id: campaignId } },
     );
     const [dates, setDates] = useState<{ number: number; dates: (Dayjs | null)[] }>({
         number: 1,
         dates: [null],
     });
-    const [inviteEvent, setInviteEvent] = useState<InviteEvent>();
+    // const [inviteEvent, setInviteEvent] = useState<InviteEvent>();
 
     // const [isModalOpen, setIsModalOpen] = useState(open);
 
@@ -93,13 +83,10 @@ function TimeLineEventDialog(props: {
         }
         // setIsModalOpen(false);
     }
-    function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         console.log(timelineEvent);
-        return;
-        const formData = new FormData(event.currentTarget);
-        const formJson = Object.fromEntries((formData as any).entries());
-        const { id, influencer: influencerId, assignmentType } = formJson;
+
         if (editing) {
             // const updatedWebinar: Webinar = formJson as Webinar;
             // updatedWebinar.date = dayjs(
@@ -111,17 +98,17 @@ function TimeLineEventDialog(props: {
             // if (campaign) campaign.webinar = updatedWebinar;
             // parseWebinarFormData(formJson);
         } else {
-            // const influencer = influencers.find((x) => x.id === influencerId);
-            // if (!influencer) throw new Error("");
-            // const assignment: InfluencerAssignment = {
-            //     assignmentType,
-            //     influencer: async (props) => {
-            //         return { data: influencer };
-            //     },
-            // } as InfluencerAssignment;
+            const events = dates.dates.map((date) => {
+                if (date === null) return;
+                return { ...timelineEvent, date: date.toISOString() } satisfies DialogType;
+            });
+            const res = await Promise.all(events.map((x) => x && createTimelineEvent(x)));
+            console.log(res);
+            const dbEvents = await listTimelineEvents();
+            console.log(dbEvents);
         }
 
-        handleClose();
+        // handleClose();
     }
     function handleAddDateClick() {
         setDates((prev) => {
@@ -129,14 +116,47 @@ function TimeLineEventDialog(props: {
         });
     }
     function handleTypeChange(e: SelectChangeEvent) {
-        const value = e.target.value;
-        setTimelineEvent(
-            (prev) =>
-                ({
-                    ...prev,
-                    timelineEventType: value,
-                } satisfies Partial<TimelineEvent>),
-        );
+        const value = e.target.value as timelineEventTypesType;
+        switch (value) {
+            case "Invites":
+                setTimelineEvent(
+                    (prev) =>
+                        ({
+                            ...prev,
+                            timelineEventType: value,
+
+                            inviteEvent: { invites: 1000 },
+                        } satisfies TimelineEvent.TimeLineEventInvites),
+                );
+                break;
+            case "Video":
+                setTimelineEvent(
+                    (prev) =>
+                        ({
+                            ...prev,
+                            timelineEventType: value,
+                        } satisfies TimelineEvent.TimeLineEventVideo),
+                );
+                break;
+            case "Post":
+                setTimelineEvent(
+                    (prev) =>
+                        ({
+                            ...prev,
+                            timelineEventType: value,
+                        } satisfies TimelineEvent.TimeLineEventPost),
+                );
+                break;
+            default:
+                setTimelineEvent(
+                    (prev) =>
+                        ({
+                            ...prev,
+                            timelineEventType: value,
+                        } satisfies TimelineEvent.TimeLineEventGeneric),
+                );
+                break;
+        }
     }
     function handleInfluencerChange(e: SelectChangeEvent) {
         const value = e.target.value;
@@ -144,8 +164,8 @@ function TimeLineEventDialog(props: {
             (prev) =>
                 ({
                     ...prev,
-                    timelineEventInfluencerId: value,
-                } satisfies Partial<TimelineEvent>),
+                    influencer: { ...prev.influencer, id: value },
+                } satisfies TimelineEvent.TimelineEvent),
         );
     }
     function handleRemoveDateClick(i: number) {
@@ -248,14 +268,15 @@ function TimeLineEventDialog(props: {
                         labelId="influencerSelect"
                         label="Influencer"
                         size="medium"
-                        value={timelineEvent.timelineEventInfluencerId}
+                        value={timelineEvent.influencer.id}
                         onChange={handleInfluencerChange}
                         required
                     >
-                        {influencers.map((x, i) => {
+                        {influencers.map((influencer, i) => {
+                            if (!Influencer.isInfluencerFull(influencer)) return;
                             return (
-                                <MenuItem key={`influencer${x.id}`} value={x.id}>
-                                    {`${x.firstName} ${x.lastName}`}
+                                <MenuItem key={`influencer${influencer.id}`} value={influencer.id}>
+                                    {`${influencer.firstName} ${influencer.lastName}`}
                                 </MenuItem>
                             );
                         })}
@@ -311,7 +332,7 @@ function TimeLineEventDialog(props: {
                     {/* <TimePicker name="time" /> */}
                 </LocalizationProvider>
             </DialogContent>
-            {timelineEvent.timelineEventType === "Invites" && (
+            {TimelineEvent.isInviteEvent(timelineEvent) && (
                 <>
                     <DialogContent
                         dividers
@@ -322,16 +343,18 @@ function TimeLineEventDialog(props: {
                             id="invites"
                             name="invites"
                             label="Anzahl Invites"
-                            value={inviteEvent?.invites ?? 1000}
+                            value={timelineEvent.inviteEvent?.invites}
                             onChange={(e: ChangeEvent<HTMLInputElement>) => {
                                 const value: number = parseInt(e.target.value);
                                 // console.log(value);
-                                setInviteEvent((prev) => {
-                                    const newValue = prev
-                                        ? { ...prev, invites: value }
-                                        : { invites: value };
-                                    // console.log({ prev, newValue });
-                                    return newValue;
+                                setTimelineEvent((prev) => {
+                                    if (!TimelineEvent.isInviteEvent(prev)) return prev;
+                                    const newVal = {
+                                        ...prev,
+                                        inviteEvent: { ...prev.inviteEvent, invites: value },
+                                    } satisfies TimelineEvent.TimelineEvent;
+                                    console.log({ prev, newVal });
+                                    return newVal;
                                 });
                             }}
                             required

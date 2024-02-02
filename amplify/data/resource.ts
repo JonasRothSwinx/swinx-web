@@ -45,9 +45,9 @@ const schema = a.schema({
             campaignManagerId: a.string(),
             campaignType: a.string().required(),
             customer: a.hasOne("Customer"),
-            webinarDetails: a.hasOne("Webinar"),
+            webinar: a.hasOne("Webinar"),
             campaignTimelineEvents: a.hasMany("TimelineEvent"),
-            campaignStep: a.string(),
+            campaignStep: a.string().required().default(campaignSteps[0]),
             notes: a.string(),
         })
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
@@ -62,21 +62,22 @@ const schema = a.schema({
 
     Customer: a
         .model({
-            customerCompany: a.string().required(),
-            customerNameFirst: a.string().required(),
-            customerNameLast: a.string().required(),
-            customerPosition: a.string(),
-            customerEmail: a.email().required(),
+            company: a.string().required(),
+            firstName: a.string().required(),
+            lastName: a.string().required(),
+            companyPosition: a.string(),
+            email: a.email().required(),
             notes: a.string(),
         })
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
 
     TimelineEvent: a
         .model({
+            campaign: a.belongsTo("Campaign"),
             timelineEventType: a.string().required(),
             influencer: a.hasOne("InfluencerPublic").required(),
             inviteEvent: a.hasOne("InvitesEvent"),
-            date: a.date().required(),
+            date: a.datetime().required(),
             notes: a.string(),
         })
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),

@@ -21,9 +21,10 @@ import {
     GridPreProcessEditCellProps,
     GridCell,
     GridToolbar,
+    GridCellParams,
 } from "@mui/x-data-grid";
 import { randomId } from "@mui/x-data-grid-generator";
-import { Button, TextField, Typography } from "@mui/material";
+import { Button, MenuItem, Select, TextField, Typography } from "@mui/material";
 import {
     Add as AddIcon,
     Edit as EditIcon,
@@ -37,20 +38,23 @@ import {
     deleteInfluencer,
     getUserGroups,
     updateInfluencer,
-    Influencer,
+    listCampaigns,
 } from "@/app/ServerFunctions/serverActions";
+import { Influencer } from "@/app/ServerFunctions/databaseTypes";
 import CampaignDialog from "./CampaignDialog";
-import { Customer, DialogOptions, DialogProps, WebinarCampaign } from "@/app/Definitions/types";
+import { DialogOptions, DialogProps } from "@/app/Definitions/types";
+import { Campaign, Customer } from "@/app/ServerFunctions/databaseTypes";
 import { deDE } from "@mui/x-data-grid";
 import styles from "./campaignMenu.module.css";
 import CustomerDialog from "./CustomerDialog";
 import WebinarDialog from "./WebinarDialog";
 // import InfluencerAssignmentDialog from "./InfluencerAssignmentDialog";
 import TimeLineEventDialog from "../Timeline/TimeLineDialog";
+import TimelineView, { groupBy } from "../Timeline/TimeLineView";
 
 const client = generateClient<Schema>();
 
-type DialogType = WebinarCampaign;
+type DialogType = Campaign.Campaign;
 
 interface EditToolbarProps {
     setDialogOptions: (props: DialogOptions<DialogType>) => any;
@@ -78,11 +82,10 @@ function EditToolbar(props: EditToolbarProps) {
 }
 
 function WebinarList(props: {}) {
-    const [influencers, setInfluencers] = useState<Influencer[]>([]);
+    const [influencers, setInfluencers] = useState<Influencer.InfluencerWithName[]>([]);
     // const [details, setDetails] = useState<Schema["InfluencerPrivate"][]>([]);
-    const [rows, setRows] = useState<DialogType[]>();
+    const [campaigns, setCampaigns] = useState<Campaign.Campaign[]>();
     const [dialog, setDialog] = useState(Dialogs.campaign);
-    const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
 
     const columns: GridColDef[] = [
         {
@@ -101,19 +104,19 @@ function WebinarList(props: {}) {
             type: "string",
             valueGetter(params) {
                 // console.log(params);
-                const customer: Schema["Customer"] = params.row.customer;
-                return `${customer.customerNameFirst} ${customer.customerNameLast}`;
+                const customer: Customer = params.row.customer;
+                return `${customer.firstName} ${customer.lastName}`;
             },
             renderCell(params) {
                 const customer: Customer = params.row.customer;
                 return [
                     <div key={params.id} className={styles.cellActionSplit}>
                         <div>
-                            <Typography>{customer.customerCompany}</Typography>
+                            <Typography>{customer.company}</Typography>
                             <br />
                             <Typography>{params.value}</Typography>
-                            {customer.customerPosition ? (
-                                <Typography>({customer.customerPosition})</Typography>
+                            {customer.companyPosition ? (
+                                <Typography>({customer.companyPosition})</Typography>
                             ) : (
                                 <></>
                             )}
@@ -137,7 +140,7 @@ function WebinarList(props: {}) {
             headerAlign: "center",
             type: "dateTime",
             width: 200,
-            valueGetter: ({ row }: { row: WebinarCampaign }) => {
+            valueGetter: ({ row }: { row: Campaign.WebinarCampaign }) => {
                 const date = new Date(row.webinar.date);
                 return date;
             },
@@ -171,7 +174,7 @@ function WebinarList(props: {}) {
             headerAlign: "center",
             align: "center",
             type: "string",
-            renderCell({ id, row }: { id: GridRowId; row: WebinarCampaign }) {
+            renderCell({ id, row }: { id: GridRowId; row: Campaign.WebinarCampaign }) {
                 return [
                     <div key={id} className={styles.cellActionSplit}>
                         <div>
@@ -199,17 +202,24 @@ function WebinarList(props: {}) {
 
             headerAlign: "center",
             align: "center",
-            // renderEditCell: (params: GridRenderEditCellParams) => (
-            //     <TextField
-            //         id="email"
-            //         name="email"
-            //         // className={styles.TextField}
-            //         // label="E-Mail"
-            //         type="email"
-            //         defaultValue={params.value}
-            //         required
-            //     />
-            // ),
+            renderCell: (params: GridCellParams) => {
+                const [groupBy, setGroupBy] = useState<groupBy>("day");
+                const row: Campaign.Campaign = params.row;
+                return (
+                    <div style={{ display: "flex", flexDirection: "column", flexBasis: "100%" }}>
+                        <Select
+                            value={groupBy}
+                            onChange={(e) => {
+                                setGroupBy(e.target.value as groupBy);
+                            }}
+                        >
+                            <MenuItem value={"day"}>Tag</MenuItem>
+                            <MenuItem value={"week"}>Woche</MenuItem>
+                        </Select>
+                        <TimelineView groupBy={groupBy} events={row.campaignTimelineEvents} />;
+                    </div>
+                );
+            },
         },
         // {
         //     field: "actions",
@@ -240,8 +250,8 @@ function WebinarList(props: {}) {
     });
 
     const [dialogProps, setDialogProps] = useState<DialogProps<DialogType>>({
-        rows: rows ?? [],
-        setRows,
+        rows: campaigns ?? [],
+        setRows: setCampaigns,
         onClose: () => setDialogOptions({ open: false }),
         columns,
         excludeColumns: ["id"],
@@ -254,51 +264,54 @@ function WebinarList(props: {}) {
     useEffect(() => {
         listInfluencers().then((items) => setInfluencers(items));
         return () => {};
-    }, [client, rows]);
+    }, [client, campaigns]);
     useEffect(() => {
-        console.log("subscribing to campaign updates");
-        let sub: Subscription;
-        try {
-            if (authStatus !== "authenticated") return;
-            sub = client.models.Campaign.observeQuery().subscribe(
-                async ({ items }: { items: Schema["Campaign"][] }) => {
-                    console.log(items);
-                    const campaigns = await Promise.all(
-                        items.map(async (campaign: Schema["Campaign"]) => {
-                            const { data: webinar } = await campaign.webinarDetails();
-                            const { data: customer } = await campaign.customer();
-                            const { data: timelineEvents = [] } =
-                                await campaign.campaignTimelineEvents();
-                            if (!(webinar && customer)) throw new Error("");
+        listCampaigns().then(({ data }) => {
+            console.log(data);
+            setCampaigns(data);
+        });
+        // let sub: Subscription;
+        // try {
+        //     if (authStatus !== "authenticated") return;
+        //     sub = client.models.Campaign.observeQuery().subscribe(
+        //         async ({ items }: { items: Schema["Campaign"][] }) => {
+        //             console.log(items);
+        //             const campaigns = await Promise.all(
+        //                 items.map(async (campaign: Schema["Campaign"]) => {
+        //                     const { data: webinar } = await campaign.webinarDetails();
+        //                     const { data: customer } = await campaign.customer();
+        //                     const { data: timelineEvents = [] } =
+        //                         await campaign.campaignTimelineEvents();
+        //                     // console.log(timelineEvents);
+        //                     if (!(webinar && customer)) throw new Error("");
+        //                     return {
+        //                         id: campaign.id,
+        //                         campaign,
+        //                         webinar,
+        //                         customer,
+        //                         timelineEvents,
+        //                     } satisfies WebinarCampaign;
+        //                 }),
+        //             );
+        //             console.log({ campaigns });
+        //             // console.log(details);
+        //             setCampaigns([...campaigns]);
+        //         },
+        //     );
+        //     console.log(sub);
+        // } catch (error) {
+        //     console.log("error", error);
+        // }
 
-                            return {
-                                id: campaign.id,
-                                campaign,
-                                webinar,
-                                customer,
-                                timelineEvents: [],
-                            } satisfies WebinarCampaign;
-                        }),
-                    );
-                    console.log({ campaigns });
-                    // console.log(details);
-                    setRows([...campaigns]);
-                },
-            );
-            console.log(sub);
-        } catch (error) {
-            console.log("error", error);
-        }
-
-        return () => sub?.unsubscribe();
+        return () => {};
     }, [client]);
     useEffect(() => {
         // const dialogPropsNew = { ...dialogProps };
         // dialogPropsNew.rows = rows ?? [];
-        setDialogProps((prev) => ({ ...prev, rows: rows ?? [] }));
+        setDialogProps((prev) => ({ ...prev, rows: campaigns ?? [] }));
 
         return () => {};
-    }, [rows]);
+    }, [campaigns]);
 
     // useEffect(() => {
     //     getUserGroups().then((result) => setGroups(result));
@@ -306,7 +319,7 @@ function WebinarList(props: {}) {
     // }, [user]);
     function handleEditClick(id: GridRowId, dialogType: Dialogs) {
         return () => {
-            const editingData = rows?.find((x) => x.campaign.id === id);
+            const editingData = campaigns?.find((campaign) => campaign.id === id);
             if (!editingData) return;
             setDialog(dialogType);
             setDialogOptions({ open: true, editing: true, editingData });
@@ -315,7 +328,7 @@ function WebinarList(props: {}) {
     }
     function handleEditClickCustomer(id: GridRowId) {
         return () => {
-            const editingData = rows?.find((x) => x.campaign.id === id)?.customer;
+            const editingData = campaigns?.find((campaign) => campaign.id === id)?.customer;
             if (!editingData) return;
             setDialog(Dialogs.customer);
             setDialogOptions({ open: true, editing: true, editingData });
@@ -323,27 +336,27 @@ function WebinarList(props: {}) {
     }
     function handleEditClickWebinar(id: GridRowId) {
         return () => {
-            const editingData = rows?.find((x) => x.campaign.id === id)?.webinar;
-            if (!editingData) return;
-            setDialog(Dialogs.webinar);
-            setDialogOptions({ open: true, editing: true, editingData });
+            const campaign = campaigns?.find((campaign) => campaign.id === id);
+            if (!(campaign && Campaign.isWebinar(campaign))) return;
+            const webinar = campaign.webinar;
+            setDialogOptions({ open: true, editing: true, editingData: webinar });
         };
     }
 
     function handleAddClickInfluencer(id: GridRowId) {
         return () => {
-            const editingData = rows?.find((x) => x.campaign.id === id)?.webinar;
-            if (!editingData) return;
+            const campaign = campaigns?.find((campaign) => campaign.id === id);
+            if (!campaign) return;
             setDialog(Dialogs.influencer);
-            setDialogOptions({ open: true });
+            setDialogOptions({ open: true, campaignId: campaign.id });
         };
     }
     function handleEditClickInfluencer(id: GridRowId) {
         return () => {
-            const editingData = rows?.find((x) => x.campaign.id === id)?.webinar;
-            if (!editingData) return;
-            setDialog(Dialogs.influencer);
-            setDialogOptions({ open: true, editing: true, editingData });
+            // const campaign = campaigns?.find((campaign) => campaign.id === id);
+            // if (!campaign) return;
+            // setDialog(Dialogs.influencer);
+            // setDialogOptions({ open: true, editing: true, editingData });
         };
     }
 
@@ -382,7 +395,8 @@ function WebinarList(props: {}) {
             )}
             <DataGrid
                 localeText={deDE.components.MuiDataGrid.defaultProps.localeText}
-                rows={rows ?? []}
+                disableRowSelectionOnClick
+                rows={campaigns ?? []}
                 columns={columns}
                 initialState={{ columns: { columnVisibilityModel: { id: false } } }}
                 getRowHeight={() => "auto"}
