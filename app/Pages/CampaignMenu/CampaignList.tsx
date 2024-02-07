@@ -1,18 +1,17 @@
 import { Schema } from "@/amplify/data/resource";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import { generateClient } from "aws-amplify/api";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
     DataGrid,
     GridColDef,
     GridRowId,
     GridToolbarContainer,
-    GridActionsCellItem,
     GridToolbar,
     GridCellParams,
     GridColumnHeaderParams,
 } from "@mui/x-data-grid";
-import { Button, IconButton, MenuItem, Select, TextField, Typography } from "@mui/material";
+import { Button, IconButton, MenuItem, TextField, Typography } from "@mui/material";
 import {
     Add as AddIcon,
     Edit as EditIcon,
@@ -21,15 +20,19 @@ import {
     Close as CancelIcon,
     Visibility as VisibilityIcon,
 } from "@mui/icons-material";
-import { listInfluencers, listCampaigns } from "@/app/ServerFunctions/serverActions";
-import { Influencer } from "@/app/ServerFunctions/databaseTypes";
-import CampaignDialog from "./CampaignDialog";
-import { DialogOptions, DialogProps } from "@/app/Definitions/types";
+import {
+    listInfluencers,
+    listCampaigns,
+    deleteCampaign,
+} from "@/app/ServerFunctions/serverActions";
+import { Influencer, TimelineEvent, Webinar } from "@/app/ServerFunctions/databaseTypes";
+import CampaignDialog from "../Dialogs/CampaignDialog";
+import { DialogOptions, DialogConfig } from "@/app/Definitions/types";
 import { Campaign, Customer } from "@/app/ServerFunctions/databaseTypes";
 import { deDE } from "@mui/x-data-grid";
-import CustomerDialog from "./CustomerDialog";
-import WebinarDialog from "./WebinarDialog";
-import TimeLineEventDialog from "../Timeline/TimeLineDialog";
+import CustomerDialog from "../Dialogs/CustomerDialog";
+import WebinarDialog from "../Dialogs/WebinarDialog";
+import TimeLineEventDialog from "../Dialogs/TimelineEventDialog";
 import TimelineView, { groupBy } from "../Timeline/TimeLineView";
 import stylesExporter from "../styles/stylesExporter";
 
@@ -40,8 +43,7 @@ const client = generateClient<Schema>();
 type DialogType = Campaign.Campaign;
 
 interface EditToolbarProps {
-    setDialogOptions: (props: DialogOptions<DialogType>) => any;
-    setDialog: (props: Dialogs) => any;
+    setIsOpen: Dispatch<SetStateAction<DialogState>>;
 }
 enum Dialogs {
     campaign,
@@ -51,10 +53,9 @@ enum Dialogs {
 }
 
 function EditToolbar(props: EditToolbarProps) {
-    const { setDialogOptions, setDialog } = props;
+    const { setIsOpen } = props;
     function handleClick() {
-        setDialog(Dialogs.campaign);
-        setDialogOptions({ open: true });
+        setIsOpen((prev: DialogState) => ({ ...prev, campaign: true } satisfies DialogState));
     }
     return (
         <GridToolbarContainer sx={{ justifyContent: "space-between" }}>
@@ -65,27 +66,32 @@ function EditToolbar(props: EditToolbarProps) {
         </GridToolbarContainer>
     );
 }
+type DialogState = {
+    campaign: boolean;
+    customer: boolean;
+    webinar: boolean;
+    timelineEvent: boolean;
+};
+type EditableDataTypes = Campaign.Campaign | Customer | Webinar | TimelineEvent.TimelineEvent;
+type CampaignListProps = {};
 
-function WebinarList(props: {}) {
+function CampaignList(props: CampaignListProps) {
+    const {} = props;
     const [influencers, setInfluencers] = useState<Influencer.InfluencerWithName[]>([]);
-    // const [details, setDetails] = useState<Schema["InfluencerPrivate"][]>([]);
     const [campaigns, setCampaigns] = useState<Campaign.Campaign[]>();
-    const [dialog, setDialog] = useState(Dialogs.campaign);
+    const [editingData, setEditingData] = useState<EditableDataTypes>();
     const [groupBy, setGroupBy] = useState<groupBy>("day");
-
-    const [dialogOtions, setDialogOptions] = useState<DialogOptions<any>>({
-        open: false,
+    const [dialogOptions, setDialogOptions] = useState<DialogOptions>({});
+    const [isOpen, setIsOpen] = useState<DialogState>({
+        campaign: false,
+        customer: false,
+        webinar: false,
+        timelineEvent: false,
     });
-
-    const [dialogProps, setDialogProps] = useState<DialogProps<DialogType>>({
+    const [dialogConfig, setDialogConfig] = useState<DialogConfig<DialogType>>({
         rows: campaigns ?? [],
         setRows: setCampaigns,
-        onClose: (hasChanged?: boolean) => {
-            setDialogOptions({ open: false });
-            if (hasChanged) updateCampaigns();
-        },
-        // columns,
-        // excludeColumns: ["id"],
+        onClose: onDialogClose,
     });
     const columns: GridColDef[] = [
         {
@@ -117,7 +123,11 @@ function WebinarList(props: {}) {
                             <Typography>{customer.company}</Typography>
                             <br />
                             <Typography>{params.value}</Typography>
-                            {customer.companyPosition ? <Typography>({customer.companyPosition})</Typography> : <></>}
+                            {customer.companyPosition ? (
+                                <Typography>({customer.companyPosition})</Typography>
+                            ) : (
+                                <></>
+                            )}
                         </div>
                         <div>
                             <IconButton
@@ -233,7 +243,12 @@ function WebinarList(props: {}) {
                     >
                         <div>
                             <TimelineView
-                                eventDialogProps={{ props: dialogProps, options: dialogOtions, influencers }}
+                                eventDialogProps={{
+                                    ...dialogConfig,
+                                    ...dialogOptions,
+                                    influencers,
+                                    isOpen: false,
+                                }}
                                 maxItems={2}
                                 groupBy={groupBy}
                                 events={row.campaignTimelineEvents}
@@ -252,15 +267,25 @@ function WebinarList(props: {}) {
         {
             field: "actions",
             type: "actions",
-            headerName: "Aktionen",
+            // headerName: "Aktionen",
             width: 150,
             // cellClassName: "actions",
             renderCell: ({ id }) => {
                 return (
                     <div className={styles.actions}>
-                        <Button variant="outlined" color="inherit" onClick={handleAddClickTimeline(id)}>
+                        <Button
+                            variant="outlined"
+                            color="inherit"
+                            onClick={handleAddClickTimeline(id)}
+                        >
                             <AddIcon />
                             <Typography variant="body1">Ereignis</Typography>
+                        </Button>
+                        <Button variant="outlined" color="inherit" onClick={handleDeleteClick(id)}>
+                            <DeleteIcon color="error" />
+                            <Typography color="error" variant="body1">
+                                Löschen
+                            </Typography>
                         </Button>
                         ,
                     </div>
@@ -283,26 +308,37 @@ function WebinarList(props: {}) {
         },
     ];
 
-    const { user, authStatus } = useAuthenticator((x) => [x.user, x.authStatus]);
-    // const [groups, setGroups] = useState<string[]>([]);
-    const [showDialog, setShowDialog] = useState(false);
-
     useEffect(() => {
         listInfluencers().then((items) => setInfluencers(items));
         return () => {};
-    }, [client, campaigns]);
+    }, [/* client,  */ campaigns]);
     useEffect(() => {
         updateCampaigns();
 
         return () => {};
-    }, [client]);
+    }, []);
     useEffect(() => {
         // const dialogPropsNew = { ...dialogProps };
         // dialogPropsNew.rows = rows ?? [];
-        setDialogProps((prev) => ({ ...prev, rows: campaigns ?? [] }));
+        setDialogConfig((prev) => ({ ...prev, rows: campaigns ?? [] }));
 
         return () => {};
     }, [campaigns]);
+
+    function onDialogClose(hasChanged?: boolean) {
+        // console.log("Hi!");
+        setEditingData(undefined);
+        const newOpenState: DialogState = {
+            ...(Object.keys(isOpen).reduce(
+                (reduced, key) => ({ ...reduced, [key]: false }),
+                {},
+            ) as DialogState),
+        };
+        setIsOpen(newOpenState);
+        if (hasChanged) {
+            updateCampaigns();
+        }
+    }
 
     async function updateCampaigns() {
         // console.log("Starting Update");
@@ -311,26 +347,24 @@ function WebinarList(props: {}) {
             setCampaigns(res.data);
         });
     }
-    // useEffect(() => {
-    //     getUserGroups().then((result) => setGroups(result));
-    //     return () => {};
-    // }, [user]);
-    function handleEditClick(id: GridRowId, dialogType: Dialogs) {
-        return () => {
-            const editingData = campaigns?.find((campaign) => campaign.id === id);
-            if (!editingData) return;
-            setDialog(dialogType);
-            setDialogOptions({ open: true, editing: true, editingData });
-        };
-        // return () => setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
-    }
+
+    // function handleEditClick(id: GridRowId, dialogType: Dialogs) {
+    //     return () => {
+    //         const editingData = campaigns?.find((campaign) => campaign.id === id);
+    //         if (!editingData) return;
+    //         setIsOpen((prev) => ({ ...prev, campaign: true }));
+    //         setDialogOptions({ editing: true, editingData });
+    //     };
+    //     // return () => setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
+    // }
     function handleEditClickCustomer(id: GridRowId) {
         return () => {
             // debugger;
-            const editingData = campaigns?.find((campaign) => campaign.id === id)?.customer;
-            if (!editingData) return;
-            setDialog(Dialogs.customer);
-            setDialogOptions({ open: true, editing: true, editingData });
+            const customer = campaigns?.find((campaign) => campaign.id === id)?.customer;
+            if (!customer) return;
+            setEditingData({ ...customer });
+            setDialogOptions({ editing: true });
+            setIsOpen((prev) => ({ ...prev, customer: true }));
         };
     }
     function handleEditClickWebinar(id: GridRowId) {
@@ -338,7 +372,9 @@ function WebinarList(props: {}) {
             const campaign = campaigns?.find((campaign) => campaign.id === id);
             if (!(campaign && Campaign.isWebinar(campaign))) return;
             const webinar = campaign.webinar;
-            setDialogOptions({ open: true, editing: true, editingData: webinar });
+            setIsOpen((prev) => ({ ...prev, webinar: true }));
+            setEditingData(webinar);
+            setDialogOptions({ editing: true });
         };
     }
 
@@ -346,8 +382,8 @@ function WebinarList(props: {}) {
         return () => {
             const campaign = campaigns?.find((campaign) => campaign.id === id);
             if (!campaign) return;
-            setDialog(Dialogs.influencer);
-            setDialogOptions({ open: true, campaignId: campaign.id });
+            setIsOpen((prev) => ({ ...prev, timelineEvent: true }));
+            setDialogOptions({ campaignId: campaign.id });
         };
     }
 
@@ -362,29 +398,55 @@ function WebinarList(props: {}) {
 
     function handleDeleteClick(id: GridRowId) {
         return () => {
-            // const entity = rows?.find((x) => x.id === id);
-            // if (!entity) return;
-            // console.log({ entity });
-            // const { id: publicId, influencerPublicDetailsId: privateId } = entity;
-            // if (!(publicId && privateId)) return;
-            // deleteInfluencer({
-            //     publicId,
-            //     privateId,
-            // });
-            // setRows(rows.filter((row) => row.id !== id));
+            if (!confirm("Kampagne wirklich unwiderruflich löschen?")) return;
+            const campaign = campaigns?.find((x) => x.id === id);
+            if (!campaign) return;
+            deleteCampaign(campaign);
+            setCampaigns([...(campaigns?.filter((x) => x.id !== id) ?? [])]);
+            updateCampaigns();
         };
     }
+    function showTimeline(id: GridRowId) {}
     // const { tokens } =
 
     // if (influencers.length === 0) return <span>Keine Influenzerdaten vorhanden</span>;
     return (
         <>
-            {dialog === Dialogs.campaign && <CampaignDialog {...dialogOtions} {...dialogProps} />}
-            {dialog === Dialogs.customer && <CustomerDialog props={dialogProps} options={dialogOtions} />}
-            {dialog === Dialogs.webinar && <WebinarDialog props={dialogProps} options={dialogOtions} />}
-            {dialog === Dialogs.influencer && (
-                <TimeLineEventDialog props={dialogProps} options={dialogOtions} influencers={influencers} />
-            )}
+            <>
+                {
+                    <CampaignDialog
+                        {...dialogConfig}
+                        {...dialogOptions}
+                        isOpen={isOpen.campaign}
+                        editingData={editingData as Campaign.Campaign}
+                    />
+                }
+                {
+                    <CustomerDialog
+                        {...dialogConfig}
+                        {...dialogOptions}
+                        isOpen={isOpen.customer}
+                        editingData={editingData as Customer}
+                    />
+                }
+                {
+                    <WebinarDialog
+                        {...dialogConfig}
+                        {...dialogOptions}
+                        isOpen={isOpen.webinar}
+                        editingData={editingData as Webinar}
+                    />
+                }
+                {
+                    <TimeLineEventDialog
+                        {...dialogConfig}
+                        {...dialogOptions}
+                        isOpen={isOpen.timelineEvent}
+                        influencers={influencers}
+                        editingData={editingData as TimelineEvent.TimelineEvent}
+                    />
+                }
+            </>
             <DataGrid
                 localeText={deDE.components.MuiDataGrid.defaultProps.localeText}
                 disableRowSelectionOnClick
@@ -402,7 +464,7 @@ function WebinarList(props: {}) {
                     toolbar: EditToolbar,
                 }}
                 slotProps={{
-                    toolbar: { setDialogOptions, setDialog },
+                    toolbar: { setIsOpen },
                 }}
                 autoHeight={true}
                 sx={{
@@ -437,4 +499,4 @@ function WebinarList(props: {}) {
     );
 }
 
-export default WebinarList;
+export default CampaignList;

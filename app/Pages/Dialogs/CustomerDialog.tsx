@@ -1,7 +1,12 @@
-import { generateClient } from "aws-amplify/api";
-import { Schema } from "@/amplify/data/resource";
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
-import { DialogOptions, DialogProps } from "@/app/Definitions/types";
+import {
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    TextField,
+} from "@mui/material";
+import { DialogProps } from "@/app/Definitions/types";
 import { Campaign, Customer } from "@/app/ServerFunctions/databaseTypes";
 import React, { ChangeEvent, useEffect, useState } from "react";
 import { updateCustomer } from "@/app/ServerFunctions/serverActions";
@@ -15,23 +20,26 @@ const initialData: DialogType = {
     lastName: "",
     company: "",
     email: "",
+    companyPosition: "",
 };
-
-function CustomerDialog(props: { props: DialogProps<Campaign.Campaign>; options: DialogOptions<DialogType> }) {
+type CustomerDialogProps = DialogProps<Campaign.Campaign, Customer>;
+function CustomerDialog(props: CustomerDialogProps) {
     // debugger;
-    const { onClose, rows, setRows } = props.props;
-    const { open = false, editing, editingData } = props.options;
-    const [customer, setCustomer] = useState(editingData ?? initialData);
+    const { onClose, rows, setRows, isOpen, editing, editingData } = props;
+    const [customer, setCustomer] = useState(editingData);
 
-    // const [isModalOpen, setIsModalOpen] = useState(open);
+    // const [isModalOpen, setIsModalOpen] = useState(isOpen);
     useEffect(() => {
+        // console.log({ isOpen, editingData });
+        setCustomer(editingData);
         return () => {
-            setCustomer(open ? editingData ?? initialData : initialData);
+            setCustomer(initialData);
         };
-    }, [open, editingData]);
+    }, [props, editingData]);
 
     function handleClose(hasChanged?: boolean) {
         return () => {
+            setCustomer(initialData);
             if (onClose) {
                 onClose(hasChanged);
             }
@@ -70,7 +78,7 @@ function CustomerDialog(props: { props: DialogProps<Campaign.Campaign>; options:
     return (
         <Dialog
             // ref={modalRef}
-            open={open}
+            open={isOpen}
             className={styles.dialog}
             onClose={handleClose(false)}
             PaperProps={{
@@ -99,7 +107,10 @@ function CustomerDialog(props: { props: DialogProps<Campaign.Campaign>; options:
             <DialogTitle>{"Kunde"}</DialogTitle>
             {/* <button onClick={handleCloseModal}>x</button> */}
 
-            <DialogContent dividers sx={{ "& .MuiFormControl-root:has(#customerEmail)": { flexBasis: "100%" } }}>
+            <DialogContent
+                dividers
+                sx={{ "& .MuiFormControl-root:has(#customerEmail)": { flexBasis: "100%" } }}
+            >
                 <TextField
                     autoFocus
                     id="id"
@@ -107,7 +118,7 @@ function CustomerDialog(props: { props: DialogProps<Campaign.Campaign>; options:
                     className={styles.TextField}
                     label="ID"
                     type="text"
-                    defaultValue={editingData?.id}
+                    defaultValue={customer?.id ?? ""}
                     required
                     hidden
                 />
@@ -118,14 +129,14 @@ function CustomerDialog(props: { props: DialogProps<Campaign.Campaign>; options:
                     className={styles.TextField}
                     label="Vorname"
                     type="text"
-                    value={customer?.firstName}
+                    value={customer?.firstName ?? ""}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => {
                         setCustomer(
                             (prev) =>
                                 ({
-                                    ...prev,
+                                    ...(prev ?? initialData),
                                     firstName: e.target.value,
-                                } satisfies Customer)
+                                } satisfies Customer),
                         );
                     }}
                     required
@@ -137,14 +148,14 @@ function CustomerDialog(props: { props: DialogProps<Campaign.Campaign>; options:
                     className={styles.TextField}
                     label="Nachname"
                     type="text"
-                    value={customer?.lastName}
+                    value={customer?.lastName ?? ""}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => {
                         setCustomer(
                             (prev) =>
                                 ({
-                                    ...prev,
+                                    ...(prev ?? initialData),
                                     lastName: e.target.value,
-                                } satisfies Customer)
+                                } satisfies Customer),
                         );
                     }}
                     required
@@ -155,14 +166,14 @@ function CustomerDialog(props: { props: DialogProps<Campaign.Campaign>; options:
                     className={styles.TextField}
                     label="E-Mail"
                     type="email"
-                    value={customer?.email}
+                    value={customer?.email ?? ""}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => {
                         setCustomer(
                             (prev) =>
                                 ({
-                                    ...prev,
+                                    ...(prev ?? initialData),
                                     email: e.target.value,
-                                } satisfies Customer)
+                                } satisfies Customer),
                         );
                     }}
                     required
@@ -179,9 +190,9 @@ function CustomerDialog(props: { props: DialogProps<Campaign.Campaign>; options:
                         setCustomer(
                             (prev) =>
                                 ({
-                                    ...prev,
+                                    ...(prev ?? initialData),
                                     company: e.target.value,
-                                } satisfies Customer)
+                                } satisfies Customer),
                         );
                     }}
                 />
@@ -192,14 +203,14 @@ function CustomerDialog(props: { props: DialogProps<Campaign.Campaign>; options:
                     className={styles.TextField}
                     label="Position in Firma"
                     type="text"
-                    value={customer?.companyPosition}
+                    value={customer?.companyPosition ?? ""}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => {
                         setCustomer(
                             (prev) =>
                                 ({
-                                    ...prev,
+                                    ...(prev ?? initialData),
                                     companyPosition: e.target.value,
-                                } satisfies Customer)
+                                } satisfies Customer),
                         );
                     }}
                 />

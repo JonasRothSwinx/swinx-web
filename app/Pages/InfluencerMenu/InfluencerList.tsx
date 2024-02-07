@@ -37,18 +37,18 @@ import {
     updateInfluencer,
 } from "@/app/ServerFunctions/serverActions";
 import { Influencer } from "@/app/ServerFunctions/databaseTypes";
-import InfluencerDialog from "./InfluencerDialog";
+import InfluencerDialog from "../Dialogs/InfluencerDialog";
 
 import { deDE } from "@mui/x-data-grid";
 import { deDE as pickersDeDE } from "@mui/x-date-pickers/locales";
 import { deDE as coreDeDE } from "@mui/material/locale";
-import { DialogOptions, DialogProps } from "@/app/Definitions/types";
+import { DialogOptions, DialogConfig } from "@/app/Definitions/types";
 
 const client = generateClient<Schema>();
 const theme = createTheme({}, { deDE, pickersDeDE, coreDeDE });
 
 interface EditToolbarProps {
-    setDialogOptions: (props: DialogOptions<Influencer.Influencer>) => any;
+    setIsOpen: (props: boolean) => any;
 }
 function InitInfluencer(props: { id: string }) {
     const { id } = props;
@@ -62,9 +62,9 @@ function InitInfluencer(props: { id: string }) {
     return influencerData;
 }
 function EditToolbar(props: EditToolbarProps) {
-    const { setDialogOptions } = props;
+    const { setIsOpen } = props;
     function handleClick() {
-        setDialogOptions({ open: true });
+        setIsOpen(true);
     }
     return (
         <GridToolbarContainer>
@@ -80,6 +80,7 @@ function InfluencerList(props: {}) {
     // const [details, setDetails] = useState<Schema["InfluencerPrivate"][]>([]);
     const [rows, setRows] = useState<Influencer.InfluencerFull[]>();
     const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
+    const [isOpen, setIsOpen] = useState(false);
 
     const columns: GridColDef[] = [
         {
@@ -158,21 +159,19 @@ function InfluencerList(props: {}) {
             },
         },
     ];
-    const [dialogOtions, setDialogOptions] = useState<DialogOptions<Influencer.InfluencerFull>>({
-        open: false,
-    });
+    const [dialogOtions, setDialogOptions] = useState<DialogOptions<Influencer.InfluencerFull>>({});
 
-    const [dialogProps, setDialogProps] = useState<DialogProps<Influencer.InfluencerFull>>({
+    const [dialogProps, setDialogProps] = useState<DialogConfig<Influencer.InfluencerFull>>({
         rows: rows ?? [],
         setRows,
         onClose: () => {
-            setDialogOptions({ open: false }),
-                listInfluencers().then((items) =>
-                    setRows((prev) => {
-                        console.log("ChangingRows", { prev, items });
-                        return items;
-                    })
-                );
+            setIsOpen(false);
+            listInfluencers().then((items) =>
+                setRows((prev) => {
+                    console.log("ChangingRows", { prev, items });
+                    return items;
+                }),
+            );
         },
     });
 
@@ -186,7 +185,7 @@ function InfluencerList(props: {}) {
             setRows((prev) => {
                 console.log("ChangingRows", { prev, items });
                 return items;
-            })
+            }),
         );
         return () => {};
     }, [client]);
@@ -207,7 +206,8 @@ function InfluencerList(props: {}) {
         return () => {
             const editingData = rows?.find((x) => x.id === id);
             if (!editingData) return;
-            setDialogOptions({ open: true, editing: true, editingData });
+            setIsOpen(true);
+            setDialogOptions({ editing: true, editingData });
         };
         // return () => setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
     }
@@ -229,7 +229,7 @@ function InfluencerList(props: {}) {
     }
     return (
         <>
-            {<InfluencerDialog {...dialogOtions} {...dialogProps} />}
+            {<InfluencerDialog {...dialogOtions} {...dialogProps} isOpen={isOpen} />}
             <ThemeProvider theme={theme}>
                 <DataGrid
                     localeText={deDE.components.MuiDataGrid.defaultProps.localeText}

@@ -11,7 +11,7 @@ import dayjs from "dayjs";
 import "dayjs/locale/de";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { SelectionSet } from "aws-amplify/api";
-import { Campaign, Customer, TimelineEvent } from "./databaseTypes";
+import { Campaign, Customer, TimelineEvent, Webinar } from "./databaseTypes";
 dayjs.extend(customParseFormat);
 
 // export default { getUserGroups, getUserAttributes };
@@ -23,7 +23,8 @@ export async function getUserGroups() {
         operation: async (contextSpec) => {
             const session = await fetchAuthSession(contextSpec);
             // console.log(session);
-            const payloadGroups = (session.tokens?.accessToken.payload["cognito:groups"] as string[]) ?? [];
+            const payloadGroups =
+                (session.tokens?.accessToken.payload["cognito:groups"] as string[]) ?? [];
             // console.log(typeof payloadGroups);
             // if (!payloadGroups || typeof payloadGroups !== Json[]) return [];
             // console.log(payloadGroups);
@@ -87,22 +88,27 @@ export async function updateInfluencer(props: { data: InfluencerDataUpdate }) {
         throw new Error(publicErrors?.map((x) => x.message).join(", "));
     }
 
-    const { data: privateData, errors: privateErrors } = await client.models.InfluencerPrivate.update({
-        id: publicData.influencerPublicDetailsId,
-        email,
-    });
+    const { data: privateData, errors: privateErrors } =
+        await client.models.InfluencerPrivate.update({
+            id: publicData.influencerPublicDetailsId,
+            email,
+        });
     return { privateErrors, publicErrors };
 }
 
-export async function deleteInfluencer(props: { publicId: string; privateId: string }): Promise<void> {
+export async function deleteInfluencer(props: {
+    publicId: string;
+    privateId: string;
+}): Promise<void> {
     const { publicId, privateId } = props;
     console.log({ publicId, privateId });
     if (!(publicId && privateId)) {
         return;
     }
-    const { data: privateData, errors: errorsPrivate } = await client.models.InfluencerPrivate.delete({
-        id: privateId,
-    });
+    const { data: privateData, errors: errorsPrivate } =
+        await client.models.InfluencerPrivate.delete({
+            id: privateId,
+        });
     console.log({ privateData, errorsPrivate });
     const { data: publicData, errors: errorsPublic } = await client.models.InfluencerPublic.delete({
         id: publicId,
@@ -112,7 +118,15 @@ export async function deleteInfluencer(props: { publicId: string; privateId: str
 
 export async function listInfluencers() {
     const { data } = await client.models.InfluencerPublic.list({
-        selectionSet: ["id", "firstName", "lastName", "createdAt", "updatedAt", "details.id", "details.email"],
+        selectionSet: [
+            "id",
+            "firstName",
+            "lastName",
+            "createdAt",
+            "updatedAt",
+            "details.id",
+            "details.email",
+        ],
     });
     return data;
 }
@@ -170,6 +184,13 @@ export async function updateCustomer(customer: Customer) {
     return { data, errors };
 }
 
+export async function deleteCustomer(customer: Customer) {
+    if (!customer.id) throw new Error("Missing Data");
+
+    const { errors } = await client.models.Customer.delete({ id: customer.id });
+    console.log(errors);
+}
+
 //#endregion
 //#region Webinar
 interface WebinarNew {
@@ -209,6 +230,12 @@ export async function updateWebinar(props: WebinarUpdate) {
     const { data, errors } = await client.models.Webinar.update(customer);
     if (errors) throw new Error(errors.map((x) => x.message).join(";\n"));
     return data;
+}
+export async function deleteWebinar(webinar: Webinar) {
+    if (!webinar.id) throw new Error("Missing Data");
+
+    const { errors } = await client.models.Webinar.delete({ id: webinar.id });
+    console.log(errors);
 }
 
 //#endregion
@@ -253,7 +280,7 @@ export async function createNewCampaign(campaign: Campaign.Campaign) {
     const customerResponse = createCustomer(customer);
 
     switch (true) {
-        case Campaign.isWebinar(campaign):
+        case Campaign.isWebinar(campaign): {
             const webinarData = createWebinar(campaign.webinar);
             const { data, errors } = await client.models.Campaign.create({
                 campaignType,
@@ -264,6 +291,7 @@ export async function createNewCampaign(campaign: Campaign.Campaign) {
                 notes,
             });
             return { errors };
+        }
 
         default:
             break;
@@ -322,24 +350,33 @@ export async function listCampaigns() {
 
     return { data, errors };
 }
+
+export async function deleteCampaign(campaign: Campaign.Campaign) {
+    if (!campaign.id) throw new Error("Missing Data");
+
+    const tasks: Promise<unknown>[] = [];
+    //Remove Customer
+    tasks.push(deleteCustomer(campaign.customer));
+
+    //Remove TimelineEvents
+    tasks.push(...campaign.campaignTimelineEvents.map((event) => deleteTimelineEvent(event)));
+
+    //Remove Webinar
+    if (Campaign.isWebinar(campaign)) {
+        tasks.push(deleteWebinar(campaign.webinar));
+    }
+
+    tasks.push(client.models.Campaign.delete({ id: campaign.id }));
+
+    await Promise.all(tasks);
+}
 //#endregion
 //#region InfluencerAssignments
-export interface InfluencerAssignment {}
+// export interface InfluencerAssignment {}
 // export async function createInfluencerAssignment(params: type) {}
 //#endregion
+
 //#region TimelineEvent
-// const selectionSetTimelineEvent = [
-//     "id",
-
-//     "timelineEventInfluencerId",
-//     "timelineEventType",
-
-//     "inviteEvent.id",
-//     "inviteEvent.invites",
-
-//     "createdAt",
-//     "updatedAt",
-// ] as const;
 
 export async function listTimelineEvents() {
     const { data, errors } = await client.models.TimelineEvent.list({
@@ -368,7 +405,9 @@ export async function createTimelineEvent(props: TimelineEvent.TimelineEvent) {
     if (!(timelineEventInfluencerId && date && campaignCampaignTimelineEventsId)) {
         throw new Error("Missing Data");
     }
-    const { data: inviteEventData, errors: inviteEventErrors } = await createInviteEvent(inviteEvent);
+    const { data: inviteEventData, errors: inviteEventErrors } = await createInviteEvent(
+        inviteEvent,
+    );
 
     const { data, errors } = await client.models.TimelineEvent.create({
         timelineEventType,
@@ -402,6 +441,12 @@ export async function updateTimelineEvent(props: TimelineEvent.TimelineEvent) {
         timelineEventInfluencerId,
         notes,
     });
+}
+async function deleteTimelineEvent(event: TimelineEvent.TimelineEvent) {
+    if (!event.id) throw new Error("Missing Data");
+
+    const { errors } = await client.models.TimelineEvent.delete({ id: event.id });
+    console.log(errors);
 }
 
 async function createInviteEvent(props: TimelineEvent.InviteEvent | undefined) {

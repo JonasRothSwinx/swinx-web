@@ -1,28 +1,19 @@
-import { TimelineEvent } from "@/app/ServerFunctions/databaseTypes";
+import { Campaign, TimelineEvent } from "@/app/ServerFunctions/databaseTypes";
 import { randomDate, randomId } from "@mui/x-data-grid-generator";
 import { timelineEventTypesType } from "@/amplify/data/types";
 import { useEffect, useState } from "react";
 import { Button, Grid, IconButton } from "@mui/material";
-import { Edit as EditIcon, Cancel as CancelIcon, DeleteForever as DeleteForeverIcon } from "@mui/icons-material";
+import {
+    Edit as EditIcon,
+    Cancel as CancelIcon,
+    DeleteForever as DeleteForeverIcon,
+} from "@mui/icons-material";
 import dayjs, { Dayjs } from "@/app/configuredDayJs";
 import stylesExporter from "../styles/stylesExporter";
-import TimeLineEventDialog, { TimelineDialogProps } from "./TimeLineDialog";
+import TimeLineEventDialog, { TimelineEventDialogProps } from "../Dialogs/TimelineEventDialog";
+import { DialogConfig, DialogOptions } from "@/app/Definitions/types";
 
 const styles = stylesExporter.dialogs;
-
-function makeDebugData() {
-    const event: TimelineEvent.TimelineEvent[] = [];
-    const now = new Date();
-    for (let index = 0; index < 10; index++) {
-        const date = randomDate(now, new Date(now.getDate() + 31));
-        const debugEvent = {
-            id: randomId(),
-            createdAt: date.toISOString(),
-            updatedAt: date.toISOString(),
-        };
-    }
-}
-const defaultEvents: TimelineEvent.TimelineEvent[] = [];
 
 type GroupedEvent = {
     type: timelineEventTypesType;
@@ -37,26 +28,24 @@ export interface TimelineViewProps {
     events: TimelineEvent.TimelineEvent[];
     groupBy: groupBy;
     maxItems?: number;
-    eventDialogProps: TimelineDialogProps;
+    eventDialogProps: TimelineEventDialogProps;
 }
-function TimelineView(props: TimelineViewProps) {
-    const { events, groupBy = "week", maxItems = -1 } = props;
-    const { props: dialogProps, options: dialogOptions, influencers } = props.eventDialogProps;
-
-    const [groups, setGroups] = useState<GroupedEvent[]>([]);
-    const [editingDialogOpen, setEditingDialogOpen] = useState(false);
-    const [editingEven, setEditingEvent] = useState<TimelineEvent.TimelineEvent>();
-
-    function groupEvents(groupBy: groupBy = "day") {
-        let groupedEvents: GroupedEvent[] = [];
-        switch (groupBy) {
-            case "day":
-                groupedEvents = events.reduce((groups: GroupedEvent[], event: TimelineEvent.TimelineEvent) => {
+function groupEvents(events: TimelineEvent.TimelineEvent[], groupBy: groupBy = "day") {
+    let groupedEvents: GroupedEvent[] = [];
+    switch (groupBy) {
+        case "day":
+            groupedEvents = events.reduce(
+                (groups: GroupedEvent[], event: TimelineEvent.TimelineEvent) => {
                     const eventDate = dayjs(event.date);
                     const group = groups.find((group) => {
                         return (
                             group.type === event.timelineEventType &&
-                            eventDate.isBetween(group.dateGroupStart, group.dateGroupEnd, "day", "[]")
+                            eventDate.isBetween(
+                                group.dateGroupStart,
+                                group.dateGroupEnd,
+                                "day",
+                                "[]",
+                            )
                         );
                     });
                     if (group) {
@@ -72,15 +61,23 @@ function TimelineView(props: TimelineViewProps) {
                             events: [event],
                         } satisfies GroupedEvent,
                     ];
-                }, []);
-                break;
-            case "week":
-                groupedEvents = events.reduce((groups: GroupedEvent[], event: TimelineEvent.TimelineEvent) => {
+                },
+                [],
+            );
+            break;
+        case "week":
+            groupedEvents = events.reduce(
+                (groups: GroupedEvent[], event: TimelineEvent.TimelineEvent) => {
                     const eventDate = dayjs(event.date);
                     const group = groups.find((group) => {
                         return (
                             group.type === event.timelineEventType &&
-                            eventDate.isBetween(group.dateGroupStart, group.dateGroupEnd, "week", "[)")
+                            eventDate.isBetween(
+                                group.dateGroupStart,
+                                group.dateGroupEnd,
+                                "week",
+                                "[)",
+                            )
                         );
                     });
                     if (group) {
@@ -102,28 +99,47 @@ function TimelineView(props: TimelineViewProps) {
                             events: [event],
                         } satisfies GroupedEvent,
                     ];
-                }, []);
-                break;
-        }
-        // console.log({ groupedEvents });
-        groupedEvents.sort((a, b) => a.dateGroupStart.unix() - b.dateGroupStart.unix());
-        // console.log({ groupedEvents });
-        return groupedEvents;
+                },
+                [],
+            );
+            break;
     }
+    // console.log({ groupedEvents });
+    groupedEvents.sort((a, b) => a.dateGroupStart.unix() - b.dateGroupStart.unix());
+    // console.log({ groupedEvents });
+    return groupedEvents;
+}
+function TimelineView(props: TimelineViewProps) {
+    const { events, groupBy = "week", maxItems = -1 } = props;
+    const dialogConfig: DialogConfig<Campaign.Campaign> = {
+        ...props.eventDialogProps,
+    };
+    const dialogOptions: DialogOptions = props.eventDialogProps;
+    const { influencers } = props.eventDialogProps;
+
+    const [groups, setGroups] = useState<GroupedEvent[]>([]);
+    const [editingDialogOpen, setEditingDialogOpen] = useState(false);
+    const [editingEvent, setEditingEvent] = useState<TimelineEvent.TimelineEvent>();
+
     useEffect(() => {
-        setGroups(groupEvents(groupBy));
+        setGroups(groupEvents(events, groupBy));
         return () => {};
     }, [events, groupBy]);
 
     function onDialogClose(hasChanged?: boolean) {
+        console.log("Hi");
         setEditingDialogOpen(false);
     }
     return (
         <>
             <TimeLineEventDialog
-                props={{ ...dialogProps, onClose: onDialogClose }}
+                {...dialogConfig}
+                {...dialogOptions}
+                isOpen={editingDialogOpen}
+                onClose={onDialogClose}
+                editing={true}
+                editingData={editingEvent}
                 influencers={influencers}
-                options={{ ...dialogOptions, open: editingDialogOpen, editing: true, editingData: editingEven }}
             />
             <Grid
                 container
@@ -163,8 +179,8 @@ interface TimelineViewItemProps {
     keyValue: string | number;
     group: GroupedEvent;
     groupedBy: groupBy;
-    setEditingEvent: (e: TimelineEvent.TimelineEvent) => any;
-    openDialog: () => any;
+    setEditingEvent: (e: TimelineEvent.TimelineEvent) => void;
+    openDialog: () => void;
 }
 function TimelineViewItem(props: TimelineViewItemProps) {
     const { keyValue, group, groupedBy, setEditingEvent, openDialog } = props;
@@ -276,7 +292,8 @@ function TimelineViewItem(props: TimelineViewItemProps) {
                                         {event.influencer.firstName} {event.influencer.lastName}{" "}
                                     </Grid>
                                     <Grid xs="auto" item>
-                                        {TimelineEvent.isInviteEvent(event) && event.inviteEvent?.invites}
+                                        {TimelineEvent.isInviteEvent(event) &&
+                                            event.inviteEvent?.invites}
                                     </Grid>
                                 </>
                             )}
@@ -289,7 +306,8 @@ function TimelineViewItem(props: TimelineViewItemProps) {
                                         {event.influencer.firstName} {event.influencer.lastName}{" "}
                                     </Grid>
                                     <Grid xs="auto" item>
-                                        {TimelineEvent.isInviteEvent(event) && event.inviteEvent?.invites}
+                                        {TimelineEvent.isInviteEvent(event) &&
+                                            event.inviteEvent?.invites}
                                     </Grid>
                                 </>
                             )}

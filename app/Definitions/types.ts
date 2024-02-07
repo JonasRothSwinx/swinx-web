@@ -2,7 +2,7 @@
 import { Schema } from "@/amplify/data/resource";
 import { GridColDef } from "@mui/x-data-grid";
 import { Dispatch, SetStateAction } from "react";
-import { TimelineEvent } from "../ServerFunctions/databaseTypes";
+import { Campaign, Customer, TimelineEvent, Webinar } from "../ServerFunctions/databaseTypes";
 
 // export type RowDataInfluencer = Schema["InfluencerPrivate"] & Schema["InfluencerPublic"];
 
@@ -11,15 +11,17 @@ import { TimelineEvent } from "../ServerFunctions/databaseTypes";
 //     private?: InfluencerPrivate;
 // };
 
-export interface DialogOptions<T> {
+export type DialogProps<RowType, DataType extends EditableDataTypes> = DialogConfig<RowType> &
+    DialogOptions & { isOpen: boolean; editingData?: DataType };
+
+export interface DialogOptions {
     editing?: boolean;
-    open?: boolean;
-    editingData?: T;
     campaignId?: string;
 }
 
-export interface DialogProps<T> {
-    onClose?: (hasChanged?: boolean) => any;
+type EditableDataTypes = Campaign.Campaign | Customer | Webinar | TimelineEvent.TimelineEvent;
+export interface DialogConfig<T> {
+    onClose?: (hasChanged?: boolean) => void;
     rows: T[];
     setRows: Dispatch<SetStateAction<T[] | undefined>>;
     // columns: GridColDef[];
