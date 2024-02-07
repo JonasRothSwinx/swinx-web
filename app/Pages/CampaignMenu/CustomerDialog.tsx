@@ -1,20 +1,13 @@
-import styles from "./campaignMenu.module.css";
 import { generateClient } from "aws-amplify/api";
 import { Schema } from "@/amplify/data/resource";
-import {
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    TextField,
-} from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
 import { DialogOptions, DialogProps } from "@/app/Definitions/types";
 import { Campaign, Customer } from "@/app/ServerFunctions/databaseTypes";
-import { ChangeEvent, useEffect, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import { updateCustomer } from "@/app/ServerFunctions/serverActions";
+import stylesExporter from "../styles/stylesExporter";
 
-const client = generateClient<Schema>();
+const styles = stylesExporter.dialogs;
 type DialogType = Customer;
 
 const initialData: DialogType = {
@@ -24,28 +17,37 @@ const initialData: DialogType = {
     email: "",
 };
 
-function CustomerDialog(props: {
-    props: DialogProps<Campaign.Campaign>;
-    options: DialogOptions<DialogType>;
-}) {
-    const { onClose, rows, setRows, columns, excludeColumns } = props.props;
+function CustomerDialog(props: { props: DialogProps<Campaign.Campaign>; options: DialogOptions<DialogType> }) {
+    // debugger;
+    const { onClose, rows, setRows } = props.props;
     const { open = false, editing, editingData } = props.options;
     const [customer, setCustomer] = useState(editingData ?? initialData);
 
     // const [isModalOpen, setIsModalOpen] = useState(open);
     useEffect(() => {
         return () => {
-            setCustomer(initialData);
+            setCustomer(open ? editingData ?? initialData : initialData);
         };
-    }, [open]);
+    }, [open, editingData]);
 
-    function handleClose() {
-        if (onClose) {
-            onClose();
-        }
+    function handleClose(hasChanged?: boolean) {
+        return () => {
+            if (onClose) {
+                onClose(hasChanged);
+            }
+        };
         // setIsModalOpen(false);
     }
 
+    function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        if (!customer) return;
+        updateCustomer(customer);
+        const campaign = rows.find((x) => x.customer?.id === customer.id);
+        console.log({ campaign, customer });
+        if (campaign) campaign.customer = customer;
+        handleClose(true)();
+    }
     // async function makeInfluencer(args: { firstName: string; lastName: string; email: string }) {
     //     const { firstName, lastName, email } = args;
     //     console.log({ firstName, lastName, email });
@@ -70,18 +72,10 @@ function CustomerDialog(props: {
             // ref={modalRef}
             open={open}
             className={styles.dialog}
-            onClose={handleClose}
+            onClose={handleClose(false)}
             PaperProps={{
                 component: "form",
-                onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
-                    event.preventDefault();
-                    if (!customer) return;
-                    updateCustomer(customer);
-                    const campaign = rows.find((x) => x.customer?.id === customer.id);
-                    console.log({ campaign, customer });
-                    if (campaign) campaign.customer = customer;
-                    handleClose();
-                },
+                onSubmit,
             }}
             sx={{
                 "& .MuiDialogContent-root": {
@@ -105,10 +99,7 @@ function CustomerDialog(props: {
             <DialogTitle>{"Kunde"}</DialogTitle>
             {/* <button onClick={handleCloseModal}>x</button> */}
 
-            <DialogContent
-                dividers
-                sx={{ "& .MuiFormControl-root:has(#customerEmail)": { flexBasis: "100%" } }}
-            >
+            <DialogContent dividers sx={{ "& .MuiFormControl-root:has(#customerEmail)": { flexBasis: "100%" } }}>
                 <TextField
                     autoFocus
                     id="id"
@@ -134,7 +125,7 @@ function CustomerDialog(props: {
                                 ({
                                     ...prev,
                                     firstName: e.target.value,
-                                } satisfies Customer),
+                                } satisfies Customer)
                         );
                     }}
                     required
@@ -153,7 +144,7 @@ function CustomerDialog(props: {
                                 ({
                                     ...prev,
                                     lastName: e.target.value,
-                                } satisfies Customer),
+                                } satisfies Customer)
                         );
                     }}
                     required
@@ -171,7 +162,7 @@ function CustomerDialog(props: {
                                 ({
                                     ...prev,
                                     email: e.target.value,
-                                } satisfies Customer),
+                                } satisfies Customer)
                         );
                     }}
                     required
@@ -183,14 +174,14 @@ function CustomerDialog(props: {
                     className={styles.TextField}
                     label="Firma"
                     type="text"
-                    value={customer?.company}
+                    value={customer?.company ?? ""}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => {
                         setCustomer(
                             (prev) =>
                                 ({
                                     ...prev,
                                     company: e.target.value,
-                                } satisfies Customer),
+                                } satisfies Customer)
                         );
                     }}
                 />
@@ -208,7 +199,7 @@ function CustomerDialog(props: {
                                 ({
                                     ...prev,
                                     companyPosition: e.target.value,
-                                } satisfies Customer),
+                                } satisfies Customer)
                         );
                     }}
                 />
@@ -219,7 +210,7 @@ function CustomerDialog(props: {
                     justifyContent: "space-between",
                 }}
             >
-                <Button onClick={handleClose} color="secondary">
+                <Button onClick={handleClose(false)} color="secondary">
                     Abbrechen
                 </Button>
                 <Button variant="contained" type="submit">

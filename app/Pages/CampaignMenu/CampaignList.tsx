@@ -1,56 +1,39 @@
 import { Schema } from "@/amplify/data/resource";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import { generateClient } from "aws-amplify/api";
-import { fetchAuthSession } from "aws-amplify/auth";
 import { useEffect, useState } from "react";
-import { Subscription } from "rxjs";
 import {
     DataGrid,
     GridColDef,
-    GridRowModes,
-    GridRowModesModel,
-    GridRowsProp,
-    GridRowProps,
-    GridValueGetterParams,
     GridRowId,
-    GridRowModel,
     GridToolbarContainer,
     GridActionsCellItem,
-    GridRowParams,
-    GridRenderEditCellParams,
-    GridPreProcessEditCellProps,
-    GridCell,
     GridToolbar,
     GridCellParams,
+    GridColumnHeaderParams,
 } from "@mui/x-data-grid";
-import { randomId } from "@mui/x-data-grid-generator";
-import { Button, MenuItem, Select, TextField, Typography } from "@mui/material";
+import { Button, IconButton, MenuItem, Select, TextField, Typography } from "@mui/material";
 import {
     Add as AddIcon,
     Edit as EditIcon,
     DeleteOutlined as DeleteIcon,
     Save as SaveIcon,
     Close as CancelIcon,
+    Visibility as VisibilityIcon,
 } from "@mui/icons-material";
-import {
-    listInfluencers,
-    createNewInfluencer,
-    deleteInfluencer,
-    getUserGroups,
-    updateInfluencer,
-    listCampaigns,
-} from "@/app/ServerFunctions/serverActions";
+import { listInfluencers, listCampaigns } from "@/app/ServerFunctions/serverActions";
 import { Influencer } from "@/app/ServerFunctions/databaseTypes";
 import CampaignDialog from "./CampaignDialog";
 import { DialogOptions, DialogProps } from "@/app/Definitions/types";
 import { Campaign, Customer } from "@/app/ServerFunctions/databaseTypes";
 import { deDE } from "@mui/x-data-grid";
-import styles from "./campaignMenu.module.css";
 import CustomerDialog from "./CustomerDialog";
 import WebinarDialog from "./WebinarDialog";
-// import InfluencerAssignmentDialog from "./InfluencerAssignmentDialog";
 import TimeLineEventDialog from "../Timeline/TimeLineDialog";
 import TimelineView, { groupBy } from "../Timeline/TimeLineView";
+import stylesExporter from "../styles/stylesExporter";
+
+const styles = stylesExporter.dialogs;
 
 const client = generateClient<Schema>();
 
@@ -58,6 +41,7 @@ type DialogType = Campaign.Campaign;
 
 interface EditToolbarProps {
     setDialogOptions: (props: DialogOptions<DialogType>) => any;
+    setDialog: (props: Dialogs) => any;
 }
 enum Dialogs {
     campaign,
@@ -67,8 +51,9 @@ enum Dialogs {
 }
 
 function EditToolbar(props: EditToolbarProps) {
-    const { setDialogOptions } = props;
+    const { setDialogOptions, setDialog } = props;
     function handleClick() {
+        setDialog(Dialogs.campaign);
         setDialogOptions({ open: true });
     }
     return (
@@ -86,22 +71,39 @@ function WebinarList(props: {}) {
     // const [details, setDetails] = useState<Schema["InfluencerPrivate"][]>([]);
     const [campaigns, setCampaigns] = useState<Campaign.Campaign[]>();
     const [dialog, setDialog] = useState(Dialogs.campaign);
+    const [groupBy, setGroupBy] = useState<groupBy>("day");
 
+    const [dialogOtions, setDialogOptions] = useState<DialogOptions<any>>({
+        open: false,
+    });
+
+    const [dialogProps, setDialogProps] = useState<DialogProps<DialogType>>({
+        rows: campaigns ?? [],
+        setRows: setCampaigns,
+        onClose: (hasChanged?: boolean) => {
+            setDialogOptions({ open: false });
+            if (hasChanged) updateCampaigns();
+        },
+        // columns,
+        // excludeColumns: ["id"],
+    });
     const columns: GridColDef[] = [
         {
             field: "id",
             headerName: "ID",
-            width: 100,
-            flex: 1,
+            // width: 100,
+            // flex: 1,
             type: "string",
         },
         {
             field: "customer",
             headerName: "Kunde",
-            flex: 2,
+            flex: 1,
+            minWidth: 100,
             headerAlign: "center",
             align: "center",
             type: "string",
+            maxWidth: 300,
             valueGetter(params) {
                 // console.log(params);
                 const customer: Customer = params.row.customer;
@@ -115,20 +117,16 @@ function WebinarList(props: {}) {
                             <Typography>{customer.company}</Typography>
                             <br />
                             <Typography>{params.value}</Typography>
-                            {customer.companyPosition ? (
-                                <Typography>({customer.companyPosition})</Typography>
-                            ) : (
-                                <></>
-                            )}
+                            {customer.companyPosition ? <Typography>({customer.companyPosition})</Typography> : <></>}
                         </div>
                         <div>
-                            <GridActionsCellItem
-                                icon={<EditIcon />}
-                                label="Edit"
+                            <IconButton
                                 className="textPrimary"
                                 onClick={handleEditClickCustomer(params.id)}
                                 color="inherit"
-                            />
+                            >
+                                <EditIcon />
+                            </IconButton>
                         </div>
                     </div>,
                 ];
@@ -144,7 +142,7 @@ function WebinarList(props: {}) {
                 const date = new Date(row.webinar.date);
                 return date;
             },
-            renderCell(params) {
+            renderCell: (params) => {
                 const date: Date = params.value;
                 return [
                     <div key={params.id} className={styles.cellActionSplit}>
@@ -154,47 +152,46 @@ function WebinarList(props: {}) {
                             <Typography>{date.toLocaleString()}</Typography>
                         </div>
                         <div>
-                            <GridActionsCellItem
-                                icon={<EditIcon />}
-                                label="Edit"
+                            <IconButton
                                 className="textPrimary"
                                 onClick={handleEditClickWebinar(params.id)}
                                 color="inherit"
-                            />
+                            >
+                                <EditIcon />
+                            </IconButton>
                         </div>
                     </div>,
                 ];
             },
         },
-        {
-            field: "influencers",
-            headerName: "Influencer",
-            flex: 2,
-
-            headerAlign: "center",
-            align: "center",
-            type: "string",
-            renderCell({ id, row }: { id: GridRowId; row: Campaign.WebinarCampaign }) {
-                return [
-                    <div key={id} className={styles.cellActionSplit}>
-                        <div>
-                            <Typography>{}</Typography>
-                            <br />
-                            <Typography>{}</Typography>
-                        </div>
-                        <div>
-                            <GridActionsCellItem
-                                icon={<AddIcon />}
-                                label="Edit"
-                                className="textPrimary"
-                                onClick={handleAddClickInfluencer(id)}
-                                color="inherit"
-                            />
-                        </div>
-                    </div>,
-                ];
-            },
-        },
+        // {
+        //     field: "influencers",
+        //     headerName: "Influencer",
+        //     flex: 2,
+        //     headerAlign: "center",
+        //     align: "center",
+        //     type: "string",
+        //     renderCell({ id, row }: { id: GridRowId; row: Campaign.WebinarCampaign }) {
+        //         return [
+        //             <div key={id} className={styles.cellActionSplit}>
+        //                 <div>
+        //                     <Typography>{}</Typography>
+        //                     <br />
+        //                     <Typography>{}</Typography>
+        //                 </div>
+        //                 <div>
+        //                     <GridActionsCellItem
+        //                         icon={<AddIcon />}
+        //                         label="Edit"
+        //                         className="textPrimary"
+        //                         onClick={handleAddClickTimeline(id)}
+        //                         color="inherit"
+        //                     />
+        //                 </div>
+        //             </div>,
+        //         ];
+        //     },
+        // },
         {
             field: "nextSteps",
             headerName: "Nächste Schritte",
@@ -202,60 +199,89 @@ function WebinarList(props: {}) {
 
             headerAlign: "center",
             align: "center",
-            renderCell: (params: GridCellParams) => {
-                const [groupBy, setGroupBy] = useState<groupBy>("day");
-                const row: Campaign.Campaign = params.row;
+            sortable: false,
+            disableColumnMenu: true,
+            renderHeader: (params: GridColumnHeaderParams) => {
                 return (
-                    <div style={{ display: "flex", flexDirection: "column", flexBasis: "100%" }}>
-                        <Select
-                            value={groupBy}
-                            onChange={(e) => {
-                                setGroupBy(e.target.value as groupBy);
+                    <>
+                        <Typography>{params.colDef.headerName}</Typography>
+                        <div style={{ width: "10px" }} />
+                        <TextField
+                            select
+                            label={"Gruppieren nach"}
+                            SelectProps={{
+                                sx: { minWidth: "15ch" },
+                                onChange: (e) => {
+                                    setGroupBy(e.target.value as groupBy);
+                                },
+                                value: groupBy,
                             }}
                         >
                             <MenuItem value={"day"}>Tag</MenuItem>
                             <MenuItem value={"week"}>Woche</MenuItem>
-                        </Select>
-                        <TimelineView groupBy={groupBy} events={row.campaignTimelineEvents} />;
+                        </TextField>
+                    </>
+                );
+            },
+
+            renderCell: (params: GridCellParams) => {
+                const row: Campaign.Campaign = params.row;
+                return (
+                    <div
+                        className={`${styles.cellActionSplit} ${styles.timeline}`}
+                        // style={{ display: "flex", flexDirection: "column", flexBasis: "100%" }}
+                    >
+                        <div>
+                            <TimelineView
+                                eventDialogProps={{ props: dialogProps, options: dialogOtions, influencers }}
+                                maxItems={2}
+                                groupBy={groupBy}
+                                events={row.campaignTimelineEvents}
+                            />
+                        </div>
+                        {/* <div style={{ justifyContent: "flex-end" }}>
+                            <Button variant="outlined" color="inherit" onClick={handleAddClickTimeline(row.id)}>
+                                <AddIcon />
+                                <Typography variant="body1">Neu</Typography>
+                            </Button>
+                        </div> */}
                     </div>
                 );
             },
         },
-        // {
-        //     field: "actions",
-        //     type: "actions",
-        //     headerName: "Aktionen",
-        //     cellClassName: "actions",
-        //     getActions: ({ id }) => {
-        //         return [
-        //             <GridActionsCellItem
-        //                 icon={<EditIcon />}
-        //                 label="Edit"
-        //                 className="textPrimary"
-        //                 onClick={handleEditClick(id)}
-        //                 color="inherit"
-        //             />,
-        //             // <GridActionsCellItem
-        //             //     icon={<DeleteIcon />}
-        //             //     label="Delete"
-        //             //     onClick={handleDeleteClick(id)}
-        //             //     color="inherit"
-        //             // />,
-        //         ];
-        //     },
-        // },
+        {
+            field: "actions",
+            type: "actions",
+            headerName: "Aktionen",
+            width: 150,
+            // cellClassName: "actions",
+            renderCell: ({ id }) => {
+                return (
+                    <div className={styles.actions}>
+                        <Button variant="outlined" color="inherit" onClick={handleAddClickTimeline(id)}>
+                            <AddIcon />
+                            <Typography variant="body1">Ereignis</Typography>
+                        </Button>
+                        ,
+                    </div>
+                    // <GridActionsCellItem
+                    //     icon={<AddIcon />}
+                    //     label="Ereignis"
+                    //     content="Test"
+                    //     className="textPrimary"
+                    //     // onClick={handleEditClick(id)}
+                    //     color="inherit"
+                    // />,
+                    // <GridActionsCellItem
+                    //     icon={<DeleteIcon />}
+                    //     label="Delete"
+                    //     // onClick={handleDeleteClick(id)}
+                    //     color="inherit"
+                    // />,
+                );
+            },
+        },
     ];
-    const [dialogOtions, setDialogOptions] = useState<DialogOptions<any>>({
-        open: false,
-    });
-
-    const [dialogProps, setDialogProps] = useState<DialogProps<DialogType>>({
-        rows: campaigns ?? [],
-        setRows: setCampaigns,
-        onClose: () => setDialogOptions({ open: false }),
-        columns,
-        excludeColumns: ["id"],
-    });
 
     const { user, authStatus } = useAuthenticator((x) => [x.user, x.authStatus]);
     // const [groups, setGroups] = useState<string[]>([]);
@@ -266,42 +292,7 @@ function WebinarList(props: {}) {
         return () => {};
     }, [client, campaigns]);
     useEffect(() => {
-        listCampaigns().then(({ data }) => {
-            console.log(data);
-            setCampaigns(data);
-        });
-        // let sub: Subscription;
-        // try {
-        //     if (authStatus !== "authenticated") return;
-        //     sub = client.models.Campaign.observeQuery().subscribe(
-        //         async ({ items }: { items: Schema["Campaign"][] }) => {
-        //             console.log(items);
-        //             const campaigns = await Promise.all(
-        //                 items.map(async (campaign: Schema["Campaign"]) => {
-        //                     const { data: webinar } = await campaign.webinarDetails();
-        //                     const { data: customer } = await campaign.customer();
-        //                     const { data: timelineEvents = [] } =
-        //                         await campaign.campaignTimelineEvents();
-        //                     // console.log(timelineEvents);
-        //                     if (!(webinar && customer)) throw new Error("");
-        //                     return {
-        //                         id: campaign.id,
-        //                         campaign,
-        //                         webinar,
-        //                         customer,
-        //                         timelineEvents,
-        //                     } satisfies WebinarCampaign;
-        //                 }),
-        //             );
-        //             console.log({ campaigns });
-        //             // console.log(details);
-        //             setCampaigns([...campaigns]);
-        //         },
-        //     );
-        //     console.log(sub);
-        // } catch (error) {
-        //     console.log("error", error);
-        // }
+        updateCampaigns();
 
         return () => {};
     }, [client]);
@@ -313,6 +304,13 @@ function WebinarList(props: {}) {
         return () => {};
     }, [campaigns]);
 
+    async function updateCampaigns() {
+        // console.log("Starting Update");
+        listCampaigns().then((res) => {
+            // console.log("received Update");
+            setCampaigns(res.data);
+        });
+    }
     // useEffect(() => {
     //     getUserGroups().then((result) => setGroups(result));
     //     return () => {};
@@ -328,6 +326,7 @@ function WebinarList(props: {}) {
     }
     function handleEditClickCustomer(id: GridRowId) {
         return () => {
+            // debugger;
             const editingData = campaigns?.find((campaign) => campaign.id === id)?.customer;
             if (!editingData) return;
             setDialog(Dialogs.customer);
@@ -343,7 +342,7 @@ function WebinarList(props: {}) {
         };
     }
 
-    function handleAddClickInfluencer(id: GridRowId) {
+    function handleAddClickTimeline(id: GridRowId) {
         return () => {
             const campaign = campaigns?.find((campaign) => campaign.id === id);
             if (!campaign) return;
@@ -351,6 +350,7 @@ function WebinarList(props: {}) {
             setDialogOptions({ open: true, campaignId: campaign.id });
         };
     }
+
     function handleEditClickInfluencer(id: GridRowId) {
         return () => {
             // const campaign = campaigns?.find((campaign) => campaign.id === id);
@@ -380,18 +380,10 @@ function WebinarList(props: {}) {
     return (
         <>
             {dialog === Dialogs.campaign && <CampaignDialog {...dialogOtions} {...dialogProps} />}
-            {dialog === Dialogs.customer && (
-                <CustomerDialog props={dialogProps} options={dialogOtions} />
-            )}
-            {dialog === Dialogs.webinar && (
-                <WebinarDialog props={dialogProps} options={dialogOtions} />
-            )}
+            {dialog === Dialogs.customer && <CustomerDialog props={dialogProps} options={dialogOtions} />}
+            {dialog === Dialogs.webinar && <WebinarDialog props={dialogProps} options={dialogOtions} />}
             {dialog === Dialogs.influencer && (
-                <TimeLineEventDialog
-                    props={dialogProps}
-                    options={dialogOtions}
-                    influencers={influencers}
-                />
+                <TimeLineEventDialog props={dialogProps} options={dialogOtions} influencers={influencers} />
             )}
             <DataGrid
                 localeText={deDE.components.MuiDataGrid.defaultProps.localeText}
@@ -400,6 +392,7 @@ function WebinarList(props: {}) {
                 columns={columns}
                 initialState={{ columns: { columnVisibilityModel: { id: false } } }}
                 getRowHeight={() => "auto"}
+                columnHeaderHeight={80}
                 // rowModesModel={rowModesModel}
                 // onRowModesModelChange={handleRowModesModelChange}
                 // onRowEditStop={handleRowEditStop}
@@ -409,12 +402,22 @@ function WebinarList(props: {}) {
                     toolbar: EditToolbar,
                 }}
                 slotProps={{
-                    toolbar: { setDialogOptions },
+                    toolbar: { setDialogOptions, setDialog },
                 }}
                 autoHeight={true}
                 sx={{
                     m: 2,
                     background: "lightgray",
+                    "& .MuiDataGrid-columnHeaderTitleContainerContent": {
+                        overflow: "visible",
+                    },
+                    "& .MuiDataGrid-actionsCell": {
+                        flex: 1,
+                        height: "100%",
+                        display: "flex",
+                        justifyContent: "flex-start",
+                        flexDirection: "column",
+                    },
                     "& .MuiDataGrid-cell": {
                         // color: "primary.main",
                         borderLeft: "1px solid black",

@@ -23,8 +23,7 @@ export async function getUserGroups() {
         operation: async (contextSpec) => {
             const session = await fetchAuthSession(contextSpec);
             // console.log(session);
-            const payloadGroups =
-                (session.tokens?.accessToken.payload["cognito:groups"] as string[]) ?? [];
+            const payloadGroups = (session.tokens?.accessToken.payload["cognito:groups"] as string[]) ?? [];
             // console.log(typeof payloadGroups);
             // if (!payloadGroups || typeof payloadGroups !== Json[]) return [];
             // console.log(payloadGroups);
@@ -88,27 +87,22 @@ export async function updateInfluencer(props: { data: InfluencerDataUpdate }) {
         throw new Error(publicErrors?.map((x) => x.message).join(", "));
     }
 
-    const { data: privateData, errors: privateErrors } =
-        await client.models.InfluencerPrivate.update({
-            id: publicData.influencerPublicDetailsId,
-            email,
-        });
+    const { data: privateData, errors: privateErrors } = await client.models.InfluencerPrivate.update({
+        id: publicData.influencerPublicDetailsId,
+        email,
+    });
     return { privateErrors, publicErrors };
 }
 
-export async function deleteInfluencer(props: {
-    publicId: string;
-    privateId: string;
-}): Promise<void> {
+export async function deleteInfluencer(props: { publicId: string; privateId: string }): Promise<void> {
     const { publicId, privateId } = props;
     console.log({ publicId, privateId });
     if (!(publicId && privateId)) {
         return;
     }
-    const { data: privateData, errors: errorsPrivate } =
-        await client.models.InfluencerPrivate.delete({
-            id: privateId,
-        });
+    const { data: privateData, errors: errorsPrivate } = await client.models.InfluencerPrivate.delete({
+        id: privateId,
+    });
     console.log({ privateData, errorsPrivate });
     const { data: publicData, errors: errorsPublic } = await client.models.InfluencerPublic.delete({
         id: publicId,
@@ -118,15 +112,7 @@ export async function deleteInfluencer(props: {
 
 export async function listInfluencers() {
     const { data } = await client.models.InfluencerPublic.list({
-        selectionSet: [
-            "id",
-            "firstName",
-            "lastName",
-            "createdAt",
-            "updatedAt",
-            "details.id",
-            "details.email",
-        ],
+        selectionSet: ["id", "firstName", "lastName", "createdAt", "updatedAt", "details.id", "details.email"],
     });
     return data;
 }
@@ -322,7 +308,6 @@ export async function listCampaigns() {
             "webinar.date",
         ],
     });
-
     data.map((raw) => {
         return {
             id: raw.id,
@@ -383,9 +368,7 @@ export async function createTimelineEvent(props: TimelineEvent.TimelineEvent) {
     if (!(timelineEventInfluencerId && date && campaignCampaignTimelineEventsId)) {
         throw new Error("Missing Data");
     }
-    const { data: inviteEventData, errors: inviteEventErrors } = await createInviteEvent(
-        inviteEvent,
-    );
+    const { data: inviteEventData, errors: inviteEventErrors } = await createInviteEvent(inviteEvent);
 
     const { data, errors } = await client.models.TimelineEvent.create({
         timelineEventType,
@@ -398,6 +381,29 @@ export async function createTimelineEvent(props: TimelineEvent.TimelineEvent) {
 
     return { errors };
 }
+export async function updateTimelineEvent(props: TimelineEvent.TimelineEvent) {
+    const { id, timelineEventType, date, notes } = props;
+    const { id: campaignCampaignTimelineEventsId } = props.campaign;
+    const { id: timelineEventInfluencerId } = props.influencer;
+    const { inviteEvent = undefined } = props as TimelineEvent.TimeLineEventInvites;
+    if (!id) {
+        throw new Error("Missing Data");
+    }
+    console.log(inviteEvent);
+    if (inviteEvent) {
+        await updateInviteEvent(inviteEvent);
+    }
+
+    const { errors } = await client.models.TimelineEvent.update({
+        id,
+        timelineEventType,
+        date,
+        campaignCampaignTimelineEventsId,
+        timelineEventInfluencerId,
+        notes,
+    });
+}
+
 async function createInviteEvent(props: TimelineEvent.InviteEvent | undefined) {
     if (props === undefined) return { data: undefined, errors: undefined };
     const { invites } = props;
@@ -406,6 +412,18 @@ async function createInviteEvent(props: TimelineEvent.InviteEvent | undefined) {
     }
     const { data, errors } = await client.models.InvitesEvent.create({
         invites,
+    });
+    return { data, errors };
+}
+async function updateInviteEvent(props: TimelineEvent.InviteEvent) {
+    if (props === undefined) return { data: undefined, errors: undefined };
+    const { invites, id } = props;
+    if (!(invites && id)) {
+        throw new Error("Missing Data");
+    }
+    const { data, errors } = await client.models.InvitesEvent.update({
+        invites,
+        id,
     });
     return { data, errors };
 }

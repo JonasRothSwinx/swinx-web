@@ -1,4 +1,3 @@
-import styles from "./timeLineMenu.module.css";
 import { generateClient } from "aws-amplify/api";
 import { Schema } from "@/amplify/data/resource";
 import {
@@ -22,26 +21,15 @@ import {
 } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { Influencer, TimelineEvent } from "@/app/ServerFunctions/databaseTypes";
-import { createTimelineEvent, listTimelineEvents } from "@/app/ServerFunctions/serverActions";
+import { createTimelineEvent, listTimelineEvents, updateTimelineEvent } from "@/app/ServerFunctions/serverActions";
 import { DialogOptions, DialogProps } from "@/app/Definitions/types";
 import { Webinar, Campaign } from "@/app/ServerFunctions/databaseTypes";
 
-import {
-    campaignTypes,
-    influencerAssignments,
-    timelineEventTypes,
-    timelineEventTypesType,
-} from "@/amplify/data/types";
-import {
-    DatePicker,
-    DateTimePicker,
-    LocalizationProvider,
-    TimeClock,
-    TimePicker,
-} from "@mui/x-date-pickers";
+import { campaignTypes, influencerAssignments, timelineEventTypes, timelineEventTypesType } from "@/amplify/data/types";
+import { DatePicker, DateTimePicker, LocalizationProvider, TimeClock, TimePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import "dayjs/locale/de";
-import { ChangeEvent, MouseEvent, MouseEventHandler, useState } from "react";
+import { ChangeEvent, MouseEvent, MouseEventHandler, useEffect, useState } from "react";
 import dayjs, { Dayjs } from "@/app/configuredDayJs";
 import {
     Add as AddIcon,
@@ -51,64 +39,80 @@ import {
     Close as CancelIcon,
 } from "@mui/icons-material";
 import { CustomIconButton } from "@/app/Components/IconButton";
+import stylesExporter from "../styles/stylesExporter";
 
+const styles = stylesExporter.dialogs;
 type DialogType = TimelineEvent.TimelineEvent;
 const initEvent: DialogType = {
     timelineEventType: "Generic",
     influencer: { id: "", firstName: "", lastName: "" },
     campaign: { id: "" },
 };
-function TimeLineEventDialog(props: {
+
+export type TimelineDialogProps = {
     props: DialogProps<Campaign.Campaign>;
     options: DialogOptions<DialogType>;
     influencers: Influencer.Influencer[];
-}) {
+};
+function TimeLineEventDialog(props: TimelineDialogProps) {
     const { influencers } = props;
-    const { onClose, rows, setRows, columns, excludeColumns } = props.props;
+    const { onClose, rows, setRows } = props.props;
     const { open = false, editing, editingData, campaignId = "" } = props.options;
     const [timelineEvent, setTimelineEvent] = useState<DialogType>(
-        editingData ?? { ...initEvent, campaign: { id: campaignId } },
+        editingData ?? { ...initEvent, campaign: { id: campaignId } }
     );
     const [dates, setDates] = useState<{ number: number; dates: (Dayjs | null)[] }>({
         number: 1,
-        dates: [null],
+        dates: [editingData ? dayjs(editingData.date) : null],
     });
+    useEffect(() => {
+        if (editingData) {
+            setTimelineEvent(editingData);
+            setDates({ number: 1, dates: [dayjs(editingData.date)] });
+        }
+
+        return () => {};
+    }, [editingData]);
+
     // const [inviteEvent, setInviteEvent] = useState<InviteEvent>();
 
     // const [isModalOpen, setIsModalOpen] = useState(open);
 
-    function handleClose() {
-        if (onClose) {
-            onClose();
-        }
+    function handleClose(hasChanged?: boolean) {
+        return () => {
+            if (onClose) {
+                onClose(hasChanged);
+            }
+        };
         // setIsModalOpen(false);
     }
     async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        console.log(timelineEvent);
-
+        // console.log(timelineEvent);
         if (editing) {
-            // const updatedWebinar: Webinar = formJson as Webinar;
-            // updatedWebinar.date = dayjs(
-            //     updatedWebinar.date,
-            //     "DD.MM.YYYY HH:MM",
-            // ).toISOString();
-            // const campaign = rows.find((x) => x.webinar.id === updatedWebinar.id);
-            // console.log({ campaign, updatedWebinar });
-            // if (campaign) campaign.webinar = updatedWebinar;
-            // parseWebinarFormData(formJson);
+            timelineEvent.date = dates.dates[0]!.toISOString();
+            updateTimelineEvent(timelineEvent);
+            const campaign = rows.find((x) => x.id === timelineEvent.campaign.id);
+            if (campaign) {
+                const newCampaign = {
+                    ...campaign,
+                    campaignTimelineEvents: [
+                        ...campaign.campaignTimelineEvents.map((x) => (x.id === timelineEvent.id ? timelineEvent : x)),
+                    ],
+                };
+                const newRows = rows.map((x) => (x.id === newCampaign.id ? newCampaign : x));
+                setRows([...newRows]);
+                // setRows([...newRows]);
+            }
         } else {
             const events = dates.dates.map((date) => {
                 if (date === null) return;
                 return { ...timelineEvent, date: date.toISOString() } satisfies DialogType;
             });
-            const res = await Promise.all(events.map((x) => x && createTimelineEvent(x)));
-            console.log(res);
-            const dbEvents = await listTimelineEvents();
-            console.log(dbEvents);
+            Promise.all(events.map((x) => x && createTimelineEvent(x))).then((res) => console.log(res));
         }
-
-        // handleClose();
+        console.log("closing");
+        handleClose(true)();
     }
     function handleAddDateClick() {
         setDates((prev) => {
@@ -126,7 +130,7 @@ function TimeLineEventDialog(props: {
                             timelineEventType: value,
 
                             inviteEvent: { invites: 1000 },
-                        } satisfies TimelineEvent.TimeLineEventInvites),
+                        } satisfies TimelineEvent.TimeLineEventInvites)
                 );
                 break;
             case "Video":
@@ -135,7 +139,7 @@ function TimeLineEventDialog(props: {
                         ({
                             ...prev,
                             timelineEventType: value,
-                        } satisfies TimelineEvent.TimeLineEventVideo),
+                        } satisfies TimelineEvent.TimeLineEventVideo)
                 );
                 break;
             case "Post":
@@ -144,7 +148,7 @@ function TimeLineEventDialog(props: {
                         ({
                             ...prev,
                             timelineEventType: value,
-                        } satisfies TimelineEvent.TimeLineEventPost),
+                        } satisfies TimelineEvent.TimeLineEventPost)
                 );
                 break;
             default:
@@ -153,7 +157,7 @@ function TimeLineEventDialog(props: {
                         ({
                             ...prev,
                             timelineEventType: value,
-                        } satisfies TimelineEvent.TimeLineEventGeneric),
+                        } satisfies TimelineEvent.TimeLineEventGeneric)
                 );
                 break;
         }
@@ -165,7 +169,7 @@ function TimeLineEventDialog(props: {
                 ({
                     ...prev,
                     influencer: { ...prev.influencer, id: value },
-                } satisfies TimelineEvent.TimelineEvent),
+                } satisfies TimelineEvent.TimelineEvent)
         );
     }
     function handleRemoveDateClick(i: number) {
@@ -195,7 +199,7 @@ function TimeLineEventDialog(props: {
             // ref={modalRef}
             open={open}
             className={styles.dialog}
-            onClose={handleClose}
+            onClose={handleClose(false)}
             PaperProps={{
                 component: "form",
                 onSubmit,
@@ -283,16 +287,13 @@ function TimeLineEventDialog(props: {
                     </Select>
                 </FormControl>
             </DialogContent>
-            <DialogContent
-                dividers
-                sx={{ "& .MuiFormControl-root": { flexBasis: "100%", flex: 1 } }}
-            >
+            <DialogContent dividers sx={{ "& .MuiFormControl-root": { flexBasis: "100%", flex: 1 } }}>
                 <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
                     <div style={{ flexBasis: "100%" }}>
                         {dates.dates.map((date, index) => {
                             return (
                                 <div key={`dumb${index}`} className={styles.cellActionSplit}>
-                                    <DateTimePicker
+                                    <DatePicker
                                         key={`date${index}`}
                                         closeOnSelect={false}
                                         label="Termin"
@@ -306,10 +307,7 @@ function TimeLineEventDialog(props: {
                                         }}
                                     />
                                     {dates.number > 1 && (
-                                        <Button
-                                            key={`removeButton${index}`}
-                                            onClick={handleRemoveDateClick(index)}
-                                        >
+                                        <Button key={`removeButton${index}`} onClick={handleRemoveDateClick(index)}>
                                             <DeleteIcon />
                                         </Button>
                                     )}
@@ -317,27 +315,26 @@ function TimeLineEventDialog(props: {
                             );
                         })}
                     </div>
-                    <Button
-                        key={"Add"}
-                        aria-label="Add"
-                        onClick={handleAddDateClick}
-                        color="primary"
-                        style={{ alignSelf: "flex-start" }}
-                        variant="outlined"
-                    >
-                        <AddIcon />
-                        An weiterem Termin wiederholen
-                    </Button>
+                    {!editing && (
+                        <Button
+                            key={"Add"}
+                            aria-label="Add"
+                            onClick={handleAddDateClick}
+                            color="primary"
+                            style={{ alignSelf: "flex-start" }}
+                            variant="outlined"
+                        >
+                            <AddIcon />
+                            An weiterem Termin wiederholen
+                        </Button>
+                    )}
 
                     {/* <TimePicker name="time" /> */}
                 </LocalizationProvider>
             </DialogContent>
             {TimelineEvent.isInviteEvent(timelineEvent) && (
                 <>
-                    <DialogContent
-                        dividers
-                        sx={{ "& .MuiFormControl-root": { flexBasis: "100%" } }}
-                    >
+                    <DialogContent dividers sx={{ "& .MuiFormControl-root": { flexBasis: "100%" } }}>
                         <TextField
                             type="number"
                             id="invites"
@@ -368,7 +365,7 @@ function TimeLineEventDialog(props: {
                     justifyContent: "space-between",
                 }}
             >
-                <Button onClick={handleClose} color="secondary">
+                <Button onClick={handleClose(false)} color="secondary">
                     Abbrechen
                 </Button>
                 <Button variant="contained" type="submit">

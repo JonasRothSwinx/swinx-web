@@ -21,7 +21,8 @@
         "next": "^14.0.4",
         "npm": "^10.3.0",
         "react": "^18",
-        "react-dom": "^18"
+        "react-dom": "^18",
+        "typescript-plugin-css-modules": "^5.0.2"
     },
     "devDependencies": {
         "@aws-amplify/backend": "^0.5.4",

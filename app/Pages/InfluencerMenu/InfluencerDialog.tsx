@@ -1,35 +1,15 @@
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
-import styles from "./influencerMenu.module.css";
-import { generateClient } from "aws-amplify/api";
-import { Schema } from "@/amplify/data/resource";
-import {
-    Box,
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    TextField,
-} from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { createNewInfluencer, updateInfluencer } from "@/app/ServerFunctions/serverActions";
 import { Influencer } from "@/app/ServerFunctions/databaseTypes";
 import { DialogOptions, DialogProps } from "@/app/Definitions/types";
+import stylesExporter from "../styles/stylesExporter";
 
-const client = generateClient<Schema>();
+const styles = stylesExporter.dialogs;
 type DialogType = Influencer.InfluencerFull;
 
 function InfluencerDialog(props: DialogProps<DialogType> & DialogOptions<DialogType>) {
-    const {
-        open = false,
-        onClose,
-        editing,
-        editingData,
-        rows,
-        setRows,
-        columns,
-        excludeColumns,
-    } = props;
+    const { open = false, onClose, editing, editingData, rows, setRows } = props;
     // const [isModalOpen, setIsModalOpen] = useState(open);
 
     function handleClose() {
@@ -80,9 +60,7 @@ function InfluencerDialog(props: DialogProps<DialogType> & DialogOptions<DialogT
                             lastName,
                             details: { ...editingData.details, email },
                         };
-                        updatedRows = rows.map((row) =>
-                            row.id === updatedInfluencer.id ? updatedInfluencer : row,
-                        );
+                        updatedRows = rows.map((row) => (row.id === updatedInfluencer.id ? updatedInfluencer : row));
                         // console.log({ rows, updatedRows });
                         console.log("Setting Rows");
 

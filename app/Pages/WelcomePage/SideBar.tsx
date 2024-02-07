@@ -1,7 +1,9 @@
 import UserView from "@/app/Pages/WelcomePage/User";
-import styles from "./sideBar.module.css";
 import { useEffect, useState } from "react";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
+import stylesExporter from "../styles/stylesExporter";
+
+const styles = stylesExporter.sideBar;
 
 export interface ISideBarButton {
     id: sideBarButtonId;
@@ -43,12 +45,7 @@ function SideBar(props: ISideBar) {
         <div className={styles.sideBar}>
             <UserView />
             {sideBarButtons.map((sb) => (
-                <SideBarButton
-                    key={sb.id.toString()}
-                    buttonProps={sb}
-                    groups={groups}
-                    callback={setMenuCallback}
-                />
+                <SideBarButton key={sb.id.toString()} buttonProps={sb} groups={groups} callback={setMenuCallback} />
             ))}
         </div>
     );

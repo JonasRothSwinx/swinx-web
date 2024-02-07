@@ -1,15 +1,14 @@
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import { FetchUserAttributesOutput } from "aws-amplify/auth";
 import { useEffect, useState } from "react";
-import styles from "./user.module.css";
 import { getUserAttributes, getUserGroups } from "../../ServerFunctions/serverActions";
 import { Button } from "@mui/material";
+import stylesExporter from "../styles/stylesExporter";
+
+const styles = stylesExporter.user;
 
 function UserView() {
-    const { user, signOut, authStatus } = useAuthenticator((context) => [
-        context.user,
-        context.authStatus,
-    ]);
+    const { user, signOut, authStatus } = useAuthenticator((context) => [context.user, context.authStatus]);
     const [attributes, setAttributes] = useState<FetchUserAttributesOutput>();
     const [groups, setGroups] = useState<string[]>([]);
 
@@ -28,11 +27,7 @@ function UserView() {
         <>
             <div className={styles.user}>
                 <h1>Hello {attributes?.given_name ?? ""}</h1>
-                <Button
-                    sx={{ background: "darkgray", color: "white" }}
-                    variant="outlined"
-                    onClick={signOut}
-                >
+                <Button sx={{ background: "darkgray", color: "white" }} variant="outlined" onClick={signOut}>
                     Abmelden
                 </Button>
                 <span>

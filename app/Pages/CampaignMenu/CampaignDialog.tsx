@@ -1,5 +1,4 @@
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
-import styles from "./campaignMenu.module.css";
 import { generateClient } from "aws-amplify/api";
 import { Schema } from "@/amplify/data/resource";
 import {
@@ -27,16 +26,12 @@ import {
 import { DialogOptions, DialogProps } from "@/app/Definitions/types";
 import { Campaign, Customer, Webinar } from "@/app/ServerFunctions/databaseTypes";
 import { campaignTypes } from "@/amplify/data/types";
-import {
-    DatePicker,
-    DateTimePicker,
-    LocalizationProvider,
-    TimeClock,
-    TimePicker,
-} from "@mui/x-date-pickers";
+import { DatePicker, DateTimePicker, LocalizationProvider, TimeClock, TimePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "@/app/configuredDayJs";
+import stylesExporter from "../styles/stylesExporter";
 
+const styles = stylesExporter.dialogs;
 type DialogType = Campaign.Campaign;
 
 const initialCustomer: Customer = {
@@ -45,10 +40,12 @@ const initialCustomer: Customer = {
     company: "",
     email: "",
 };
+
 const initialWebinar: Webinar = {
     title: "",
     date: "",
 };
+
 const initialData: Campaign.Campaign = {
     id: "",
     campaignType: "Webinar",
@@ -60,16 +57,7 @@ const initialData: Campaign.Campaign = {
 };
 
 function CampaignDialog(props: DialogProps<DialogType> & DialogOptions<DialogType>) {
-    const {
-        open = false,
-        onClose,
-        editing,
-        editingData,
-        rows,
-        setRows,
-        columns,
-        excludeColumns,
-    } = props;
+    const { open = false, onClose, editing, editingData, rows, setRows } = props;
 
     const [campaign, setCampaign] = useState<Campaign.Campaign>(initialData);
     // const [isModalOpen, setIsModalOpen] = useState(open);
@@ -84,9 +72,9 @@ function CampaignDialog(props: DialogProps<DialogType> & DialogOptions<DialogTyp
         return () => {};
     }, [campaign]);
 
-    function handleClose() {
+    function handleClose(hasChanged?: boolean) {
         if (onClose) {
-            onClose();
+            onClose(hasChanged);
         }
         // setIsModalOpen(false);
     }
@@ -114,14 +102,14 @@ function CampaignDialog(props: DialogProps<DialogType> & DialogOptions<DialogTyp
 
         createNewCampaign(campaign);
         setRows((prevState) => [...(prevState ?? []), campaign]);
-        handleClose();
+        handleClose(true);
     }
     return (
         <Dialog
             // ref={modalRef}
             open={open}
-            className={styles.dialog}
-            onClose={handleClose}
+            // className={styles.dialog}
+            onClose={() => handleClose(false)}
             PaperProps={{
                 component: "form",
                 onSubmit,
@@ -165,7 +153,7 @@ function CampaignDialog(props: DialogProps<DialogType> & DialogOptions<DialogTyp
                                             ({
                                                 ...prevState,
                                                 campaignType: value,
-                                            } satisfies Campaign.Campaign),
+                                            } satisfies Campaign.Campaign)
                                     );
                                     break;
                                 default:
@@ -183,10 +171,7 @@ function CampaignDialog(props: DialogProps<DialogType> & DialogOptions<DialogTyp
                     </Select>
                 </FormControl>
             </DialogContent>
-            <DialogContent
-                dividers
-                sx={{ "& .MuiFormControl-root:has(#customerEmail)": { flexBasis: "100%" } }}
-            >
+            <DialogContent dividers sx={{ "& .MuiFormControl-root:has(#customerEmail)": { flexBasis: "100%" } }}>
                 <DialogContentText>Kunde</DialogContentText>
                 <TextField
                     autoFocus
@@ -205,7 +190,7 @@ function CampaignDialog(props: DialogProps<DialogType> & DialogOptions<DialogTyp
                                         ...prevState.customer,
                                         firstName: event.target.value,
                                     },
-                                } satisfies Campaign.Campaign),
+                                } satisfies Campaign.Campaign)
                         )
                     }
                     required
@@ -227,7 +212,7 @@ function CampaignDialog(props: DialogProps<DialogType> & DialogOptions<DialogTyp
                                         ...prevState.customer,
                                         lastName: event.target.value,
                                     },
-                                } satisfies Campaign.Campaign),
+                                } satisfies Campaign.Campaign)
                         )
                     }
                     required
@@ -248,7 +233,7 @@ function CampaignDialog(props: DialogProps<DialogType> & DialogOptions<DialogTyp
                                         ...prevState.customer,
                                         email: event.target.value,
                                     },
-                                } satisfies Campaign.Campaign),
+                                } satisfies Campaign.Campaign)
                         )
                     }
                     required
@@ -269,7 +254,7 @@ function CampaignDialog(props: DialogProps<DialogType> & DialogOptions<DialogTyp
                                         ...prevState.customer,
                                         company: event.target.value,
                                     },
-                                } satisfies Campaign.Campaign),
+                                } satisfies Campaign.Campaign)
                         )
                     }
                     type="text"
@@ -292,16 +277,13 @@ function CampaignDialog(props: DialogProps<DialogType> & DialogOptions<DialogTyp
                                         ...prevState.customer,
                                         companyPosition: event.target.value,
                                     },
-                                } satisfies Campaign.Campaign),
+                                } satisfies Campaign.Campaign)
                         )
                     }
                 />
             </DialogContent>
             {Campaign.isWebinar(campaign) && (
-                <DialogContent
-                    dividers
-                    sx={{ "& .MuiFormControl-root:has(#webinarTitle)": { flexBasis: "100%" } }}
-                >
+                <DialogContent dividers sx={{ "& .MuiFormControl-root:has(#webinarTitle)": { flexBasis: "100%" } }}>
                     <DialogContentText>Webinar</DialogContentText>
                     <TextField
                         autoFocus
@@ -346,9 +328,7 @@ function CampaignDialog(props: DialogProps<DialogType> & DialogOptions<DialogTyp
                                         ...prevState,
                                         webinar: {
                                             ...prevState.webinar,
-                                            date:
-                                                dayjs(value, "DD.MM.YYYY HH:MM").toISOString() ??
-                                                "",
+                                            date: dayjs(value, "DD.MM.YYYY HH:MM").toISOString() ?? "",
                                         },
                                     } satisfies Campaign.Campaign;
                                 });
@@ -363,7 +343,7 @@ function CampaignDialog(props: DialogProps<DialogType> & DialogOptions<DialogTyp
                     justifyContent: "space-between",
                 }}
             >
-                <Button onClick={handleClose} color="secondary">
+                <Button onClick={() => handleClose(false)} color="secondary">
                     Abbrechen
                 </Button>
                 <Button variant="contained" type="submit">

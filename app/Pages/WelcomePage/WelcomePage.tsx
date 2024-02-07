@@ -1,20 +1,13 @@
 import { Schema } from "@/amplify/data/resource";
 import { useAuthenticator, withAuthenticator } from "@aws-amplify/ui-react";
 import { generateClient } from "aws-amplify/api";
-import { FetchUserAttributesOutput, fetchUserAttributes } from "aws-amplify/auth";
 import { useEffect, useState } from "react";
-import TodosList from "../../todosList";
-import Image from "next/image";
-import styles from "./welcomePage.module.css";
-import UserView from "./User";
-import TodoCreateForm from "@/ui-components/TodoCreateForm";
-import InfluencerList from "../InfluencerMenu/InfluencerList";
-import InfluencerPublicCreateForm from "@/ui-components/InfluencerPublicCreateForm";
-import InfluencerPrivateCreateForm from "@/ui-components/InfluencerPrivateCreateForm";
-import InfluencerPublicUpdateForm from "@/ui-components/InfluencerPublicUpdateForm";
 import SideBar, { sideBarButtonId } from "./SideBar";
 import InfluencerMenu from "../InfluencerMenu/InfluencerMenu";
 import CampaignMenu from "../CampaignMenu/CampaignMenu";
+import stylesExporter from "../styles/stylesExporter";
+
+const styles = stylesExporter.welcomePage;
 
 const client = generateClient<Schema>();
 
@@ -25,10 +18,7 @@ async function createTodo() {
     console.log({ errors, newTodo });
 }
 function WelcomePage({}) {
-    const { signOut, user, authStatus } = useAuthenticator((context) => [
-        context.user,
-        context.authStatus,
-    ]);
+    const { signOut, user, authStatus } = useAuthenticator((context) => [context.user, context.authStatus]);
     const [openMenu, setOpenMenu] = useState<sideBarButtonId>(sideBarButtonId.campaigns);
     if (authStatus !== "authenticated") return null;
 

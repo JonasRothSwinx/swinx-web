@@ -19,9 +19,9 @@ export interface DialogOptions<T> {
 }
 
 export interface DialogProps<T> {
-    onClose?: () => any;
+    onClose?: (hasChanged?: boolean) => any;
     rows: T[];
     setRows: Dispatch<SetStateAction<T[] | undefined>>;
-    columns: GridColDef[];
-    excludeColumns: string[];
+    // columns: GridColDef[];
+    // excludeColumns: string[];
 }

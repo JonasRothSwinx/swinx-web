@@ -43,7 +43,6 @@ import { deDE } from "@mui/x-data-grid";
 import { deDE as pickersDeDE } from "@mui/x-date-pickers/locales";
 import { deDE as coreDeDE } from "@mui/material/locale";
 import { DialogOptions, DialogProps } from "@/app/Definitions/types";
-import * as queries from "@/ui-components/graphql/queries";
 
 const client = generateClient<Schema>();
 const theme = createTheme({}, { deDE, pickersDeDE, coreDeDE });
@@ -172,11 +171,9 @@ function InfluencerList(props: {}) {
                     setRows((prev) => {
                         console.log("ChangingRows", { prev, items });
                         return items;
-                    }),
+                    })
                 );
         },
-        columns,
-        excludeColumns: ["id"],
     });
 
     const { user, authStatus } = useAuthenticator((x) => [x.user, x.authStatus]);
@@ -189,7 +186,7 @@ function InfluencerList(props: {}) {
             setRows((prev) => {
                 console.log("ChangingRows", { prev, items });
                 return items;
-            }),
+            })
         );
         return () => {};
     }, [client]);

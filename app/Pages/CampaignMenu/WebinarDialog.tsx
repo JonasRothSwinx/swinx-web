@@ -1,4 +1,3 @@
-import styles from "./campaignMenu.module.css";
 import { generateClient } from "aws-amplify/api";
 import { Schema } from "@/amplify/data/resource";
 import {
@@ -23,22 +22,20 @@ import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useState } from "react";
 import dayjs from "@/app/configuredDayJs";
+import stylesExporter from "../styles/stylesExporter";
 
-const client = generateClient<Schema>();
+const styles = stylesExporter.dialogs;
 type DialogType = Webinar;
 
-function WebinarDialog(props: {
-    props: DialogProps<Campaign.Campaign>;
-    options: DialogOptions<DialogType>;
-}) {
-    const { onClose, rows, setRows, columns, excludeColumns } = props.props;
+function WebinarDialog(props: { props: DialogProps<Campaign.Campaign>; options: DialogOptions<DialogType> }) {
+    const { onClose, rows, setRows } = props.props;
     const { open = false, editing, editingData } = props.options;
     const [date, setDate] = useState(dayjs(editingData?.date ?? ""));
     // const [isModalOpen, setIsModalOpen] = useState(open);
 
-    function handleClose() {
+    function handleClose(hasChanged?: boolean) {
         if (onClose) {
-            onClose();
+            onClose(hasChanged);
         }
         // setIsModalOpen(false);
     }
@@ -67,7 +64,7 @@ function WebinarDialog(props: {
             // ref={modalRef}
             open={open}
             className={styles.dialog}
-            onClose={handleClose}
+            onClose={() => handleClose(false)}
             PaperProps={{
                 component: "form",
                 onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
@@ -77,14 +74,10 @@ function WebinarDialog(props: {
                     parseWebinarFormData(formJson);
 
                     const updatedWebinar: Webinar = formJson as Webinar;
-                    updatedWebinar.date = dayjs(
-                        updatedWebinar.date,
-                        "DD.MM.YYYY HH:MM",
-                    ).toISOString();
+                    updatedWebinar.date = dayjs(updatedWebinar.date, "DD.MM.YYYY HH:MM").toISOString();
                     const campaign = rows.find(
                         (campaign): campaign is Campaign.WebinarCampaign =>
-                            Campaign.isWebinar(campaign) &&
-                            campaign.webinar.id === updatedWebinar.id,
+                            Campaign.isWebinar(campaign) && campaign.webinar.id === updatedWebinar.id
                     );
                     console.log({ campaign, updatedWebinar });
                     if (campaign) campaign.webinar = updatedWebinar;
@@ -155,7 +148,7 @@ function WebinarDialog(props: {
                     justifyContent: "space-between",
                 }}
             >
-                <Button onClick={handleClose} color="secondary">
+                <Button onClick={() => handleClose(false)} color="secondary">
                     Abbrechen
                 </Button>
                 <Button variant="contained" type="submit">
