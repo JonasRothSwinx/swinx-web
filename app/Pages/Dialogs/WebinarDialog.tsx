@@ -16,21 +16,22 @@ import {
     TextField,
 } from "@mui/material";
 import { parseWebinarFormData } from "@/app/ServerFunctions/serverActions";
-import { DialogOptions, DialogProps } from "@/app/Definitions/types";
+import { DialogOptions, DialogConfig, DialogProps } from "@/app/Definitions/types";
 import { Webinar, Campaign, Customer } from "@/app/ServerFunctions/databaseTypes";
 import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import dayjs from "@/app/configuredDayJs";
 import stylesExporter from "../styles/stylesExporter";
 
 const styles = stylesExporter.dialogs;
 type DialogType = Webinar;
 
-function WebinarDialog(props: { props: DialogProps<Campaign.Campaign>; options: DialogOptions<DialogType> }) {
-    const { onClose, rows, setRows } = props.props;
-    const { open = false, editing, editingData } = props.options;
-    const [date, setDate] = useState(dayjs(editingData?.date ?? ""));
+type WebinarDialogProps = DialogProps<Campaign.Campaign, DialogType>;
+function WebinarDialog(props: WebinarDialogProps) {
+    // debugger;
+    const { onClose, rows, setRows, isOpen, editing, editingData } = props;
+    const [date, setDate] = useState(dayjs(editingData ? dayjs(editingData.date) : null));
     // const [isModalOpen, setIsModalOpen] = useState(open);
 
     function handleClose(hasChanged?: boolean) {
@@ -39,6 +40,10 @@ function WebinarDialog(props: { props: DialogProps<Campaign.Campaign>; options: 
         }
         // setIsModalOpen(false);
     }
+    useEffect(() => {
+        setDate(dayjs(editingData ? dayjs(editingData.date) : null));
+        return () => {};
+    }, [editingData]);
 
     // async function makeInfluencer(args: { firstName: string; lastName: string; email: string }) {
     //     const { firstName, lastName, email } = args;
@@ -62,7 +67,7 @@ function WebinarDialog(props: { props: DialogProps<Campaign.Campaign>; options: 
     return (
         <Dialog
             // ref={modalRef}
-            open={open}
+            open={isOpen}
             className={styles.dialog}
             onClose={() => handleClose(false)}
             PaperProps={{
@@ -74,10 +79,14 @@ function WebinarDialog(props: { props: DialogProps<Campaign.Campaign>; options: 
                     parseWebinarFormData(formJson);
 
                     const updatedWebinar: Webinar = formJson as Webinar;
-                    updatedWebinar.date = dayjs(updatedWebinar.date, "DD.MM.YYYY HH:MM").toISOString();
+                    updatedWebinar.date = dayjs(
+                        updatedWebinar.date,
+                        "DD.MM.YYYY HH:MM",
+                    ).toISOString();
                     const campaign = rows.find(
                         (campaign): campaign is Campaign.WebinarCampaign =>
-                            Campaign.isWebinar(campaign) && campaign.webinar.id === updatedWebinar.id
+                            Campaign.isWebinar(campaign) &&
+                            campaign.webinar.id === updatedWebinar.id,
                     );
                     console.log({ campaign, updatedWebinar });
                     if (campaign) campaign.webinar = updatedWebinar;

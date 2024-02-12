@@ -1,15 +1,25 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
+import {
+    Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    TextField,
+} from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { createNewInfluencer, updateInfluencer } from "@/app/ServerFunctions/serverActions";
-import { Influencer } from "@/app/ServerFunctions/databaseTypes";
-import { DialogOptions, DialogProps } from "@/app/Definitions/types";
+import { Campaign, Influencer } from "@/app/ServerFunctions/databaseTypes";
+import { DialogOptions, DialogConfig, DialogProps } from "@/app/Definitions/types";
 import stylesExporter from "../styles/stylesExporter";
 
 const styles = stylesExporter.dialogs;
 type DialogType = Influencer.InfluencerFull;
 
-function InfluencerDialog(props: DialogProps<DialogType> & DialogOptions<DialogType>) {
-    const { open = false, onClose, editing, editingData, rows, setRows } = props;
+type InfluencerDialogProps = DialogProps<Influencer.InfluencerFull, DialogType>;
+function InfluencerDialog(props: InfluencerDialogProps) {
+    // debugger;
+    const { onClose, rows, setRows, isOpen, editing, editingData } = props;
     // const [isModalOpen, setIsModalOpen] = useState(open);
 
     function handleClose() {
@@ -41,7 +51,7 @@ function InfluencerDialog(props: DialogProps<DialogType> & DialogOptions<DialogT
     return (
         <Dialog
             // ref={modalRef}
-            open={open}
+            open={isOpen}
             className={styles.dialog}
             onClose={handleClose}
             PaperProps={{
@@ -60,7 +70,9 @@ function InfluencerDialog(props: DialogProps<DialogType> & DialogOptions<DialogT
                             lastName,
                             details: { ...editingData.details, email },
                         };
-                        updatedRows = rows.map((row) => (row.id === updatedInfluencer.id ? updatedInfluencer : row));
+                        updatedRows = rows.map((row) =>
+                            row.id === updatedInfluencer.id ? updatedInfluencer : row,
+                        );
                         // console.log({ rows, updatedRows });
                         console.log("Setting Rows");
 

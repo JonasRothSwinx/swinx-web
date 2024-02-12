@@ -1,10 +1,10 @@
-import WebinarList from "./CampaignList";
+import CampaignList from "./CampaignList";
 
 function CampaignMenu(props: {}) {
     return (
         <>
             {/* <span>Kampagnen</span> */}
-            <WebinarList />
+            <CampaignList />
         </>
     );
 }
