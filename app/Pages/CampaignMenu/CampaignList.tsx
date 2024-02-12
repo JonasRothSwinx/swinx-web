@@ -35,6 +35,7 @@ import WebinarDialog from "../Dialogs/WebinarDialog";
 import TimeLineEventDialog from "../Dialogs/TimelineEventDialog";
 import TimelineView, { groupBy } from "../Timeline/TimeLineView";
 import stylesExporter from "../styles/stylesExporter";
+import CampaignDetails from "../CampaignDetails/CampaignDetails";
 
 const styles = stylesExporter.dialogs;
 
@@ -45,12 +46,12 @@ type DialogType = Campaign.Campaign;
 interface EditToolbarProps {
     setIsOpen: Dispatch<SetStateAction<DialogState>>;
 }
-enum Dialogs {
-    campaign,
-    customer,
-    webinar,
-    influencer,
-}
+// enum Dialogs {
+//     campaign,
+//     customer,
+//     webinar,
+//     influencer,
+// }
 
 function EditToolbar(props: EditToolbarProps) {
     const { setIsOpen } = props;
@@ -71,6 +72,14 @@ type DialogState = {
     customer: boolean;
     webinar: boolean;
     timelineEvent: boolean;
+    details: boolean;
+};
+const allDialogsClosed: DialogState = {
+    campaign: false,
+    customer: false,
+    webinar: false,
+    timelineEvent: false,
+    details: false,
 };
 type EditableDataTypes = Campaign.Campaign | Customer | Webinar | TimelineEvent.TimelineEvent;
 type CampaignListProps = {};
@@ -81,18 +90,70 @@ function CampaignList(props: CampaignListProps) {
     const [campaigns, setCampaigns] = useState<Campaign.Campaign[]>();
     const [editingData, setEditingData] = useState<EditableDataTypes>();
     const [groupBy, setGroupBy] = useState<groupBy>("day");
+    const [isOpen, setIsOpen] = useState<DialogState>(allDialogsClosed);
     const [dialogOptions, setDialogOptions] = useState<DialogOptions>({});
-    const [isOpen, setIsOpen] = useState<DialogState>({
-        campaign: false,
-        customer: false,
-        webinar: false,
-        timelineEvent: false,
-    });
     const [dialogConfig, setDialogConfig] = useState<DialogConfig<DialogType>>({
         rows: campaigns ?? [],
         setRows: setCampaigns,
         onClose: onDialogClose,
     });
+
+    const ClickHandlers = {
+        editCustomer: (id: GridRowId) => {
+            return () => {
+                const customer = campaigns?.find((campaign) => campaign.id === id)?.customer;
+                if (!customer) return;
+                setEditingData({ ...customer });
+                setDialogOptions({ editing: true });
+                setIsOpen((prev) => ({ ...prev, customer: true }));
+            };
+        },
+        editWebinar: (id: GridRowId) => {
+            return () => {
+                const campaign = campaigns?.find((campaign) => campaign.id === id);
+                if (!(campaign && Campaign.isWebinar(campaign))) return;
+                const webinar = campaign.webinar;
+                setIsOpen((prev) => ({ ...prev, webinar: true }));
+                setEditingData(webinar);
+                setDialogOptions({ editing: true });
+            };
+        },
+        showTimeline: (id: GridRowId) => {
+            return () => {
+                const campaign = campaigns?.find((campaign) => campaign.id === id);
+                if (!campaign) return;
+                setIsOpen((prev) => ({ ...prev, details: true }));
+                setEditingData(campaign);
+            };
+        },
+        addTimeline: (id: GridRowId) => {
+            return () => {
+                const campaign = campaigns?.find((campaign) => campaign.id === id);
+                if (!campaign) return;
+                setIsOpen((prev) => ({ ...prev, timelineEvent: true }));
+                setDialogOptions({ campaignId: campaign.id });
+            };
+        },
+        editInfluencer: (id: GridRowId) => {
+            return () => {
+                // const campaign = campaigns?.find((campaign) => campaign.id === id);
+                // if (!campaign) return;
+                // setDialog(Dialogs.influencer);
+                // setDialogOptions({ open: true, editing: true, editingData });
+            };
+        },
+        deleteCampaign: (id: GridRowId) => {
+            return () => {
+                if (!confirm("Kampagne wirklich unwiderruflich löschen?")) return;
+                const campaign = campaigns?.find((x) => x.id === id);
+                if (!campaign) return;
+                deleteCampaign(campaign);
+                setCampaigns([...(campaigns?.filter((x) => x.id !== id) ?? [])]);
+                updateCampaigns();
+            };
+        },
+    };
+
     const columns: GridColDef[] = [
         {
             field: "id",
@@ -132,7 +193,7 @@ function CampaignList(props: CampaignListProps) {
                         <div>
                             <IconButton
                                 className="textPrimary"
-                                onClick={handleEditClickCustomer(params.id)}
+                                onClick={ClickHandlers.editCustomer(params.id)}
                                 color="inherit"
                             >
                                 <EditIcon />
@@ -164,7 +225,7 @@ function CampaignList(props: CampaignListProps) {
                         <div>
                             <IconButton
                                 className="textPrimary"
-                                onClick={handleEditClickWebinar(params.id)}
+                                onClick={ClickHandlers.editWebinar(params.id)}
                                 color="inherit"
                             >
                                 <EditIcon />
@@ -174,34 +235,6 @@ function CampaignList(props: CampaignListProps) {
                 ];
             },
         },
-        // {
-        //     field: "influencers",
-        //     headerName: "Influencer",
-        //     flex: 2,
-        //     headerAlign: "center",
-        //     align: "center",
-        //     type: "string",
-        //     renderCell({ id, row }: { id: GridRowId; row: Campaign.WebinarCampaign }) {
-        //         return [
-        //             <div key={id} className={styles.cellActionSplit}>
-        //                 <div>
-        //                     <Typography>{}</Typography>
-        //                     <br />
-        //                     <Typography>{}</Typography>
-        //                 </div>
-        //                 <div>
-        //                     <GridActionsCellItem
-        //                         icon={<AddIcon />}
-        //                         label="Edit"
-        //                         className="textPrimary"
-        //                         onClick={handleAddClickTimeline(id)}
-        //                         color="inherit"
-        //                     />
-        //                 </div>
-        //             </div>,
-        //         ];
-        //     },
-        // },
         {
             field: "nextSteps",
             headerName: "Nächste Schritte",
@@ -276,18 +309,29 @@ function CampaignList(props: CampaignListProps) {
                         <Button
                             variant="outlined"
                             color="inherit"
-                            onClick={handleAddClickTimeline(id)}
+                            onClick={ClickHandlers.addTimeline(id)}
                         >
                             <AddIcon />
                             <Typography variant="body1">Ereignis</Typography>
                         </Button>
-                        <Button variant="outlined" color="inherit" onClick={handleDeleteClick(id)}>
+                        <Button
+                            variant="outlined"
+                            color="inherit"
+                            onClick={ClickHandlers.showTimeline(id)}
+                        >
+                            <VisibilityIcon />
+                            <Typography variant="body1">Timeline</Typography>
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            color="inherit"
+                            onClick={ClickHandlers.showTimeline(id)}
+                        >
                             <DeleteIcon color="error" />
                             <Typography color="error" variant="body1">
                                 Löschen
                             </Typography>
                         </Button>
-                        ,
                     </div>
                     // <GridActionsCellItem
                     //     icon={<AddIcon />}
@@ -307,7 +351,7 @@ function CampaignList(props: CampaignListProps) {
             },
         },
     ];
-
+    //#region useEffects
     useEffect(() => {
         listInfluencers().then((items) => setInfluencers(items));
         return () => {};
@@ -324,17 +368,11 @@ function CampaignList(props: CampaignListProps) {
 
         return () => {};
     }, [campaigns]);
-
+    //#endregion
     function onDialogClose(hasChanged?: boolean) {
         // console.log("Hi!");
         setEditingData(undefined);
-        const newOpenState: DialogState = {
-            ...(Object.keys(isOpen).reduce(
-                (reduced, key) => ({ ...reduced, [key]: false }),
-                {},
-            ) as DialogState),
-        };
-        setIsOpen(newOpenState);
+        setIsOpen(allDialogsClosed);
         if (hasChanged) {
             updateCampaigns();
         }
@@ -357,95 +395,44 @@ function CampaignList(props: CampaignListProps) {
     //     };
     //     // return () => setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
     // }
-    function handleEditClickCustomer(id: GridRowId) {
-        return () => {
-            // debugger;
-            const customer = campaigns?.find((campaign) => campaign.id === id)?.customer;
-            if (!customer) return;
-            setEditingData({ ...customer });
-            setDialogOptions({ editing: true });
-            setIsOpen((prev) => ({ ...prev, customer: true }));
-        };
-    }
-    function handleEditClickWebinar(id: GridRowId) {
-        return () => {
-            const campaign = campaigns?.find((campaign) => campaign.id === id);
-            if (!(campaign && Campaign.isWebinar(campaign))) return;
-            const webinar = campaign.webinar;
-            setIsOpen((prev) => ({ ...prev, webinar: true }));
-            setEditingData(webinar);
-            setDialogOptions({ editing: true });
-        };
-    }
-
-    function handleAddClickTimeline(id: GridRowId) {
-        return () => {
-            const campaign = campaigns?.find((campaign) => campaign.id === id);
-            if (!campaign) return;
-            setIsOpen((prev) => ({ ...prev, timelineEvent: true }));
-            setDialogOptions({ campaignId: campaign.id });
-        };
-    }
-
-    function handleEditClickInfluencer(id: GridRowId) {
-        return () => {
-            // const campaign = campaigns?.find((campaign) => campaign.id === id);
-            // if (!campaign) return;
-            // setDialog(Dialogs.influencer);
-            // setDialogOptions({ open: true, editing: true, editingData });
-        };
-    }
-
-    function handleDeleteClick(id: GridRowId) {
-        return () => {
-            if (!confirm("Kampagne wirklich unwiderruflich löschen?")) return;
-            const campaign = campaigns?.find((x) => x.id === id);
-            if (!campaign) return;
-            deleteCampaign(campaign);
-            setCampaigns([...(campaigns?.filter((x) => x.id !== id) ?? [])]);
-            updateCampaigns();
-        };
-    }
-    function showTimeline(id: GridRowId) {}
-    // const { tokens } =
 
     // if (influencers.length === 0) return <span>Keine Influenzerdaten vorhanden</span>;
     return (
         <>
             <>
-                {
-                    <CampaignDialog
-                        {...dialogConfig}
-                        {...dialogOptions}
-                        isOpen={isOpen.campaign}
-                        editingData={editingData as Campaign.Campaign}
-                    />
-                }
-                {
-                    <CustomerDialog
-                        {...dialogConfig}
-                        {...dialogOptions}
-                        isOpen={isOpen.customer}
-                        editingData={editingData as Customer}
-                    />
-                }
-                {
-                    <WebinarDialog
-                        {...dialogConfig}
-                        {...dialogOptions}
-                        isOpen={isOpen.webinar}
-                        editingData={editingData as Webinar}
-                    />
-                }
-                {
-                    <TimeLineEventDialog
-                        {...dialogConfig}
-                        {...dialogOptions}
-                        isOpen={isOpen.timelineEvent}
-                        influencers={influencers}
-                        editingData={editingData as TimelineEvent.TimelineEvent}
-                    />
-                }
+                <CampaignDialog
+                    {...dialogConfig}
+                    {...dialogOptions}
+                    isOpen={isOpen.campaign}
+                    editingData={editingData as Campaign.Campaign}
+                />
+                <CustomerDialog
+                    {...dialogConfig}
+                    {...dialogOptions}
+                    isOpen={isOpen.customer}
+                    editingData={editingData as Customer}
+                />
+                <WebinarDialog
+                    {...dialogConfig}
+                    {...dialogOptions}
+                    isOpen={isOpen.webinar}
+                    editingData={editingData as Webinar}
+                />
+                <TimeLineEventDialog
+                    {...dialogConfig}
+                    {...dialogOptions}
+                    isOpen={isOpen.timelineEvent}
+                    influencers={influencers}
+                    editingData={editingData as TimelineEvent.TimelineEvent}
+                />
+                <CampaignDetails
+                    onClose={onDialogClose}
+                    campaignRows={campaigns ?? []}
+                    setRows={setCampaigns}
+                    influencers={influencers}
+                    campaign={editingData as Campaign.Campaign}
+                    isOpen={isOpen.details}
+                />
             </>
             <DataGrid
                 localeText={deDE.components.MuiDataGrid.defaultProps.localeText}

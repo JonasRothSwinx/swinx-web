@@ -23,12 +23,13 @@ type GroupedEvent = {
 };
 
 export type groupBy = "day" | "week";
-
+type orientation = "horizontal" | "vertical";
 export interface TimelineViewProps {
     events: TimelineEvent.TimelineEvent[];
     groupBy: groupBy;
     maxItems?: number;
     eventDialogProps: TimelineEventDialogProps;
+    orientation?: orientation;
 }
 function groupEvents(events: TimelineEvent.TimelineEvent[], groupBy: groupBy = "day") {
     let groupedEvents: GroupedEvent[] = [];
@@ -110,7 +111,7 @@ function groupEvents(events: TimelineEvent.TimelineEvent[], groupBy: groupBy = "
     return groupedEvents;
 }
 function TimelineView(props: TimelineViewProps) {
-    const { events, groupBy = "week", maxItems = -1 } = props;
+    const { events, groupBy = "week", maxItems = -1, orientation = "vertical" } = props;
     const dialogConfig: DialogConfig<Campaign.Campaign> = {
         ...props.eventDialogProps,
     };
@@ -143,9 +144,9 @@ function TimelineView(props: TimelineViewProps) {
             />
             <Grid
                 container
-                direction="row"
+                direction={orientation === "horizontal" ? "row" : "column"}
                 // rowSpacing={1}
-                // rowGap={1}
+                rowGap={1}
                 // columnGap={1}
                 // columnSpacing={1}
                 justifyContent={"space-evenly"}
@@ -303,7 +304,7 @@ function TimelineViewItem(props: TimelineViewItemProps) {
                                         {dayjs(event.date).format("ddd")}
                                     </Grid>
                                     <Grid xs item>
-                                        {event.influencer.firstName} {event.influencer.lastName}{" "}
+                                        {event.influencer.firstName} {event.influencer.lastName}
                                     </Grid>
                                     <Grid xs="auto" item>
                                         {TimelineEvent.isInviteEvent(event) &&
