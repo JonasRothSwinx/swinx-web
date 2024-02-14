@@ -1,11 +1,4 @@
-import {
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    TextField,
-} from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
 import { DialogProps } from "@/app/Definitions/types";
 import { Campaign, Customer } from "@/app/ServerFunctions/databaseTypes";
 import React, { ChangeEvent, useEffect, useState } from "react";
@@ -25,7 +18,7 @@ const initialData: DialogType = {
 type CustomerDialogProps = DialogProps<Campaign.Campaign, Customer>;
 function CustomerDialog(props: CustomerDialogProps) {
     // debugger;
-    const { onClose, rows, setRows, isOpen, editing, editingData } = props;
+    const { onClose, parent: campaign, setParent: setCampaign, isOpen, editing, editingData } = props;
     const [customer, setCustomer] = useState(editingData);
 
     // const [isModalOpen, setIsModalOpen] = useState(isOpen);
@@ -51,9 +44,8 @@ function CustomerDialog(props: CustomerDialogProps) {
         event.preventDefault();
         if (!customer) return;
         updateCustomer(customer);
-        const campaign = rows.find((x) => x.customer?.id === customer.id);
-        console.log({ campaign, customer });
-        if (campaign) campaign.customer = customer;
+        const newCampaign = { ...campaign, customer };
+        setCampaign({ ...newCampaign });
         handleClose(true)();
     }
     // async function makeInfluencer(args: { firstName: string; lastName: string; email: string }) {
@@ -107,10 +99,7 @@ function CustomerDialog(props: CustomerDialogProps) {
             <DialogTitle>{"Kunde"}</DialogTitle>
             {/* <button onClick={handleCloseModal}>x</button> */}
 
-            <DialogContent
-                dividers
-                sx={{ "& .MuiFormControl-root:has(#customerEmail)": { flexBasis: "100%" } }}
-            >
+            <DialogContent dividers sx={{ "& .MuiFormControl-root:has(#customerEmail)": { flexBasis: "100%" } }}>
                 <TextField
                     autoFocus
                     id="id"
@@ -136,7 +125,7 @@ function CustomerDialog(props: CustomerDialogProps) {
                                 ({
                                     ...(prev ?? initialData),
                                     firstName: e.target.value,
-                                } satisfies Customer),
+                                } satisfies Customer)
                         );
                     }}
                     required
@@ -155,7 +144,7 @@ function CustomerDialog(props: CustomerDialogProps) {
                                 ({
                                     ...(prev ?? initialData),
                                     lastName: e.target.value,
-                                } satisfies Customer),
+                                } satisfies Customer)
                         );
                     }}
                     required
@@ -173,7 +162,7 @@ function CustomerDialog(props: CustomerDialogProps) {
                                 ({
                                     ...(prev ?? initialData),
                                     email: e.target.value,
-                                } satisfies Customer),
+                                } satisfies Customer)
                         );
                     }}
                     required
@@ -192,7 +181,7 @@ function CustomerDialog(props: CustomerDialogProps) {
                                 ({
                                     ...(prev ?? initialData),
                                     company: e.target.value,
-                                } satisfies Customer),
+                                } satisfies Customer)
                         );
                     }}
                 />
@@ -210,7 +199,7 @@ function CustomerDialog(props: CustomerDialogProps) {
                                 ({
                                     ...(prev ?? initialData),
                                     companyPosition: e.target.value,
-                                } satisfies Customer),
+                                } satisfies Customer)
                         );
                     }}
                 />

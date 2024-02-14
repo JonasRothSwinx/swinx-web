@@ -43,11 +43,11 @@ const schema = a.schema({
     Campaign: a
         .model({
             campaignManagerId: a.string(),
-            campaignType: a.string().required(),
+            // campaignType: a.string().required(),
             customer: a.hasOne("Customer"),
-            webinar: a.hasOne("Webinar"),
+            // webinar: a.hasOne("Webinar"),
             campaignTimelineEvents: a.hasMany("TimelineEvent"),
-            campaignStep: a.string().required().default(campaignSteps[0]),
+            // campaignStep: a.string().required().default(campaignSteps[0]),
             notes: a.string(),
         })
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),

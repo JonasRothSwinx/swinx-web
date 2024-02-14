@@ -27,10 +27,10 @@ import stylesExporter from "../styles/stylesExporter";
 const styles = stylesExporter.dialogs;
 type DialogType = Webinar;
 
-type WebinarDialogProps = DialogProps<Campaign.Campaign, DialogType>;
+type WebinarDialogProps = DialogProps<Campaign.Campaign[], DialogType>;
 function WebinarDialog(props: WebinarDialogProps) {
     // debugger;
-    const { onClose, rows, setRows, isOpen, editing, editingData } = props;
+    const { onClose, parent: rows, setParent: setRows, isOpen, editing, editingData } = props;
     const [date, setDate] = useState(dayjs(editingData ? dayjs(editingData.date) : null));
     // const [isModalOpen, setIsModalOpen] = useState(open);
 
@@ -79,15 +79,14 @@ function WebinarDialog(props: WebinarDialogProps) {
                     parseWebinarFormData(formJson);
 
                     const updatedWebinar: Webinar = formJson as Webinar;
-                    updatedWebinar.date = dayjs(
-                        updatedWebinar.date,
-                        "DD.MM.YYYY HH:MM",
-                    ).toISOString();
-                    const campaign = rows.find(
-                        (campaign): campaign is Campaign.WebinarCampaign =>
-                            Campaign.isWebinar(campaign) &&
-                            campaign.webinar.id === updatedWebinar.id,
-                    );
+                    updatedWebinar.date = dayjs(updatedWebinar.date, "DD.MM.YYYY HH:MM").toISOString();
+
+                    const campaign =
+                        rows &&
+                        rows.find(
+                            (campaign): campaign is Campaign.WebinarCampaign =>
+                                Campaign.isWebinar(campaign) && campaign.webinar.id === updatedWebinar.id
+                        );
                     console.log({ campaign, updatedWebinar });
                     if (campaign) campaign.webinar = updatedWebinar;
                     handleClose();

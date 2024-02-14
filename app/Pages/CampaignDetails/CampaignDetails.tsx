@@ -7,88 +7,201 @@ import {
     Dialog,
     Unstable_Grid2 as Grid,
     IconButton,
+    Skeleton,
+    TextField,
+    Typography,
 } from "@mui/material";
-import TimelineView from "../Timeline/TimeLineView";
+import TimelineView, { groupBy } from "../Timeline/TimeLineView";
 import {
+    Refresh as RefreshIcon,
+    Delete as DeleteIcon,
+    Edit as EditIcon,
     CloseFullscreen as CloseFullscreenIcon,
     Close as CloseIcon,
     ExpandMore as ExpandMoreIcon,
     Mail as MailIcon,
 } from "@mui/icons-material";
 import { TimelineEventDialogProps } from "../Dialogs/TimelineEventDialog";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, MouseEvent, SetStateAction, useEffect, useState } from "react";
 import { DialogConfig, DialogOptions } from "@/app/Definitions/types";
+import dayjs, { Dayjs } from "@/app/configuredDayJs";
+import { deleteCampaign, getCampaign, listInfluencers } from "@/app/ServerFunctions/serverActions";
+import stylesExporter from "../styles/stylesExporter";
+import CustomerDialog from "../Dialogs/CustomerDialog";
 
-interface TimelineViewExpandedProps {
+const styles = stylesExporter.campaignDetails;
+
+interface CampaignDetailsProps {
     isOpen: boolean;
-    campaignRows: Campaign.Campaign[];
-    setRows: Dispatch<SetStateAction<Campaign.Campaign[] | undefined>>;
-    campaign: Campaign.Campaign;
-    influencers: Influencer.InfluencerWithName[];
-    onClose: () => void;
+    campaignId: string;
+    onClose: (hasChanged?: boolean) => void;
 }
 
-function CampaignDetails(props: TimelineViewExpandedProps) {
-    const { isOpen, campaign, influencers, onClose, campaignRows, setRows: setCampaigns } = props;
-    const [dialogOptions, setDialogOptions] = useState<DialogOptions>({});
-    const [dialogConfig, setDialogConfig] = useState<DialogConfig<Campaign.Campaign>>({
-        rows: campaignRows ?? [],
-        setRows: setCampaigns,
-        onClose: onDialogClose,
-    });
-    function onDialogClose() {}
-    function handleClose() {
+function CampaignDetails(props: CampaignDetailsProps) {
+    const { isOpen, onClose, campaignId } = props;
+    const [campaign, setCampaign] = useState<Campaign.Campaign>();
+    const [influencers, setInfluencers] = useState<Influencer.InfluencerFull[]>([]);
+    const [highlightedEvent, setHighlightedEvent] = useState<TimelineEvent.TimelineEvent>();
+    const [loading, setLoading] = useState(false);
+
+    function onDialogClose() {
+        updateCampaign();
+    }
+    function handleClose(hasChanged?: boolean) {
         if (onClose) {
-            onClose();
+            onClose(true || hasChanged);
         }
     }
+    // useEffect(() => {
+    //     console.log("applying props", props);
+    //     setInfluencers(props.influencers);
+
+    //     return () => {};
+    // }, [props]);
+
+    useEffect(() => {
+        console.log("campaign changed");
+
+        return () => {};
+    }, [campaign]);
+
+    useEffect(() => {
+        updateCampaign();
+        updateInfluencers();
+
+        return () => {};
+    }, [campaignId]);
+
+    function updateCampaign() {
+        if (campaignId === "") return;
+        console.log("updating campaign");
+        setLoading(true);
+        getCampaign(campaignId).then((result) => {
+            console.log("newCampaign", result);
+            setCampaign(result);
+            setLoading(false);
+        });
+    }
+    function updateInfluencers() {
+        console.log("updating Influencers");
+        listInfluencers().then((result) => setInfluencers(result));
+    }
+    // console.log(callbackSetCampaign);
+    function callbackSetCampaign(campaign: Campaign.Campaign) {
+        console.log("callback set triggered");
+        setCampaign(campaign);
+    }
+
     return (
-        <Dialog
-            sx={{
-                padding: "10px",
-                "& .MuiDialog-container > .MuiPaper-root": {
-                    borderRadius: "20px",
-                    padding: "0px 10px",
-                },
-            }}
-            open={isOpen}
-            fullScreen
-        >
-            <div style={{ width: "100%", display: "flex", justifyContent: "right" }}>
-                <IconButton onClick={handleClose}>
-                    <CloseIcon />
-                </IconButton>
-            </div>
-            {isOpen && (
-                <Grid container columns={3}>
-                    <Grid xs={1} display={"flex"} flexDirection={"column"}>
-                        <CustomerDetails customer={campaign.customer} />
-                        <InfluencerDetails
-                            events={campaign.campaignTimelineEvents ?? []}
-                            influencers={influencers}
+        <>
+            <Dialog
+                sx={{
+                    padding: "10px",
+                    "& .MuiDialog-container > .MuiPaper-root": {
+                        borderRadius: "20px",
+                        padding: "0px 10px",
+                    },
+                }}
+                open={isOpen}
+                fullScreen
+            >
+                {loading ? (
+                    <Skeleton></Skeleton>
+                ) : (
+                    <>
+                        <CampaignDetailsButtons
+                            updateCampaign={updateCampaign}
+                            handleClose={handleClose}
+                            campaign={campaign}
                         />
-                    </Grid>
-                    <Grid xs={1}></Grid>
-                    <Grid id="timeline" xs={1}>
-                        <TimelineView
-                            eventDialogProps={{
-                                ...dialogConfig,
-                                ...dialogOptions,
-                                isOpen: false,
-                                influencers,
-                            }}
-                            events={campaign?.campaignTimelineEvents ?? []}
-                            groupBy="week"
-                        />
-                    </Grid>
-                </Grid>
-            )}
-        </Dialog>
+                        {isOpen && campaign && (
+                            <Grid container columns={3}>
+                                <Grid xs={1} display={"flex"} flexDirection={"column"}>
+                                    <CustomerDetails
+                                        campaign={campaign}
+                                        customer={campaign?.customer}
+                                        setCampaign={callbackSetCampaign}
+                                    />
+                                    <InfluencerDetails
+                                        events={campaign?.campaignTimelineEvents ?? []}
+                                        influencers={influencers}
+                                        setHighlightedEvent={setHighlightedEvent}
+                                    />
+                                </Grid>
+                                <Grid xs={1}>
+                                    <Typography fontSize={8} whiteSpace={"pre-wrap"}>
+                                        {JSON.stringify(campaign)?.replaceAll(",", "\n")}
+                                    </Typography>
+                                </Grid>
+                                <Grid id="timeline" xs={1}>
+                                    <TimelineView
+                                        setCampaign={callbackSetCampaign}
+                                        influencers={influencers}
+                                        campaign={campaign}
+                                        orientation="vertical"
+                                        controlsPosition="before"
+                                        editable
+                                        highlightedEvent={highlightedEvent}
+                                    />
+                                </Grid>
+                            </Grid>
+                        )}
+                    </>
+                )}
+            </Dialog>
+        </>
     );
 }
 export default CampaignDetails;
 
-type CustomerDetailsProps = { customer: Customer };
+interface CampaignDetailsButtonsProps {
+    updateCampaign: () => void;
+    handleClose: (hasChanged?: boolean) => void;
+    campaign?: Campaign.Campaign;
+}
+function CampaignDetailsButtons(props: CampaignDetailsButtonsProps) {
+    const { updateCampaign, handleClose, campaign } = props;
+    const ClickHandlers = {
+        deleteCampaign: () => {
+            return () => {
+                if (!campaign || !confirm("Kampagne wirklich unwiderruflich löschen?")) return;
+                deleteCampaign(campaign);
+                handleClose(true);
+            };
+        },
+    };
+    return (
+        <div style={{ width: "100%", display: "flex", justifyContent: "right", position: "relative" }}>
+            {campaign ? (
+                <Button
+                    style={{ position: "absolute", left: "0" }}
+                    variant="outlined"
+                    color="inherit"
+                    onClick={ClickHandlers.deleteCampaign()}
+                >
+                    <DeleteIcon color="error" />
+                    <Typography color="error" variant="body1">
+                        Löschen
+                    </Typography>
+                </Button>
+            ) : (
+                <Skeleton />
+            )}
+            <IconButton onClick={() => updateCampaign()}>
+                <RefreshIcon />
+            </IconButton>
+            <IconButton onClick={() => handleClose()}>
+                <CloseIcon />
+            </IconButton>
+        </div>
+    );
+}
+
+type CustomerDetailsProps = {
+    customer: Customer;
+    campaign: Campaign.Campaign;
+    setCampaign: (data: Campaign.Campaign) => void;
+};
 type CustomerData = (
     | { name: string; value: string; insertAfter?: JSX.Element; insertBefore?: JSX.Element }
     | "spacer"
@@ -112,95 +225,160 @@ function getCustomerData(customer: Customer): CustomerData {
     ] satisfies CustomerData;
 }
 function CustomerDetails(props: CustomerDetailsProps) {
-    const { customer } = props;
+    const { customer, campaign, setCampaign } = props;
     const [customerData, setCustomerData] = useState<CustomerData>(getCustomerData(customer));
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+
     useEffect(() => {
         setCustomerData(getCustomerData(customer));
 
         return () => {};
     }, [customer]);
+
+    const config: DialogConfig<Campaign.Campaign> = {
+        parent: campaign,
+        setParent: setCampaign,
+        onClose: () => setIsDialogOpen(false),
+    };
+    const options: DialogOptions = {
+        editing: true,
+    };
+
+    function handleEditButton(e: MouseEvent) {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDialogOpen(true);
+    }
     return (
-        <Accordion defaultExpanded disableGutters elevation={5}>
-            <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls="panel1-content"
-                id="panel1-header"
-            >
-                Auftraggeber
-            </AccordionSummary>
-            <AccordionDetails>
-                {customerData.map((x, i) => {
-                    console.log(i, x);
-                    if (!x) return null;
-                    if (x === "spacer") {
+        <>
+            <>
+                <CustomerDialog {...config} {...options} isOpen={isDialogOpen} editingData={customer} />
+            </>
+            <Accordion defaultExpanded disableGutters elevation={5}>
+                <AccordionSummary
+                    className={styles.summaryWithEdit}
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="panel1-content"
+                    id="panel1-header"
+                    sx={{ "& .MuiAccordionSummary-content:not(.Mui-expanded) button": { display: "none" } }}
+                >
+                    <div className={styles.summaryWithEdit}>
+                        Auftraggeber
+                        <IconButton className="textPrimary" onClick={handleEditButton} color="inherit">
+                            <EditIcon />
+                        </IconButton>
+                    </div>
+                </AccordionSummary>
+                <AccordionDetails>
+                    {customerData.map((x, i) => {
+                        if (!x) return null;
+                        if (x === "spacer") {
+                            return <div style={{ height: "1em", borderTop: "1px solid black" }} key={`spacer${i}`} />;
+                        }
                         return (
-                            <div
-                                style={{ height: "1em", borderTop: "1px solid black" }}
-                                key={`spacer${i}`}
-                            />
+                            <Grid key={i + x.name} container columnSpacing={8}>
+                                <Grid xs={4} display="flex" justifyContent="left">
+                                    {x.name}
+                                </Grid>
+                                <Grid xs="auto" display="flex" justifyContent="left">
+                                    {x.insertBefore}
+                                    {x.value}
+                                    {x.insertAfter}
+                                </Grid>
+                            </Grid>
                         );
-                    }
-                    return (
-                        <Grid key={i + x.name} container columnSpacing={8}>
-                            <Grid xs={4} display="flex" justifyContent="left">
-                                {x.name}
-                            </Grid>
-                            <Grid xs="auto" display="flex" justifyContent="left">
-                                {x.insertBefore}
-                                {x.value}
-                                {x.insertAfter}
-                            </Grid>
-                        </Grid>
-                    );
-                })}
-            </AccordionDetails>
-        </Accordion>
+                    })}
+                </AccordionDetails>
+            </Accordion>
+        </>
     );
 }
 type InfluencerDetailsProps = {
     events: TimelineEvent.TimelineEvent[];
-    influencers: Influencer.InfluencerWithName[];
+    influencers: Influencer.InfluencerFull[];
+    setHighlightedEvent: Dispatch<SetStateAction<TimelineEvent.TimelineEvent | undefined>>;
 };
 
 function InfluencerDetails(props: InfluencerDetailsProps) {
-    const { influencers, events } = props;
-    const [involvedInfluencers, setInvolvedInfluencers] = useState<Influencer.InfluencerWithName[]>(
-        [],
-    );
+    const { influencers, events, setHighlightedEvent } = props;
+    const [involvedInfluencers, setInvolvedInfluencers] = useState<Influencer.AssignedInfluencer[]>([]);
     useEffect(() => {
         function getInfluencers() {
-            const involvedInfluencers: Influencer.InfluencerWithName[] = [];
+            const involvedInfluencers: Influencer.AssignedInfluencer[] = [];
 
             for (const event of events) {
-                if (involvedInfluencers.find((x) => x.id === event.influencer.id)) continue;
                 const influencer = influencers.find((x) => x.id === event.influencer.id);
                 if (!influencer) continue;
-                involvedInfluencers.push(influencer);
+                const involvedInfluencer = involvedInfluencers.find((x) => x.id === influencer.id);
+                switch (true) {
+                    case TimelineEvent.isInviteEvent(event): {
+                        if (!event.inviteEvent) continue;
+                        if (involvedInfluencer) {
+                            involvedInfluencer.inviteEvents.push(event);
+                        } else {
+                            involvedInfluencers.push({ ...influencer, inviteEvents: [event] });
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+            for (const influencer of involvedInfluencers) {
+                influencer.inviteEvents.sort((a, b) => (a.date && b.date ? a.date.localeCompare(b.date) : 0));
             }
             return involvedInfluencers;
         }
         setInvolvedInfluencers(getInfluencers());
         return () => {};
     }, [events, influencers]);
-
     return (
         <Accordion defaultExpanded disableGutters elevation={5}>
-            <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls="panel1-content"
-                id="panel1-header"
-            >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1-content" id="panel1-header">
                 Influencer
             </AccordionSummary>
             <AccordionDetails>
                 {involvedInfluencers.map((influencer) => {
+                    // console.log(influencer);
                     return (
-                        <Grid key={influencer.id} container columnSpacing={8}>
-                            <Grid xs={"auto"} display="flex" justifyContent="left">
+                        <Accordion key={influencer.id} defaultExpanded>
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                                 {influencer.firstName} {influencer.lastName}
-                            </Grid>
-                            <Grid xs="auto" display="flex" justifyContent="left"></Grid>
-                        </Grid>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                {influencer.inviteEvents.length > 0 && (
+                                    <Accordion>
+                                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                            Invites:{" "}
+                                            {influencer.inviteEvents.reduce((sum: number, event) => {
+                                                return sum + (event?.inviteEvent?.invites ?? 0);
+                                            }, 0)}{" "}
+                                            verteilt über {influencer.inviteEvents.length} Termine
+                                        </AccordionSummary>
+                                        <AccordionDetails>
+                                            <Grid container>
+                                                {influencer.inviteEvents.map((event) => {
+                                                    const date = dayjs(event.date);
+                                                    return (
+                                                        <Grid
+                                                            xs={12}
+                                                            key={event.id}
+                                                            onClick={() => {
+                                                                setHighlightedEvent(event);
+                                                            }}
+                                                        >
+                                                            <Typography>
+                                                                {date.format("DD.MM.YYYY")} ({date.fromNow()})
+                                                            </Typography>
+                                                        </Grid>
+                                                    );
+                                                })}
+                                            </Grid>
+                                        </AccordionDetails>
+                                    </Accordion>
+                                )}
+                            </AccordionDetails>
+                        </Accordion>
                     );
                 })}
             </AccordionDetails>

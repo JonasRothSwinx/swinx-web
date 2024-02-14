@@ -1,12 +1,4 @@
-import {
-    Box,
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    TextField,
-} from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import { createNewInfluencer, updateInfluencer } from "@/app/ServerFunctions/serverActions";
 import { Campaign, Influencer } from "@/app/ServerFunctions/databaseTypes";
@@ -16,10 +8,10 @@ import stylesExporter from "../styles/stylesExporter";
 const styles = stylesExporter.dialogs;
 type DialogType = Influencer.InfluencerFull;
 
-type InfluencerDialogProps = DialogProps<Influencer.InfluencerFull, DialogType>;
+type InfluencerDialogProps = DialogProps<Influencer.InfluencerFull[], DialogType>;
 function InfluencerDialog(props: InfluencerDialogProps) {
     // debugger;
-    const { onClose, rows, setRows, isOpen, editing, editingData } = props;
+    const { onClose, parent: rows, setParent: setRows, isOpen, editing, editingData } = props;
     // const [isModalOpen, setIsModalOpen] = useState(open);
 
     function handleClose() {
@@ -59,6 +51,7 @@ function InfluencerDialog(props: InfluencerDialogProps) {
                 onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
                     event.preventDefault();
                     // debugger;
+                    if (!rows) return;
                     const formData = new FormData(event.currentTarget);
                     const formJson = Object.fromEntries((formData as any).entries());
                     const { id, firstName, lastName, email } = formJson;
@@ -70,9 +63,7 @@ function InfluencerDialog(props: InfluencerDialogProps) {
                             lastName,
                             details: { ...editingData.details, email },
                         };
-                        updatedRows = rows.map((row) =>
-                            row.id === updatedInfluencer.id ? updatedInfluencer : row,
-                        );
+                        updatedRows = rows.map((row) => (row.id === updatedInfluencer.id ? updatedInfluencer : row));
                         // console.log({ rows, updatedRows });
                         console.log("Setting Rows");
 
@@ -96,7 +87,7 @@ function InfluencerDialog(props: InfluencerDialogProps) {
                         updatedRows.push(newInfluencer);
                         createNewInfluencer({ data: { firstName, lastName, email } });
                     }
-                    setRows(updatedRows);
+                    setRows && setRows(updatedRows);
                     handleClose();
                 },
             }}

@@ -2,7 +2,7 @@ import { Schema } from "@/amplify/data/resource";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import { generateClient } from "aws-amplify/api";
 import { fetchAuthSession } from "aws-amplify/auth";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Subscription } from "rxjs";
 import {
     DataGrid,
@@ -48,7 +48,7 @@ const client = generateClient<Schema>();
 const theme = createTheme({}, { deDE, pickersDeDE, coreDeDE });
 
 interface EditToolbarProps {
-    setIsOpen: (props: boolean) => any;
+    setIsOpen: Dispatch<SetStateAction<boolean>>;
 }
 function InitInfluencer(props: { id: string }) {
     const { id } = props;
@@ -78,9 +78,10 @@ const selectionSet = ["id", "details.id", "details.email"] as const;
 
 function InfluencerList(props: {}) {
     // const [details, setDetails] = useState<Schema["InfluencerPrivate"][]>([]);
-    const [rows, setRows] = useState<Influencer.InfluencerFull[]>();
+    const [rows, setRows] = useState<Influencer.InfluencerFull[] | undefined>([]);
     const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
     const [isOpen, setIsOpen] = useState(false);
+    const [editingData, setEditingData] = useState<Influencer.InfluencerFull>();
 
     const columns: GridColDef[] = [
         {
@@ -117,23 +118,6 @@ function InfluencerList(props: {}) {
             valueGetter: ({ row }) => {
                 return row.details.email;
             },
-            // preProcessEditCellProps: (params: GridPreProcessEditCellProps) => {
-            //     const hasError = !String(params.props.value).match(
-            //         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-            //     );
-            //     return { ...params.props, error: hasError };
-            // },
-            // renderEditCell: (params: GridRenderEditCellParams) => (
-            //     <TextField
-            //         id="email"
-            //         name="email"
-            //         // className={styles.TextField}
-            //         // label="E-Mail"
-            //         type="email"
-            //         defaultValue={params.value}
-            //         required
-            //     />
-            // ),
         },
         {
             field: "actions",
@@ -143,6 +127,7 @@ function InfluencerList(props: {}) {
             getActions: ({ id }) => {
                 return [
                     <GridActionsCellItem
+                        key={"editAction"}
                         icon={<EditIcon />}
                         label="Edit"
                         className="textPrimary"
@@ -150,6 +135,7 @@ function InfluencerList(props: {}) {
                         color="inherit"
                     />,
                     <GridActionsCellItem
+                        key={"deleteAction"}
                         icon={<DeleteIcon />}
                         label="Delete"
                         onClick={handleDeleteClick(id)}
@@ -159,18 +145,18 @@ function InfluencerList(props: {}) {
             },
         },
     ];
-    const [dialogOtions, setDialogOptions] = useState<DialogOptions<Influencer.InfluencerFull>>({});
+    const [dialogOtions, setDialogOptions] = useState<DialogOptions>({});
 
-    const [dialogProps, setDialogProps] = useState<DialogConfig<Influencer.InfluencerFull>>({
-        rows: rows ?? [],
-        setRows,
+    const [dialogProps, setDialogProps] = useState<DialogConfig<Influencer.InfluencerFull[]>>({
+        parent: rows ?? [],
+        setParent: setRows,
         onClose: () => {
             setIsOpen(false);
             listInfluencers().then((items) =>
                 setRows((prev) => {
                     console.log("ChangingRows", { prev, items });
                     return items;
-                }),
+                })
             );
         },
     });
@@ -185,17 +171,18 @@ function InfluencerList(props: {}) {
             setRows((prev) => {
                 console.log("ChangingRows", { prev, items });
                 return items;
-            }),
+            })
         );
         return () => {};
-    }, [client]);
+    }, []);
 
     useEffect(() => {
         const dialogPropsNew = { ...dialogProps };
-        dialogPropsNew.rows = rows ?? [];
+        dialogPropsNew.parent = rows ?? [];
         setDialogProps(dialogPropsNew);
 
         return () => {};
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [rows]);
 
     useEffect(() => {
@@ -207,7 +194,8 @@ function InfluencerList(props: {}) {
             const editingData = rows?.find((x) => x.id === id);
             if (!editingData) return;
             setIsOpen(true);
-            setDialogOptions({ editing: true, editingData });
+            setDialogOptions({ editing: true });
+            setEditingData(editingData);
         };
         // return () => setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
     }
@@ -229,7 +217,7 @@ function InfluencerList(props: {}) {
     }
     return (
         <>
-            {<InfluencerDialog {...dialogOtions} {...dialogProps} isOpen={isOpen} />}
+            {<InfluencerDialog {...dialogOtions} {...dialogProps} isOpen={isOpen} editingData={editingData} />}
             <ThemeProvider theme={theme}>
                 <DataGrid
                     localeText={deDE.components.MuiDataGrid.defaultProps.localeText}

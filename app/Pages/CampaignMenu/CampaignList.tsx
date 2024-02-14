@@ -20,11 +20,7 @@ import {
     Close as CancelIcon,
     Visibility as VisibilityIcon,
 } from "@mui/icons-material";
-import {
-    listInfluencers,
-    listCampaigns,
-    deleteCampaign,
-} from "@/app/ServerFunctions/serverActions";
+import { listInfluencers, listCampaigns, deleteCampaign } from "@/app/ServerFunctions/serverActions";
 import { Influencer, TimelineEvent, Webinar } from "@/app/ServerFunctions/databaseTypes";
 import CampaignDialog from "../Dialogs/CampaignDialog";
 import { DialogOptions, DialogConfig } from "@/app/Definitions/types";
@@ -36,12 +32,13 @@ import TimeLineEventDialog from "../Dialogs/TimelineEventDialog";
 import TimelineView, { groupBy } from "../Timeline/TimeLineView";
 import stylesExporter from "../styles/stylesExporter";
 import CampaignDetails from "../CampaignDetails/CampaignDetails";
+import { randomId } from "@mui/x-data-grid-generator";
 
 const styles = stylesExporter.dialogs;
 
 const client = generateClient<Schema>();
 
-type DialogType = Campaign.Campaign;
+type DialogType = Campaign.Campaign[];
 
 interface EditToolbarProps {
     setIsOpen: Dispatch<SetStateAction<DialogState>>;
@@ -86,15 +83,15 @@ type CampaignListProps = {};
 
 function CampaignList(props: CampaignListProps) {
     const {} = props;
-    const [influencers, setInfluencers] = useState<Influencer.InfluencerWithName[]>([]);
+    const [influencers, setInfluencers] = useState<Influencer.InfluencerFull[]>([]);
     const [campaigns, setCampaigns] = useState<Campaign.Campaign[]>();
     const [editingData, setEditingData] = useState<EditableDataTypes>();
     const [groupBy, setGroupBy] = useState<groupBy>("day");
     const [isOpen, setIsOpen] = useState<DialogState>(allDialogsClosed);
     const [dialogOptions, setDialogOptions] = useState<DialogOptions>({});
     const [dialogConfig, setDialogConfig] = useState<DialogConfig<DialogType>>({
-        rows: campaigns ?? [],
-        setRows: setCampaigns,
+        parent: campaigns ?? [],
+        setParent: setCampaigns,
         onClose: onDialogClose,
     });
 
@@ -142,16 +139,6 @@ function CampaignList(props: CampaignListProps) {
                 // setDialogOptions({ open: true, editing: true, editingData });
             };
         },
-        deleteCampaign: (id: GridRowId) => {
-            return () => {
-                if (!confirm("Kampagne wirklich unwiderruflich löschen?")) return;
-                const campaign = campaigns?.find((x) => x.id === id);
-                if (!campaign) return;
-                deleteCampaign(campaign);
-                setCampaigns([...(campaigns?.filter((x) => x.id !== id) ?? [])]);
-                updateCampaigns();
-            };
-        },
     };
 
     const columns: GridColDef[] = [
@@ -178,63 +165,48 @@ function CampaignList(props: CampaignListProps) {
             },
             renderCell(params) {
                 const customer: Customer = params.row.customer;
-                return [
-                    <div key={params.id} className={styles.cellActionSplit}>
-                        <div>
-                            <Typography>{customer.company}</Typography>
-                            <br />
-                            <Typography>{params.value}</Typography>
-                            {customer.companyPosition ? (
-                                <Typography>({customer.companyPosition})</Typography>
-                            ) : (
-                                <></>
-                            )}
-                        </div>
-                        <div>
-                            <IconButton
-                                className="textPrimary"
-                                onClick={ClickHandlers.editCustomer(params.id)}
-                                color="inherit"
-                            >
-                                <EditIcon />
-                            </IconButton>
-                        </div>
-                    </div>,
-                ];
+                return (
+                    <div key={params.row.customer.id ?? "new"}>
+                        <Typography>{customer.company}</Typography>
+                        <br />
+                        <Typography>{params.value}</Typography>
+                        {customer.companyPosition ? <Typography>({customer.companyPosition})</Typography> : <></>}
+                    </div>
+                );
             },
         },
-        {
-            field: "webinar",
-            headerName: "Webinar",
-            headerAlign: "center",
-            type: "dateTime",
-            width: 200,
-            valueGetter: ({ row }: { row: Campaign.WebinarCampaign }) => {
-                const date = new Date(row.webinar.date);
-                return date;
-            },
-            renderCell: (params) => {
-                const date: Date = params.value;
-                return [
-                    <div key={params.id} className={styles.cellActionSplit}>
-                        <div>
-                            <Typography>{params.row.webinar.title}</Typography>
-                            <br />
-                            <Typography>{date.toLocaleString()}</Typography>
-                        </div>
-                        <div>
-                            <IconButton
-                                className="textPrimary"
-                                onClick={ClickHandlers.editWebinar(params.id)}
-                                color="inherit"
-                            >
-                                <EditIcon />
-                            </IconButton>
-                        </div>
-                    </div>,
-                ];
-            },
-        },
+        // {
+        //     field: "webinar",
+        //     headerName: "Webinar",
+        //     headerAlign: "center",
+        //     type: "dateTime",
+        //     width: 200,
+        //     valueGetter: ({ row }: { row: Campaign.WebinarCampaign }) => {
+        //         const date = new Date(row.webinar.date);
+        //         return date;
+        //     },
+        //     renderCell: (params) => {
+        //         const date: Date = params.value;
+        //         return [
+        //             <div key={params.id} className={styles.cellActionSplit}>
+        //                 <div>
+        //                     <Typography>{params.row.webinar.title}</Typography>
+        //                     <br />
+        //                     <Typography>{date.toLocaleString()}</Typography>
+        //                 </div>
+        //                 <div>
+        //                     <IconButton
+        //                         className="textPrimary"
+        //                         onClick={ClickHandlers.editWebinar(params.id)}
+        //                         color="inherit"
+        //                     >
+        //                         <EditIcon />
+        //                     </IconButton>
+        //                 </div>
+        //             </div>,
+        //         ];
+        //     },
+        // },
         {
             field: "nextSteps",
             headerName: "Nächste Schritte",
@@ -276,15 +248,12 @@ function CampaignList(props: CampaignListProps) {
                     >
                         <div>
                             <TimelineView
-                                eventDialogProps={{
-                                    ...dialogConfig,
-                                    ...dialogOptions,
-                                    influencers,
-                                    isOpen: false,
-                                }}
+                                setCampaign={() => {}}
+                                influencers={influencers}
                                 maxItems={2}
                                 groupBy={groupBy}
-                                events={row.campaignTimelineEvents}
+                                campaign={row}
+                                orientation="horizontal"
                             />
                         </div>
                         {/* <div style={{ justifyContent: "flex-end" }}>
@@ -297,63 +266,56 @@ function CampaignList(props: CampaignListProps) {
                 );
             },
         },
-        {
-            field: "actions",
-            type: "actions",
-            // headerName: "Aktionen",
-            width: 150,
-            // cellClassName: "actions",
-            renderCell: ({ id }) => {
-                return (
-                    <div className={styles.actions}>
-                        <Button
-                            variant="outlined"
-                            color="inherit"
-                            onClick={ClickHandlers.addTimeline(id)}
-                        >
-                            <AddIcon />
-                            <Typography variant="body1">Ereignis</Typography>
-                        </Button>
-                        <Button
-                            variant="outlined"
-                            color="inherit"
-                            onClick={ClickHandlers.showTimeline(id)}
-                        >
-                            <VisibilityIcon />
-                            <Typography variant="body1">Timeline</Typography>
-                        </Button>
-                        <Button
-                            variant="outlined"
-                            color="inherit"
-                            onClick={ClickHandlers.showTimeline(id)}
-                        >
-                            <DeleteIcon color="error" />
-                            <Typography color="error" variant="body1">
-                                Löschen
-                            </Typography>
-                        </Button>
-                    </div>
-                    // <GridActionsCellItem
-                    //     icon={<AddIcon />}
-                    //     label="Ereignis"
-                    //     content="Test"
-                    //     className="textPrimary"
-                    //     // onClick={handleEditClick(id)}
-                    //     color="inherit"
-                    // />,
-                    // <GridActionsCellItem
-                    //     icon={<DeleteIcon />}
-                    //     label="Delete"
-                    //     // onClick={handleDeleteClick(id)}
-                    //     color="inherit"
-                    // />,
-                );
-            },
-        },
+        // {
+        //     field: "actions",
+        //     type: "actions",
+        //     // headerName: "Aktionen",
+        //     width: 150,
+        //     // cellClassName: "actions",
+        //     renderCell: ({ id }) => {
+        //         return (
+        //             <div className={styles.actions}>
+        //                 <Button variant="outlined" color="inherit" onClick={ClickHandlers.addTimeline(id)}>
+        //                     <AddIcon />
+        //                     <Typography variant="body1">Ereignis</Typography>
+        //                 </Button>
+        //                 <Button variant="outlined" color="inherit" onClick={ClickHandlers.showTimeline(id)}>
+        //                     <VisibilityIcon />
+        //                     <Typography variant="body1">Timeline</Typography>
+        //                 </Button>
+        //                 <Button variant="outlined" color="inherit" onClick={ClickHandlers.showTimeline(id)}>
+        //                     <DeleteIcon color="error" />
+        //                     <Typography color="error" variant="body1">
+        //                         Löschen
+        //                     </Typography>
+        //                 </Button>
+        //             </div>
+        //             // <GridActionsCellItem
+        //             //     icon={<AddIcon />}
+        //             //     label="Ereignis"
+        //             //     content="Test"
+        //             //     className="textPrimary"
+        //             //     // onClick={handleEditClick(id)}
+        //             //     color="inherit"
+        //             // />,
+        //             // <GridActionsCellItem
+        //             //     icon={<DeleteIcon />}
+        //             //     label="Delete"
+        //             //     // onClick={handleDeleteClick(id)}
+        //             //     color="inherit"
+        //             // />,
+        //         );
+        //     },
+        // },
     ];
     //#region useEffects
     useEffect(() => {
-        listInfluencers().then((items) => setInfluencers(items));
+        const id = randomId();
+        console.log(id, "requesting influencers");
+        listInfluencers().then((items) => {
+            console.log(id, "Setting influencers to", items);
+            setInfluencers(items);
+        });
         return () => {};
     }, [/* client,  */ campaigns]);
     useEffect(() => {
@@ -364,7 +326,7 @@ function CampaignList(props: CampaignListProps) {
     useEffect(() => {
         // const dialogPropsNew = { ...dialogProps };
         // dialogPropsNew.rows = rows ?? [];
-        setDialogConfig((prev) => ({ ...prev, rows: campaigns ?? [] }));
+        setDialogConfig((prev) => ({ ...prev, parent: campaigns ?? [] }));
 
         return () => {};
     }, [campaigns]);
@@ -374,6 +336,7 @@ function CampaignList(props: CampaignListProps) {
         setEditingData(undefined);
         setIsOpen(allDialogsClosed);
         if (hasChanged) {
+            console.log("Updating Campaign Data");
             updateCampaigns();
         }
     }
@@ -399,6 +362,7 @@ function CampaignList(props: CampaignListProps) {
     // if (influencers.length === 0) return <span>Keine Influenzerdaten vorhanden</span>;
     return (
         <>
+            {/* Dialogs */}
             <>
                 <CampaignDialog
                     {...dialogConfig}
@@ -406,36 +370,19 @@ function CampaignList(props: CampaignListProps) {
                     isOpen={isOpen.campaign}
                     editingData={editingData as Campaign.Campaign}
                 />
-                <CustomerDialog
-                    {...dialogConfig}
-                    {...dialogOptions}
-                    isOpen={isOpen.customer}
-                    editingData={editingData as Customer}
-                />
                 <WebinarDialog
                     {...dialogConfig}
                     {...dialogOptions}
                     isOpen={isOpen.webinar}
                     editingData={editingData as Webinar}
                 />
-                <TimeLineEventDialog
-                    {...dialogConfig}
-                    {...dialogOptions}
-                    isOpen={isOpen.timelineEvent}
-                    influencers={influencers}
-                    editingData={editingData as TimelineEvent.TimelineEvent}
-                />
-                <CampaignDetails
-                    onClose={onDialogClose}
-                    campaignRows={campaigns ?? []}
-                    setRows={setCampaigns}
-                    influencers={influencers}
-                    campaign={editingData as Campaign.Campaign}
-                    isOpen={isOpen.details}
-                />
+                <CampaignDetails onClose={onDialogClose} campaignId={editingData?.id ?? ""} isOpen={isOpen.details} />
             </>
             <DataGrid
                 localeText={deDE.components.MuiDataGrid.defaultProps.localeText}
+                onRowClick={({ id }) => {
+                    ClickHandlers.showTimeline(id)();
+                }}
                 disableRowSelectionOnClick
                 rows={campaigns ?? []}
                 columns={columns}

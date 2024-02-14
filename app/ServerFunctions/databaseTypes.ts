@@ -1,9 +1,10 @@
 export namespace TimelineEvent {
     export type TimelineEvent =
-        | TimeLineEventInvites
-        | TimeLineEventPost
-        | TimeLineEventVideo
-        | TimeLineEventGeneric;
+        | TimelineEventInvites
+        | TimelineEventPost
+        | TimelineEventVideo
+        | TimelineEventGeneric
+        | TimelineEventWebinar;
 
     type TimelineEventStub = {
         id?: string;
@@ -15,39 +16,39 @@ export namespace TimelineEvent {
         notes?: string | null;
         campaign: { id: string };
     };
-    export function isInviteEvent(
-        timelineEvent: TimelineEvent,
-    ): timelineEvent is TimeLineEventInvites {
+    export function isInviteEvent(timelineEvent: TimelineEvent): timelineEvent is TimelineEventInvites {
         return timelineEvent.timelineEventType === "Invites";
     }
-    export type TimeLineEventInvites = {
-        // timelineEventType: "Invites";
+    export type TimelineEventInvites = {
         inviteEvent?: InviteEvent;
     } & TimelineEventStub;
 
-    export function isPostEvent(timelineEvent: TimelineEvent): timelineEvent is TimeLineEventPost {
+    export function isPostEvent(timelineEvent: TimelineEvent): timelineEvent is TimelineEventPost {
         return timelineEvent.timelineEventType === "Post";
     }
-    export type TimeLineEventPost = {
-        // timelineEventType: "Post";
-    } & TimelineEventStub;
+    export type TimelineEventPost = {} & TimelineEventStub;
 
-    export function isVideoEvent(
-        timelineEvent: TimelineEvent,
-    ): timelineEvent is TimeLineEventVideo {
+    export function isVideoEvent(timelineEvent: TimelineEvent): timelineEvent is TimelineEventVideo {
         return timelineEvent.timelineEventType === "Video";
     }
-    export type TimeLineEventVideo = {
-        // timelineEventType: "Video";
-    } & TimelineEventStub;
+    export type TimelineEventVideo = {} & TimelineEventStub;
 
-    export type TimeLineEventGeneric = {
-        // timelineEventType: "Generic";
-    } & TimelineEventStub;
+    export type TimelineEventGeneric = {} & TimelineEventStub;
 
     export type InviteEvent = {
         id?: string;
         invites?: number;
+    };
+    export function isWebinarEvent(timelineEvent: TimelineEvent): timelineEvent is TimelineEventWebinar {
+        return timelineEvent.timelineEventType === "Webinar";
+    }
+    export type TimelineEventWebinar = TimelineEventStub & {
+        webinar?: WebinarEvent;
+    };
+    export type WebinarEvent = {
+        id?: string;
+        date: string;
+        title: string;
     };
 }
 
@@ -65,14 +66,16 @@ export namespace Influencer {
     }
     export type InfluencerFull = {
         details: { id: string; email: string };
-        createdAt: string;
-        updatedAt: string;
+        createdAt?: string;
+        updatedAt?: string;
     } & InfluencerWithName;
     export function isInfluencerFull(influencer: Influencer): influencer is InfluencerFull {
-        return ["firstName", "lastName", "details", "createdAt", "updatedAt"].every(
-            (prop) => prop in influencer,
-        );
+        return ["firstName", "lastName", "details", "createdAt", "updatedAt"].every((prop) => prop in influencer);
     }
+
+    export type AssignedInfluencer = InfluencerFull & {
+        inviteEvents: TimelineEvent.TimelineEventInvites[];
+    };
 }
 //#region Customer
 export type Customer = {
@@ -91,11 +94,11 @@ export namespace Campaign {
 
     type CampaignStub = {
         id: string;
-        campaignType: string;
+        // campaignType: string;
         campaignManagerId?: string | null;
         customer: Customer;
         campaignTimelineEvents: TimelineEvent.TimelineEvent[];
-        campaignStep: string;
+        // campaignStep: string;
         notes?: string | null;
     };
 
