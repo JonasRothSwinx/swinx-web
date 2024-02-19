@@ -9,14 +9,17 @@ export namespace TimelineEvent {
     type TimelineEventStub = {
         id?: string;
         timelineEventType: string;
-        influencer: Influencer.InfluencerWithName;
+        influencerPlaceholder?: Influencer.Placeholder;
+        influencer?: Influencer.InfluencerWithName;
         createdAt?: string;
         updatedAt?: string;
         date?: string;
         notes?: string | null;
         campaign: { id: string };
     };
-    export function isInviteEvent(timelineEvent: TimelineEvent): timelineEvent is TimelineEventInvites {
+    export function isInviteEvent(
+        timelineEvent: TimelineEvent,
+    ): timelineEvent is TimelineEventInvites {
         return timelineEvent.timelineEventType === "Invites";
     }
     export type TimelineEventInvites = {
@@ -28,7 +31,9 @@ export namespace TimelineEvent {
     }
     export type TimelineEventPost = {} & TimelineEventStub;
 
-    export function isVideoEvent(timelineEvent: TimelineEvent): timelineEvent is TimelineEventVideo {
+    export function isVideoEvent(
+        timelineEvent: TimelineEvent,
+    ): timelineEvent is TimelineEventVideo {
         return timelineEvent.timelineEventType === "Video";
     }
     export type TimelineEventVideo = {} & TimelineEventStub;
@@ -39,7 +44,9 @@ export namespace TimelineEvent {
         id?: string;
         invites?: number;
     };
-    export function isWebinarEvent(timelineEvent: TimelineEvent): timelineEvent is TimelineEventWebinar {
+    export function isWebinarEvent(
+        timelineEvent: TimelineEvent,
+    ): timelineEvent is TimelineEventWebinar {
         return timelineEvent.timelineEventType === "Webinar";
     }
     export type TimelineEventWebinar = TimelineEventStub & {
@@ -70,11 +77,21 @@ export namespace Influencer {
         updatedAt?: string;
     } & InfluencerWithName;
     export function isInfluencerFull(influencer: Influencer): influencer is InfluencerFull {
-        return ["firstName", "lastName", "details", "createdAt", "updatedAt"].every((prop) => prop in influencer);
+        return ["firstName", "lastName", "details", "createdAt", "updatedAt"].every(
+            (prop) => prop in influencer,
+        );
     }
 
     export type AssignedInfluencer = InfluencerFull & {
         inviteEvents: TimelineEvent.TimelineEventInvites[];
+    };
+
+    export type Placeholder = {
+        id: string;
+        name: string;
+        candidates: Influencer[];
+        budget: number;
+        timelineEvents: TimelineEvent.TimelineEvent[];
     };
 }
 //#region Customer
@@ -98,11 +115,15 @@ export namespace Campaign {
         campaignManagerId?: string | null;
         customer: Customer;
         campaignTimelineEvents: TimelineEvent.TimelineEvent[];
+        assignedInfluencers: Influencer.InfluencerFull[];
+        influencerPlaceholders: Influencer.Placeholder[];
         // campaignStep: string;
         notes?: string | null;
     };
 
-    export type WebinarCampaign = { campaignType: "Webinar"; webinar: Webinar } & CampaignStub;
+    export type WebinarCampaign = {
+        webinar: Webinar;
+    } & CampaignStub;
     export function isWebinar(campaign: Campaign): campaign is WebinarCampaign {
         return ["webinar"].every((x) => x in campaign);
     }

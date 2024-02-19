@@ -40,6 +40,14 @@ const schema = a.schema({
         })
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
 
+    InfluencerPlaceholder: a
+        .model({
+            name: a.string(),
+            candidates: a.hasMany("InfluencerPublic"),
+            budget: a.integer(),
+        })
+        .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
+
     Campaign: a
         .model({
             campaignManagerId: a.string(),
@@ -47,6 +55,7 @@ const schema = a.schema({
             customer: a.hasOne("Customer"),
             // webinar: a.hasOne("Webinar"),
             campaignTimelineEvents: a.hasMany("TimelineEvent"),
+            influencerPlaceholders: a.hasMany("InfluencerPlaceholder"),
             // campaignStep: a.string().required().default(campaignSteps[0]),
             notes: a.string(),
         })
@@ -55,7 +64,15 @@ const schema = a.schema({
     Webinar: a
         .model({
             title: a.string(),
-            date: a.datetime().required(),
+            speaker: a.hasMany("WebinarSpeaker"),
+            notes: a.string(),
+        })
+        .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
+
+    WebinarSpeaker: a
+        .model({
+            topic: a.string(),
+            influencer: a.hasOne("InfluencerPublic"),
             notes: a.string(),
         })
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
@@ -75,8 +92,10 @@ const schema = a.schema({
         .model({
             campaign: a.belongsTo("Campaign"),
             timelineEventType: a.string().required(),
-            influencer: a.hasOne("InfluencerPublic").required(),
+            influencerPlaceholder: a.hasOne("InfluencerPlaceholder"),
+            influencer: a.hasOne("InfluencerPublic"),
             inviteEvent: a.hasOne("InvitesEvent"),
+            webinarEvent: a.hasOne("Webinar"),
             date: a.datetime().required(),
             notes: a.string(),
         })

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 "use server";
 import { fetchAuthSession, fetchUserAttributes } from "aws-amplify/auth/server";
 import { runWithAmplifyServerContext } from "./amplifyServerUtils";
@@ -23,7 +24,8 @@ export async function getUserGroups() {
         operation: async (contextSpec) => {
             const session = await fetchAuthSession(contextSpec);
             // console.log(session);
-            const payloadGroups = (session.tokens?.accessToken.payload["cognito:groups"] as string[]) ?? [];
+            const payloadGroups =
+                (session.tokens?.accessToken.payload["cognito:groups"] as string[]) ?? [];
             // console.log(typeof payloadGroups);
             // if (!payloadGroups || typeof payloadGroups !== Json[]) return [];
             // console.log(payloadGroups);
@@ -87,22 +89,27 @@ export async function updateInfluencer(props: { data: InfluencerDataUpdate }) {
         throw new Error(publicErrors?.map((x) => x.message).join(", "));
     }
 
-    const { data: privateData, errors: privateErrors } = await client.models.InfluencerPrivate.update({
-        id: publicData.influencerPublicDetailsId,
-        email,
-    });
+    const { data: privateData, errors: privateErrors } =
+        await client.models.InfluencerPrivate.update({
+            id: publicData.influencerPublicDetailsId,
+            email,
+        });
     return { privateErrors, publicErrors };
 }
 
-export async function deleteInfluencer(props: { publicId: string; privateId: string }): Promise<void> {
+export async function deleteInfluencer(props: {
+    publicId: string;
+    privateId: string;
+}): Promise<void> {
     const { publicId, privateId } = props;
     console.log({ publicId, privateId });
     if (!(publicId && privateId)) {
         return;
     }
-    const { data: privateData, errors: errorsPrivate } = await client.models.InfluencerPrivate.delete({
-        id: privateId,
-    });
+    const { data: privateData, errors: errorsPrivate } =
+        await client.models.InfluencerPrivate.delete({
+            id: privateId,
+        });
     console.log({ privateData, errorsPrivate });
     const { data: publicData, errors: errorsPublic } = await client.models.InfluencerPublic.delete({
         id: publicId,
@@ -112,7 +119,15 @@ export async function deleteInfluencer(props: { publicId: string; privateId: str
 
 export async function listInfluencers() {
     const { data } = await client.models.InfluencerPublic.list({
-        selectionSet: ["id", "firstName", "lastName", "createdAt", "updatedAt", "details.id", "details.email"],
+        selectionSet: [
+            "id",
+            "firstName",
+            "lastName",
+            "createdAt",
+            "updatedAt",
+            "details.id",
+            "details.email",
+        ],
     });
     return data;
 }
@@ -278,15 +293,28 @@ export async function createNewCampaign(campaign: Campaign.Campaign) {
     // });
     // console.log(campaignNew);
 }
-
-export async function getCampaign(id: string) {
+interface GetCampaignOptions {
+    include: {
+        customer?: boolean;
+        timelineEvents?: boolean;
+    };
+}
+const GetCampaignOptionsDefault: GetCampaignOptions = {
+    include: { customer: true, timelineEvents: true },
+};
+export async function getCampaign(
+    id: string,
+    options: GetCampaignOptions = GetCampaignOptionsDefault,
+): Promise<Campaign.Campaign> {
     const { data, errors } = await client.models.Campaign.get(
         { id },
         {
             selectionSet: [
                 //
                 "id",
+                // "campaignType",
                 "campaignManagerId",
+                // "campaignStep",
                 "notes",
 
                 "customer.id",
@@ -305,10 +333,23 @@ export async function getCampaign(id: string) {
                 "campaignTimelineEvents.timelineEventType",
                 "campaignTimelineEvents.notes",
                 "campaignTimelineEvents.inviteEvent.*",
+
+                // "webinar.id",
+                // "webinar.title",
+                // "webinar.date",
             ],
-        }
+        },
     );
-    return data;
+    const dataOut = {
+        id: data.id,
+        campaignManagerId: data.campaignManagerId,
+        notes: data.notes,
+        customer: data.customer,
+        campaignTimelineEvents: options.include.timelineEvents ? data.campaignTimelineEvents : [],
+        assignedInfluencers: [],
+        influencerPlaceholders: [],
+    } satisfies Campaign.Campaign;
+    return dataOut;
 }
 export async function listCampaigns() {
     const { data, errors } = await client.models.Campaign.list({
@@ -335,24 +376,32 @@ export async function listCampaigns() {
             "campaignTimelineEvents.campaign.id",
             "campaignTimelineEvents.timelineEventType",
             "campaignTimelineEvents.notes",
+            "campaignTimelineEvents.influencerPlaceholder.id",
+            "campaignTimelineEvents.influencerPlaceholder.name",
             "campaignTimelineEvents.inviteEvent.*",
+
+            "influencerPlaceholders.id",
+            "influencerPlaceholders.name",
+            "influencerPlaceholders.budget",
+            "influencerPlaceholders.candidates.id",
 
             // "webinar.id",
             // "webinar.title",
             // "webinar.date",
         ],
     });
-    data.map((raw) => {
-        return {
-            id: raw.id,
-            // campaignType: raw.campaignType,
-            campaignManagerId: raw.campaignManagerId,
-            customer: raw.customer,
-            campaignTimelineEvents: raw.campaignTimelineEvents,
-            // campaignStep: raw.campaignStep,
-            notes: raw.notes,
-        } satisfies Campaign.Campaign;
-    });
+    // data.map((raw) => {
+    //     return {
+    //         id: raw.id,
+    //         // campaignType: raw.campaignType,
+    //         campaignManagerId: raw.campaignManagerId,
+    //         customer: raw.customer,
+    //         campaignTimelineEvents: raw.campaignTimelineEvents,
+    //         // campaignStep: raw.campaignStep,
+    //         notes: raw.notes,
+    //         influencerPlaceholders: data.influencerPlaceholders,
+    //     } satisfies Campaign.Campaign;
+    // });
 
     return { data, errors };
 }
@@ -389,15 +438,12 @@ export async function listTimelineEvents() {
         selectionSet: [
             "id",
             "timelineEventType",
-            "timelineEventInfluencerId",
+            "influencer.id",
 
             "campaign.id",
 
-            "inviteEvent.*",
+            "inviteEvent.invites",
             // "webinarEvent.*",
-
-            "createdAt",
-            "updatedAt",
         ],
     });
     return data;
@@ -406,14 +452,16 @@ export async function createTimelineEvent(props: TimelineEvent.TimelineEvent) {
     // console.log(props);
     const { timelineEventType, date, notes } = props;
     const { id: campaignCampaignTimelineEventsId } = props.campaign;
-    const { id: timelineEventInfluencerId } = props.influencer;
+    const { id: timelineEventInfluencerId } = props.influencer ?? {};
     const { inviteEvent = undefined } = props as TimelineEvent.TimelineEventInvites;
 
     if (!(timelineEventInfluencerId && date && campaignCampaignTimelineEventsId)) {
         throw new Error("Missing Data");
     }
-    const { data: inviteEventData, errors: inviteEventErrors } = await createInviteEvent(inviteEvent);
-
+    const { data: inviteEventData, errors: inviteEventErrors } = await createInviteEvent(
+        inviteEvent,
+    );
+    //@ts-ignore: Excessive Depth
     const { data, errors } = await client.models.TimelineEvent.create({
         timelineEventType,
         date,
@@ -422,13 +470,12 @@ export async function createTimelineEvent(props: TimelineEvent.TimelineEvent) {
         timelineEventInfluencerId,
         notes,
     });
-
     return { errors };
 }
 export async function updateTimelineEvent(props: TimelineEvent.TimelineEvent) {
     const { id, timelineEventType, date, notes } = props;
     const { id: campaignCampaignTimelineEventsId } = props.campaign;
-    const { id: timelineEventInfluencerId } = props.influencer;
+    const { id: timelineEventInfluencerId } = props.influencer ?? {};
     const { inviteEvent = undefined } = props as TimelineEvent.TimelineEventInvites;
     if (!id) {
         throw new Error("Missing Data");
