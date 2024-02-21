@@ -40,9 +40,12 @@ const schema = a.schema({
         })
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
 
-    InfluencerPlaceholder: a
+    InfluencerAssignment: a
         .model({
-            name: a.string(),
+            influencer: a.hasOne("InfluencerPublic"),
+            isPlaceholder: a.boolean().required(),
+            placeholderName: a.string(),
+            timelineEvents: a.hasMany("TimelineEvent"),
             candidates: a.hasMany("InfluencerPublic"),
             budget: a.integer(),
         })
@@ -55,7 +58,7 @@ const schema = a.schema({
             customer: a.hasOne("Customer"),
             // webinar: a.hasOne("Webinar"),
             campaignTimelineEvents: a.hasMany("TimelineEvent"),
-            influencerPlaceholders: a.hasMany("InfluencerPlaceholder"),
+            assignedInfluencers: a.hasMany("InfluencerAssignment"),
             // campaignStep: a.string().required().default(campaignSteps[0]),
             notes: a.string(),
         })
@@ -92,8 +95,7 @@ const schema = a.schema({
         .model({
             campaign: a.belongsTo("Campaign"),
             timelineEventType: a.string().required(),
-            influencerPlaceholder: a.hasOne("InfluencerPlaceholder"),
-            influencer: a.hasOne("InfluencerPublic"),
+            assignment: a.belongsTo("InfluencerAssignment"),
             inviteEvent: a.hasOne("InvitesEvent"),
             webinarEvent: a.hasOne("Webinar"),
             date: a.datetime().required(),

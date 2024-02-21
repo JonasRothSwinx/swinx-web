@@ -1,4 +1,8 @@
-import { Campaign, Influencer, TimelineEvent } from "@/app/ServerFunctions/databaseTypes";
+import Assignment from "@/app/ServerFunctions/types/assignment";
+import Campaign from "@/app/ServerFunctions/types/campaign";
+import Customer from "@/app/ServerFunctions/types/customer";
+import Influencer from "@/app/ServerFunctions/types/influencer";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { randomDate, randomId } from "@mui/x-data-grid-generator";
 import { timelineEventTypesType } from "@/amplify/data/types";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
@@ -133,13 +137,13 @@ function TimelineView(props: TimelineViewProps) {
         return () => {};
     }, [campaign]);
 
-    useEffect(() => {
-        console.log("prop campaign changed, updating campaign", props.campaign);
+    // useEffect(() => {
+    //     console.log("prop campaign changed, updating campaign", props.campaign);
 
-        setCampaign(props.campaign);
+    //     setCampaign(props.campaign);
 
-        return () => {};
-    }, [props.campaign]);
+    //     return () => {};
+    // }, [props.campaign]);
 
     useEffect(() => {
         setControlsPosition(controlsPosition);
@@ -165,17 +169,19 @@ function TimelineView(props: TimelineViewProps) {
     return (
         <>
             {/* Dialogs */}
-            <>
-                <TimeLineEventDialog
-                    parent={campaign}
-                    setParent={setParent}
-                    isOpen={editingDialogOpen}
-                    onClose={onDialogClose}
-                    editing={true}
-                    editingData={editingEvent}
-                    influencers={influencers}
-                />
-            </>
+            {/*             <>
+                {editable && (
+                    <TimeLineEventDialog
+                        parent={campaign}
+                        setParent={setParent}
+                        isOpen={editingDialogOpen}
+                        onClose={onDialogClose}
+                        editing={true}
+                        editingData={editingEvent}
+                        influencers={influencers}
+                    />
+                )}
+            </> */}
 
             {controlsPositionState === "before" && (
                 <TimelineControls
@@ -356,7 +362,7 @@ function TimelineViewItem(props: TimelineViewItemProps) {
                             {groupedBy === "day" && (
                                 <>
                                     <Grid xs item>
-                                        {event.influencer.firstName} {event.influencer.lastName}{" "}
+                                        {event.assignment.influencer?.firstName} {event.assignment.influencer?.lastName}{" "}
                                     </Grid>
                                     <Grid xs="auto" item>
                                         {TimelineEvent.isInviteEvent(event) && event.inviteEvent?.invites}
@@ -369,7 +375,7 @@ function TimelineViewItem(props: TimelineViewItemProps) {
                                         {dayjs(event.date).format("ddd")}
                                     </Grid>
                                     <Grid xs item>
-                                        {event.influencer.firstName} {event.influencer.lastName}
+                                        {event.assignment.influencer?.firstName} {event.assignment.influencer?.lastName}
                                     </Grid>
                                     <Grid xs="auto" item>
                                         {TimelineEvent.isInviteEvent(event) && event.inviteEvent?.invites}
@@ -399,7 +405,7 @@ function TimelineViewItem(props: TimelineViewItemProps) {
 
 interface TimelineControlsProps {
     campaign: Campaign.Campaign;
-    setCampaign: Dispatch<SetStateAction<Campaign.Campaign>>;
+    setCampaign: (campaign: Campaign.Campaign) => void;
     groupBy: groupBy;
     setGroupBy: Dispatch<SetStateAction<groupBy>>;
     influencers: Influencer.InfluencerFull[];
@@ -428,14 +434,14 @@ function TimelineControls(props: TimelineControlsProps) {
     return (
         <>
             {/* Dialogs */}
-            <>
+            {/*             <>
                 <TimelineEventDialog
                     {...DialogOptions}
                     {...DialogConfig}
                     influencers={influencers}
                     isOpen={openDialog === "Timeline"}
                 />
-            </>
+            </> */}
             <div
                 style={{
                     marginBlock: "10px",

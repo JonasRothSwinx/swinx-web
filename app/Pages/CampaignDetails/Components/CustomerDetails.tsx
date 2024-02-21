@@ -1,5 +1,6 @@
 import { DialogConfig, DialogOptions } from "@/app/Definitions/types";
-import { Campaign, Customer } from "@/app/ServerFunctions/databaseTypes";
+import Campaign from "@/app/ServerFunctions/types/campaign";
+import Customer from "@/app/ServerFunctions/types/customer";
 import { MouseEvent, useEffect, useState } from "react";
 import CustomerDialog from "../../Dialogs/CustomerDialog";
 import { Accordion, AccordionDetails, AccordionSummary, IconButton } from "@mui/material";
@@ -10,7 +11,7 @@ import Grid from "@mui/material/Unstable_Grid2/Grid2";
 const styles = stylesExporter.campaignDetails;
 
 type CustomerDetailsProps = {
-    customer: Customer;
+    customer: Customer.Customer;
     campaign: Campaign.Campaign;
     setCampaign: (data: Campaign.Campaign) => void;
 };
@@ -19,7 +20,7 @@ type CustomerData = (
     | "spacer"
     | null
 )[];
-function getCustomerData(customer: Customer): CustomerData {
+function getCustomerData(customer: Customer.Customer): CustomerData {
     return [
         { name: "Firma", value: customer.company },
         "spacer",
@@ -66,14 +67,9 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
     return (
         <>
             <>
-                <CustomerDialog
-                    {...config}
-                    {...options}
-                    isOpen={isDialogOpen}
-                    editingData={customer}
-                />
+                <CustomerDialog {...config} {...options} isOpen={isDialogOpen} editingData={customer} />
             </>
-            <Accordion defaultExpanded disableGutters elevation={5}>
+            <Accordion defaultExpanded disableGutters variant="outlined">
                 <AccordionSummary
                     className={styles.summaryWithEdit}
                     expandIcon={<ExpandMoreIcon />}
@@ -87,11 +83,7 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
                 >
                     <div className={styles.summaryWithEdit}>
                         Auftraggeber
-                        <IconButton
-                            className="textPrimary"
-                            onClick={handleEditButton()}
-                            color="inherit"
-                        >
+                        <IconButton className="textPrimary" onClick={handleEditButton()} color="inherit">
                             <EditIcon />
                         </IconButton>
                     </div>
@@ -100,12 +92,7 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
                     {customerData.map((x, i) => {
                         if (!x) return null;
                         if (x === "spacer") {
-                            return (
-                                <div
-                                    style={{ height: "1em", borderTop: "1px solid black" }}
-                                    key={`spacer${i}`}
-                                />
-                            );
+                            return <div style={{ height: "1em", borderTop: "1px solid black" }} key={`spacer${i}`} />;
                         }
                         return (
                             <Grid key={i + x.name} container columnSpacing={8}>

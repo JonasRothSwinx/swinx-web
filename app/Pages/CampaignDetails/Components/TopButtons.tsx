@@ -1,6 +1,6 @@
 import { CloseIcon, DeleteIcon, RefreshIcon } from "@/app/Definitions/Icons";
-import { Campaign } from "@/app/ServerFunctions/databaseTypes";
-import { deleteCampaign } from "@/app/ServerFunctions/serverActions";
+import { campaigns as campaigns } from "@/app/ServerFunctions/dbInterface";
+import Campaign from "@/app/ServerFunctions/types/campaign";
 import { Button, IconButton, Skeleton, Typography } from "@mui/material";
 
 interface CampaignDetailsButtonsProps {
@@ -14,7 +14,7 @@ export default function CampaignDetailsButtons(props: CampaignDetailsButtonsProp
         deleteCampaign: () => {
             return () => {
                 if (!campaign || !confirm("Kampagne wirklich unwiderruflich löschen?")) return;
-                deleteCampaign(campaign);
+                campaigns.delete(campaign);
                 handleClose(true);
             };
         },

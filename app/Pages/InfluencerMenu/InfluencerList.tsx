@@ -29,20 +29,15 @@ import {
     Save as SaveIcon,
     Close as CancelIcon,
 } from "@mui/icons-material";
-import {
-    createNewInfluencer,
-    deleteInfluencer,
-    getUserGroups,
-    listInfluencers,
-    updateInfluencer,
-} from "@/app/ServerFunctions/serverActions";
-import { Influencer } from "@/app/ServerFunctions/databaseTypes";
+import { getUserGroups } from "@/app/ServerFunctions/serverActions";
+import Influencer from "@/app/ServerFunctions/types/influencer";
 import InfluencerDialog from "../Dialogs/InfluencerDialog";
 
 import { deDE } from "@mui/x-data-grid";
 import { deDE as pickersDeDE } from "@mui/x-date-pickers/locales";
 import { deDE as coreDeDE } from "@mui/material/locale";
 import { DialogOptions, DialogConfig } from "@/app/Definitions/types";
+import { influencers } from "@/app/ServerFunctions/dbInterface";
 
 const client = generateClient<Schema>();
 const theme = createTheme({}, { deDE, pickersDeDE, coreDeDE });
@@ -152,7 +147,7 @@ function InfluencerList(props: {}) {
         setParent: setRows,
         onClose: () => {
             setIsOpen(false);
-            listInfluencers().then((items) =>
+            influencers.list().then((items) =>
                 setRows((prev) => {
                     console.log("ChangingRows", { prev, items });
                     return items;
@@ -167,7 +162,7 @@ function InfluencerList(props: {}) {
 
     useEffect(() => {
         console.log("getting new data");
-        listInfluencers().then((items) =>
+        influencers.list().then((items) =>
             setRows((prev) => {
                 console.log("ChangingRows", { prev, items });
                 return items;
@@ -208,7 +203,7 @@ function InfluencerList(props: {}) {
             const { id: publicId } = entity;
             const { id: privateId } = entity.details;
             if (!(publicId && privateId)) return;
-            deleteInfluencer({
+            influencers.delete({
                 publicId,
                 privateId,
             });

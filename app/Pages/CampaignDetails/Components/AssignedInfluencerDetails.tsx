@@ -1,5 +1,6 @@
 import { ExpandMoreIcon } from "@/app/Definitions/Icons";
-import { Influencer, TimelineEvent } from "@/app/ServerFunctions/databaseTypes";
+import Influencer from "@/app/ServerFunctions/types/influencer";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { Accordion, AccordionDetails, AccordionSummary, Typography } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
@@ -13,17 +14,13 @@ type AssignedInfluencerDetailsProps = {
 
 export default function AssignedInfluencerDetails(props: AssignedInfluencerDetailsProps) {
     const { influencers, events, setHighlightedEvent } = props;
-    const [involvedInfluencers, setInvolvedInfluencers] = useState<Influencer.AssignedInfluencer[]>(
-        [],
-    );
+    const [involvedInfluencers, setInvolvedInfluencers] = useState<Influencer.AssignedInfluencer[]>([]);
     useEffect(() => {
         function getInfluencers() {
             const involvedInfluencers: Influencer.AssignedInfluencer[] = [];
 
-            for (const event of events.filter(
-                (event) => event.influencerPlaceholder?.id === undefined,
-            )) {
-                const influencer = influencers.find((x) => x.id === event.influencer?.id);
+            for (const event of events.filter((event) => !event.assignment.isPlaceholder)) {
+                const influencer = influencers.find((x) => x.id === event.assignment.influencer?.id);
                 if (!influencer) continue;
                 const involvedInfluencer = involvedInfluencers.find((x) => x.id === influencer.id);
                 switch (true) {
@@ -41,9 +38,7 @@ export default function AssignedInfluencerDetails(props: AssignedInfluencerDetai
                 }
             }
             for (const influencer of involvedInfluencers) {
-                influencer.inviteEvents.sort((a, b) =>
-                    a.date && b.date ? a.date.localeCompare(b.date) : 0,
-                );
+                influencer.inviteEvents.sort((a, b) => (a.date && b.date ? a.date.localeCompare(b.date) : 0));
             }
             return involvedInfluencers;
         }
@@ -51,19 +46,15 @@ export default function AssignedInfluencerDetails(props: AssignedInfluencerDetai
         return () => {};
     }, [events, influencers]);
     return (
-        <Accordion defaultExpanded disableGutters elevation={5}>
-            <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls="panel1-content"
-                id="panel1-header"
-            >
+        <Accordion defaultExpanded disableGutters variant="outlined">
+            <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1-content" id="panel1-header">
                 Zugewiesene Influencer
             </AccordionSummary>
             <AccordionDetails>
                 {involvedInfluencers.map((influencer) => {
                     // console.log(influencer);
                     return (
-                        <Accordion key={influencer.id}>
+                        <Accordion key={influencer.id} variant="outlined">
                             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                                 {influencer.firstName} {influencer.lastName}
                             </AccordionSummary>
@@ -72,12 +63,9 @@ export default function AssignedInfluencerDetails(props: AssignedInfluencerDetai
                                     <Accordion>
                                         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                                             Invites:{" "}
-                                            {influencer.inviteEvents.reduce(
-                                                (sum: number, event) => {
-                                                    return sum + (event?.inviteEvent?.invites ?? 0);
-                                                },
-                                                0,
-                                            )}{" "}
+                                            {influencer.inviteEvents.reduce((sum: number, event) => {
+                                                return sum + (event?.inviteEvent?.invites ?? 0);
+                                            }, 0)}{" "}
                                             verteilt über {influencer.inviteEvents.length} Termine
                                         </AccordionSummary>
                                         <AccordionDetails>
@@ -93,8 +81,7 @@ export default function AssignedInfluencerDetails(props: AssignedInfluencerDetai
                                                             }}
                                                         >
                                                             <Typography>
-                                                                {date.format("DD.MM.YYYY")} (
-                                                                {date.fromNow()})
+                                                                {date.format("DD.MM.YYYY")} ({date.fromNow()})
                                                             </Typography>
                                                         </Grid>
                                                     );

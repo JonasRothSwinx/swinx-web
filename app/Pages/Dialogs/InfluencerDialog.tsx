@@ -1,9 +1,13 @@
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import { createNewInfluencer, updateInfluencer } from "@/app/ServerFunctions/serverActions";
-import { Campaign, Influencer } from "@/app/ServerFunctions/databaseTypes";
+import Assignment from "@/app/ServerFunctions/types/assignment";
+import Campaign from "@/app/ServerFunctions/types/campaign";
+import Customer from "@/app/ServerFunctions/types/customer";
+import Influencer from "@/app/ServerFunctions/types/influencer";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { DialogOptions, DialogConfig, DialogProps } from "@/app/Definitions/types";
 import stylesExporter from "../styles/stylesExporter";
+import { influencers } from "@/app/ServerFunctions/dbInterface";
 
 const styles = stylesExporter.dialogs;
 type DialogType = Influencer.InfluencerFull;
@@ -67,7 +71,7 @@ function InfluencerDialog(props: InfluencerDialogProps) {
                         // console.log({ rows, updatedRows });
                         console.log("Setting Rows");
 
-                        updateInfluencer({
+                        influencers.update({
                             data: {
                                 id,
                                 firstName,
@@ -85,7 +89,7 @@ function InfluencerDialog(props: InfluencerDialogProps) {
                             details: { id: "new", email },
                         };
                         updatedRows.push(newInfluencer);
-                        createNewInfluencer({ data: { firstName, lastName, email } });
+                        influencers.create({ data: { firstName, lastName, email } });
                     }
                     setRows && setRows(updatedRows);
                     handleClose();

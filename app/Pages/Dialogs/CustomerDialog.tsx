@@ -1,12 +1,13 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
 import { DialogProps } from "@/app/Definitions/types";
-import { Campaign, Customer } from "@/app/ServerFunctions/databaseTypes";
+import Campaign from "@/app/ServerFunctions/types/campaign";
+import Customer from "@/app/ServerFunctions/types/customer";
 import React, { ChangeEvent, useEffect, useState } from "react";
-import { updateCustomer } from "@/app/ServerFunctions/serverActions";
 import stylesExporter from "../styles/stylesExporter";
+import { customers } from "@/app/ServerFunctions/dbInterface";
 
 const styles = stylesExporter.dialogs;
-type DialogType = Customer;
+type DialogType = Customer.Customer;
 
 const initialData: DialogType = {
     firstName: "",
@@ -15,7 +16,7 @@ const initialData: DialogType = {
     email: "",
     companyPosition: "",
 };
-type CustomerDialogProps = DialogProps<Campaign.Campaign, Customer>;
+type CustomerDialogProps = DialogProps<Campaign.Campaign, Customer.Customer>;
 function CustomerDialog(props: CustomerDialogProps) {
     // debugger;
     const { onClose, parent: campaign, setParent: setCampaign, isOpen, editing, editingData } = props;
@@ -43,7 +44,7 @@ function CustomerDialog(props: CustomerDialogProps) {
     function onSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         if (!customer) return;
-        updateCustomer(customer);
+        customers.update(customer);
         const newCampaign = { ...campaign, customer };
         setCampaign({ ...newCampaign });
         handleClose(true)();
@@ -125,7 +126,7 @@ function CustomerDialog(props: CustomerDialogProps) {
                                 ({
                                     ...(prev ?? initialData),
                                     firstName: e.target.value,
-                                } satisfies Customer)
+                                } satisfies Customer.Customer)
                         );
                     }}
                     required
@@ -144,7 +145,7 @@ function CustomerDialog(props: CustomerDialogProps) {
                                 ({
                                     ...(prev ?? initialData),
                                     lastName: e.target.value,
-                                } satisfies Customer)
+                                } satisfies Customer.Customer)
                         );
                     }}
                     required
@@ -162,7 +163,7 @@ function CustomerDialog(props: CustomerDialogProps) {
                                 ({
                                     ...(prev ?? initialData),
                                     email: e.target.value,
-                                } satisfies Customer)
+                                } satisfies Customer.Customer)
                         );
                     }}
                     required
@@ -181,7 +182,7 @@ function CustomerDialog(props: CustomerDialogProps) {
                                 ({
                                     ...(prev ?? initialData),
                                     company: e.target.value,
-                                } satisfies Customer)
+                                } satisfies Customer.Customer)
                         );
                     }}
                 />
@@ -199,7 +200,7 @@ function CustomerDialog(props: CustomerDialogProps) {
                                 ({
                                     ...(prev ?? initialData),
                                     companyPosition: e.target.value,
-                                } satisfies Customer)
+                                } satisfies Customer.Customer)
                         );
                     }}
                 />

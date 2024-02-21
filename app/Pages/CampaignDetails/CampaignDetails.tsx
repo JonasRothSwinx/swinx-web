@@ -1,17 +1,21 @@
-import { Campaign, Customer, Influencer, TimelineEvent } from "@/app/ServerFunctions/databaseTypes";
+import Campaign from "@/app/ServerFunctions/types/campaign";
+import Customer from "@/app/ServerFunctions/types/customer";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import Influencer from "@/app/ServerFunctions/types/influencer";
 import { Dialog, Unstable_Grid2 as Grid, Skeleton, Typography } from "@mui/material";
 import TimelineView, { groupBy } from "../Timeline/TimeLineView";
 import { EditIcon, ExpandMoreIcon, MailIcon } from "@/app/Definitions/Icons";
 import { Dispatch, MouseEvent, SetStateAction, useEffect, useState } from "react";
 import { DialogConfig, DialogOptions } from "@/app/Definitions/types";
 import dayjs, { Dayjs } from "@/app/configuredDayJs";
-import { deleteCampaign, getCampaign, listInfluencers } from "@/app/ServerFunctions/serverActions";
 import stylesExporter from "../styles/stylesExporter";
 import CustomerDialog from "../Dialogs/CustomerDialog";
 import CampaignDetailsButtons from "./Components/TopButtons";
 import AssignedInfluencerDetails from "./Components/AssignedInfluencerDetails";
 import CustomerDetails from "./Components/CustomerDetails";
 import OpenInfluencerDetails from "./Components/OpenInfluencerDetails";
+import { influencers, campaigns } from "@/app/ServerFunctions/dbInterface";
+import Assignment from "@/app/ServerFunctions/types/assignment";
 
 const styles = stylesExporter.campaignDetails;
 
@@ -24,7 +28,8 @@ interface CampaignDetailsProps {
 export default function CampaignDetails(props: CampaignDetailsProps) {
     const { isOpen, onClose, campaignId } = props;
     const [campaign, setCampaign] = useState<Campaign.Campaign>();
-    const [influencers, setInfluencers] = useState<Influencer.InfluencerFull[]>([]);
+    const [influencerData, setInfluencerData] = useState<Influencer.InfluencerFull[]>([]);
+    const [assignmentData, setAssignmentData] = useState<Assignment.Assignment[]>([]);
     const [highlightedEvent, setHighlightedEvent] = useState<TimelineEvent.TimelineEvent>();
     const [loading, setLoading] = useState(false);
 
@@ -57,11 +62,13 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [campaignId]);
 
-    function updateCampaign() {
+    function updateCampaign(background?: boolean) {
         if (campaignId === "") return;
         console.log("updating campaign");
-        setLoading(true);
-        getCampaign(campaignId).then((result) => {
+        if (!background) {
+            setLoading(true);
+        }
+        campaigns.get(campaignId).then((result) => {
             console.log("newCampaign", result);
             setCampaign(result);
             setLoading(false);
@@ -69,13 +76,16 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
     }
     function updateInfluencers() {
         console.log("updating Influencers");
-        listInfluencers().then((result) => setInfluencers(result));
+        influencers.list().then((result) => setInfluencerData(result));
     }
     // console.log(callbackSetCampaign);
     function callbackSetCampaign(campaign: Campaign.Campaign) {
         console.log("callback set triggered");
         setCampaign(campaign);
+        console.log(campaign);
+        // updateCampaign();
     }
+    console.log(campaign);
 
     return (
         <>
@@ -100,7 +110,15 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
                             campaign={campaign}
                         />
                         {isOpen && campaign && (
-                            <Grid container columns={3}>
+                            <Grid
+                                container
+                                columns={3}
+                                sx={{
+                                    maxHeight: "100%",
+                                    "& .MuiGrid2-root": { overflowY: "auto", overflowX: "hidden" },
+                                }}
+                                maxHeight={"100%"}
+                            >
                                 <Grid xs={1} display={"flex"} flexDirection={"column"}>
                                     <CustomerDetails
                                         campaign={campaign}
@@ -108,24 +126,28 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
                                         setCampaign={callbackSetCampaign}
                                     />
                                     <OpenInfluencerDetails
-                                        influencers={campaign.influencerPlaceholders}
+                                        campaign={campaign}
+                                        setCampaign={callbackSetCampaign}
+                                        events={campaign?.campaignTimelineEvents ?? []}
+                                        placeholders={campaign.assignedInfluencers}
                                         setHighlightedEvent={setHighlightedEvent}
                                     />
                                     <AssignedInfluencerDetails
                                         events={campaign?.campaignTimelineEvents ?? []}
-                                        influencers={influencers}
+                                        influencers={influencerData}
                                         setHighlightedEvent={setHighlightedEvent}
                                     />
                                 </Grid>
-                                <Grid xs={1}>
+                                <Grid xs={1} maxHeight={"100%"}>
                                     <Typography fontSize={8} whiteSpace={"pre-wrap"}>
-                                        {JSON.stringify(campaign)?.replaceAll(",", "\n")}
+                                        {/* JSON.stringify(campaign, null, "\t") */
+                                        /* ?.replaceAll(",", "\n") */}
                                     </Typography>
                                 </Grid>
                                 <Grid id="timeline" xs={1}>
                                     <TimelineView
                                         setCampaign={callbackSetCampaign}
-                                        influencers={influencers}
+                                        influencers={influencerData}
                                         campaign={campaign}
                                         orientation="vertical"
                                         controlsPosition="before"

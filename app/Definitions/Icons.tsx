@@ -1,4 +1,5 @@
 export {
+    Add as AddIcon,
     Refresh as RefreshIcon,
     Delete as DeleteIcon,
     Edit as EditIcon,

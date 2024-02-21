@@ -17,14 +17,12 @@ import {
     TextField,
 } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
-import {
-    createNewCampaign,
-    createNewInfluencer,
-    // parseCampaignFormData,
-    updateInfluencer,
-} from "@/app/ServerFunctions/serverActions";
 import { DialogOptions, DialogConfig, DialogProps } from "@/app/Definitions/types";
-import { Campaign, Customer, Webinar } from "@/app/ServerFunctions/databaseTypes";
+import Assignment from "@/app/ServerFunctions/types/assignment";
+import Campaign from "@/app/ServerFunctions/types/campaign";
+import Customer from "@/app/ServerFunctions/types/customer";
+import Influencer from "@/app/ServerFunctions/types/influencer";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { campaignTypes } from "@/amplify/data/types";
 import {
     DatePicker,
@@ -38,26 +36,23 @@ import {
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "@/app/configuredDayJs";
 import stylesExporter from "../styles/stylesExporter";
+import { campaigns } from "@/app/ServerFunctions/dbInterface";
 
 const styles = stylesExporter.dialogs;
 type DialogType = Campaign.Campaign;
 
-const initialCustomer: Customer = {
+const initialCustomer: Customer.Customer = {
     firstName: "",
     lastName: "",
     company: "",
     email: "",
 };
 
-const initialWebinar: Webinar = {
-    title: "",
-    date: "",
-};
-
 const initialData: Campaign.Campaign = {
     id: "",
     campaignManagerId: "",
     campaignTimelineEvents: [],
+    assignedInfluencers: [],
     customer: initialCustomer,
 };
 type CampaignDialogProps = DialogProps<Campaign.Campaign[], Campaign.Campaign>;
@@ -106,7 +101,7 @@ function CampaignDialog(props: CampaignDialogProps) {
     async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
-        createNewCampaign(campaign);
+        campaigns.create(campaign);
         const newRows = [...(rows ?? []), campaign];
         setRows([...newRows]);
         handleClose(true);
@@ -120,13 +115,8 @@ function CampaignDialog(props: CampaignDialogProps) {
             const dateString = newDate.toISOString();
             // console.log(newDate, dateString);
             setCampaign((prevState) => {
-                if (!Campaign.isWebinar(prevState)) return prevState;
                 return {
                     ...prevState,
-                    webinar: {
-                        ...prevState.webinar,
-                        date: dateString,
-                    },
                 } satisfies Campaign.Campaign;
             });
         } catch (error) {
@@ -311,7 +301,7 @@ function CampaignDialog(props: CampaignDialogProps) {
                     }
                 />
             </DialogContent>
-            {Campaign.isWebinar(campaign) && (
+            {/* Campaign.isWebinar(campaign) && (
                 <DialogContent dividers sx={{ "& .MuiFormControl-root:has(#webinarTitle)": { flexBasis: "100%" } }}>
                     <DialogContentText>Webinar</DialogContentText>
                     <TextField
@@ -324,18 +314,18 @@ function CampaignDialog(props: CampaignDialogProps) {
                         required
                         fullWidth
                         value={campaign.webinar?.title ?? ""}
-                        onChange={(event) => {
-                            setCampaign((prevState) => {
-                                if (!Campaign.isWebinar(prevState)) return prevState;
-                                return {
-                                    ...prevState,
-                                    webinar: {
-                                        ...prevState.webinar,
-                                        title: event.target.value,
-                                    },
-                                } satisfies Campaign.Campaign;
-                            });
-                        }}
+                        // onChange={(event) => {
+                        //     setCampaign((prevState) => {
+                        //         if (!Campaign.isWebinar(prevState)) return prevState;
+                        //         return {
+                        //             ...prevState,
+                        //             webinar: {
+                        //                 ...prevState.webinar,
+                        //                 title: event.target.value,
+                        //             },
+                        //         } satisfies Campaign.Campaign;
+                        //     });
+                        // }}
                         sx={{ color: "red", flexBasis: "100%" }}
                     />
                     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
@@ -353,10 +343,9 @@ function CampaignDialog(props: CampaignDialogProps) {
                             value={campaign.webinar.date ? dayjs(campaign.webinar?.date) : null}
                             onChange={handleDateChange}
                         />
-                        {/* <TimePicker name="time" /> */}
                     </LocalizationProvider>
                 </DialogContent>
-            )}
+            ) */}
             <DialogActions
                 sx={{
                     justifyContent: "space-between",
