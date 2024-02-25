@@ -18,7 +18,10 @@ async function createTodo() {
     console.log({ errors, newTodo });
 }
 function WelcomePage({}) {
-    const { signOut, user, authStatus } = useAuthenticator((context) => [context.user, context.authStatus]);
+    const { signOut, user, authStatus } = useAuthenticator((context) => [
+        context.user,
+        context.authStatus,
+    ]);
     const [openMenu, setOpenMenu] = useState<sideBarButtonId>(sideBarButtonId.campaigns);
     if (authStatus !== "authenticated") return null;
 
@@ -29,11 +32,6 @@ function WelcomePage({}) {
                 <br /> */}
                 {openMenu === sideBarButtonId.campaigns && <CampaignMenu />}
                 {openMenu === sideBarButtonId.influencers && <InfluencerMenu />}
-                {/* <div className={styles.description}>
-                    <TodosList />
-                    <button onClick={createTodo}>Add Todo</button>
-                </div>
-                <TodoCreateForm /> */}
                 {/* 
                 <div className={styles.center}>
                     <Image

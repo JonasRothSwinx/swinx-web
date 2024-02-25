@@ -11,7 +11,14 @@ import {
     GridCellParams,
     GridColumnHeaderParams,
 } from "@mui/x-data-grid";
-import { Button, IconButton, MenuItem, TextField, Typography } from "@mui/material";
+import {
+    Button,
+    CircularProgress,
+    IconButton,
+    MenuItem,
+    TextField,
+    Typography,
+} from "@mui/material";
 import {
     Add as AddIcon,
     Edit as EditIcon,
@@ -43,6 +50,7 @@ type DialogType = Campaign.Campaign[];
 
 interface EditToolbarProps {
     setIsOpen: Dispatch<SetStateAction<DialogState>>;
+    isLoading: boolean;
 }
 // enum Dialogs {
 //     campaign,
@@ -52,33 +60,32 @@ interface EditToolbarProps {
 // }
 
 function EditToolbar(props: EditToolbarProps) {
-    const { setIsOpen } = props;
+    const { setIsOpen, isLoading } = props;
     function handleClick() {
-        setIsOpen((prev: DialogState) => ({ ...prev, campaign: true } satisfies DialogState));
+        setIsOpen("campaign");
     }
     return (
         <GridToolbarContainer sx={{ justifyContent: "space-between" }}>
-            <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
-                Neue Kampagne
-            </Button>
+            <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+                <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
+                    Neue Kampagne
+                </Button>
+                {isLoading && <CircularProgress sx={{ height: "20px", widtth: "20px" }} />}
+            </div>
+
             <GridToolbar />
         </GridToolbarContainer>
     );
 }
-type DialogState = {
-    campaign: boolean;
-    customer: boolean;
-    webinar: boolean;
-    timelineEvent: boolean;
-    details: boolean;
-};
-const allDialogsClosed: DialogState = {
-    campaign: false,
-    customer: false,
-    webinar: false,
-    timelineEvent: false,
-    details: false,
-};
+type DialogState = "none" | "customer" | "campaign" | "webinar" | "timelineEvent" | "details";
+// type DialogState = {
+//     campaign: boolean;
+//     customer: boolean;
+//     webinar: boolean;
+//     timelineEvent: boolean;
+//     details: boolean;
+// };
+
 type EditableDataTypes = Campaign.Campaign | Customer.Customer | TimelineEvent.TimelineEvent;
 type CampaignListProps = {};
 
@@ -88,13 +95,14 @@ function CampaignList(props: CampaignListProps) {
     const [campaignData, setCampaignData] = useState<Campaign.Campaign[]>();
     const [editingData, setEditingData] = useState<EditableDataTypes>();
     const [groupBy, setGroupBy] = useState<groupBy>("day");
-    const [isOpen, setIsOpen] = useState<DialogState>(allDialogsClosed);
+    const [isOpen, setIsOpen] = useState<DialogState>("none");
     const [dialogOptions, setDialogOptions] = useState<DialogOptions>({});
     const [dialogConfig, setDialogConfig] = useState<DialogConfig<DialogType>>({
         parent: campaignData ?? [],
         setParent: setCampaignData,
         onClose: onDialogClose,
     });
+    const [loading, setLoading] = useState(false);
 
     const ClickHandlers = {
         editCustomer: (id: GridRowId) => {
@@ -103,7 +111,7 @@ function CampaignList(props: CampaignListProps) {
                 if (!customer) return;
                 setEditingData({ ...customer });
                 setDialogOptions({ editing: true });
-                setIsOpen((prev) => ({ ...prev, customer: true }));
+                setIsOpen("customer");
             };
         },
         // editWebinar: (id: GridRowId) => {
@@ -120,7 +128,7 @@ function CampaignList(props: CampaignListProps) {
             return () => {
                 const campaign = campaignData?.find((campaign) => campaign.id === id);
                 if (!campaign) return;
-                setIsOpen((prev) => ({ ...prev, details: true }));
+                setIsOpen("details");
                 setEditingData(campaign);
             };
         },
@@ -128,7 +136,7 @@ function CampaignList(props: CampaignListProps) {
             return () => {
                 const campaign = campaignData?.find((campaign) => campaign.id === id);
                 if (!campaign) return;
-                setIsOpen((prev) => ({ ...prev, timelineEvent: true }));
+                setIsOpen("timelineEvent");
                 setDialogOptions({ campaignId: campaign.id });
             };
         },
@@ -171,7 +179,11 @@ function CampaignList(props: CampaignListProps) {
                         <Typography>{customer.company}</Typography>
                         <br />
                         <Typography>{params.value}</Typography>
-                        {customer.companyPosition ? <Typography>({customer.companyPosition})</Typography> : <></>}
+                        {customer.companyPosition ? (
+                            <Typography>({customer.companyPosition})</Typography>
+                        ) : (
+                            <></>
+                        )}
                     </div>
                 );
             },
@@ -312,9 +324,9 @@ function CampaignList(props: CampaignListProps) {
     //#region useEffects
     useEffect(() => {
         const id = randomId();
-        console.log(id, "requesting influencers");
+        // console.log(id, "requesting influencers");
         influencers.list().then((items) => {
-            console.log(id, "Setting influencers to", items);
+            // console.log(id, "Setting influencers to", items);
             setInfluencerData(items);
         });
         return () => {};
@@ -335,7 +347,7 @@ function CampaignList(props: CampaignListProps) {
     function onDialogClose(hasChanged?: boolean) {
         // console.log("Hi!");
         setEditingData(undefined);
-        setIsOpen(allDialogsClosed);
+        setIsOpen("none");
         if (hasChanged) {
             console.log("Updating Campaign Data");
             updateCampaigns();
@@ -343,10 +355,12 @@ function CampaignList(props: CampaignListProps) {
     }
 
     async function updateCampaigns() {
+        setLoading(true);
         // console.log("Starting Update");
         campaigns.list().then((res) => {
             // console.log("received Update");
             setCampaignData(res.data);
+            setLoading(false);
         });
     }
 
@@ -365,71 +379,84 @@ function CampaignList(props: CampaignListProps) {
         <>
             {/* Dialogs */}
             <>
-                <CampaignDialog
-                    {...dialogConfig}
-                    {...dialogOptions}
-                    isOpen={isOpen.campaign}
-                    editingData={editingData as Campaign.Campaign}
-                />
+                {isOpen === "campaign" && (
+                    <CampaignDialog
+                        {...dialogConfig}
+                        {...dialogOptions}
+                        isOpen={true}
+                        editingData={editingData as Campaign.Campaign}
+                    />
+                )}
                 {/* <WebinarDialog
                     {...dialogConfig}
                     {...dialogOptions}
                     isOpen={isOpen.webinar}
                     editingData={editingData as Webinar}
                 /> */}
-                <CampaignDetails onClose={onDialogClose} campaignId={editingData?.id ?? ""} isOpen={isOpen.details} />
+                {isOpen === "details" && (
+                    <CampaignDetails
+                        onClose={onDialogClose}
+                        campaignId={editingData?.id ?? ""}
+                        isOpen={true}
+                    />
+                )}
             </>
-            <DataGrid
-                localeText={deDE.components.MuiDataGrid.defaultProps.localeText}
-                onRowClick={({ id }) => {
-                    ClickHandlers.showTimeline(id)();
-                }}
-                disableRowSelectionOnClick
-                rows={campaignData ?? []}
-                columns={columns}
-                initialState={{ columns: { columnVisibilityModel: { id: false } } }}
-                getRowHeight={() => "auto"}
-                columnHeaderHeight={80}
-                // rowModesModel={rowModesModel}
-                // onRowModesModelChange={handleRowModesModelChange}
-                // onRowEditStop={handleRowEditStop}
-                // processRowUpdate={processRowUpdate}
-                // onProcessRowUpdateError={handleProcessRowUpdateError}
-                slots={{
-                    toolbar: EditToolbar,
-                }}
-                slotProps={{
-                    toolbar: { setIsOpen },
-                }}
-                autoHeight={true}
-                sx={{
-                    m: 2,
-                    background: "lightgray",
-                    "& .MuiDataGrid-columnHeaderTitleContainerContent": {
-                        overflow: "visible",
-                    },
-                    "& .MuiDataGrid-actionsCell": {
-                        flex: 1,
-                        height: "100%",
-                        display: "flex",
-                        justifyContent: "flex-start",
-                        flexDirection: "column",
-                    },
-                    "& .MuiDataGrid-cell": {
-                        // color: "primary.main",
-                        borderLeft: "1px solid black",
-                    },
-                    "& .MuiDataGrid-cell:first-of-type": {
-                        // color: "primary.main",
-                        borderLeft: "none",
-                    },
-                    "& .MuiDataGrid-cell--editing:has(.Mui-error)": {
-                        border: "1px solid red",
-                        backgroundColor: "red",
-                        color: "#ff4343",
-                    },
-                }}
-            />
+
+            {campaignData === undefined ? (
+                <CircularProgress sx={{ margin: "auto" }} />
+            ) : (
+                <DataGrid
+                    localeText={deDE.components.MuiDataGrid.defaultProps.localeText}
+                    onRowClick={({ id }) => {
+                        ClickHandlers.showTimeline(id)();
+                    }}
+                    disableRowSelectionOnClick
+                    rows={campaignData ?? []}
+                    columns={columns}
+                    initialState={{ columns: { columnVisibilityModel: { id: false } } }}
+                    getRowHeight={() => "auto"}
+                    columnHeaderHeight={80}
+                    // rowModesModel={rowModesModel}
+                    // onRowModesModelChange={handleRowModesModelChange}
+                    // onRowEditStop={handleRowEditStop}
+                    // processRowUpdate={processRowUpdate}
+                    // onProcessRowUpdateError={handleProcessRowUpdateError}
+                    slots={{
+                        toolbar: EditToolbar,
+                    }}
+                    slotProps={{
+                        toolbar: { setIsOpen, isLoading: loading },
+                    }}
+                    autoHeight={true}
+                    sx={{
+                        m: 2,
+                        background: "lightgray",
+                        "& .MuiDataGrid-columnHeaderTitleContainerContent": {
+                            overflow: "visible",
+                        },
+                        "& .MuiDataGrid-actionsCell": {
+                            flex: 1,
+                            height: "100%",
+                            display: "flex",
+                            justifyContent: "flex-start",
+                            flexDirection: "column",
+                        },
+                        "& .MuiDataGrid-cell": {
+                            // color: "primary.main",
+                            borderLeft: "1px solid black",
+                        },
+                        "& .MuiDataGrid-cell:first-of-type": {
+                            // color: "primary.main",
+                            borderLeft: "none",
+                        },
+                        "& .MuiDataGrid-cell--editing:has(.Mui-error)": {
+                            border: "1px solid red",
+                            backgroundColor: "red",
+                            color: "#ff4343",
+                        },
+                    }}
+                />
+            )}
         </>
     );
 }

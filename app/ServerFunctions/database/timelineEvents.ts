@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 "use server";
 
+import { PartialWith } from "@/app/Definitions/types";
 import TimelineEvent from "../types/timelineEvents";
 import client from "./.dbclient";
 
@@ -25,7 +25,10 @@ export async function listTimelineEvents(): Promise<TimelineEvent.TimelineEvent[
     const events: TimelineEvent.TimelineEvent[] = data.map((event) => {
         const validatedEvent: TimelineEvent.TimelineEvent = {
             ...event,
-            assignment: { ...event.assignment, isPlaceholder: event.assignment.isPlaceholder ?? false },
+            assignment: {
+                ...event.assignment,
+                isPlaceholder: event.assignment.isPlaceholder ?? false,
+            },
             // influencerAssignmentId: event.influencerAssignmentTimelineEventsId ?? "",
         };
         return validatedEvent;
@@ -40,39 +43,48 @@ export async function createTimelineEvent(props: TimelineEvent.TimelineEvent) {
     const { inviteEvent = undefined } = props as TimelineEvent.TimelineEventInvites;
 
     if (!(influencerAssignmentTimelineEventsId && date && campaignCampaignTimelineEventsId)) {
-        console.log({ influencerAssignmentTimelineEventsId, date, campaignCampaignTimelineEventsId, props });
+        console.log({
+            influencerAssignmentTimelineEventsId,
+            date,
+            campaignCampaignTimelineEventsId,
+            props,
+        });
         throw new Error("Missing Data");
     }
-    const { data: inviteEventData, errors: inviteEventErrors } = await createInviteEvent(inviteEvent);
+    const { data: inviteEventData, errors: inviteEventErrors } = await createInviteEvent(
+        inviteEvent,
+    );
 
     const { data, errors } = await client.models.TimelineEvent.create(
         {
             timelineEventType,
             date,
             campaignCampaignTimelineEventsId,
-            inviteEvent: inviteEventData,
+            timelineEventInviteEventId: inviteEventData?.id,
             influencerAssignmentTimelineEventsId,
             notes,
         },
-        {}
+        {},
     );
     // console.log(data);
 
     return data.id;
 }
-export async function updateTimelineEvent(props: TimelineEvent.TimelineEvent) {
+export async function updateTimelineEvent(props: Partial<TimelineEvent.TimelineEvent>) {
     const { id, timelineEventType, date, notes } = props;
-    const { id: campaignCampaignTimelineEventsId } = props.campaign;
-    const { id: influencerAssignmentTimelineEventsId } = props.assignment;
+    const { id: campaignCampaignTimelineEventsId } = props.campaign ?? {};
+    const { id: influencerAssignmentTimelineEventsId } = props.assignment ?? {};
     const { inviteEvent = undefined } = props as TimelineEvent.TimelineEventInvites;
-    if (!id) {
+    if (!(id && date)) {
         throw new Error("Missing Data");
     }
     console.log(inviteEvent);
     if (inviteEvent) {
         await updateInviteEvent(inviteEvent);
     }
+    console.log(props);
 
+    //@ts-ignore
     const { data, errors } = await client.models.TimelineEvent.update({
         id,
         timelineEventType,
@@ -96,20 +108,20 @@ async function createInviteEvent(props: TimelineEvent.InviteEvent | undefined) {
     if (!invites) {
         throw new Error("Missing Data");
     }
+
     const { data, errors } = await client.models.InvitesEvent.create({
         invites,
     });
     return { data, errors };
 }
-async function updateInviteEvent(props: TimelineEvent.InviteEvent) {
+async function updateInviteEvent(props: PartialWith<TimelineEvent.InviteEvent, "id">) {
     if (props === undefined) return { data: undefined, errors: undefined };
     const { invites, id } = props;
     if (!(invites && id)) {
         throw new Error("Missing Data");
     }
-    const { data, errors } = await client.models.InvitesEvent.update({
-        invites,
-        id,
-    });
+    const updatedData: TimelineEvent.InviteEvent = { id: id, invites };
+    //@ts-ignore
+    const { data, errors } = await client.models.InvitesEvent.update({ id, invites }, {});
     return { data, errors };
 }

@@ -46,11 +46,17 @@ const schema = a.schema({
             isPlaceholder: a.boolean().required(),
             placeholderName: a.string(),
             timelineEvents: a.hasMany("TimelineEvent"),
-            candidates: a.hasMany("InfluencerPublic"),
+            candidates: a.hasMany("InfluencerCandidate"),
             budget: a.integer(),
         })
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
 
+    InfluencerCandidate: a
+        .model({
+            influencer: a.hasOne("InfluencerPublic"),
+            response: a.string(),
+        })
+        .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
     Campaign: a
         .model({
             campaignManagerId: a.string(),

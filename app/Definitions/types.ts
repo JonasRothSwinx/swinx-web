@@ -14,8 +14,10 @@ import Assignment from "../ServerFunctions/types/assignment";
 //     private?: InfluencerPrivate;
 // };
 
-export type DialogProps<RowDataType, DataType extends EditableDataTypes> = DialogConfig<RowDataType> &
-    DialogOptions & { isOpen: boolean; editingData?: DataType };
+export type DialogProps<
+    RowDataType,
+    DataType extends EditableDataTypes,
+> = DialogConfig<RowDataType> & DialogOptions & { isOpen?: boolean; editingData?: DataType };
 
 export interface DialogOptions {
     editing?: boolean;
@@ -39,3 +41,5 @@ export type Nullable<T> = T | null;
 export type Prettify<T> = {
     [K in keyof T]: T[K];
 } & {};
+
+export type PartialWith<T, K extends keyof T> = Partial<T> & Pick<T, K>;

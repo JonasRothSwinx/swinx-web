@@ -13,7 +13,7 @@ import CustomerDialog from "../Dialogs/CustomerDialog";
 import CampaignDetailsButtons from "./Components/TopButtons";
 import AssignedInfluencerDetails from "./Components/AssignedInfluencerDetails";
 import CustomerDetails from "./Components/CustomerDetails";
-import OpenInfluencerDetails from "./Components/OpenInfluencerDetails";
+import OpenInfluencerDetails from "./Components/OpenInfluencerDetails/OpenInfluencerDetails";
 import { influencers, campaigns } from "@/app/ServerFunctions/dbInterface";
 import Assignment from "@/app/ServerFunctions/types/assignment";
 
@@ -32,6 +32,7 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
     const [assignmentData, setAssignmentData] = useState<Assignment.Assignment[]>([]);
     const [highlightedEvent, setHighlightedEvent] = useState<TimelineEvent.TimelineEvent>();
     const [loading, setLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     function onDialogClose() {
         updateCampaign();
@@ -64,6 +65,7 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
 
     function updateCampaign(background?: boolean) {
         if (campaignId === "") return;
+        setIsLoading(true);
         console.log("updating campaign");
         if (!background) {
             setLoading(true);
@@ -72,6 +74,7 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
             console.log("newCampaign", result);
             setCampaign(result);
             setLoading(false);
+            setIsLoading(false);
         });
     }
     function updateInfluencers() {
@@ -85,81 +88,87 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
         console.log(campaign);
         // updateCampaign();
     }
-    console.log(campaign);
+    // console.log(campaign);
 
     return (
         <>
-            <Dialog
-                sx={{
-                    padding: "10px",
-                    "& .MuiDialog-container > .MuiPaper-root": {
-                        borderRadius: "20px",
-                        padding: "0px 10px",
-                    },
-                }}
-                open={isOpen}
-                fullScreen
-            >
-                {loading ? (
-                    <Skeleton></Skeleton>
-                ) : (
-                    <>
-                        <CampaignDetailsButtons
-                            updateCampaign={updateCampaign}
-                            handleClose={handleClose}
-                            campaign={campaign}
-                        />
-                        {isOpen && campaign && (
-                            <Grid
-                                container
-                                columns={3}
-                                sx={{
-                                    maxHeight: "100%",
-                                    "& .MuiGrid2-root": { overflowY: "auto", overflowX: "hidden" },
-                                }}
-                                maxHeight={"100%"}
-                            >
-                                <Grid xs={1} display={"flex"} flexDirection={"column"}>
-                                    <CustomerDetails
-                                        campaign={campaign}
-                                        customer={campaign?.customer}
-                                        setCampaign={callbackSetCampaign}
-                                    />
-                                    <OpenInfluencerDetails
-                                        campaign={campaign}
-                                        setCampaign={callbackSetCampaign}
-                                        events={campaign?.campaignTimelineEvents ?? []}
-                                        placeholders={campaign.assignedInfluencers}
-                                        setHighlightedEvent={setHighlightedEvent}
-                                    />
-                                    <AssignedInfluencerDetails
-                                        events={campaign?.campaignTimelineEvents ?? []}
-                                        influencers={influencerData}
-                                        setHighlightedEvent={setHighlightedEvent}
-                                    />
+            {isOpen && (
+                <Dialog
+                    sx={{
+                        padding: "10px",
+                        "& .MuiDialog-container > .MuiPaper-root": {
+                            borderRadius: "20px",
+                            padding: "0px 10px",
+                        },
+                    }}
+                    open={isOpen}
+                    fullScreen
+                >
+                    {loading ? (
+                        <Skeleton></Skeleton>
+                    ) : (
+                        <>
+                            <CampaignDetailsButtons
+                                updateCampaign={updateCampaign}
+                                handleClose={handleClose}
+                                campaign={campaign}
+                                isLoading={isLoading}
+                            />
+                            {isOpen && campaign && (
+                                <Grid
+                                    container
+                                    columns={3}
+                                    sx={{
+                                        maxHeight: "100%",
+                                        "& .MuiGrid2-root": {
+                                            overflowY: "auto",
+                                            overflowX: "hidden",
+                                        },
+                                    }}
+                                    maxHeight={"100%"}
+                                >
+                                    <Grid xs={1} display={"flex"} flexDirection={"column"}>
+                                        <CustomerDetails
+                                            campaign={campaign}
+                                            customer={campaign?.customer}
+                                            setCampaign={callbackSetCampaign}
+                                        />
+                                        <OpenInfluencerDetails
+                                            campaign={campaign}
+                                            setCampaign={callbackSetCampaign}
+                                            events={campaign?.campaignTimelineEvents ?? []}
+                                            placeholders={campaign.assignedInfluencers}
+                                            setHighlightedEvent={setHighlightedEvent}
+                                        />
+                                        <AssignedInfluencerDetails
+                                            events={campaign?.campaignTimelineEvents ?? []}
+                                            influencers={influencerData}
+                                            setHighlightedEvent={setHighlightedEvent}
+                                        />
+                                    </Grid>
+                                    <Grid xs={1} maxHeight={"100%"}>
+                                        <Typography fontSize={8} whiteSpace={"pre-wrap"}>
+                                            {/* JSON.stringify(campaign, null, "\t") */
+                                            /* ?.replaceAll(",", "\n") */}
+                                        </Typography>
+                                    </Grid>
+                                    <Grid id="timeline" xs={1}>
+                                        <TimelineView
+                                            setCampaign={callbackSetCampaign}
+                                            influencers={influencerData}
+                                            campaign={campaign}
+                                            orientation="vertical"
+                                            controlsPosition="before"
+                                            editable
+                                            highlightedEvent={highlightedEvent}
+                                        />
+                                    </Grid>
                                 </Grid>
-                                <Grid xs={1} maxHeight={"100%"}>
-                                    <Typography fontSize={8} whiteSpace={"pre-wrap"}>
-                                        {/* JSON.stringify(campaign, null, "\t") */
-                                        /* ?.replaceAll(",", "\n") */}
-                                    </Typography>
-                                </Grid>
-                                <Grid id="timeline" xs={1}>
-                                    <TimelineView
-                                        setCampaign={callbackSetCampaign}
-                                        influencers={influencerData}
-                                        campaign={campaign}
-                                        orientation="vertical"
-                                        controlsPosition="before"
-                                        editable
-                                        highlightedEvent={highlightedEvent}
-                                    />
-                                </Grid>
-                            </Grid>
-                        )}
-                    </>
-                )}
-            </Dialog>
+                            )}
+                        </>
+                    )}
+                </Dialog>
+            )}
         </>
     );
 }

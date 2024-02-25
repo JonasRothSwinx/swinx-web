@@ -21,11 +21,19 @@ namespace Influencer {
     } & InfluencerWithName;
 
     export function isInfluencerFull(influencer: Influencer): influencer is InfluencerFull {
-        return ["firstName", "lastName", "details", "createdAt", "updatedAt"].every((prop) => prop in influencer);
+        return ["firstName", "lastName", "details", "createdAt", "updatedAt"].every(
+            (prop) => prop in influencer,
+        );
     }
 
     export type AssignedInfluencer = InfluencerFull & {
         inviteEvents: TimelineEvent.TimelineEventInvites[];
+    };
+    export type candidateResponse = "pending" | "accepted" | "rejected";
+    export type Candidate = {
+        id: Nullable<string>;
+        influencer: InfluencerFull;
+        response: Nullable<string>;
     };
 }
 

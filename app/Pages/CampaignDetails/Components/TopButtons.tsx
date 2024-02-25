@@ -4,12 +4,13 @@ import Campaign from "@/app/ServerFunctions/types/campaign";
 import { Button, IconButton, Skeleton, Typography } from "@mui/material";
 
 interface CampaignDetailsButtonsProps {
-    updateCampaign: () => void;
+    updateCampaign: (background?: boolean) => void;
     handleClose: (hasChanged?: boolean) => void;
     campaign?: Campaign.Campaign;
+    isLoading?: boolean;
 }
 export default function CampaignDetailsButtons(props: CampaignDetailsButtonsProps) {
-    const { updateCampaign, handleClose, campaign } = props;
+    const { updateCampaign, handleClose, campaign, isLoading } = props;
     const ClickHandlers = {
         deleteCampaign: () => {
             return () => {
@@ -43,7 +44,19 @@ export default function CampaignDetailsButtons(props: CampaignDetailsButtonsProp
             ) : (
                 <Skeleton />
             )}
-            <IconButton onClick={() => updateCampaign()}>
+            <IconButton
+                onClick={() => updateCampaign(true)}
+                sx={{
+                    animationPlayState: "running",
+                    animationName: "spin",
+                    animationDuration: "500ms",
+                    animationIterationCount: `${isLoading ? "infinite" : "0"}`,
+                    animationTimingFunction: "linear",
+                    "@keyframes spin": {
+                        "100%": { transform: `rotate(360deg)` },
+                    },
+                }}
+            >
                 <RefreshIcon />
             </IconButton>
             <IconButton onClick={() => handleClose()}>

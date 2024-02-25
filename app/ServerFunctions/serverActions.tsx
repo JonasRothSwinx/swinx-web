@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 "use server";
 import { fetchAuthSession, fetchUserAttributes } from "aws-amplify/auth/server";
 import { runWithAmplifyServerContext } from "./amplifyServerUtils";
@@ -18,14 +17,17 @@ export async function getUserGroups() {
     const result = await runWithAmplifyServerContext({
         nextServerContext: { cookies },
         operation: async (contextSpec) => {
-            const session = await fetchAuthSession(contextSpec);
-            // console.log(session);
-            const payloadGroups = (session.tokens?.accessToken.payload["cognito:groups"] as string[]) ?? [];
+            const session = await fetchAuthSession(contextSpec, { forceRefresh: true });
+            // console.log("-------------------------------");
+            // console.log(client);
+            // console.log(cookies(), "---\n", session);
+            // console.log("-------------------------------");
+            const payloadGroups =
+                (session.tokens?.accessToken.payload["cognito:groups"] as string[]) ?? [];
             // console.log(typeof payloadGroups);
             // if (!payloadGroups || typeof payloadGroups !== Json[]) return [];
             // console.log(payloadGroups);
             return payloadGroups;
-            return [];
         },
     });
     return result;
@@ -34,7 +36,7 @@ export async function getUserAttributes() {
     const result = await runWithAmplifyServerContext({
         nextServerContext: { cookies },
         operation: async (contextSpec) => {
-            const session = await fetchAuthSession(contextSpec);
+            const session = await fetchAuthSession(contextSpec, { forceRefresh: true });
             // console.log(session);
             const attributes = await fetchUserAttributes(contextSpec);
             return attributes;

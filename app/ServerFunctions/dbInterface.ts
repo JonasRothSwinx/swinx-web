@@ -1,13 +1,24 @@
-import { createNewCampaign, deleteCampaign, getCampaign, listCampaigns } from "./database/campaigns";
+import {
+    createNewCampaign,
+    deleteCampaign,
+    getCampaign,
+    listCampaigns,
+} from "./database/campaigns";
 import { createCustomer, deleteCustomer, updateCustomer } from "./database/customers";
-import { createNewInfluencer, deleteInfluencer, listInfluencers, updateInfluencer } from "./database/influencers";
-import { createAssignment, deletePlaceholder } from "./database/assignments";
+import {
+    createNewInfluencer,
+    deleteInfluencer,
+    listInfluencers,
+    updateInfluencer,
+} from "./database/influencers";
+import { createAssignment, deletePlaceholder, updateAssignment } from "./database/assignments";
 import {
     createTimelineEvent,
     deleteTimelineEvent,
     listTimelineEvents,
     updateTimelineEvent,
 } from "./database/timelineEvents";
+import { createCandidate, deleteCandidate } from "./database/candidate";
 
 export const campaigns = {
     create: createNewCampaign,
@@ -39,6 +50,12 @@ export const timelineEvents = {
 export const assignments = {
     create: createAssignment,
     delete: deletePlaceholder,
+    update: updateAssignment,
+};
+
+export const candidates = {
+    create: createCandidate,
+    delete: deleteCandidate,
 };
 
 const dbInterface = {
@@ -47,6 +64,7 @@ const dbInterface = {
     influencer: influencers,
     timelineEvent: timelineEvents,
     assignment: assignments,
+    candidate: candidates,
 };
 
 export default dbInterface;

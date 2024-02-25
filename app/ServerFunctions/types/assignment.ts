@@ -15,7 +15,7 @@ namespace Assignment {
     };
     export type AssignmentFull = Prettify<
         AssignmentMin & {
-            candidates?: Influencer.Influencer[];
+            candidates?: Influencer.Candidate[];
             budget?: Nullable<number>;
             timelineEvents: TimelineEvent.TimelineEvent[];
             influencer: Nullable<Influencer.InfluencerFull>;

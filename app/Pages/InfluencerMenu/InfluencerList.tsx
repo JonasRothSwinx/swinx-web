@@ -69,7 +69,7 @@ function EditToolbar(props: EditToolbarProps) {
         </GridToolbarContainer>
     );
 }
-const selectionSet = ["id", "details.id", "details.email"] as const;
+// const selectionSet = ["id", "details.id", "details.email"] as const;
 
 function InfluencerList(props: {}) {
     // const [details, setDetails] = useState<Schema["InfluencerPrivate"][]>([]);
@@ -147,11 +147,12 @@ function InfluencerList(props: {}) {
         setParent: setRows,
         onClose: () => {
             setIsOpen(false);
+            setEditingData(undefined);
             influencers.list().then((items) =>
                 setRows((prev) => {
                     console.log("ChangingRows", { prev, items });
                     return items;
-                })
+                }),
             );
         },
     });
@@ -166,7 +167,7 @@ function InfluencerList(props: {}) {
             setRows((prev) => {
                 console.log("ChangingRows", { prev, items });
                 return items;
-            })
+            }),
         );
         return () => {};
     }, []);
@@ -212,7 +213,14 @@ function InfluencerList(props: {}) {
     }
     return (
         <>
-            {<InfluencerDialog {...dialogOtions} {...dialogProps} isOpen={isOpen} editingData={editingData} />}
+            {isOpen && (
+                <InfluencerDialog
+                    {...dialogOtions}
+                    {...dialogProps}
+                    // isOpen={true}
+                    editingData={editingData}
+                />
+            )}
             <ThemeProvider theme={theme}>
                 <DataGrid
                     localeText={deDE.components.MuiDataGrid.defaultProps.localeText}
@@ -227,7 +235,7 @@ function InfluencerList(props: {}) {
                         toolbar: EditToolbar,
                     }}
                     slotProps={{
-                        toolbar: { setDialogOptions },
+                        toolbar: { setIsOpen },
                     }}
                     autoHeight={true}
                     sx={{

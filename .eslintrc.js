@@ -37,5 +37,8 @@ module.exports = {
         "@typescript-eslint/no-unused-vars": ["off"],
         "@typescript-eslint/no-namespace": "off",
         "no-debugger": "warn",
+        "no-constant-condition": "warn",
+        "@typescript-eslint/ban-ts-comment": "warn",
+        "@typescript-eslint/no-empty-interface": "warn",
     },
 };
