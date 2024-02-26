@@ -212,7 +212,7 @@ function TimelineView(props: TimelineViewProps) {
             >
                 {groups.slice(0, maxItems).map((group, i) => {
                     return (
-                        <Grid xs={orientation === "horizontal" ? 5 : 16}>
+                        <Grid key={i} xs={orientation === "horizontal" ? 5 : 16}>
                             <TimelineViewItem
                                 key={i}
                                 keyValue={i}
