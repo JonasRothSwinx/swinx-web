@@ -27,19 +27,8 @@ import Customer from "@/app/ServerFunctions/types/customer";
 import Influencer from "@/app/ServerFunctions/types/influencer";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 
-import {
-    campaignTypes,
-    influencerAssignments,
-    timelineEventTypes,
-    timelineEventTypesType,
-} from "@/amplify/data/types";
-import {
-    DatePicker,
-    DateTimePicker,
-    LocalizationProvider,
-    TimeClock,
-    TimePicker,
-} from "@mui/x-date-pickers";
+import { campaignTypes, influencerAssignments, timelineEventTypes, timelineEventTypesType } from "@/amplify/data/types";
+import { DatePicker, DateTimePicker, LocalizationProvider, TimeClock, TimePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import "dayjs/locale/de";
 import { ChangeEvent, MouseEvent, MouseEventHandler, useEffect, useState } from "react";
@@ -78,7 +67,7 @@ function TimelineEventDialog(props: TimelineEventDialogProps) {
     } = props;
 
     const [timelineEvent, setTimelineEvent] = useState<Partial<DialogType>>(
-        editingData ?? { ...initEvent, campaign },
+        editingData ?? { ...initEvent, campaign: { id: campaign.id } }
     );
     const [dates, setDates] = useState<{ number: number; dates: (Dayjs | null)[] }>({
         number: 1,
@@ -135,33 +124,39 @@ function TimelineEventDialog(props: TimelineEventDialogProps) {
             const newCampaign = {
                 ...campaign,
                 campaignTimelineEvents: [
-                    ...campaign.campaignTimelineEvents.map((x) =>
-                        x.id === timelineEvent.id ? timelineEvent : x,
-                    ),
+                    ...campaign.campaignTimelineEvents.map((x) => (x.id === timelineEvent.id ? timelineEvent : x)),
                 ],
             };
             setCampaign({ ...newCampaign });
             // setRows([...newRows]);
         } else {
-            const events = dates.dates
+            const newEvents = dates.dates
                 .map((date): TimelineEvent.TimelineEvent | undefined => {
                     if (date === null) return;
                     return {
                         ...timelineEvent,
+                        assignment: {
+                            id: timelineEvent.assignment.id,
+                            influencer: null,
+                            placeholderName: timelineEvent.assignment.placeholderName,
+                            isPlaceholder: timelineEvent.assignment.isPlaceholder,
+                        },
+                        campaign: { id: campaign.id },
                         date: date.toISOString(),
                     } satisfies TimelineEvent.TimelineEvent;
                 })
                 .filter((x): x is TimelineEvent.TimelineEvent => x !== undefined);
             // debugger;
-            Promise.all(events.map((x) => x && timelineEvents.create(x))).then((res) =>
-                console.log(res),
-            );
+            Promise.all(newEvents.map((x) => x && timelineEvents.create(x))).then((res) => console.log(newEvents, res));
+            const updatedTimeline = [...campaign.campaignTimelineEvents, ...newEvents];
+            console.log(updatedTimeline);
             const newCampaign: Campaign.Campaign = {
                 ...campaign,
-                campaignTimelineEvents: [...campaign.campaignTimelineEvents, ...events],
+                campaignTimelineEvents: updatedTimeline,
             };
             // console.log(setCampaign);
             // debugger;
+            console.log("New Events", newEvents);
             console.log("Setting new campaign");
 
             setCampaign({ ...newCampaign });
@@ -185,7 +180,7 @@ function TimelineEventDialog(props: TimelineEventDialogProps) {
                             timelineEventType: value,
 
                             inviteEvent: { invites: 1000 },
-                        } satisfies Partial<TimelineEvent.TimelineEventInvites>),
+                        } satisfies Partial<TimelineEvent.TimelineEventInvites>)
                 );
                 break;
             case "Video":
@@ -194,7 +189,7 @@ function TimelineEventDialog(props: TimelineEventDialogProps) {
                         ({
                             ...prev,
                             timelineEventType: value,
-                        } satisfies Partial<TimelineEvent.TimelineEventVideo>),
+                        } satisfies Partial<TimelineEvent.TimelineEventVideo>)
                 );
                 break;
             case "Post":
@@ -203,7 +198,7 @@ function TimelineEventDialog(props: TimelineEventDialogProps) {
                         ({
                             ...prev,
                             timelineEventType: value,
-                        } satisfies Partial<TimelineEvent.TimelineEventPost>),
+                        } satisfies Partial<TimelineEvent.TimelineEventPost>)
                 );
                 break;
             default:
@@ -212,7 +207,7 @@ function TimelineEventDialog(props: TimelineEventDialogProps) {
                         ({
                             ...prev,
                             timelineEventType: value,
-                        } satisfies Partial<TimelineEvent.TimelineEventGeneric>),
+                        } satisfies Partial<TimelineEvent.TimelineEventGeneric>)
                 );
                 break;
         }
@@ -336,10 +331,7 @@ function TimelineEventDialog(props: TimelineEventDialogProps) {
                             // debugger;
                             if (assignment.isPlaceholder) {
                                 return (
-                                    <MenuItem
-                                        key={`influencer${assignment.id}`}
-                                        value={assignment.id}
-                                    >
+                                    <MenuItem key={`influencer${assignment.id}`} value={assignment.id}>
                                         {`Influencer ${assignment.placeholderName}`}
                                     </MenuItem>
                                 );
@@ -353,10 +345,7 @@ function TimelineEventDialog(props: TimelineEventDialogProps) {
                     </Select>
                 </FormControl>
             </DialogContent>
-            <DialogContent
-                dividers
-                sx={{ "& .MuiFormControl-root": { flexBasis: "100%", flex: 1 } }}
-            >
+            <DialogContent dividers sx={{ "& .MuiFormControl-root": { flexBasis: "100%", flex: 1 } }}>
                 <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
                     <div style={{ flexBasis: "100%" }}>
                         {dates.dates.map((date, index) => {
@@ -364,7 +353,7 @@ function TimelineEventDialog(props: TimelineEventDialogProps) {
                                 <div key={`dumb${index}`} className={styles.cellActionSplit}>
                                     <DatePicker
                                         key={`date${index}`}
-                                        closeOnSelect={false}
+                                        // closeOnSelect={false}
                                         label="Termin"
                                         name="date"
                                         value={date}
@@ -376,10 +365,7 @@ function TimelineEventDialog(props: TimelineEventDialogProps) {
                                         }}
                                     />
                                     {dates.number > 1 && (
-                                        <Button
-                                            key={`removeButton${index}`}
-                                            onClick={handleRemoveDateClick(index)}
-                                        >
+                                        <Button key={`removeButton${index}`} onClick={handleRemoveDateClick(index)}>
                                             <DeleteIcon />
                                         </Button>
                                     )}
@@ -404,41 +390,34 @@ function TimelineEventDialog(props: TimelineEventDialogProps) {
                     {/* <TimePicker name="time" /> */}
                 </LocalizationProvider>
             </DialogContent>
-            {TimelineEvent.validate(timelineEvent) &&
-                TimelineEvent.isInviteEvent(timelineEvent) && (
-                    <>
-                        <DialogContent
-                            dividers
-                            sx={{ "& .MuiFormControl-root": { flexBasis: "100%" } }}
-                        >
-                            <TextField
-                                type="number"
-                                id="invites"
-                                name="invites"
-                                label="Anzahl Invites"
-                                value={timelineEvent.inviteEvent?.invites}
-                                onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                    const value: number = parseInt(e.target.value);
-                                    // console.log(value);
-                                    setTimelineEvent((prev) => {
-                                        if (
-                                            !TimelineEvent.validate(prev) ||
-                                            !TimelineEvent.isInviteEvent(prev)
-                                        )
-                                            return prev;
-                                        const newVal = {
-                                            ...prev,
-                                            inviteEvent: { ...prev.inviteEvent, invites: value },
-                                        } satisfies TimelineEvent.TimelineEvent;
-                                        console.log({ prev, newVal });
-                                        return newVal;
-                                    });
-                                }}
-                                required
-                            />
-                        </DialogContent>
-                    </>
-                )}
+            {TimelineEvent.validate(timelineEvent) && TimelineEvent.isInviteEvent(timelineEvent) && (
+                <>
+                    <DialogContent dividers sx={{ "& .MuiFormControl-root": { flexBasis: "100%" } }}>
+                        <TextField
+                            type="number"
+                            id="invites"
+                            name="invites"
+                            label="Anzahl Invites"
+                            value={timelineEvent.inviteEvent?.invites}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                const value: number = parseInt(e.target.value);
+                                // console.log(value);
+                                setTimelineEvent((prev) => {
+                                    if (!TimelineEvent.validate(prev) || !TimelineEvent.isInviteEvent(prev))
+                                        return prev;
+                                    const newVal = {
+                                        ...prev,
+                                        inviteEvent: { ...prev.inviteEvent, invites: value },
+                                    } satisfies TimelineEvent.TimelineEvent;
+                                    console.log({ prev, newVal });
+                                    return newVal;
+                                });
+                            }}
+                            required
+                        />
+                    </DialogContent>
+                </>
+            )}
 
             <DialogActions
                 sx={{

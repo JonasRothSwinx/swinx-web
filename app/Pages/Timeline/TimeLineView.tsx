@@ -48,74 +48,58 @@ function groupEvents(events: TimelineEvent.TimelineEvent[], groupBy: groupBy = "
     let groupedEvents: GroupedEvent[] = [];
     switch (groupBy) {
         case "day":
-            groupedEvents = events.reduce(
-                (groups: GroupedEvent[], event: TimelineEvent.TimelineEvent) => {
-                    const eventDate = dayjs(event.date);
-                    const group = groups.find((group) => {
-                        return (
-                            group.type === event.timelineEventType &&
-                            eventDate.isBetween(
-                                group.dateGroupStart,
-                                group.dateGroupEnd,
-                                "day",
-                                "[]",
-                            )
-                        );
-                    });
-                    if (group) {
-                        group.events.push(event);
-                        return groups;
-                    }
-                    return [
-                        ...groups,
-                        {
-                            type: event.timelineEventType as timelineEventTypesType,
-                            dateGroupStart: eventDate.hour(0).minute(0),
-                            dateGroupEnd: eventDate.hour(23).minute(59),
-                            events: [event],
-                        } satisfies GroupedEvent,
-                    ];
-                },
-                [],
-            );
+            groupedEvents = events.reduce((groups: GroupedEvent[], event: TimelineEvent.TimelineEvent) => {
+                const eventDate = dayjs(event.date);
+                const group = groups.find((group) => {
+                    return (
+                        group.type === event.timelineEventType &&
+                        eventDate.isBetween(group.dateGroupStart, group.dateGroupEnd, "day", "[]")
+                    );
+                });
+                if (group) {
+                    group.events.push(event);
+                    return groups;
+                }
+                return [
+                    ...groups,
+                    {
+                        type: event.timelineEventType as timelineEventTypesType,
+                        dateGroupStart: eventDate.hour(0).minute(0),
+                        dateGroupEnd: eventDate.hour(23).minute(59),
+                        events: [event],
+                    } satisfies GroupedEvent,
+                ];
+            }, []);
             break;
         case "week":
-            groupedEvents = events.reduce(
-                (groups: GroupedEvent[], event: TimelineEvent.TimelineEvent) => {
-                    const eventDate = dayjs(event.date);
-                    const group = groups.find((group) => {
-                        return (
-                            group.type === event.timelineEventType &&
-                            eventDate.isBetween(
-                                group.dateGroupStart,
-                                group.dateGroupEnd,
-                                "week",
-                                "[)",
-                            )
-                        );
-                    });
-                    if (group) {
-                        group.events.push(event);
-                        group.events.sort((a, b) => dayjs(a.date).unix() - dayjs(b.date).unix());
-                        return groups;
-                    }
-                    const eventWeek = eventDate.week();
-                    return [
-                        ...groups,
-                        {
-                            type: event.timelineEventType as timelineEventTypesType,
-                            dateGroupStart: eventDate.minute(0).hour(0).week(eventWeek).day(1),
-                            dateGroupEnd: eventDate
-                                .minute(59)
-                                .hour(23)
-                                .week(eventWeek + 1)
-                                .day(1),
-                            events: [event],
-                        } satisfies GroupedEvent,
-                    ];
-                },
-                [],
-            );
+            groupedEvents = events.reduce((groups: GroupedEvent[], event: TimelineEvent.TimelineEvent) => {
+                const eventDate = dayjs(event.date);
+                const group = groups.find((group) => {
+                    return (
+                        group.type === event.timelineEventType &&
+                        eventDate.isBetween(group.dateGroupStart, group.dateGroupEnd, "week", "[)")
+                    );
+                });
+                if (group) {
+                    group.events.push(event);
+                    group.events.sort((a, b) => dayjs(a.date).unix() - dayjs(b.date).unix());
+                    return groups;
+                }
+                const eventWeek = eventDate.week();
+                return [
+                    ...groups,
+                    {
+                        type: event.timelineEventType as timelineEventTypesType,
+                        dateGroupStart: eventDate.minute(0).hour(0).week(eventWeek).day(1),
+                        dateGroupEnd: eventDate
+                            .minute(59)
+                            .hour(23)
+                            .week(eventWeek + 1)
+                            .day(1),
+                        events: [event],
+                    } satisfies GroupedEvent,
+                ];
+            }, []);
             break;
     }
     // console.log({ groupedEvents });
@@ -124,12 +108,7 @@ function groupEvents(events: TimelineEvent.TimelineEvent[], groupBy: groupBy = "
     return groupedEvents;
 }
 function TimelineView(props: TimelineViewProps) {
-    const {
-        maxItems,
-        orientation = "vertical",
-        controlsPosition = "none",
-        setCampaign: setParent,
-    } = props;
+    const { maxItems, orientation = "vertical", controlsPosition = "none", setCampaign: setParent } = props;
     const [influencers, setInfluencers] = useState(props.influencers);
 
     const [campaign, setCampaign] = useState<Campaign.Campaign>(props.campaign);
@@ -137,22 +116,21 @@ function TimelineView(props: TimelineViewProps) {
     const [groups, setGroups] = useState<GroupedEvent[]>([]);
     const [editingDialogOpen, setEditingDialogOpen] = useState(false);
     const [editingEvent, setEditingEvent] = useState<TimelineEvent.TimelineEvent>();
-    const [controlsPositionState, setControlsPosition] =
-        useState<controlsPosition>(controlsPosition);
+    const [controlsPositionState, setControlsPosition] = useState<controlsPosition>(controlsPosition);
     const [groupBy, setGroupBy] = useState<groupBy>(props.groupBy ?? "week");
     const [editable, setEditable] = useState(props.editable ?? false);
     const [highlightedEvent, setHighlightedEvent] = useState(props.highlightedEvent);
 
     useEffect(() => {
-        console.log("Events changed, updating groups");
+        // console.log("Events changed, updating groups");
         const newGroups = groupEvents(events, groupBy);
-        console.log("new groups:", newGroups);
+        // console.log("new groups:", newGroups);
         setGroups([...newGroups]);
         return () => {};
     }, [events, groupBy]);
 
     useEffect(() => {
-        console.log("Campaign changed, updating events");
+        // console.log("Campaign changed, updating events");
 
         setEvents(campaign?.campaignTimelineEvents ?? []);
 
@@ -184,7 +162,7 @@ function TimelineView(props: TimelineViewProps) {
     }, [props]);
 
     function onDialogClose(hasChanged?: boolean) {
-        console.log("Hi");
+        // console.log("Hi");
         setEditingDialogOpen(false);
         // setGroups(groupEvents(events, groupBy));
     }
@@ -218,29 +196,34 @@ function TimelineView(props: TimelineViewProps) {
                 direction={orientation === "horizontal" ? "row" : "column"}
                 // rowSpacing={1}
                 rowGap={1}
-                // columnGap={1}
+                // columns={1}
+                columnGap={"5px"}
                 // columnSpacing={1}
                 justifyContent={"space-evenly"}
                 style={{
                     // display: "flex",
                     // flexDirection: "column",
-
+                    // overflowY: "auto",
+                    // maxHeight: "90vh",
+                    // paddingTop: "60px",
                     width: "100%",
                     // gap: "5px",
                 }}
             >
                 {groups.slice(0, maxItems).map((group, i) => {
                     return (
-                        <TimelineViewItem
-                            key={i}
-                            keyValue={i}
-                            group={group}
-                            groupedBy={groupBy}
-                            setEditingEvent={setEditingEvent}
-                            openDialog={() => setEditingDialogOpen(true)}
-                            editable={editable}
-                            highlightedEvent={highlightedEvent}
-                        />
+                        <Grid xs={orientation === "horizontal" ? 5 : 16}>
+                            <TimelineViewItem
+                                key={i}
+                                keyValue={i}
+                                group={group}
+                                groupedBy={groupBy}
+                                setEditingEvent={setEditingEvent}
+                                openDialog={() => setEditingDialogOpen(true)}
+                                editable={editable}
+                                highlightedEvent={highlightedEvent}
+                            />
+                        </Grid>
                     );
                 })}
             </Grid>
@@ -273,7 +256,7 @@ function TimelineViewItem(props: TimelineViewItemProps) {
     return (
         <Grid
             item
-            xs={5}
+            // xs={16}
             key={keyValue}
             style={{
                 display: "flex",
@@ -385,8 +368,7 @@ function TimelineViewItem(props: TimelineViewItemProps) {
                                 <>
                                     <TimelineViewItemName event={event} />
                                     <Grid xs="auto" item>
-                                        {TimelineEvent.isInviteEvent(event) &&
-                                            event.inviteEvent?.invites}
+                                        {TimelineEvent.isInviteEvent(event) && event.inviteEvent?.invites}
                                     </Grid>
                                 </>
                             )}
@@ -397,8 +379,7 @@ function TimelineViewItem(props: TimelineViewItemProps) {
                                     </Grid>
                                     <TimelineViewItemName event={event} />
                                     <Grid xs="auto" item>
-                                        {TimelineEvent.isInviteEvent(event) &&
-                                            event.inviteEvent?.invites}
+                                        {TimelineEvent.isInviteEvent(event) && event.inviteEvent?.invites}
                                     </Grid>
                                 </>
                             )}
@@ -480,6 +461,9 @@ function TimelineControls(props: TimelineControlsProps) {
             </>
             <div
                 style={{
+                    // position: "fixed",
+                    // top: "40px",
+                    // right: "20px",
                     marginBlock: "10px",
                     width: "100%",
                     display: "flex",
@@ -488,6 +472,8 @@ function TimelineControls(props: TimelineControlsProps) {
                     height: "60px",
                     alignContent: "stretch",
                     padding: "5px",
+                    background: "white",
+                    zIndex: 999,
                 }}
             >
                 <TextField

@@ -4,10 +4,7 @@ import { PartialWith } from "@/app/Definitions/types";
 import Influencer from "../types/influencer";
 import client from "./.dbclient";
 
-export async function createCandidate(
-    candidate: Influencer.Candidate,
-    influencerAssignmentCandidatesId: string,
-) {
+export async function createCandidate(candidate: Influencer.Candidate, influencerAssignmentCandidatesId: string) {
     const { data, errors } = await client.models.InfluencerCandidate.create({
         influencerAssignmentCandidatesId,
         influencerCandidateInfluencerId: candidate.influencer.id,
@@ -20,7 +17,7 @@ export async function deleteCandidate(candidate: PartialWith<Influencer.Candidat
     if (!candidate.id) throw new Error("Missing Id");
 
     //@ts-ignore
-    const { data, errors } = await client.models.InfluencerCandidate.delete(candidate.id);
+    const { data, errors } = await client.models.InfluencerCandidate.delete({ id: candidate.id });
 
     return { errors };
 }

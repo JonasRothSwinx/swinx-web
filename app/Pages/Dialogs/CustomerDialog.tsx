@@ -19,7 +19,7 @@ const initialData: DialogType = {
 type CustomerDialogProps = DialogProps<Campaign.Campaign, Customer.Customer>;
 function CustomerDialog(props: CustomerDialogProps) {
     // debugger;
-    const { onClose, parent: campaign, setParent: setCampaign, isOpen, editing, editingData } = props;
+    const { onClose, parent: campaign, setParent: setCampaign, isOpen = true, editing, editingData } = props;
     const [customer, setCustomer] = useState(editingData);
 
     // const [isModalOpen, setIsModalOpen] = useState(isOpen);

@@ -1,8 +1,13 @@
-import { defineBackend } from '@aws-amplify/backend';
-import { auth } from './auth/resource.js';
-import { data } from './data/resource.js';
+import { defineBackend } from "@aws-amplify/backend";
+import { auth } from "./auth/resource.js";
+import { data } from "./data/resource.js";
+// import * as ses from "aws-cdk-lib/aws-ses";
 
-defineBackend({
-  auth,
-  data,
+const backend = defineBackend({
+    auth,
+    data,
 });
+
+// const resourceStack = backend.createStack("ResourceStack")
+
+// ses.

@@ -45,6 +45,7 @@ export default function AssignedInfluencerDetails(props: AssignedInfluencerDetai
         setInvolvedInfluencers(getInfluencers());
         return () => {};
     }, [events, influencers]);
+    if (involvedInfluencers.length === 0) return null;
     return (
         <Accordion defaultExpanded disableGutters variant="outlined">
             <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1-content" id="panel1-header">

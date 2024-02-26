@@ -15,19 +15,21 @@ import {
     GridToolbarQuickFilterProps,
 } from "@mui/x-data-grid";
 import dbInterface from "@/app/ServerFunctions/dbInterface";
+import { sendTestBulkTemplate, sendTestMail, sendTestTemplate } from "@/app/ServerFunctions/email/invites";
+import { getUserGroups } from "@/app/ServerFunctions/serverActions";
+import updateTemplates from "@/app/ServerFunctions/email/updateTemplates";
+import { group } from "console";
 
 // eslint-disable-next-line
 interface CandidatePickerProps {
+    influencers: Influencer.InfluencerFull[];
     assignment: Assignment.Assignment;
-    setAssignment: (
-        assignment: Assignment.Assignment,
-        updatedValues?: Partial<Assignment.Assignment>,
-    ) => void;
+    setAssignment: (assignment: Assignment.Assignment, updatedValues?: Partial<Assignment.Assignment>) => void;
     onClose: () => void;
 }
 
 export default function CandidatePicker(props: CandidatePickerProps) {
-    const { assignment, setAssignment } = props;
+    const { assignment, setAssignment, influencers } = props;
     function setSelectedCandidates(candidates: Influencer.Candidate[]) {
         const newAssignment: Assignment.Assignment = { ...assignment, candidates: candidates };
         // console.log(newAssignment);
@@ -35,15 +37,11 @@ export default function CandidatePicker(props: CandidatePickerProps) {
         setAssignment(newAssignment, { candidates });
     }
     return (
-        <Dialog
-            open
-            onClose={props.onClose}
-            fullWidth
-            sx={{ margin: "0", "& .MuiPaper-root": { maxWidth: "75%" } }}
-        >
-            <Grid container>
-                <Grid xs={8}>
+        <Dialog open onClose={props.onClose} fullWidth sx={{ margin: "0", "& .MuiPaper-root": { maxWidth: "75%" } }}>
+            <Grid container sx={{ maxHeight: "90vh", overflow: "hidden" }}>
+                <Grid xs={8} sx={{ "&": { maxHeight: "90vh", overflowY: "auto" } }}>
                     <InfluencerPicker
+                        influencers={influencers}
                         assignmentId={assignment.id}
                         candidates={assignment.candidates ?? []}
                         setSelectedInfluencers={setSelectedCandidates}
@@ -51,7 +49,7 @@ export default function CandidatePicker(props: CandidatePickerProps) {
                 </Grid>
                 <Grid xs={4} sx={{ padding: "10px" }}>
                     <CandidateList candidates={assignment.candidates ?? []} />
-                    <Buttons />
+                    <Buttons candidates={assignment.candidates ?? []} />
                 </Grid>
             </Grid>
         </Dialog>
@@ -72,9 +70,7 @@ function CandidateList(props: CandidateListProps) {
             {candidates.map((candidate) => {
                 return (
                     <Grid container columns={2} key={candidate.influencer.id}>
-                        <Grid xs={1}>
-                            {`${candidate.influencer.firstName} ${candidate.influencer.lastName}`}
-                        </Grid>
+                        <Grid xs={1}>{`${candidate.influencer.firstName} ${candidate.influencer.lastName}`}</Grid>
 
                         <Grid xs={1}>{`${candidate.response}`}</Grid>
                     </Grid>
@@ -86,20 +82,24 @@ function CandidateList(props: CandidateListProps) {
 interface InfluencerPickerProps {
     assignmentId: string;
     candidates: Influencer.Candidate[];
+    influencers: Influencer.InfluencerFull[];
     setSelectedInfluencers: (influencers: Influencer.Candidate[]) => void;
 }
 function InfluencerPicker(props: InfluencerPickerProps) {
-    const [influencers, setInfluencers] = useState<Influencer.InfluencerFull[]>();
+    const { influencers } = props;
+    // const [influencers, setInfluencers] = useState<Influencer.InfluencerFull[]>();
     const [isLoading, setIsLoading] = useState(false);
-    useEffect(() => {
-        setIsLoading(true);
-        listInfluencers().then((result) => {
-            setIsLoading(false);
-            setInfluencers(result);
-        });
+    // useEffect(() => {
+    //     if (!influencers) {
+    //         setIsLoading(true);
+    //     }
+    //     listInfluencers().then((result) => {
+    //         setIsLoading(false);
+    //         setInfluencers(result);
+    //     });
 
-        return () => {};
-    }, []);
+    //     return () => {};
+    // }, []);
 
     useEffect(() => {
         const selected = props.candidates.map((x) => x.influencer.id);
@@ -132,46 +132,59 @@ function InfluencerPicker(props: InfluencerPickerProps) {
     const Eventhandlers = {
         selectionChange: (selected: GridRowSelectionModel) => {
             setRowSelectionModel(selected);
-            const selectedInfluencers =
-                influencers?.filter((influencer) => selected.includes(influencer.id)) ?? [];
+            const selectedInfluencers = influencers?.filter((influencer) => selected.includes(influencer.id)) ?? [];
 
-            const removedInfluencers = props.candidates.filter(
-                (x) => !selected.includes(x.influencer.id),
-            );
+            const removedInfluencers = props.candidates.filter((x) => !selected.includes(x.influencer.id));
 
             removedInfluencers.map((x) => dbInterface.candidate.delete(x));
 
             const addedInfluencers = selected.filter(
-                (x) => !props.candidates.find((candidate) => candidate.influencer.id === x),
+                (x) => !props.candidates.find((candidate) => candidate.influencer.id === x)
             );
 
             console.log({ selectedInfluencers, removedInfluencers, addedInfluencers });
             // return;
             const candidates: Influencer.Candidate[] = props.candidates.filter(
-                (x) => !removedInfluencers.find((influencer) => influencer.id === x.influencer.id),
+                (candidate) =>
+                    !removedInfluencers.find((influencer) => influencer.influencer.id === candidate.influencer.id)
             );
 
-            const newCandidates = candidates.filter((x) =>
-                addedInfluencers.includes(x.influencer.id),
-            );
-            Promise.all(
-                newCandidates.map((x) => dbInterface.candidate.create(x, props.assignmentId)),
-            ).then((res) => {
-                const idPairs = res.map((data) => data.data);
-                const updatedCandidates = idPairs.map((x) => {
-                    const updated = newCandidates.find(
-                        (candidate) => candidate.influencer.id === x.influencerId,
-                    );
-                    return { ...updated, id: x.id };
-                }) as Influencer.Candidate[];
-                const newValues = [
-                    ...candidates.filter((x) => x.id !== null),
-                    ...updatedCandidates,
-                ];
-                console.log({ candidates, filtered: candidates.filter((x) => x.id !== null) });
-                console.log({ newValues });
-                props.setSelectedInfluencers(newValues);
-            });
+            const newCandidates = (influencers ?? [])
+                .filter((x) => addedInfluencers.includes(x.id))
+                .map((influencer) => {
+                    const candidate: Influencer.Candidate = {
+                        influencer,
+                        id: "",
+                        response: "pending",
+                    };
+                    return candidate;
+                });
+            console.log({ remainingCandidates: candidates, newCandidates });
+            if (removedInfluencers.length > 0) {
+                Promise.all(
+                    removedInfluencers.map((candidate) => {
+                        console.log("deleting", candidate);
+                        return dbInterface.candidate.delete(candidate).then((res) => console.log(res));
+                    })
+                );
+            }
+            if (addedInfluencers.length > 0) {
+                Promise.all(newCandidates.map((x) => dbInterface.candidate.create(x, props.assignmentId))).then(
+                    (res) => {
+                        const idPairs = res.map((data) => data.data);
+                        const updatedCandidates = idPairs.map((x) => {
+                            const updated = newCandidates.find(
+                                (candidate) => candidate.influencer.id === x.influencerId
+                            );
+                            return { ...updated, id: x.id };
+                        }) as Influencer.Candidate[];
+                        const newValues = [...candidates.filter((x) => x.id !== null), ...updatedCandidates];
+                        console.log({ candidates, filtered: candidates.filter((x) => x.id !== null) });
+                        console.log({ newValues });
+                        props.setSelectedInfluencers(newValues);
+                    }
+                );
+            }
             console.log(newCandidates);
             props.setSelectedInfluencers([...candidates, ...newCandidates]);
         },
@@ -198,10 +211,35 @@ function InfluencerPicker(props: InfluencerPickerProps) {
         </>
     );
 }
-function Buttons() {
+interface ButtonProps {
+    candidates: Influencer.Candidate[];
+}
+function Buttons(props: ButtonProps) {
+    const [userGroups, setUserGroups] = useState<string[]>([]);
+    useEffect(() => {
+        getUserGroups().then((groups) => {
+            setUserGroups(groups);
+            console.log(groups);
+        });
+
+        return () => {
+            setUserGroups([]);
+        };
+    }, []);
+
+    const Clickhandlers = {
+        send: async () => {
+            // const response = await sendTestMail();
+            // const response = await sendTestTemplate();
+            const response = await sendTestBulkTemplate({ candidates: props.candidates });
+            console.log(response);
+        },
+    };
+
     return (
         <div style={{ position: "absolute", bottom: "0", right: "0" }}>
-            <Button>Anfrage verfassen</Button>
+            {/* {userGroups.includes("admin") && <Button onClick={updateTemplates}>UpdateTemplates</Button>} */}
+            <Button onClick={Clickhandlers.send}>Anfrage verfassen</Button>
         </div>
     );
 }

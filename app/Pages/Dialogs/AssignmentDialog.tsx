@@ -17,7 +17,7 @@ type InfluencerDialogProps = DialogProps<Campaign.Campaign, DialogType>;
 
 function AssignmentDialog(props: InfluencerDialogProps) {
     // debugger;
-    const { onClose, parent: campaign, setParent: setCampaign, isOpen, editing, editingData } = props;
+    const { onClose, parent: campaign, setParent: setCampaign, isOpen = true, editing, editingData } = props;
     const defaultValue: Partial<DialogType> = useMemo(
         () => ({
             placeholderName: `Influencer ${campaign.assignedInfluencers.length + 1}`,

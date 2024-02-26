@@ -134,6 +134,7 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
                                             setCampaign={callbackSetCampaign}
                                         />
                                         <OpenInfluencerDetails
+                                            influencers={influencerData}
                                             campaign={campaign}
                                             setCampaign={callbackSetCampaign}
                                             events={campaign?.campaignTimelineEvents ?? []}
@@ -152,7 +153,7 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
                                             /* ?.replaceAll(",", "\n") */}
                                         </Typography>
                                     </Grid>
-                                    <Grid id="timeline" xs={1}>
+                                    <Grid id="timeline" xs={1} columns={1}>
                                         <TimelineView
                                             setCampaign={callbackSetCampaign}
                                             influencers={influencerData}

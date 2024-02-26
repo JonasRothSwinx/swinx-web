@@ -7,7 +7,8 @@
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
-        "sandbox": "npx amplify sandbox"
+        "sandbox": "npx amplify sandbox",
+        "templates": "find ./templates  -name \"*.json\" -maxdepth 1 -type f -exec echo {} \\; > results.out"
     },
     "dependencies": {
         "@aws-amplify/adapter-nextjs": "^1.0.17",
@@ -19,15 +20,18 @@
         "dayjs": "^1.11.10",
         "eslint-config-react-app": "^7.0.1",
         "install": "^0.13.0",
+        "lit": "^3.1.2",
         "next": "^14.0.4",
         "npm": "^10.3.0",
         "react": "^18",
         "react-dom": "^18",
+        "ts-loader": "^9.5.1",
         "typescript-plugin-css-modules": "^5.0.2"
     },
     "devDependencies": {
         "@aws-amplify/backend": "^0.12.1",
         "@aws-amplify/backend-cli": "^0.11.1",
+        "@aws-sdk/client-ses": "^3.521.0",
         "@mui/x-data-grid": "^6.18.7",
         "@mui/x-data-grid-generator": "^6.18.7",
         "@mui/x-date-pickers": "^6.19.0",
@@ -36,6 +40,8 @@
         "@types/react": "^18",
         "@types/react-dom": "^18",
         "eslint-plugin-react-hooks": "^4.6.0",
-        "typescript": "^5.3.2"
+        "ts-node": "^10.9.2",
+        "typescript": "^5.3.2",
+        "unique-names-generator": "^4.7.1"
     }
 }

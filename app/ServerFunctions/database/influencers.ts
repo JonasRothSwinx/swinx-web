@@ -2,7 +2,7 @@
 
 import client from "./.dbclient";
 
-interface InfluencerDataNew {
+export interface InfluencerDataNew {
     firstName: string;
     lastName: string;
     email: string;
@@ -22,7 +22,7 @@ export async function createNewInfluencer(props: { data: InfluencerDataNew }): P
     const { data: publicData } = await client.models.InfluencerPublic.create({
         firstName,
         lastName,
-        details: privateData,
+        influencerPublicDetailsId: privateData.id,
     });
 }
 

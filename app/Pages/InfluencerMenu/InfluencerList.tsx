@@ -20,7 +20,7 @@ import {
     GridRenderEditCellParams,
     GridPreProcessEditCellProps,
 } from "@mui/x-data-grid";
-import { randomId } from "@mui/x-data-grid-generator";
+import { randomId, randomName, randomUserName } from "@mui/x-data-grid-generator";
 import { Button, TextField, ThemeProvider, createTheme } from "@mui/material";
 import {
     Add as AddIcon,
@@ -37,14 +37,14 @@ import { deDE } from "@mui/x-data-grid";
 import { deDE as pickersDeDE } from "@mui/x-date-pickers/locales";
 import { deDE as coreDeDE } from "@mui/material/locale";
 import { DialogOptions, DialogConfig } from "@/app/Definitions/types";
-import { influencers } from "@/app/ServerFunctions/dbInterface";
+import dbInterface, { influencers } from "@/app/ServerFunctions/dbInterface";
+import { range } from "@/app/Definitions/utility";
+import { InfluencerDataNew, updateInfluencer } from "@/app/ServerFunctions/database/influencers";
+import { uniqueNamesGenerator, Config, animals, names, colors } from "unique-names-generator";
 
 const client = generateClient<Schema>();
 const theme = createTheme({}, { deDE, pickersDeDE, coreDeDE });
 
-interface EditToolbarProps {
-    setIsOpen: Dispatch<SetStateAction<boolean>>;
-}
 function InitInfluencer(props: { id: string }) {
     const { id } = props;
     const influencerData = {
@@ -56,21 +56,49 @@ function InitInfluencer(props: { id: string }) {
     };
     return influencerData;
 }
+interface EditToolbarProps {
+    setIsOpen: Dispatch<SetStateAction<boolean>>;
+    initiateUpdate: (props: updateInfluencerProps) => void;
+    setRows: (rows: Influencer.InfluencerFull[]) => void;
+}
 function EditToolbar(props: EditToolbarProps) {
-    const { setIsOpen } = props;
+    const { setIsOpen, initiateUpdate, setRows } = props;
     function handleClick() {
         setIsOpen(true);
+    }
+    function createRandom() {
+        const amount = parseInt(prompt("Anzahl Influencer") ?? "");
+        for (const _ of range(amount)) {
+            const influencer: InfluencerDataNew = {
+                firstName: uniqueNamesGenerator({ dictionaries: [names], length: 1 }),
+                lastName: uniqueNamesGenerator({ dictionaries: [names, animals, colors], length: 2, separator: "" }),
+                email: "jonasroth1@gmail.com",
+            };
+            dbInterface.influencer.create({ data: influencer });
+            console.log(influencer);
+        }
+        initiateUpdate({ setInfluencers: setRows });
     }
     return (
         <GridToolbarContainer>
             <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
                 Neuer Influencer
             </Button>
+            <Button color="primary" startIcon={<AddIcon />} onClick={createRandom}>
+                Erstelle Influencer
+            </Button>
         </GridToolbarContainer>
     );
 }
 // const selectionSet = ["id", "details.id", "details.email"] as const;
-
+interface updateInfluencerProps {
+    setInfluencers: (influencers: Influencer.InfluencerFull[]) => void;
+}
+function updateInfluencers(props: updateInfluencerProps) {
+    dbInterface.influencer.list().then((result) => {
+        props.setInfluencers(result);
+    });
+}
 function InfluencerList(props: {}) {
     // const [details, setDetails] = useState<Schema["InfluencerPrivate"][]>([]);
     const [rows, setRows] = useState<Influencer.InfluencerFull[] | undefined>([]);
@@ -152,7 +180,7 @@ function InfluencerList(props: {}) {
                 setRows((prev) => {
                     console.log("ChangingRows", { prev, items });
                     return items;
-                }),
+                })
             );
         },
     });
@@ -162,13 +190,7 @@ function InfluencerList(props: {}) {
     const [showDialog, setShowDialog] = useState(false);
 
     useEffect(() => {
-        console.log("getting new data");
-        influencers.list().then((items) =>
-            setRows((prev) => {
-                console.log("ChangingRows", { prev, items });
-                return items;
-            }),
-        );
+        updateInfluencers({ setInfluencers: setRows });
         return () => {};
     }, []);
 
@@ -235,7 +257,7 @@ function InfluencerList(props: {}) {
                         toolbar: EditToolbar,
                     }}
                     slotProps={{
-                        toolbar: { setIsOpen },
+                        toolbar: { setIsOpen, initiateUpdate: updateInfluencers, setRows },
                     }}
                     autoHeight={true}
                     sx={{

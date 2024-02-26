@@ -31,6 +31,7 @@ import TimelineEventDialog from "../../../Dialogs/TimelineEventDialog";
 import CandidatePicker from "./CandidatePicker";
 
 type OpenInfluencerDetailsProps = {
+    influencers: Influencer.InfluencerFull[];
     campaign: Campaign.Campaign;
     setCampaign: (campaign: Campaign.Campaign) => void;
     placeholders: Assignment.Assignment[];
@@ -41,7 +42,7 @@ type OpenInfluencerDetailsProps = {
 type eventDict = { [key: string]: TimelineEvent.TimelineEvent[] };
 
 export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps) {
-    const { campaign, setCampaign, events, placeholders, setHighlightedEvent } = props;
+    const { campaign, setCampaign, events, placeholders, setHighlightedEvent, influencers } = props;
     const [openInfluencers, setOpenInfluencers] = useState<Assignment.Assignment[]>([]);
     const [isProcessing, setIsProcessing] = useState(false);
     const [targetAssignment, setTargetAssignment] = useState<Assignment.Assignment>();
@@ -86,10 +87,7 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                 // const newPlaceholders = campaign.assignedInfluencers.map((x) =>
                 //     x.id === tempId ? { ...x, id: id } : x
                 // );
-                const newPlaceholders = [
-                    ...campaign.assignedInfluencers,
-                    { ...newPlaceholder, id },
-                ];
+                const newPlaceholders = [...campaign.assignedInfluencers, { ...newPlaceholder, id }];
                 // console.log({ newPlaceholders });
                 setIsProcessing(false);
                 setCampaign({ ...campaign, assignedInfluencers: newPlaceholders });
@@ -105,30 +103,20 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
         <>
             <>{/* Dialogs */}</>
             <Accordion defaultExpanded disableGutters variant="outlined">
-                <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls="panel1-content"
-                    id="panel1-header"
-                >
+                <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1-content" id="panel1-header">
                     Offene Influencer Positionen
                 </AccordionSummary>
                 <AccordionDetails>
                     {openInfluencers.map((assignment) => {
                         // console.log(influencer);
                         return (
-                            <Accordion
-                                key={assignment.id}
-                                defaultExpanded
-                                disableGutters
-                                variant="outlined"
-                            >
+                            <Accordion key={assignment.id} defaultExpanded disableGutters variant="outlined">
                                 <AccordionSummary
                                     expandIcon={<ExpandMoreIcon />}
                                     sx={{
-                                        "& .MuiAccordionSummary-content:not(.Mui-expanded) button":
-                                            {
-                                                display: "none",
-                                            },
+                                        "& .MuiAccordionSummary-content:not(.Mui-expanded) button": {
+                                            display: "none",
+                                        },
                                     }}
                                 >
                                     <div
@@ -141,10 +129,9 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                                             maxHeight: "1em",
                                         }}
                                     >
-                                        <Typography>
-                                            {`Influencer ${assignment.placeholderName}`}
-                                        </Typography>
+                                        <Typography>{`Influencer ${assignment.placeholderName}`}</Typography>
                                         <InfluencerDetailsButtons
+                                            influencers={influencers}
                                             assignment={assignment}
                                             campaign={campaign}
                                             setCampaign={setCampaign}
@@ -159,20 +146,13 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                                             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                                                 Invites:{" "}
                                                 {assignment.timelineEvents
-                                                    .filter(
-                                                        (
-                                                            x,
-                                                        ): x is TimelineEvent.TimelineEventInvites => {
-                                                            return TimelineEvent.isInviteEvent(x);
-                                                        },
-                                                    )
+                                                    .filter((x): x is TimelineEvent.TimelineEventInvites => {
+                                                        return TimelineEvent.isInviteEvent(x);
+                                                    })
                                                     .reduce((sum: number, event) => {
-                                                        return (
-                                                            sum + (event?.inviteEvent?.invites ?? 0)
-                                                        );
+                                                        return sum + (event?.inviteEvent?.invites ?? 0);
                                                     }, 0)}
-                                                verteilt über {assignment.timelineEvents?.length}{" "}
-                                                Termine
+                                                verteilt über {assignment.timelineEvents?.length} Termine
                                             </AccordionSummary>
                                             <AccordionDetails>
                                                 <Grid container>
@@ -181,16 +161,13 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                                                         return (
                                                             <Grid
                                                                 xs={12}
-                                                                key={
-                                                                    (event.id ?? "") + i.toString()
-                                                                }
+                                                                key={(event.id ?? "") + i.toString()}
                                                                 onClick={() => {
                                                                     setHighlightedEvent(event);
                                                                 }}
                                                             >
                                                                 <Typography>
-                                                                    {date.format("DD.MM.YYYY")} (
-                                                                    {date.fromNow()})
+                                                                    {date.format("DD.MM.YYYY")} ({date.fromNow()})
                                                                 </Typography>
                                                             </Grid>
                                                         );
@@ -220,9 +197,10 @@ interface InfluencerDetailsButtonProps {
     setCampaign: (campaign: Campaign.Campaign) => void;
     campaign: Campaign.Campaign;
     assignment: Assignment.Assignment;
+    influencers: Influencer.InfluencerFull[];
 }
 function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
-    const { isProcessing, setIsProcessing, campaign, setCampaign, assignment } = props;
+    const { isProcessing, setIsProcessing, campaign, setCampaign, assignment, influencers } = props;
     const [openDialog, setOpenDialog] = useState<openDialog>("none");
 
     const EventHandlers = {
@@ -234,9 +212,7 @@ function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             dbInterface.assignment.delete(assignment);
             const newCampaign = {
                 ...campaign,
-                assignedInfluencers: campaign.assignedInfluencers.filter(
-                    (x) => x.id !== assignment.id,
-                ),
+                assignedInfluencers: campaign.assignedInfluencers.filter((x) => x.id !== assignment.id),
             };
             setCampaign(newCampaign);
         },
@@ -251,12 +227,9 @@ function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
         preventClickthrough: (e: MouseEvent) => {
             e.stopPropagation();
         },
-        setAssignment: (
-            targetAssignment: Assignment.Assignment,
-            updatedValues?: Partial<Assignment.Assignment>,
-        ) => {
+        setAssignment: (targetAssignment: Assignment.Assignment, updatedValues?: Partial<Assignment.Assignment>) => {
             // debugger;
-            console.log(targetAssignment);
+            // console.log(targetAssignment);
             // if (updatedValues) {
             //     const updateObject = { id: targetAssignment.id, ...updatedValues };
             //     console.log(updateObject);
@@ -265,12 +238,10 @@ function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             const newCampaign: Campaign.Campaign = {
                 ...campaign,
                 assignedInfluencers: [
-                    ...campaign.assignedInfluencers.map((x) =>
-                        x.id === targetAssignment.id ? targetAssignment : x,
-                    ),
+                    ...campaign.assignedInfluencers.map((x) => (x.id === targetAssignment.id ? targetAssignment : x)),
                 ],
             };
-            console.log({ newCampaign, assignments: newCampaign.assignedInfluencers });
+            // console.log({ newCampaign, assignments: newCampaign.assignedInfluencers });
             setCampaign(newCampaign);
         },
     };
@@ -296,6 +267,7 @@ function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
         ),
         candidates: (
             <CandidatePicker
+                influencers={influencers}
                 assignment={assignment}
                 onClose={EventHandlers.onDialogClose}
                 setAssignment={EventHandlers.setAssignment}
@@ -328,11 +300,7 @@ function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             </Tooltip>
             <Tooltip title="Löschen" placement="top">
                 <span>
-                    <IconButton
-                        color="error"
-                        onClick={EventHandlers.deleteAssignment()}
-                        disabled={isProcessing}
-                    >
+                    <IconButton color="error" onClick={EventHandlers.deleteAssignment()} disabled={isProcessing}>
                         <DeleteIcon />
                     </IconButton>
                 </span>
