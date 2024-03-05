@@ -1,5 +1,5 @@
 import Assignment from "@/app/ServerFunctions/types/assignment";
-import { Box, Button, Dialog, Skeleton } from "@mui/material";
+import { Box, Button, Dialog, Skeleton, Typography } from "@mui/material";
 import { randomAddress } from "@mui/x-data-grid-generator";
 import Grid from "@mui/material/Unstable_Grid2";
 import Influencer from "@/app/ServerFunctions/types/influencer";
@@ -15,10 +15,12 @@ import {
     GridToolbarQuickFilterProps,
 } from "@mui/x-data-grid";
 import dbInterface from "@/app/ServerFunctions/dbInterface";
-import { sendTestBulkTemplate, sendTestMail, sendTestTemplate } from "@/app/ServerFunctions/email/invites";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
-import updateTemplates from "@/app/ServerFunctions/email/updateTemplates";
 import { group } from "console";
+import emailClient from "@/app/ServerFunctions/email/emailClient";
+import stylesExporter from "@/app/Pages/styles/stylesExporter";
+import { Nullable } from "@/app/Definitions/types";
+import EmailPreview from "../EmailPreview/EmailPreview";
 
 // eslint-disable-next-line
 interface CandidatePickerProps {
@@ -27,7 +29,23 @@ interface CandidatePickerProps {
     setAssignment: (assignment: Assignment.Assignment, updatedValues?: Partial<Assignment.Assignment>) => void;
     onClose: () => void;
 }
-
+function getClassByResponse(response: Nullable<string>) {
+    switch (response) {
+        case "accepted": {
+            return stylesExporter.campaignDetails.green;
+        }
+        case "pending": {
+            return stylesExporter.campaignDetails.yellow;
+        }
+        case "rejected": {
+            return stylesExporter.campaignDetails.red;
+        }
+        default: {
+            return "";
+        }
+    }
+}
+type openDialog = "none" | "emailPreview";
 export default function CandidatePicker(props: CandidatePickerProps) {
     const { assignment, setAssignment, influencers } = props;
     function setSelectedCandidates(candidates: Influencer.Candidate[]) {
@@ -36,8 +54,26 @@ export default function CandidatePicker(props: CandidatePickerProps) {
         // return;
         setAssignment(newAssignment, { candidates });
     }
+    const [openDialog, setOpenDialog] = useState<openDialog>("none");
+    const EventHandlers = {
+        dialogClose: () => {
+            setOpenDialog("none");
+        },
+    };
+    const dialogs: { [state in openDialog]: JSX.Element | null } = {
+        none: null,
+        emailPreview: (
+            <EmailPreview
+                onClose={EventHandlers.dialogClose}
+                templateName="CampaignInvite"
+                variables={{ honorar: "0.50€", assignments: "Krebs heilen\nWeltfrieden sichern" }}
+                influencers={assignment.candidates}
+            />
+        ),
+    } as const;
     return (
         <Dialog open onClose={props.onClose} fullWidth sx={{ margin: "0", "& .MuiPaper-root": { maxWidth: "75%" } }}>
+            <>{dialogs[openDialog]}</>
             <Grid container sx={{ maxHeight: "90vh", overflow: "hidden" }}>
                 <Grid xs={8} sx={{ "&": { maxHeight: "90vh", overflowY: "auto" } }}>
                     <InfluencerPicker
@@ -49,7 +85,7 @@ export default function CandidatePicker(props: CandidatePickerProps) {
                 </Grid>
                 <Grid xs={4} sx={{ padding: "10px" }}>
                     <CandidateList candidates={assignment.candidates ?? []} />
-                    <Buttons candidates={assignment.candidates ?? []} />
+                    <Buttons setOpenDialog={setOpenDialog} candidates={assignment.candidates ?? []} />
                 </Grid>
             </Grid>
         </Dialog>
@@ -70,9 +106,15 @@ function CandidateList(props: CandidateListProps) {
             {candidates.map((candidate) => {
                 return (
                     <Grid container columns={2} key={candidate.influencer.id}>
-                        <Grid xs={1}>{`${candidate.influencer.firstName} ${candidate.influencer.lastName}`}</Grid>
+                        <Grid xs={1}>
+                            <Typography>{`${candidate.influencer.firstName} ${candidate.influencer.lastName}`}</Typography>
+                        </Grid>
 
-                        <Grid xs={1}>{`${candidate.response}`}</Grid>
+                        <Grid xs={1}>
+                            <Typography className={getClassByResponse(candidate.response)}>
+                                {`${candidate.response}`}
+                            </Typography>
+                        </Grid>
                     </Grid>
                 );
             })}
@@ -213,6 +255,7 @@ function InfluencerPicker(props: InfluencerPickerProps) {
 }
 interface ButtonProps {
     candidates: Influencer.Candidate[];
+    setOpenDialog: (dialog: openDialog) => void;
 }
 function Buttons(props: ButtonProps) {
     const [userGroups, setUserGroups] = useState<string[]>([]);
@@ -228,10 +271,13 @@ function Buttons(props: ButtonProps) {
     }, []);
 
     const Clickhandlers = {
+        openPreview: () => {
+            props.setOpenDialog("emailPreview");
+        },
         send: async () => {
             // const response = await sendTestMail();
             // const response = await sendTestTemplate();
-            const response = await sendTestBulkTemplate({ candidates: props.candidates });
+            const response = await emailClient.invites.sendBulk({ candidates: props.candidates });
             console.log(response);
         },
     };
@@ -239,7 +285,7 @@ function Buttons(props: ButtonProps) {
     return (
         <div style={{ position: "absolute", bottom: "0", right: "0" }}>
             {/* {userGroups.includes("admin") && <Button onClick={updateTemplates}>UpdateTemplates</Button>} */}
-            <Button onClick={Clickhandlers.send}>Anfrage verfassen</Button>
+            <Button onClick={Clickhandlers.openPreview}>Anfrage verfassen</Button>
         </div>
     );
 }

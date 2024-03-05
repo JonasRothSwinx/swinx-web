@@ -4,3 +4,23 @@
     justify-content: space-between;
     align-items: center;
 }
+.red {
+    color: red;
+}
+.yellow {
+    color: yellow;
+}
+.green {
+    color: green;
+}
+
+.emailPreviewIframe {
+    border: none;
+    width: 100%;
+    border-right: 1px solid black;
+    height: -webkit-fill-available;
+}
+.emailPreviewIframe a {
+    pointer-events: none;
+    cursor: forbidden;
+}

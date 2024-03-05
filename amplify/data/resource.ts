@@ -8,6 +8,8 @@ specify that owners, authenticated via your Auth resource can "create",
 "read", "update", and "delete" their own records. Public users,
 authenticated via an API key, can only "read" records.
 =========================================================================*/
+const adminsAndManagers = a.allow.specificGroups(["admin", "projektmanager"], "userPools");
+const publicRead = a.allow.public().to(["read"]);
 const schema = a.schema({
     Todo: a
         .model({
@@ -42,21 +44,28 @@ const schema = a.schema({
 
     InfluencerAssignment: a
         .model({
-            influencer: a.hasOne("InfluencerPublic"),
+            influencer: a.hasOne("InfluencerPublic").authorization([adminsAndManagers]),
             isPlaceholder: a.boolean().required(),
-            placeholderName: a.string(),
+            placeholderName: a.string().authorization([adminsAndManagers]),
             timelineEvents: a.hasMany("TimelineEvent"),
-            candidates: a.hasMany("InfluencerCandidate"),
+            candidates: a.hasMany("InfluencerCandidate").authorization([adminsAndManagers]),
             budget: a.integer(),
         })
-        .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
+        .authorization([
+            a.allow.public().to(["read"]),
+            a.allow.specificGroups(["admin", "projektmanager"], "userPools"),
+        ]),
 
     InfluencerCandidate: a
         .model({
+            assignment: a.belongsTo("InfluencerAssignment"),
             influencer: a.hasOne("InfluencerPublic"),
-            response: a.string(),
+            response: a.string().authorization([adminsAndManagers, a.allow.public().to(["read", "update"])]),
         })
-        .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
+        .authorization([
+            a.allow.public().to(["read"]),
+            a.allow.specificGroups(["admin", "projektmanager"], "userPools"),
+        ]),
     Campaign: a
         .model({
             campaignManagerId: a.string(),

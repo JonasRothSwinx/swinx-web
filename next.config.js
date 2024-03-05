@@ -1,4 +1,23 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {}
+const nextConfig = {
+    webpack: (config, options) => {
+        config.module.rules.push({
+            test: /\.html$/i,
+            loader: "html-loader",
+        });
 
-module.exports = nextConfig
+        return config;
+    },
+    // webpack: {
+    //     module: {
+    //         rules: [
+    //             {
+    //                 test: /\.html$/i,
+    //                 loader: "html-loader",
+    //             },
+    //         ],
+    //     },
+    // },
+};
+
+module.exports = nextConfig;

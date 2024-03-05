@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head> </head>
+    <body>
+        <style>
+            /* body {
+                background-color: yellowgreen;
+            } */
+            .assignments {
+                white-space: pre-wrap;
+            }
+            .buttonContainer {
+                padding-top: 40px;
+                display: flex;
+                flex-direction: row;
+                gap: 10px;
+            }
+            .responseButton {
+                /* justify-content: "center"; */
+                align-content: center;
+                text-align: center;
+                border: 1px solid black;
+                border-radius: 20px;
+                padding: 5px;
+                min-width: 100px;
+            }
+        </style>
+        Hallo {{name}}!<br />
+        Du wurdest eingeladen, an einer Kampagne teilzunehmen.<br />
+        Deine Aufgaben sind:<br />
+        <p class="assignments">{{assignments}}</p>
+        Das Honorar dafür ist {{honorar}}
+
+        <div class="buttonContainer">
+            <a class="responseButton" href="{{linkBase}}{{linkYes}}" target="_blank">Ja</a>
+            <a class="responseButton" href="{{linkBase}}{{linkNo}}" target="_blank">Nein</a>
+        </div>
+    </body>
+</html>

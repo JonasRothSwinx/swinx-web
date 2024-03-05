@@ -2,6 +2,10 @@ import UserView from "@/app/Pages/WelcomePage/User";
 import { useEffect, useState } from "react";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import stylesExporter from "../styles/stylesExporter";
+import { Button } from "@mui/material";
+import { sendTestBulkTemplate, sendTestMail, sendTestTemplate } from "@/app/ServerFunctions/email/invites";
+import emailClient from "@/app/ServerFunctions/email/emailClient";
+import { inviteTemplateVariables } from "@/app/ServerFunctions/email/templates/invites/invitesTemplate";
 
 const styles = stylesExporter.sideBar;
 
@@ -30,7 +34,7 @@ export const sideBarButtons = [
     },
 ];
 interface ISideBar {
-    setMenuCallback: (menu: sideBarButtonId) => any;
+    setMenuCallback: (menu: sideBarButtonId) => unknown;
 }
 
 function SideBar(props: ISideBar) {
@@ -47,6 +51,52 @@ function SideBar(props: ISideBar) {
             {sideBarButtons.map((sb) => (
                 <SideBarButton key={sb.id.toString()} buttonProps={sb} groups={groups} callback={setMenuCallback} />
             ))}
+            {groups.includes("admin") && (
+                <>
+                    <Button
+                        variant="outlined"
+                        onClick={async () => {
+                            const response = await emailClient.templates.update();
+                            console.log(response);
+                        }}
+                    >
+                        Update Templates
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        onClick={async () => {
+                            const response = await emailClient.templates.get(prompt("TemplateName") ?? "");
+                            console.log(response);
+                        }}
+                    >
+                        Get Template
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        onClick={async () => {
+                            const response = await emailClient.templates.testRender("CampaignInvite", {
+                                name: "Testname",
+                                assignments: "Solve World hunger",
+                                honorar: "about $3.50",
+                                linkBase: "http://localhost:3000/",
+                                linkNo: "No",
+                                linkYes: "yes",
+                            } satisfies inviteTemplateVariables);
+                            console.log(response);
+                        }}
+                    >
+                        Test REnder
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        onClick={() => {
+                            sendTestTemplate();
+                        }}
+                    >
+                        Send Template
+                    </Button>
+                </>
+            )}
         </div>
     );
 }
@@ -55,7 +105,7 @@ export default SideBar;
 function SideBarButton(props: {
     buttonProps: ISideBarButton;
     groups: string[];
-    callback: (menu: sideBarButtonId) => any;
+    callback: (menu: sideBarButtonId) => unknown;
 }) {
     const { id, title, description, allowedGroups } = props.buttonProps;
     const { groups, callback } = props;

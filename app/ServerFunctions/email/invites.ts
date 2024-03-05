@@ -1,25 +1,26 @@
 "use server";
 import {
-    ListTemplatesCommand,
-    ListTemplatesCommandInput,
-    SESClient,
-    SendBulkTemplatedEmailCommand,
-    SendBulkTemplatedEmailCommandInput,
+    BulkEmailEntry,
+    SendBulkEmailCommand,
+    SendBulkEmailCommandInput,
     SendEmailCommand,
     SendEmailCommandInput,
-    SendTemplatedEmailCommand,
-    SendTemplatedEmailCommandInput,
-} from "@aws-sdk/client-ses";
+} from "@aws-sdk/client-sesv2";
 import client from "./sesClient";
 import Influencer from "../types/influencer";
+import { inviteTemplateVariables } from "./templates/invites/invitesTemplate";
+import { templateNames } from "./templates/templates";
+import emailClient from "./emailClient";
 
 export async function sendTestMail() {
     const input: SendEmailCommandInput = {
         Destination: { ToAddresses: ["jonasroth1@gmail.com"] },
-        Source: "swinx GmbH <noReply@swinx.de>",
-        Message: {
-            Body: { Html: { Data: "<h1>hi!</h1>" }, Text: { Data: "hi!" } },
-            Subject: { Data: "Test mail, please ignore" },
+        FromEmailAddress: "swinx GmbH <noReply@swinx.de>",
+        Content: {
+            Simple: {
+                Body: { Html: { Data: "<h1>hi!</h1>" }, Text: { Data: "hi!" } },
+                Subject: { Data: "Test mail, please ignore" },
+            },
         },
     };
     const mail = new SendEmailCommand(input);
@@ -28,13 +29,21 @@ export async function sendTestMail() {
     console.log({ response });
 }
 export async function sendTestTemplate() {
-    const input: SendTemplatedEmailCommandInput = {
+    const input: SendEmailCommandInput = {
         Destination: { ToAddresses: ["jonasroth1@gmail.com"] },
-        Source: "swinx GmbH <noReply@swinx.de>",
-        Template: "templatesTest",
-        TemplateData: JSON.stringify({ name: "testvalue" }),
+        FromEmailAddress: "swinx GmbH <noReply@swinx.de>",
+        Content: {
+            Template: {
+                TemplateName: "CampaignInvite",
+                TemplateData: JSON.stringify({
+                    name: "testName",
+                    assignments: "Fliege zum Mars",
+                    honorar: "10.000.000.000€",
+                }),
+            },
+        },
     };
-    const mail = new SendTemplatedEmailCommand(input);
+    const mail = new SendEmailCommand(input);
     console.log({ input, mail });
     const response = await client.send(mail);
     console.log({ response });
@@ -43,23 +52,32 @@ interface TestBulkMailProps {
     candidates: Influencer.Candidate[];
 }
 export async function sendTestBulkTemplate(props: TestBulkMailProps) {
-    const input: SendBulkTemplatedEmailCommandInput = {
-        Destinations: props.candidates.map((candidate) => {
+    const input: SendBulkEmailCommandInput = {
+        BulkEmailEntries: props.candidates.map<BulkEmailEntry>((candidate) => {
             return {
                 Destination: { ToAddresses: [candidate.influencer.details.email] },
-                ReplacementTemplateData: JSON.stringify({
-                    name: `${candidate.influencer.firstName} ${candidate.influencer.lastName}`,
+                ReplacementEmailContent: {
+                    ReplacementTemplate: {
+                        ReplacementTemplateData: JSON.stringify({
+                            name: `${candidate.influencer.firstName} ${candidate.influencer.lastName}`,
+                        }),
+                    },
+                },
+            } satisfies BulkEmailEntry;
+        }),
+        DefaultContent: {
+            Template: {
+                TemplateName: "templatesTest",
+                TemplateData: JSON.stringify({
+                    // Name: "name",
+                    name: "Error 418: Teapot",
                 }),
-            };
-        }),
-        DefaultTemplateData: JSON.stringify({
-            // Name: "name",
-            name: "Error 418: Teapot",
-        }),
-        Source: "swinx GmbH <noReply@swinx.de>",
-        Template: "templatesTest",
+            },
+        },
+
+        FromEmailAddress: "swinx GmbH <noReply@swinx.de>",
     };
-    const mail = new SendBulkTemplatedEmailCommand(input);
+    const mail = new SendBulkEmailCommand(input);
     console.log({ input, mail });
     const response = await client.send(mail);
     return { response: JSON.parse(JSON.stringify(response)) };
@@ -81,4 +99,59 @@ export async function sendTestBulkTemplate(props: TestBulkMailProps) {
     // );
     // console.log({ responses });
     // return { response: responses.map((response) => JSON.parse(JSON.stringify(response))) };
+}
+interface BulkCampaignInviteProps {
+    candidates: Influencer.Candidate[];
+}
+export async function sendBulkCampaignInvite(props: BulkCampaignInviteProps) {
+    await emailClient.templates.update();
+    const input: SendBulkEmailCommandInput = {
+        BulkEmailEntries: props.candidates.map<BulkEmailEntry>((candidate) => {
+            const baseParams = {
+                firstName: candidate.influencer.firstName,
+                lastName: candidate.influencer.lastName,
+                id: candidate.id,
+            };
+            const encodedParametersYes = encodeURIComponent(
+                btoa(JSON.stringify({ ...baseParams, response: "accepted" }))
+            );
+            const encodedParametersNo = encodeURIComponent(
+                btoa(JSON.stringify({ ...baseParams, response: "rejected" }))
+            );
+            return {
+                Destination: { ToAddresses: [candidate.influencer.details.email] },
+                ReplacementEmailContent: {
+                    ReplacementTemplate: {
+                        ReplacementTemplateData: JSON.stringify({
+                            name: `${candidate.influencer.firstName} ${candidate.influencer.lastName}`,
+                            assignments: "-Fliege zum Mond\n-Kommerzielle Kernfusion implementieren",
+                            honorar: "$3.50",
+                            linkYes: `q=${encodedParametersYes}`,
+                            linkNo: `q=${encodedParametersNo}`,
+                        } satisfies Partial<inviteTemplateVariables>),
+                    },
+                },
+            } satisfies BulkEmailEntry;
+        }),
+        DefaultContent: {
+            Template: {
+                TemplateName: templateNames.inviteTemplate,
+                TemplateData: JSON.stringify({
+                    // Name: "name",
+                    name: "Error 418: Teapot",
+                    assignments: "Make Tea",
+                    honorar: "0€",
+                    linkBase: "http://localhost:3000/Response?",
+                    linkYes: "q=Yes",
+                    linkNo: "q=No",
+                } satisfies inviteTemplateVariables),
+            },
+        },
+
+        FromEmailAddress: "swinx GmbH <noReply@swinx.de>",
+    };
+    const mail = new SendBulkEmailCommand(input);
+    // console.log({ input, mail });
+    const response = await client.send(mail);
+    return { response: JSON.parse(JSON.stringify(response)) };
 }

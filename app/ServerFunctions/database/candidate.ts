@@ -21,3 +21,10 @@ export async function deleteCandidate(candidate: PartialWith<Influencer.Candidat
 
     return { errors };
 }
+
+export async function publicProcessResponse(candidate: PartialWith<Influencer.Candidate, "id" | "response">) {
+    //@ts-ignore
+    const { data, errors } = await client.models.InfluencerCandidate.update(candidate);
+
+    return { errors };
+}

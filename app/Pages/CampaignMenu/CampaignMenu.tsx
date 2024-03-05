@@ -1,6 +1,6 @@
 import CampaignList from "./CampaignList";
 
-function CampaignMenu(props: {}) {
+export default function CampaignMenu(props: {}) {
     return (
         <>
             {/* <span>Kampagnen</span> */}
@@ -8,5 +8,3 @@ function CampaignMenu(props: {}) {
         </>
     );
 }
-
-export default CampaignMenu;
