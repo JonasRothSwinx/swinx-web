@@ -25,10 +25,14 @@
                 min-width: 100px;
             }
         </style>
-        Hallo {{name}}!<br />
-        Du wurdest eingeladen, an einer Kampagne teilzunehmen.<br />
-        Deine Aufgaben sind:<br />
-        <p class="assignments">{{assignments}}</p>
+        <h3>Hallo {{name}}!</h3>
+        <span> Du wurdest eingeladen, an einer Kampagne teilzunehmen.</span><br />
+        <span>Du wärst dabei für folgende Aufgaben zuständig:</span> <br />
+        <ul>
+            {{#each assignments}}
+            <li>{{assignmentDescription}}</li>
+            {{/each}}
+        </ul>
         Das Honorar dafür ist {{honorar}}
 
         <div class="buttonContainer">

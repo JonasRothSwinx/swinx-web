@@ -102,6 +102,7 @@ export async function sendTestBulkTemplate(props: TestBulkMailProps) {
 }
 interface BulkCampaignInviteProps {
     candidates: Influencer.Candidate[];
+    variables: Partial<inviteTemplateVariables>;
 }
 export async function sendBulkCampaignInvite(props: BulkCampaignInviteProps) {
     await emailClient.templates.update();
@@ -113,10 +114,10 @@ export async function sendBulkCampaignInvite(props: BulkCampaignInviteProps) {
                 id: candidate.id,
             };
             const encodedParametersYes = encodeURIComponent(
-                btoa(JSON.stringify({ ...baseParams, response: "accepted" }))
+                btoa(JSON.stringify({ ...baseParams, response: "accepted" })),
             );
             const encodedParametersNo = encodeURIComponent(
-                btoa(JSON.stringify({ ...baseParams, response: "rejected" }))
+                btoa(JSON.stringify({ ...baseParams, response: "rejected" })),
             );
             return {
                 Destination: { ToAddresses: [candidate.influencer.details.email] },
@@ -124,8 +125,6 @@ export async function sendBulkCampaignInvite(props: BulkCampaignInviteProps) {
                     ReplacementTemplate: {
                         ReplacementTemplateData: JSON.stringify({
                             name: `${candidate.influencer.firstName} ${candidate.influencer.lastName}`,
-                            assignments: "-Fliege zum Mond\n-Kommerzielle Kernfusion implementieren",
-                            honorar: "$3.50",
                             linkYes: `q=${encodedParametersYes}`,
                             linkNo: `q=${encodedParametersNo}`,
                         } satisfies Partial<inviteTemplateVariables>),
@@ -139,8 +138,10 @@ export async function sendBulkCampaignInvite(props: BulkCampaignInviteProps) {
                 TemplateData: JSON.stringify({
                     // Name: "name",
                     name: "Error 418: Teapot",
-                    assignments: "Make Tea",
-                    honorar: "0€",
+                    assignments: props.variables.assignments ?? [
+                        { assignmentDescription: "Make Tea" },
+                    ],
+                    honorar: props.variables.honorar ?? "<Honorar nicht definiert>",
                     linkBase: "http://localhost:3000/Response?",
                     linkYes: "q=Yes",
                     linkNo: "q=No",

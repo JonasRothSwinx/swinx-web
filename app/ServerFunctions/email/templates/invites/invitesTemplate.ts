@@ -3,7 +3,7 @@ import { MailTemplate } from "../templates";
 
 type inviteTemplateVariables = {
     name: string;
-    assignments: string;
+    assignments: { assignmentDescription: string }[];
     honorar: string;
     linkBase: string;
     linkYes: string;

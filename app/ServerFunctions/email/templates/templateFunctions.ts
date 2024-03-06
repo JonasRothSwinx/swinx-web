@@ -42,11 +42,11 @@ export async function updateTemplates() {
                 return client.send(new UpdateEmailTemplateCommand(content));
             }
             return client.send(new CreateEmailTemplateCommand(content));
-        })
+        }),
     );
 
     messages.push(templates);
-    console.log(messages, templates);
+    // console.log(messages, templates);
     return messages;
 }
 
@@ -56,8 +56,10 @@ export async function deleteTemplates() {
     if (templates) {
         await Promise.all(
             templates?.map(async (template) => {
-                return client.send(new DeleteEmailTemplateCommand({ TemplateName: template.TemplateName }));
-            })
+                return client.send(
+                    new DeleteEmailTemplateCommand({ TemplateName: template.TemplateName }),
+                );
+            }),
         );
     }
 }
@@ -68,12 +70,19 @@ export async function listTemplates() {
 }
 
 export async function getTemplate(templateName: string) {
+    await updateTemplates();
     const template = await client.send(new GetEmailTemplateCommand({ TemplateName: templateName }));
     return template;
 }
-export async function testRenderTemplate(templateName: string, templateData: Record<string, string>) {
+export async function testRenderTemplate(
+    templateName: string,
+    templateData: Record<string, string>,
+) {
     const response = await client.send(
-        new TestRenderEmailTemplateCommand({ TemplateName: templateName, TemplateData: JSON.stringify(templateData) })
+        new TestRenderEmailTemplateCommand({
+            TemplateName: templateName,
+            TemplateData: JSON.stringify(templateData),
+        }),
     );
     return response;
 }

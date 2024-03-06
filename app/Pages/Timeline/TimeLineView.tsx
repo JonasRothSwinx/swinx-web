@@ -48,58 +48,74 @@ function groupEvents(events: TimelineEvent.TimelineEvent[], groupBy: groupBy = "
     let groupedEvents: GroupedEvent[] = [];
     switch (groupBy) {
         case "day":
-            groupedEvents = events.reduce((groups: GroupedEvent[], event: TimelineEvent.TimelineEvent) => {
-                const eventDate = dayjs(event.date);
-                const group = groups.find((group) => {
-                    return (
-                        group.type === event.timelineEventType &&
-                        eventDate.isBetween(group.dateGroupStart, group.dateGroupEnd, "day", "[]")
-                    );
-                });
-                if (group) {
-                    group.events.push(event);
-                    return groups;
-                }
-                return [
-                    ...groups,
-                    {
-                        type: event.timelineEventType as timelineEventTypesType,
-                        dateGroupStart: eventDate.hour(0).minute(0),
-                        dateGroupEnd: eventDate.hour(23).minute(59),
-                        events: [event],
-                    } satisfies GroupedEvent,
-                ];
-            }, []);
+            groupedEvents = events.reduce(
+                (groups: GroupedEvent[], event: TimelineEvent.TimelineEvent) => {
+                    const eventDate = dayjs(event.date);
+                    const group = groups.find((group) => {
+                        return (
+                            group.type === event.timelineEventType &&
+                            eventDate.isBetween(
+                                group.dateGroupStart,
+                                group.dateGroupEnd,
+                                "day",
+                                "[]",
+                            )
+                        );
+                    });
+                    if (group) {
+                        group.events.push(event);
+                        return groups;
+                    }
+                    return [
+                        ...groups,
+                        {
+                            type: event.timelineEventType as timelineEventTypesType,
+                            dateGroupStart: eventDate.hour(0).minute(0),
+                            dateGroupEnd: eventDate.hour(23).minute(59),
+                            events: [event],
+                        } satisfies GroupedEvent,
+                    ];
+                },
+                [],
+            );
             break;
         case "week":
-            groupedEvents = events.reduce((groups: GroupedEvent[], event: TimelineEvent.TimelineEvent) => {
-                const eventDate = dayjs(event.date);
-                const group = groups.find((group) => {
-                    return (
-                        group.type === event.timelineEventType &&
-                        eventDate.isBetween(group.dateGroupStart, group.dateGroupEnd, "week", "[)")
-                    );
-                });
-                if (group) {
-                    group.events.push(event);
-                    group.events.sort((a, b) => dayjs(a.date).unix() - dayjs(b.date).unix());
-                    return groups;
-                }
-                const eventWeek = eventDate.week();
-                return [
-                    ...groups,
-                    {
-                        type: event.timelineEventType as timelineEventTypesType,
-                        dateGroupStart: eventDate.minute(0).hour(0).week(eventWeek).day(1),
-                        dateGroupEnd: eventDate
-                            .minute(59)
-                            .hour(23)
-                            .week(eventWeek + 1)
-                            .day(1),
-                        events: [event],
-                    } satisfies GroupedEvent,
-                ];
-            }, []);
+            groupedEvents = events.reduce(
+                (groups: GroupedEvent[], event: TimelineEvent.TimelineEvent) => {
+                    const eventDate = dayjs(event.date);
+                    const group = groups.find((group) => {
+                        return (
+                            group.type === event.timelineEventType &&
+                            eventDate.isBetween(
+                                group.dateGroupStart,
+                                group.dateGroupEnd,
+                                "week",
+                                "[)",
+                            )
+                        );
+                    });
+                    if (group) {
+                        group.events.push(event);
+                        group.events.sort((a, b) => dayjs(a.date).unix() - dayjs(b.date).unix());
+                        return groups;
+                    }
+                    const eventWeek = eventDate.week();
+                    return [
+                        ...groups,
+                        {
+                            type: event.timelineEventType as timelineEventTypesType,
+                            dateGroupStart: eventDate.minute(0).hour(0).week(eventWeek).day(1),
+                            dateGroupEnd: eventDate
+                                .minute(59)
+                                .hour(23)
+                                .week(eventWeek + 1)
+                                .day(1),
+                            events: [event],
+                        } satisfies GroupedEvent,
+                    ];
+                },
+                [],
+            );
             break;
     }
     // console.log({ groupedEvents });
@@ -108,7 +124,12 @@ function groupEvents(events: TimelineEvent.TimelineEvent[], groupBy: groupBy = "
     return groupedEvents;
 }
 function TimelineView(props: TimelineViewProps) {
-    const { maxItems, orientation = "vertical", controlsPosition = "none", setCampaign: setParent } = props;
+    const {
+        maxItems,
+        orientation = "vertical",
+        controlsPosition = "none",
+        setCampaign: setParent,
+    } = props;
     const [influencers, setInfluencers] = useState(props.influencers);
 
     const [campaign, setCampaign] = useState<Campaign.Campaign>(props.campaign);
@@ -116,7 +137,8 @@ function TimelineView(props: TimelineViewProps) {
     const [groups, setGroups] = useState<GroupedEvent[]>([]);
     const [editingDialogOpen, setEditingDialogOpen] = useState(false);
     const [editingEvent, setEditingEvent] = useState<TimelineEvent.TimelineEvent>();
-    const [controlsPositionState, setControlsPosition] = useState<controlsPosition>(controlsPosition);
+    const [controlsPositionState, setControlsPosition] =
+        useState<controlsPosition>(controlsPosition);
     const [groupBy, setGroupBy] = useState<groupBy>(props.groupBy ?? "week");
     const [editable, setEditable] = useState(props.editable ?? false);
     const [highlightedEvent, setHighlightedEvent] = useState(props.highlightedEvent);
@@ -368,7 +390,8 @@ function TimelineViewItem(props: TimelineViewItemProps) {
                                 <>
                                     <TimelineViewItemName event={event} />
                                     <Grid xs="auto" item>
-                                        {TimelineEvent.isInviteEvent(event) && event.inviteEvent?.invites}
+                                        {TimelineEvent.isInviteEvent(event) &&
+                                            event.inviteEvent?.invites}
                                     </Grid>
                                 </>
                             )}
@@ -379,7 +402,8 @@ function TimelineViewItem(props: TimelineViewItemProps) {
                                     </Grid>
                                     <TimelineViewItemName event={event} />
                                     <Grid xs="auto" item>
-                                        {TimelineEvent.isInviteEvent(event) && event.inviteEvent?.invites}
+                                        {TimelineEvent.isInviteEvent(event) &&
+                                            event.inviteEvent?.invites}
                                     </Grid>
                                 </>
                             )}
@@ -490,7 +514,7 @@ function TimelineControls(props: TimelineControlsProps) {
                     <MenuItem value={"day"}>Tag</MenuItem>
                     <MenuItem value={"week"}>Woche</MenuItem>
                 </TextField>
-                <Button
+                {/* <Button
                     style={{ height: "100%" }}
                     variant="outlined"
                     color="inherit"
@@ -498,7 +522,7 @@ function TimelineControls(props: TimelineControlsProps) {
                 >
                     <AddIcon />
                     <Typography variant="body1">Ereignis</Typography>
-                </Button>
+                </Button> */}
             </div>
         </>
     );
