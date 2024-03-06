@@ -14,10 +14,6 @@ import { SESv2Client } from "@aws-sdk/client-sesv2";
 import templateDefinitions from "./templates";
 
 const client = new SESv2Client({
-    credentials: {
-        accessKeyId: "AKIA2FGQ5CFOTDK33DXP",
-        secretAccessKey: "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",
-    },
     region: "eu-west-1",
 });
 
