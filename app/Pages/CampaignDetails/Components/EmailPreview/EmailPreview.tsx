@@ -32,12 +32,19 @@ function getTemplate(props: GetTemplateProps) {
         props.setEmailPreview(result.TemplateContent?.Html);
     });
 }
+
 interface EmailPreviewProps<TemplateVariableType> {
     onClose: () => void;
     templateName: string;
     variables: Partial<TemplateVariableType>;
     candidates: Influencer.Candidate[];
 }
+/**
+ * Renders the email preview component.
+ *
+ * @param props - The component props.
+ * @returns The rendered email preview component.
+ */
 export default function EmailPreview(props: EmailPreviewProps<inviteTemplateVariables>) {
     const [emailPreview, setEmailPreview] = useState<string>();
     const [isLoading, setIsLoading] = useState(false);
@@ -74,7 +81,10 @@ export default function EmailPreview(props: EmailPreviewProps<inviteTemplateVari
 
     const EventHandlers = {
         sendEmail: () => {
-            emailClient.invites.sendBulk({ candidates: props.candidates, variables });
+            emailClient.invites.sendBulk({
+                candidates: props.candidates,
+                variables: { ...variables, name: undefined },
+            });
         },
         cancel: () => {
             props.onClose();
@@ -92,7 +102,7 @@ export default function EmailPreview(props: EmailPreviewProps<inviteTemplateVari
         >
             <Grid container sx={{ width: "100%", height: "100%" }}>
                 <Grid xs={4}>
-                    {
+                    {groups.includes("admin") && (
                         <IconButton
                             onClick={() =>
                                 getTemplate({
@@ -103,7 +113,7 @@ export default function EmailPreview(props: EmailPreviewProps<inviteTemplateVari
                             }
                             sx={{
                                 position: "absolute",
-
+                                bottom: "0",
                                 animationPlayState: "running",
                                 animationName: "spin",
                                 animationDuration: "500ms",
@@ -116,7 +126,7 @@ export default function EmailPreview(props: EmailPreviewProps<inviteTemplateVari
                         >
                             <RefreshIcon />
                         </IconButton>
-                    }
+                    )}
                     {isLoading ? (
                         <Box
                             justifyContent={"center"}
@@ -130,7 +140,13 @@ export default function EmailPreview(props: EmailPreviewProps<inviteTemplateVari
                         </Box>
                     ) : (
                         <>
-                            <EmailFrame emailPreview={emailPreview ?? ""} variables={variables} />
+                            <EmailFrame
+                                emailPreview={emailPreview ?? ""}
+                                variables={{
+                                    ...variables,
+                                    name: `${selectedCandidate.influencer.firstName} ${selectedCandidate.influencer.lastName}`,
+                                }}
+                            />
                         </>
                     )}
                 </Grid>

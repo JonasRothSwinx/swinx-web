@@ -3,7 +3,11 @@ import { useEffect, useState } from "react";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import stylesExporter from "../styles/stylesExporter";
 import { Button } from "@mui/material";
-import { sendTestBulkTemplate, sendTestMail, sendTestTemplate } from "@/app/ServerFunctions/email/invites";
+import {
+    sendTestBulkTemplate,
+    sendTestMail,
+    sendTestTemplate,
+} from "@/app/ServerFunctions/email/invites";
 import emailClient from "@/app/ServerFunctions/email/emailClient";
 import { inviteTemplateVariables } from "@/app/ServerFunctions/email/templates/invites/invitesTemplate";
 
@@ -49,7 +53,12 @@ function SideBar(props: ISideBar) {
         <div className={styles.sideBar}>
             <UserView />
             {sideBarButtons.map((sb) => (
-                <SideBarButton key={sb.id.toString()} buttonProps={sb} groups={groups} callback={setMenuCallback} />
+                <SideBarButton
+                    key={sb.id.toString()}
+                    buttonProps={sb}
+                    groups={groups}
+                    callback={setMenuCallback}
+                />
             ))}
             {groups.includes("admin") && (
                 <>
@@ -65,27 +74,13 @@ function SideBar(props: ISideBar) {
                     <Button
                         variant="outlined"
                         onClick={async () => {
-                            const response = await emailClient.templates.get(prompt("TemplateName") ?? "");
+                            const response = await emailClient.templates.get(
+                                prompt("TemplateName") ?? "",
+                            );
                             console.log(response);
                         }}
                     >
                         Get Template
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        onClick={async () => {
-                            const response = await emailClient.templates.testRender("CampaignInvite", {
-                                name: "Testname",
-                                assignments: "Solve World hunger",
-                                honorar: "about $3.50",
-                                linkBase: "http://localhost:3000/",
-                                linkNo: "No",
-                                linkYes: "yes",
-                            } satisfies inviteTemplateVariables);
-                            console.log(response);
-                        }}
-                    >
-                        Test REnder
                     </Button>
                     <Button
                         variant="outlined"
