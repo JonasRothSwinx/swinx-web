@@ -4,6 +4,7 @@ const apiUrl = (config as any)?.custom?.sesHandlerUrl;
 
 export function fetchApi(body: sesHandlerEventBody) {
     // console.log("fetching", apiUrl, body);
+    console.log({ apiUrl, apikey: process.env.ADMIN_API_KEY });
     return fetch(apiUrl, {
         method: "POST",
         headers: {
