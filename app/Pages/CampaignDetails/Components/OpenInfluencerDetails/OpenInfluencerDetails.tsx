@@ -51,10 +51,10 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
         function getInfluencers() {
             // debugger;
             // console.log(openInfluencers);
-            const placeholdersGroup: Assignment.Assignment[] = campaign.assignedInfluencers;
+            const assignments: Assignment.Assignment[] = campaign.assignedInfluencers;
 
-            for (const event of events.filter((event) => event.assignment.isPlaceholder)) {
-                const assignment = placeholdersGroup.find((x) => x.id === event.assignment?.id);
+            for (const event of events /* .filter((event) => event.assignment.isPlaceholder) */) {
+                const assignment = assignments.find((x) => x.id === event.assignment?.id);
                 if (!assignment) continue;
                 if (assignment.timelineEvents.find((x) => x.id === event.id)) {
                     continue;
@@ -62,10 +62,12 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                 assignment.timelineEvents.push(event);
             }
 
-            // for (const influencer of placeholdersGroup) {
-            //     influencer.inviteEvents.sort((a, b) => (a.date && b.date ? a.date.localeCompare(b.date) : 0));
-            // }
-            return placeholdersGroup;
+            for (const assignment of assignments) {
+                assignment.timelineEvents.sort((a, b) =>
+                    a.date && b.date ? a.date.localeCompare(b.date) : 0,
+                );
+            }
+            return assignments;
         }
         setOpenInfluencers(getInfluencers());
         return () => {};
@@ -87,7 +89,10 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                 // const newPlaceholders = campaign.assignedInfluencers.map((x) =>
                 //     x.id === tempId ? { ...x, id: id } : x
                 // );
-                const newPlaceholders = [...campaign.assignedInfluencers, { ...newPlaceholder, id }];
+                const newPlaceholders = [
+                    ...campaign.assignedInfluencers,
+                    { ...newPlaceholder, id },
+                ];
                 // console.log({ newPlaceholders });
                 setIsProcessing(false);
                 setCampaign({ ...campaign, assignedInfluencers: newPlaceholders });
@@ -103,20 +108,30 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
         <>
             <>{/* Dialogs */}</>
             <Accordion defaultExpanded disableGutters variant="outlined">
-                <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1-content" id="panel1-header">
-                    Offene Influencer Positionen
+                <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="panel1-content"
+                    id="panel1-header"
+                >
+                    Influencer
                 </AccordionSummary>
                 <AccordionDetails>
                     {openInfluencers.map((assignment) => {
                         // console.log(influencer);
                         return (
-                            <Accordion key={assignment.id} defaultExpanded disableGutters variant="outlined">
+                            <Accordion
+                                key={assignment.id}
+                                defaultExpanded
+                                disableGutters
+                                variant="outlined"
+                            >
                                 <AccordionSummary
                                     expandIcon={<ExpandMoreIcon />}
                                     sx={{
-                                        "& .MuiAccordionSummary-content:not(.Mui-expanded) button": {
-                                            display: "none",
-                                        },
+                                        "& .MuiAccordionSummary-content:not(.Mui-expanded) button":
+                                            {
+                                                display: "none",
+                                            },
                                     }}
                                 >
                                     <div
@@ -146,13 +161,20 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                                             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                                                 Invites:{" "}
                                                 {assignment.timelineEvents
-                                                    .filter((x): x is TimelineEvent.TimelineEventInvites => {
-                                                        return TimelineEvent.isInviteEvent(x);
-                                                    })
+                                                    .filter(
+                                                        (
+                                                            x,
+                                                        ): x is TimelineEvent.TimelineEventInvites => {
+                                                            return TimelineEvent.isInviteEvent(x);
+                                                        },
+                                                    )
                                                     .reduce((sum: number, event) => {
-                                                        return sum + (event?.inviteEvent?.invites ?? 0);
-                                                    }, 0)}
-                                                verteilt über {assignment.timelineEvents?.length} Termine
+                                                        return (
+                                                            sum + (event?.inviteEvent?.invites ?? 0)
+                                                        );
+                                                    }, 0)}{" "}
+                                                verteilt über {assignment.timelineEvents?.length}{" "}
+                                                Termine
                                             </AccordionSummary>
                                             <AccordionDetails>
                                                 <Grid container>
@@ -161,13 +183,16 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                                                         return (
                                                             <Grid
                                                                 xs={12}
-                                                                key={(event.id ?? "") + i.toString()}
+                                                                key={
+                                                                    (event.id ?? "") + i.toString()
+                                                                }
                                                                 onClick={() => {
                                                                     setHighlightedEvent(event);
                                                                 }}
                                                             >
                                                                 <Typography>
-                                                                    {date.format("DD.MM.YYYY")} ({date.fromNow()})
+                                                                    {date.format("DD.MM.YYYY")} (
+                                                                    {date.fromNow()})
                                                                 </Typography>
                                                             </Grid>
                                                         );
@@ -212,7 +237,9 @@ function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             dbInterface.assignment.delete(assignment);
             const newCampaign = {
                 ...campaign,
-                assignedInfluencers: campaign.assignedInfluencers.filter((x) => x.id !== assignment.id),
+                assignedInfluencers: campaign.assignedInfluencers.filter(
+                    (x) => x.id !== assignment.id,
+                ),
             };
             setCampaign(newCampaign);
         },
@@ -227,7 +254,10 @@ function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
         preventClickthrough: (e: MouseEvent) => {
             e.stopPropagation();
         },
-        setAssignment: (targetAssignment: Assignment.Assignment, updatedValues?: Partial<Assignment.Assignment>) => {
+        setAssignment: (
+            targetAssignment: Assignment.Assignment,
+            updatedValues?: Partial<Assignment.Assignment>,
+        ) => {
             // debugger;
             // console.log(targetAssignment);
             // if (updatedValues) {
@@ -238,7 +268,9 @@ function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             const newCampaign: Campaign.Campaign = {
                 ...campaign,
                 assignedInfluencers: [
-                    ...campaign.assignedInfluencers.map((x) => (x.id === targetAssignment.id ? targetAssignment : x)),
+                    ...campaign.assignedInfluencers.map((x) =>
+                        x.id === targetAssignment.id ? targetAssignment : x,
+                    ),
                 ],
             };
             // console.log({ newCampaign, assignments: newCampaign.assignedInfluencers });
@@ -300,7 +332,11 @@ function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             </Tooltip>
             <Tooltip title="Löschen" placement="top">
                 <span>
-                    <IconButton color="error" onClick={EventHandlers.deleteAssignment()} disabled={isProcessing}>
+                    <IconButton
+                        color="error"
+                        onClick={EventHandlers.deleteAssignment()}
+                        disabled={isProcessing}
+                    >
                         <DeleteIcon />
                     </IconButton>
                 </span>

@@ -1,5 +1,5 @@
 import Assignment from "@/app/ServerFunctions/types/assignment";
-import { Box, Button, Dialog, Skeleton, Typography } from "@mui/material";
+import { Box, Button, Dialog, IconButton, Skeleton, Tooltip, Typography } from "@mui/material";
 import { randomAddress } from "@mui/x-data-grid-generator";
 import Grid from "@mui/material/Unstable_Grid2";
 import Influencer from "@/app/ServerFunctions/types/influencer";
@@ -21,6 +21,7 @@ import emailClient from "@/app/ServerFunctions/email/emailClient";
 import stylesExporter from "@/app/Pages/styles/stylesExporter";
 import { Nullable } from "@/app/Definitions/types";
 import EmailPreview from "../EmailPreview/EmailPreview";
+import { CheckBoxIcon } from "@/app/Definitions/Icons";
 
 // eslint-disable-next-line
 interface CandidatePickerProps {
@@ -62,6 +63,20 @@ export default function CandidatePicker(props: CandidatePickerProps) {
         dialogClose: () => {
             setOpenDialog("none");
         },
+        assignInfluencer: (candidate: Influencer.Candidate) => {
+            const newAssignment: Assignment.Assignment = {
+                ...assignment,
+                candidates: [...(assignment.candidates ?? []), candidate],
+            };
+            dbInterface.assignment.update({
+                id: assignment.id,
+                candidates: [],
+                influencer: candidate.influencer,
+                isPlaceholder: false,
+            });
+            props.onClose();
+            console.log("assignInfluencer");
+        },
     };
     const dialogs: { [state in openDialog]: JSX.Element | null } = {
         none: null,
@@ -98,7 +113,10 @@ export default function CandidatePicker(props: CandidatePickerProps) {
                     />
                 </Grid>
                 <Grid xs={6} sx={{ padding: "10px" }}>
-                    <CandidateList candidates={assignment.candidates ?? []} />
+                    <CandidateList
+                        candidates={assignment.candidates ?? []}
+                        assignInfluencer={EventHandlers.assignInfluencer}
+                    />
                     <Buttons
                         setOpenDialog={setOpenDialog}
                         candidates={assignment.candidates ?? []}
@@ -111,26 +129,37 @@ export default function CandidatePicker(props: CandidatePickerProps) {
 
 interface CandidateListProps {
     candidates: Influencer.Candidate[];
+    assignInfluencer: (influencer: Influencer.Candidate) => void;
 }
 function CandidateList(props: CandidateListProps) {
     const { candidates } = props;
+    const EventHandlers = {
+        assignInfluencer: (candidate: Influencer.Candidate) => {
+            props.assignInfluencer(candidate);
+        },
+    };
     return (
         <div style={{ width: "100%" }}>
-            <Grid container columns={2} width={"100%"}>
-                <Grid xs={1}>Name</Grid>
-                <Grid xs={1}>Antwort</Grid>
+            <Grid container columns={9} width={"100%"}>
+                <Grid xs={4}>Name</Grid>
+                <Grid xs={4}>Antwort</Grid>
             </Grid>
             {candidates.map((candidate) => {
                 return (
-                    <Grid container columns={2} key={candidate.influencer.id}>
-                        <Grid xs={1}>
+                    <Grid container columns={9} key={candidate.influencer.id}>
+                        <Grid xs={4}>
                             <Typography>{`${candidate.influencer.firstName} ${candidate.influencer.lastName}`}</Typography>
                         </Grid>
 
-                        <Grid xs={1}>
+                        <Grid xs={4} display={"flex"} flexDirection={"row"}>
                             <Typography className={getClassByResponse(candidate.response)}>
                                 {`${candidate.response}`}
                             </Typography>
+                            <IconButton onClick={() => EventHandlers.assignInfluencer(candidate)}>
+                                <Tooltip title="Zuweisen">
+                                    <CheckBoxIcon sx={{ color: "green" }} />
+                                </Tooltip>
+                            </IconButton>
                         </Grid>
                     </Grid>
                 );

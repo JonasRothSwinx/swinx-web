@@ -141,11 +141,11 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
                                             placeholders={campaign.assignedInfluencers}
                                             setHighlightedEvent={setHighlightedEvent}
                                         />
-                                        <AssignedInfluencerDetails
+                                        {/* <AssignedInfluencerDetails
                                             events={campaign?.campaignTimelineEvents ?? []}
                                             influencers={influencerData}
                                             setHighlightedEvent={setHighlightedEvent}
-                                        />
+                                        /> */}
                                     </Grid>
                                     <Grid xs={1} maxHeight={"100%"}>
                                         <Typography fontSize={8} whiteSpace={"pre-wrap"}>

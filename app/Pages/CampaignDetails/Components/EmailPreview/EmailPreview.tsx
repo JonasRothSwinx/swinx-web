@@ -80,11 +80,13 @@ export default function EmailPreview(props: EmailPreviewProps<inviteTemplateVari
     }, [selectedCandidate]);
 
     const EventHandlers = {
-        sendEmail: () => {
-            emailClient.invites.sendBulk({
+        sendEmail: async () => {
+            const response = await emailClient.invites.sendBulk({
                 candidates: props.candidates,
                 variables: { ...variables, name: undefined },
             });
+            console.log(response);
+            props.onClose();
         },
         cancel: () => {
             props.onClose();
@@ -251,6 +253,10 @@ function Editor(props: EditorProps) {
                     );
                 })}
             </TextField>
+            <br />
+            <br />
+            <br />
+            <Typography>TODO: Email Editor</Typography>
         </Box>
     );
 }

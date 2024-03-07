@@ -39,9 +39,13 @@ export async function sendTestTemplate() {
                     name: "testName",
                     assignments: "Fliege zum Mars",
                     honorar: "10.000.000.000€",
+                    linkBase: "http://localhost:3000/Response?",
+                    linkYes: "q=Yes",
+                    linkNo: "q=No",
                 }),
             },
         },
+        ConfigurationSetName: "Default",
     };
     const mail = new SendEmailCommand(input);
     console.log({ input, mail });
@@ -106,6 +110,7 @@ interface BulkCampaignInviteProps {
 }
 export async function sendBulkCampaignInvite(props: BulkCampaignInviteProps) {
     await emailClient.templates.update();
+    console.log(JSON.stringify(props, null, " "));
     const input: SendBulkEmailCommandInput = {
         BulkEmailEntries: props.candidates.map<BulkEmailEntry>((candidate) => {
             const baseParams = {
@@ -148,7 +153,7 @@ export async function sendBulkCampaignInvite(props: BulkCampaignInviteProps) {
                 } satisfies inviteTemplateVariables),
             },
         },
-
+        ConfigurationSetName: "Default",
         FromEmailAddress: "swinx GmbH <noReply@swinx.de>",
     };
     const mail = new SendBulkEmailCommand(input);

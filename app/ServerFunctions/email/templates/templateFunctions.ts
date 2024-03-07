@@ -42,7 +42,7 @@ export async function updateTemplates() {
     );
 
     messages.push(templates);
-    // console.log(messages, templates);
+    // console.log(messages, templates)
     return messages;
 }
 
