@@ -1,20 +1,14 @@
-import { sendBulkCampaignInvite } from "./invites";
-import {
-    updateTemplates,
-    deleteTemplates,
-    getTemplate,
-    listTemplates,
-    testRenderTemplate,
-} from "./templates/templateFunctions";
+import { sendBulkCampaignInvite, sendBulkCampaignInviteAPI } from "./invites";
+import { updateTemplates, getTemplate, listTemplates } from "./templates/templateFunctions";
 
-export const invites = { sendBulk: sendBulkCampaignInvite };
+export const invites = { sendBulk: sendBulkCampaignInviteAPI };
 
 export const templates = {
     list: listTemplates,
     update: updateTemplates,
-    deleteAll: deleteTemplates,
+    // deleteAll: deleteTemplates,
     get: getTemplate,
-    testRender: testRenderTemplate,
+    // testRender: testRenderTemplate,
 };
 
 export default { invites, templates };

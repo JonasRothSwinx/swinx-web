@@ -4,12 +4,14 @@ import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import stylesExporter from "../styles/stylesExporter";
 import { Button } from "@mui/material";
 import {
+    sendTemplateAPITest,
     sendTestBulkTemplate,
     sendTestMail,
     sendTestTemplate,
 } from "@/app/ServerFunctions/email/invites";
 import emailClient from "@/app/ServerFunctions/email/emailClient";
 import { inviteTemplateVariables } from "@/app/ServerFunctions/email/templates/invites/invitesTemplate";
+import { testLambda } from "@/app/ServerFunctions/email/templates/templateFunctions";
 
 const styles = stylesExporter.sideBar;
 
@@ -75,7 +77,7 @@ function SideBar(props: ISideBar) {
                         variant="outlined"
                         onClick={async () => {
                             const response = await emailClient.templates.get(
-                                prompt("TemplateName") ?? "",
+                                prompt("TemplateName") ?? "CampaignInvite",
                             );
                             console.log(response);
                         }}
@@ -84,11 +86,21 @@ function SideBar(props: ISideBar) {
                     </Button>
                     <Button
                         variant="outlined"
-                        onClick={() => {
-                            sendTestTemplate();
+                        onClick={async () => {
+                            const response = await sendTemplateAPITest();
+                            console.log(response);
                         }}
                     >
                         Send Template
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        onClick={async () => {
+                            const response = await testLambda();
+                            console.log(response.response);
+                        }}
+                    >
+                        Test Lambda
                     </Button>
                 </>
             )}

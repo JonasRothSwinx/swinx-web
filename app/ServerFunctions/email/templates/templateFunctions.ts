@@ -1,84 +1,84 @@
 "use server";
-// import client from "./sesClient";
-import {
-    CreateEmailTemplateCommand,
-    DeleteEmailTemplateCommand,
-    GetEmailTemplateCommand,
-    ListEmailTemplatesCommand,
-    TestRenderEmailTemplateCommand,
-    UpdateEmailTemplateCommand,
-    UpdateEmailTemplateCommandInput,
-} from "@aws-sdk/client-sesv2";
-import { compile } from "html-to-text";
-import { SESv2Client } from "@aws-sdk/client-sesv2";
+
+import { sesHandlerEventBody } from "@/amplify/functions/sesHandler/resource";
 import templateDefinitions from "./templates";
-
-const client = new SESv2Client({
-    region: "eu-west-1",
-});
-
-const compiledHtmlConvert = compile({ wordwrap: 130 });
+import { fetchApi } from "../sesAPI";
 
 export async function updateTemplates() {
     const messages = [];
-    const { TemplatesMetadata: templates } = await client.send(new ListEmailTemplatesCommand({}));
+    const response = await fetchApi({ operation: "update", updateData: templateDefinitions });
 
-    await Promise.all(
-        templateDefinitions.map((template) => {
-            const content: UpdateEmailTemplateCommandInput = {
-                TemplateName: template.name,
-                TemplateContent: {
-                    Subject: template.subjectLine,
-                    Html: template.html,
-                    Text: compiledHtmlConvert(template.html),
-                },
-            };
+    // await Promise.all(
+    //     templateDefinitions.map((template) => {
+    //         const content: UpdateEmailTemplateCommandInput = {
+    //             TemplateName: template.name,
+    //             TemplateContent: {
+    //                 Subject: template.subjectLine,
+    //                 Html: template.html,
+    //                 Text: compiledHtmlConvert(template.html),
+    //             },
+    //         };
 
-            if (templates?.find((x) => x.TemplateName === template.name)) {
-                return client.send(new UpdateEmailTemplateCommand(content));
-            }
-            return client.send(new CreateEmailTemplateCommand(content));
-        }),
-    );
+    //         if (templates?.find((x) => x.TemplateName === template.name)) {
+    //             return client.send(new UpdateEmailTemplateCommand(content));
+    //         }
+    //         return client.send(new CreateEmailTemplateCommand(content));
+    //     }),
+    // );
 
-    messages.push(templates);
+    messages.push(response.status, response.ok);
     // console.log(messages, templates)
     return messages;
 }
 
-export async function deleteTemplates() {
-    const messages = [];
-    const { TemplatesMetadata: templates } = await client.send(new ListEmailTemplatesCommand({}));
-    if (templates) {
-        await Promise.all(
-            templates?.map(async (template) => {
-                return client.send(
-                    new DeleteEmailTemplateCommand({ TemplateName: template.TemplateName }),
-                );
-            }),
-        );
-    }
-}
+// export async function deleteTemplates() {
+//     const messages = [];
+//     const { TemplatesMetadata: templates } = await client.send(new ListEmailTemplatesCommand({}));
+//     if (templates) {
+//         await Promise.all(
+//             templates?.map(async (template) => {
+//                 return client.send(
+//                     new DeleteEmailTemplateCommand({ TemplateName: template.TemplateName }),
+//                 );
+//             }),
+//         );
+//     }
+// }
+
 export async function listTemplates() {
     const messages = [];
-    const { TemplatesMetadata: templates } = await client.send(new ListEmailTemplatesCommand({}));
+    const templates = await fetchApi({ operation: "list" });
     return templates;
 }
 
-export async function getTemplate(templateName: string) {
+export async function getTemplate(templateName: string, debug?: boolean) {
     await updateTemplates();
-    const template = await client.send(new GetEmailTemplateCommand({ TemplateName: templateName }));
-    return template;
+    const template = await fetchApi({ operation: "get", templateName, debug });
+    console.log(template);
+    const content = (await template.json()).responseData;
+    return content;
 }
-export async function testRenderTemplate(
-    templateName: string,
-    templateData: Record<string, string>,
-) {
-    const response = await client.send(
-        new TestRenderEmailTemplateCommand({
-            TemplateName: templateName,
-            TemplateData: JSON.stringify(templateData),
-        }),
-    );
-    return response;
+// export async function testRenderTemplate(
+//     templateName: string,
+//     templateData: Record<string, string>,
+// ) {
+//     const response = await client.send(
+//         new TestRenderEmailTemplateCommand({
+//             TemplateName: templateName,
+//             TemplateData: JSON.stringify(templateData),
+//         }),
+//     );
+//     return response;
+// }
+
+export async function testLambda() {
+    const response = await fetchApi({ operation: "list" });
+    // console.log(response);
+    return {
+        response: await response.json(),
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        url: response.url,
+    };
 }

@@ -28,6 +28,7 @@ interface GetTemplateProps {
 function getTemplate(props: GetTemplateProps) {
     props.setIsLoading(true);
     emailClient.templates.get(props.templateName).then((result) => {
+        console.log("Template received:", result);
         props.setIsLoading(false);
         props.setEmailPreview(result.TemplateContent?.Html);
     });
@@ -177,10 +178,6 @@ export default function EmailPreview(props: EmailPreviewProps<inviteTemplateVari
         </Dialog>
     );
 }
-interface EmailFrameProps {
-    emailPreview: string;
-    variables: Partial<inviteTemplateVariables>;
-}
 function replaceVariables(template: string, variables: Partial<inviteTemplateVariables>) {
     let out = template;
     Object.entries(variables).forEach(([key, value]) => {
@@ -209,6 +206,10 @@ function replaceVariables(template: string, variables: Partial<inviteTemplateVar
     return out;
 }
 
+interface EmailFrameProps {
+    emailPreview: string;
+    variables: Partial<inviteTemplateVariables>;
+}
 function EmailFrame(props: EmailFrameProps) {
     return (
         <iframe

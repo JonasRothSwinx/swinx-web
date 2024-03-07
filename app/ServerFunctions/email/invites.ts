@@ -11,6 +11,11 @@ import Influencer from "../types/influencer";
 import { inviteTemplateVariables } from "./templates/invites/invitesTemplate";
 import { templateNames } from "./templates/templates";
 import emailClient from "./emailClient";
+import {
+    sesHandlerSendEmailTemplate,
+    sesHandlerSendEmailTemplateBulk,
+} from "@/amplify/functions/sesHandler/resource";
+import { fetchApi } from "./sesAPI";
 
 export async function sendTestMail() {
     const input: SendEmailCommandInput = {
@@ -51,6 +56,26 @@ export async function sendTestTemplate() {
     console.log({ input, mail });
     const response = await client.send(mail);
     console.log({ response });
+}
+export async function sendTemplateAPITest() {
+    const requestBody: sesHandlerSendEmailTemplate = {
+        operation: "sendEmailTemplate",
+        emailData: {
+            to: ["jonasroth1@gmail.com"],
+            from: "swinx GmbH <noreply@swinx.de>",
+            templateName: "CampaignInvite",
+            templateData: JSON.stringify({
+                name: "testName",
+                assignments: [{ assignmentDescription: "Fliege zum Mars" }],
+                honorar: "10.000.000.000€",
+                linkBase: process.env.BASE_URL + "/Response?",
+                linkYes: "q=Yes",
+                linkNo: "q=No",
+            }),
+        },
+    };
+    const response = await fetchApi(requestBody);
+    return response.json();
 }
 interface TestBulkMailProps {
     candidates: Influencer.Candidate[];
@@ -160,4 +185,46 @@ export async function sendBulkCampaignInvite(props: BulkCampaignInviteProps) {
     // console.log({ input, mail });
     const response = await client.send(mail);
     return { response: JSON.parse(JSON.stringify(response)) };
+}
+
+export async function sendBulkCampaignInviteAPI(props: BulkCampaignInviteProps) {
+    const baseUrl = process.env.BASE_URL;
+    const requestBody: sesHandlerSendEmailTemplateBulk = {
+        operation: "sendEmailTemplateBulk",
+        bulkEmailData: {
+            from: "swinx GmbH <noreply@swinx.de>",
+            templateName: templateNames.inviteTemplate,
+            defaultTemplateData: JSON.stringify({
+                name: "Error 418: Teapot",
+                assignments: props.variables.assignments ?? [{ assignmentDescription: "Make Tea" }],
+                honorar: props.variables.honorar ?? "<Honorar nicht definiert>",
+                linkBase: baseUrl + "/Response?",
+                linkYes: "q=Yes",
+                linkNo: "q=No",
+            } satisfies inviteTemplateVariables),
+            emailData: props.candidates.map((candidate) => {
+                const baseParams = {
+                    firstName: candidate.influencer.firstName,
+                    lastName: candidate.influencer.lastName,
+                    id: candidate.id,
+                };
+                const encodedParametersYes = encodeURIComponent(
+                    btoa(JSON.stringify({ ...baseParams, response: "accepted" })),
+                );
+                const encodedParametersNo = encodeURIComponent(
+                    btoa(JSON.stringify({ ...baseParams, response: "rejected" })),
+                );
+                return {
+                    to: candidate.influencer.details.email,
+                    templateData: JSON.stringify({
+                        name: `${candidate.influencer.firstName} ${candidate.influencer.lastName}`,
+                        linkYes: `q=${encodedParametersYes}`,
+                        linkNo: `q=${encodedParametersNo}`,
+                    } satisfies Partial<inviteTemplateVariables>),
+                };
+            }),
+        },
+    };
+    const response = await fetchApi(requestBody);
+    return response.json();
 }
