@@ -51,6 +51,7 @@ api.root.addMethod("POST", lambdaIntegration, {
 
 const apiKeyValue = process.env.ADMIN_API_KEY;
 const apiKey = api.addApiKey(`InvokeApiKey_${process.env.AWS_BRANCH}`, {
+    apiKeyName: `InvokeApiKey_${process.env.AWS_BRANCH}`,
     value: apiKeyValue,
 });
 
