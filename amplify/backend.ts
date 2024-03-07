@@ -7,6 +7,7 @@ import { Function } from "aws-cdk-lib/aws-lambda";
 import { sesHandler } from "./functions/sesHandler/resource.js";
 import { PolicyStatement, Effect } from "aws-cdk-lib/aws-iam";
 import { Duration } from "aws-cdk-lib/core";
+import { UsagePlan } from "aws-cdk-lib/aws-apigateway";
 
 const backend = defineBackend({
     auth,
@@ -48,32 +49,21 @@ api.root.addMethod("POST", lambdaIntegration, {
     apiKeyRequired: true,
 });
 
-// const apiKeyValue = process.env.ADMIN_API_KEY;
-// let apiKey;
-// try {
-//     apiKey = api.addApiKey("InvokeApiKey", {
-//         value: apiKeyValue,
-//     });
-// } catch (error) {
-//     console.log("Error creating API Key", error);
-// }
+const apiKeyValue = process.env.ADMIN_API_KEY;
+const apiKey = api.addApiKey(`InvokeApiKey_${process.env.AWS_BRANCH}`, {
+    value: apiKeyValue,
+});
 
-// const usagePlan = new apigateway.UsagePlan(stack, "InvokeUsagePlan", {
-//     name: "Image Gen Invoke Usage Plan",
-//     apiStages: [
-//         {
-//             api,
-//             stage: api.deploymentStage,
-//         },
-//     ],
-// });
-// if (apiKey) {
-//     try {
-//         usagePlan.addApiKey(apiKey);
-//     } catch (error) {
-//         console.log("Error adding API Key to Usage Plan", error);
-//     }
-// }
+const usagePlan = new UsagePlan(stack, "InvokeUsagePlan", {
+    name: `Image Gen Invoke Usage Plan ${process.env.AWS_BRANCH}`,
+    apiStages: [
+        {
+            api,
+            stage: api.deploymentStage,
+        },
+    ],
+});
+usagePlan.addApiKey(apiKey);
 
 backend.addOutput({
     custom: {

@@ -97,7 +97,7 @@ function SideBar(props: ISideBar) {
                         variant="outlined"
                         onClick={async () => {
                             const response = await testLambda();
-                            console.log(response.response);
+                            console.log(response);
                         }}
                     >
                         Test Lambda

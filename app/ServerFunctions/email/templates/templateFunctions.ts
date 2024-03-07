@@ -72,13 +72,16 @@ export async function getTemplate(templateName: string, debug?: boolean) {
 // }
 
 export async function testLambda() {
-    const response = await fetchApi({ operation: "list" });
-    // console.log(response);
-    return {
-        response: await response.json(),
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok,
-        url: response.url,
-    };
+    console.log(process.env.AWS_BRANCH);
+    return;
+
+    // const response = await fetchApi({ operation: "list" });
+    // // console.log(response);
+    // return {
+    //     response: await response.json(),
+    //     status: response.status,
+    //     statusText: response.statusText,
+    //     ok: response.ok,
+    //     url: response.url,
+    // };
 }
