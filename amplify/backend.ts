@@ -31,7 +31,7 @@ underlyingLambda.addFunctionUrl({
     },
 });
 const api = new apigateway.RestApi(stack, "InvokeRestApi", {
-    restApiName: "InvokeRestApi",
+    restApiName: `InvokeRestApi_swinxWeb_${process.env.AWS_BRANCH}`,
     description: "InvokeRestApi",
     apiKeySourceType: apigateway.ApiKeySourceType.HEADER,
     defaultCorsPreflightOptions: {

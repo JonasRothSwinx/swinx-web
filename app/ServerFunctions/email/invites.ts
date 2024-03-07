@@ -75,6 +75,7 @@ export async function sendTemplateAPITest() {
         },
     };
     const response = await fetchApi(requestBody);
+    console.log({ requestBody, response });
     return response.json();
 }
 interface TestBulkMailProps {
