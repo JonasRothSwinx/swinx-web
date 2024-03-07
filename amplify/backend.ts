@@ -49,9 +49,14 @@ api.root.addMethod("POST", lambdaIntegration, {
 });
 
 const apiKeyValue = process.env.ADMIN_API_KEY;
-const apiKey = api.addApiKey("InvokeApiKey", {
-    value: apiKeyValue,
-});
+let apiKey;
+try {
+    apiKey = api.addApiKey("InvokeApiKey", {
+        value: apiKeyValue,
+    });
+} catch (error) {
+    console.log("Error creating API Key", error);
+}
 
 const usagePlan = new apigateway.UsagePlan(stack, "InvokeUsagePlan", {
     name: "Image Gen Invoke Usage Plan",
@@ -62,8 +67,13 @@ const usagePlan = new apigateway.UsagePlan(stack, "InvokeUsagePlan", {
         },
     ],
 });
-
-usagePlan.addApiKey(apiKey);
+if (apiKey) {
+    try {
+        usagePlan.addApiKey(apiKey);
+    } catch (error) {
+        console.log("Error adding API Key to Usage Plan", error);
+    }
+}
 
 backend.addOutput({
     custom: {
