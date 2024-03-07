@@ -144,7 +144,11 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                                             maxHeight: "1em",
                                         }}
                                     >
-                                        <Typography>{`Influencer ${assignment.placeholderName}`}</Typography>
+                                        {assignment.isPlaceholder ? (
+                                            <Typography>{`Influencer ${assignment.placeholderName}`}</Typography>
+                                        ) : (
+                                            <Typography>{`${assignment.influencer?.firstName} ${assignment.influencer?.lastName}`}</Typography>
+                                        )}
                                         <InfluencerDetailsButtons
                                             influencers={influencers}
                                             assignment={assignment}

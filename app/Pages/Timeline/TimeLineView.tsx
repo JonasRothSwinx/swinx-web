@@ -439,7 +439,7 @@ function TimelineViewItemName(props: TimelineViewItemNameProps) {
             {event.assignment.isPlaceholder
                 ? `Influencer ${event.assignment.placeholderName}`
                 : `${event.assignment.influencer?.firstName} ${event.assignment.influencer?.lastName}`}
-            {event.assignment.influencer?.firstName} {event.assignment.influencer?.lastName}
+            {/* {event.assignment.influencer?.firstName} {event.assignment.influencer?.lastName} */}
         </Grid>
     );
 }
