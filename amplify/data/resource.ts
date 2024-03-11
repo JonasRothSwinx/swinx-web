@@ -60,7 +60,9 @@ const schema = a.schema({
         .model({
             assignment: a.belongsTo("InfluencerAssignment"),
             influencer: a.hasOne("InfluencerPublic"),
-            response: a.string().authorization([adminsAndManagers, a.allow.public().to(["read", "update"])]),
+            response: a
+                .string()
+                .authorization([adminsAndManagers, a.allow.public().to(["read", "update"])]),
         })
         .authorization([
             a.allow.public().to(["read"]),

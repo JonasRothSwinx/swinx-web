@@ -19,7 +19,7 @@ export async function createCandidate(
 export async function deleteCandidate(candidate: PartialWith<Influencer.Candidate, "id">) {
     if (!candidate.id) throw new Error("Missing Id");
 
-    //@ts-ignore
+    // ts-ignore
     const { data, errors } = await client.models.InfluencerCandidate.delete({ id: candidate.id });
 
     return { errors };
@@ -28,10 +28,17 @@ export async function deleteCandidate(candidate: PartialWith<Influencer.Candidat
 export async function publicProcessResponse(
     candidate: PartialWith<Influencer.Candidate, "id" | "response">,
 ) {
-    //@ts-ignore
-    const { data, errors } = await client.models.InfluencerCandidate.update(candidate, {
-        authMode: "apiKey",
-    });
+    const { id, response } = candidate;
+
+    if (typeof id !== "string") throw new Error("Missing Id");
+    if (typeof response !== "string") throw new Error("Missing Response");
+
+    const { data, errors } = await client.models.InfluencerCandidate.update(
+        { id, response },
+        {
+            authMode: "apiKey",
+        },
+    );
 
     return { errors };
 }

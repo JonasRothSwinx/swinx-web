@@ -51,7 +51,9 @@ export async function createTimelineEvent(props: TimelineEvent.TimelineEvent) {
         });
         throw new Error("Missing Data");
     }
-    const { data: inviteEventData, errors: inviteEventErrors } = await createInviteEvent(inviteEvent);
+    const { data: inviteEventData, errors: inviteEventErrors } = await createInviteEvent(
+        inviteEvent,
+    );
 
     const { data, errors } = await client.models.TimelineEvent.create(
         {
@@ -62,7 +64,7 @@ export async function createTimelineEvent(props: TimelineEvent.TimelineEvent) {
             influencerAssignmentTimelineEventsId,
             notes,
         },
-        {}
+        {},
     );
     console.log(data);
 
@@ -82,7 +84,6 @@ export async function updateTimelineEvent(props: Partial<TimelineEvent.TimelineE
     }
     console.log(props);
 
-    //@ts-ignore
     const { data, errors } = await client.models.TimelineEvent.update({
         id,
         timelineEventType,
@@ -119,7 +120,7 @@ async function updateInviteEvent(props: PartialWith<TimelineEvent.InviteEvent, "
         throw new Error("Missing Data");
     }
     const updatedData: TimelineEvent.InviteEvent = { id: id, invites };
-    //@ts-ignore
+
     const { data, errors } = await client.models.InvitesEvent.update({ id, invites }, {});
     return { data, errors };
 }

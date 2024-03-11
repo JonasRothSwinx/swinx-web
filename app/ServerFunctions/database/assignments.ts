@@ -65,8 +65,14 @@ export async function updateAssignment(assignment: PartialWith<Assignment.Assign
     // if (!name) throw new Error("Missing Data");
     const candidateresponses = await Promise.all(promises);
     console.log(candidateresponses);
-    //@ts-ignore
-    const { data, errors } = await client.models.InfluencerAssignment.update(assignment);
+
+    const { data, errors } = await client.models.InfluencerAssignment.update({
+        id: assignment.id,
+        placeholderName: name,
+        budget,
+        isPlaceholder,
+        influencerAssignmentInfluencerId: assignment.influencer?.id,
+    });
     return data.id;
 }
 

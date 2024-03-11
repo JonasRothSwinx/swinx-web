@@ -19,7 +19,6 @@ export async function updateCustomer(customer: Customer.Customer) {
     const { id, company, firstName, lastName, email, companyPosition, notes } = customer;
     if (!id) throw new Error("Missing Data");
 
-    //@ts-ignore
     const { data, errors } = await client.models.Customer.update({
         id,
         company,

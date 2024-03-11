@@ -117,7 +117,7 @@ export async function getCampaign(
     // console.log(dataOut);
     return dataOut;
 }
-export async function listCampaigns(): Promise<{ data: Campaign.Campaign[]; errors: any }> {
+export async function listCampaigns(): Promise<{ data: Campaign.Campaign[]; errors: unknown }> {
     const { data, errors } = await client.models.Campaign.list({
         selectionSet,
     });
