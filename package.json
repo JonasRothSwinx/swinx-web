@@ -12,6 +12,7 @@
     "dependencies": {
         "@aws-amplify/adapter-nextjs": "^1.0.17",
         "@aws-amplify/ui-react": "^6.1.1",
+        "@aws-sdk/client-dynamodb": "^3.529.1",
         "@aws-sdk/client-ses": "^3.521.0",
         "@aws-sdk/client-sesv2": "^3.527.0",
         "@emotion/react": "^11.11.3",
@@ -20,6 +21,7 @@
         "@mui/x-data-grid": "^6.18.7",
         "@mui/x-data-grid-generator": "^6.18.7",
         "@mui/x-date-pickers": "^6.19.0",
+        "@tanstack/react-query": "^5.27.5",
         "aws-amplify": "^6.0.17",
         "dayjs": "^1.11.10",
         "eslint-config-react-app": "^7.0.1",
@@ -38,6 +40,7 @@
         "@aws-amplify/backend": "^0.13.0-beta.5",
         "@aws-amplify/backend-cli": "^0.12.0-beta.5",
         "@simbathesailor/use-what-changed": "^2.0.0",
+        "@tanstack/eslint-plugin-query": "^5.27.3",
         "@types/aws-lambda": "^8.10.136",
         "@types/html-to-text": "^9.0.4",
         "@types/node": "^20",

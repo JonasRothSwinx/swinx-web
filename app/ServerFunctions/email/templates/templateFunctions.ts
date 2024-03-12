@@ -1,6 +1,6 @@
 "use server";
 
-import { sesHandlerEventBody } from "@/amplify/functions/sesHandler/resource";
+import { sesHandlerEventBody } from "@/amplify/functions/sesHandler/types";
 import templateDefinitions from "./templates";
 import { fetchApi } from "../sesAPI";
 
@@ -72,8 +72,9 @@ export async function getTemplate(templateName: string, debug?: boolean) {
 // }
 
 export async function testLambda() {
-    console.log(process.env.AWS_BRANCH);
-    return;
+    const response = await fetchApi({ operation: "sendReminders" });
+    // console.log(process.env.AWS_BRANCH);
+    return await response.json();
 
     // const response = await fetchApi({ operation: "list" });
     // // console.log(response);

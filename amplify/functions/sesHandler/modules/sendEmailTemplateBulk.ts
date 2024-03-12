@@ -1,8 +1,8 @@
 import { BulkEmailEntry, SendBulkEmailCommand } from "@aws-sdk/client-sesv2";
-import { client } from "./client.js";
-import { sesHandlerSendEmailTemplateBulk } from "./resource.js";
+import client from "./clients/SESclient.js";
+import { sesHandlerSendEmailTemplateBulk } from "../types.js";
 
-export async function sendEmailTemplateBulk(props: sesHandlerSendEmailTemplateBulk) {
+export default async function sendEmailTemplateBulk(props: sesHandlerSendEmailTemplateBulk) {
     const {
         bulkEmailData: { from, emailData, templateName, defaultTemplateData },
     } = props;

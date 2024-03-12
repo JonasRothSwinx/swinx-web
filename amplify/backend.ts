@@ -3,28 +3,33 @@ import { auth } from "./auth/resource.js";
 import { data } from "./data/resource.js";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as eventBridge from "aws-cdk-lib/aws-events";
+import * as eventBridgeTargets from "aws-cdk-lib/aws-events-targets";
 import { Function } from "aws-cdk-lib/aws-lambda";
 import { sesHandler } from "./functions/sesHandler/resource.js";
+import { reminderTrigger } from "./functions/reminderTrigger/resource.js";
 import { PolicyStatement, Effect } from "aws-cdk-lib/aws-iam";
 import { Duration } from "aws-cdk-lib/core";
 import { UsagePlan } from "aws-cdk-lib/aws-apigateway";
 
-const backend = defineBackend({
+export const backend = defineBackend({
     auth,
     data,
     sesHandler,
+    reminderTrigger,
 });
 
 const stack = backend.createStack("SwinxWebResources");
 
-const underlyingLambda = backend.sesHandler.resources.lambda as Function;
+const sesHandlerLambda = backend.sesHandler.resources.lambda as Function;
+
 const policyStatement = new PolicyStatement({
     effect: Effect.ALLOW,
     actions: ["ses:*"],
     resources: ["*"],
 });
-underlyingLambda.addToRolePolicy(policyStatement);
-underlyingLambda.addFunctionUrl({
+sesHandlerLambda.addToRolePolicy(policyStatement);
+sesHandlerLambda.addFunctionUrl({
     authType: lambda.FunctionUrlAuthType.AWS_IAM,
     cors: {
         allowedOrigins: ["*"],
@@ -39,7 +44,7 @@ const api = new apigateway.RestApi(stack, "InvokeRestApi", {
     },
 });
 
-const lambdaIntegration = new apigateway.LambdaIntegration(underlyingLambda, {
+const lambdaIntegration = new apigateway.LambdaIntegration(sesHandlerLambda, {
     // Max timeout allowed by AWS is 29 seconds
     timeout: Duration.seconds(29),
     allowTestInvoke: true,
@@ -69,5 +74,21 @@ usagePlan.addApiKey(apiKey);
 backend.addOutput({
     custom: {
         sesHandlerUrl: api.url,
+    },
+});
+/**
+ * Eventbridge Rule, the target is the reminderTrigger lambda
+ * The rule is scheduled to run every minute
+ * The reminderTrigger lambda is responsible for sending reminders to users
+ */
+const reminderTriggerLambda = backend.reminderTrigger.resources.lambda as Function;
+const rule = new eventBridge.Rule(stack, "ReminderTriggerRule", {
+    schedule: eventBridge.Schedule.rate(Duration.minutes(1)),
+    description: "Rule to trigger the reminderTrigger lambda",
+});
+rule.addTarget(new eventBridgeTargets.LambdaFunction(reminderTriggerLambda));
+backend.addOutput({
+    custom: {
+        reminderTriggerArn: rule.ruleArn,
     },
 });
