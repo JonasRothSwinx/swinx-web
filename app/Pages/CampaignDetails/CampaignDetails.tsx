@@ -1,21 +1,15 @@
+import { campaigns, influencers } from "@/app/ServerFunctions/dbInterface";
+import Assignment from "@/app/ServerFunctions/types/assignment";
 import Campaign from "@/app/ServerFunctions/types/campaign";
-import Customer from "@/app/ServerFunctions/types/customer";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import Influencer from "@/app/ServerFunctions/types/influencer";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { Dialog, Unstable_Grid2 as Grid, Skeleton, Typography } from "@mui/material";
-import TimelineView, { groupBy } from "../Timeline/TimeLineView";
-import { EditIcon, ExpandMoreIcon, MailIcon } from "@/app/Definitions/Icons";
-import { Dispatch, MouseEvent, SetStateAction, useEffect, useState } from "react";
-import { DialogConfig, DialogOptions } from "@/app/Definitions/types";
-import dayjs, { Dayjs } from "@/app/configuredDayJs";
+import { useEffect, useState } from "react";
+import TimelineView from "../Timeline/TimeLineView";
 import stylesExporter from "../styles/stylesExporter";
-import CustomerDialog from "../Dialogs/CustomerDialog";
-import CampaignDetailsButtons from "./Components/TopButtons";
-import AssignedInfluencerDetails from "./Components/AssignedInfluencerDetails";
 import CustomerDetails from "./Components/CustomerDetails";
 import OpenInfluencerDetails from "./Components/OpenInfluencerDetails/OpenInfluencerDetails";
-import { influencers, campaigns } from "@/app/ServerFunctions/dbInterface";
-import Assignment from "@/app/ServerFunctions/types/assignment";
+import CampaignDetailsButtons from "./Components/TopButtons";
 
 const styles = stylesExporter.campaignDetails;
 

@@ -1,0 +1,18 @@
+.highlighted {
+    background: yellow;
+}
+
+.groupTitle {
+    padding-left: 5px;
+    border-bottom: 1px solid black;
+}
+.groupEvents {
+    padding-left: 10px;
+}
+.typedEventGroup {
+    margin: 2px;
+    border: 1px solid black;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+}

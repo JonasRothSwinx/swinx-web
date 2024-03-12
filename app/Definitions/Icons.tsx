@@ -1,6 +1,8 @@
 export {
     Add as AddIcon,
     CheckBox as CheckBoxIcon,
+    Cancel as CancelIcon,
+    Check as CheckIcon,
     Close as CloseIcon,
     CloseFullscreen as CloseFullscreenIcon,
     Delete as DeleteIcon,

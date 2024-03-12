@@ -36,12 +36,13 @@ import { deDE } from "@mui/x-data-grid";
 import CustomerDialog from "../Dialogs/CustomerDialog";
 // import WebinarDialog from "../Dialogs/WebinarDialog";
 import TimeLineEventDialog from "../Dialogs/TimelineEventDialog";
-import TimelineView, { groupBy } from "../Timeline/TimeLineView";
+import TimelineView from "../Timeline/TimeLineView";
 import stylesExporter from "../styles/stylesExporter";
 import CampaignDetails from "../CampaignDetails/CampaignDetails";
 import { randomId } from "@mui/x-data-grid-generator";
 import { influencers, campaigns } from "@/app/ServerFunctions/dbInterface";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import { groupBy } from "../Timeline/Functions/groupEvents";
 const styles = stylesExporter.dialogs;
 
 const client = generateClient<Schema>();

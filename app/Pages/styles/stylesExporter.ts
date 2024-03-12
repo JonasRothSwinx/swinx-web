@@ -1,9 +1,9 @@
-import dialogs from "./dialogs.module.css";
-import sideBar from "./sideBar.module.css";
-import user from "./user.module.css";
-import welcomePage from "./welcomePage.module.css";
-import timeline from "./timeline.module.css";
-import campaignDetails from "./campaignDetails.module.css";
+import dialogs from "./css/dialogs.module.css";
+import sideBar from "./css/sideBar.module.css";
+import user from "./css/user.module.css";
+import welcomePage from "./css/welcomePage.module.css";
+import timeline from "./css/timeline.module.css";
+import campaignDetails from "./css/campaignDetails.module.css";
 
 export default {
     campaignDetails,

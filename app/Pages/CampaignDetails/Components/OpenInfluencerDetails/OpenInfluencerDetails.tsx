@@ -29,6 +29,7 @@ import {
 } from "@mui/x-data-grid-generator";
 import TimelineEventDialog from "../../../Dialogs/TimelineEventDialog";
 import CandidatePicker from "./CandidatePicker";
+import AssignedInfluencer from "./AssignedInfluencer";
 
 type OpenInfluencerDetailsProps = {
     influencers: Influencer.InfluencerFull[];
@@ -36,7 +37,7 @@ type OpenInfluencerDetailsProps = {
     setCampaign: (campaign: Campaign.Campaign) => void;
     placeholders: Assignment.Assignment[];
     events: TimelineEvent.TimelineEvent[];
-    setHighlightedEvent: Dispatch<SetStateAction<TimelineEvent.TimelineEvent | undefined>>;
+    setHighlightedEvent: (event?: TimelineEvent.TimelineEvent) => void;
 };
 
 type eventDict = { [key: string]: TimelineEvent.TimelineEvent[] };
@@ -119,94 +120,16 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                     {openInfluencers.map((assignment) => {
                         // console.log(influencer);
                         return (
-                            <Accordion
+                            <AssignedInfluencer
                                 key={assignment.id}
-                                defaultExpanded
-                                disableGutters
-                                variant="outlined"
-                            >
-                                <AccordionSummary
-                                    expandIcon={<ExpandMoreIcon />}
-                                    sx={{
-                                        "& .MuiAccordionSummary-content:not(.Mui-expanded) button":
-                                            {
-                                                display: "none",
-                                            },
-                                    }}
-                                >
-                                    <div
-                                        style={{
-                                            display: "flex",
-                                            flexDirection: "row",
-                                            alignItems: "center",
-                                            justifyContent: "space-between",
-                                            width: "100%",
-                                            maxHeight: "1em",
-                                        }}
-                                    >
-                                        {assignment.isPlaceholder ? (
-                                            <Typography>{`Influencer ${assignment.placeholderName}`}</Typography>
-                                        ) : (
-                                            <Typography>{`${assignment.influencer?.firstName} ${assignment.influencer?.lastName}`}</Typography>
-                                        )}
-                                        <InfluencerDetailsButtons
-                                            influencers={influencers}
-                                            assignment={assignment}
-                                            campaign={campaign}
-                                            setCampaign={setCampaign}
-                                            isProcessing={isProcessing}
-                                            setIsProcessing={setIsProcessing}
-                                        />
-                                    </div>
-                                </AccordionSummary>
-                                <AccordionDetails>
-                                    {assignment.timelineEvents.length > 0 && (
-                                        <Accordion>
-                                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                                Invites:{" "}
-                                                {assignment.timelineEvents
-                                                    .filter(
-                                                        (
-                                                            x,
-                                                        ): x is TimelineEvent.TimelineEventInvites => {
-                                                            return TimelineEvent.isInviteEvent(x);
-                                                        },
-                                                    )
-                                                    .reduce((sum: number, event) => {
-                                                        return (
-                                                            sum + (event?.inviteEvent?.invites ?? 0)
-                                                        );
-                                                    }, 0)}{" "}
-                                                verteilt über {assignment.timelineEvents?.length}{" "}
-                                                Termine
-                                            </AccordionSummary>
-                                            <AccordionDetails>
-                                                <Grid container>
-                                                    {assignment.timelineEvents?.map((event, i) => {
-                                                        const date = dayjs(event.date);
-                                                        return (
-                                                            <Grid
-                                                                xs={12}
-                                                                key={
-                                                                    (event.id ?? "") + i.toString()
-                                                                }
-                                                                onClick={() => {
-                                                                    setHighlightedEvent(event);
-                                                                }}
-                                                            >
-                                                                <Typography>
-                                                                    {date.format("DD.MM.YYYY")} (
-                                                                    {date.fromNow()})
-                                                                </Typography>
-                                                            </Grid>
-                                                        );
-                                                    })}
-                                                </Grid>
-                                            </AccordionDetails>
-                                        </Accordion>
-                                    )}
-                                </AccordionDetails>
-                            </Accordion>
+                                assignedInfluencer={assignment}
+                                campaign={campaign}
+                                setCampaign={setCampaign}
+                                influencers={influencers}
+                                isProcessing={isProcessing}
+                                setIsProcessing={setIsProcessing}
+                                setHighlightedEvent={setHighlightedEvent}
+                            />
                         );
                     })}
                     <Button onClick={EventHandlers.addAssignment} disabled={isProcessing}>
@@ -217,134 +140,5 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                 </AccordionDetails>
             </Accordion>
         </>
-    );
-}
-type openDialog = "none" | "timelineEvent" | "assignmentDialog" | "candidates";
-interface InfluencerDetailsButtonProps {
-    setIsProcessing: (state: boolean) => void;
-    isProcessing: boolean;
-    setCampaign: (campaign: Campaign.Campaign) => void;
-    campaign: Campaign.Campaign;
-    assignment: Assignment.Assignment;
-    influencers: Influencer.InfluencerFull[];
-}
-function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
-    const { isProcessing, setIsProcessing, campaign, setCampaign, assignment, influencers } = props;
-    const [openDialog, setOpenDialog] = useState<openDialog>("none");
-
-    const EventHandlers = {
-        onDialogClose: () => {
-            setOpenDialog("none");
-        },
-        deleteAssignment: () => (e: MouseEvent) => {
-            e.stopPropagation();
-            dbInterface.assignment.delete(assignment);
-            const newCampaign = {
-                ...campaign,
-                assignedInfluencers: campaign.assignedInfluencers.filter(
-                    (x) => x.id !== assignment.id,
-                ),
-            };
-            setCampaign(newCampaign);
-        },
-        addEvents: () => (e: MouseEvent) => {
-            e.stopPropagation();
-            setOpenDialog("timelineEvent");
-        },
-        openCandidates: () => (e: MouseEvent) => {
-            e.stopPropagation();
-            setOpenDialog("candidates");
-        },
-        preventClickthrough: (e: MouseEvent) => {
-            e.stopPropagation();
-        },
-        setAssignment: (
-            targetAssignment: Assignment.Assignment,
-            updatedValues?: Partial<Assignment.Assignment>,
-        ) => {
-            // debugger;
-            // console.log(targetAssignment);
-            // if (updatedValues) {
-            //     const updateObject = { id: targetAssignment.id, ...updatedValues };
-            //     console.log(updateObject);
-            //     dbInterface.assignment.update(updateObject);
-            // }
-            const newCampaign: Campaign.Campaign = {
-                ...campaign,
-                assignedInfluencers: [
-                    ...campaign.assignedInfluencers.map((x) =>
-                        x.id === targetAssignment.id ? targetAssignment : x,
-                    ),
-                ],
-            };
-            // console.log({ newCampaign, assignments: newCampaign.assignedInfluencers });
-            setCampaign(newCampaign);
-        },
-    };
-    const DialogElements: { [state in openDialog]: JSX.Element | null } = {
-        none: null,
-        timelineEvent: (
-            <TimelineEventDialog
-                // isOpen={openDialog === "timelineEvent"}
-                onClose={EventHandlers.onDialogClose}
-                influencers={[]}
-                parent={campaign}
-                setParent={setCampaign}
-                targetAssignment={assignment}
-            />
-        ),
-        assignmentDialog: (
-            <AssignmentDialog
-                // isOpen={openDialog === "assignmentDialog"}
-                parent={campaign}
-                setParent={setCampaign}
-                onClose={EventHandlers.onDialogClose}
-            />
-        ),
-        candidates: (
-            <CandidatePicker
-                influencers={influencers}
-                assignment={assignment}
-                onClose={EventHandlers.onDialogClose}
-                setAssignment={EventHandlers.setAssignment}
-            />
-        ),
-    };
-    return (
-        <div
-            onClick={EventHandlers.preventClickthrough}
-            style={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "right",
-            }}
-        >
-            {DialogElements[openDialog]}
-            <Tooltip title="Kandidaten zuweisen" placement="top">
-                <span>
-                    <IconButton disabled={isProcessing} onClick={EventHandlers.openCandidates()}>
-                        <PersonSearchIcon />
-                    </IconButton>
-                </span>
-            </Tooltip>
-            <Tooltip title="Aufgaben zuweisen" placement="top">
-                <span>
-                    <IconButton disabled={isProcessing} onClick={EventHandlers.addEvents()}>
-                        <AddIcon />
-                    </IconButton>
-                </span>
-            </Tooltip>
-            <Tooltip title="Löschen" placement="top">
-                <span>
-                    <IconButton
-                        color="error"
-                        onClick={EventHandlers.deleteAssignment()}
-                        disabled={isProcessing}
-                    >
-                        <DeleteIcon />
-                    </IconButton>
-                </span>
-            </Tooltip>
-        </div>
     );
 }

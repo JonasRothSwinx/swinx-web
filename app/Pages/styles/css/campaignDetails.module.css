@@ -1,3 +1,4 @@
+/* Path: app/Pages/styles/css/timeline.module.css */
 .summaryWithEdit {
     width: 100%;
     display: flex;
@@ -24,4 +25,13 @@
 .emailPreviewIframe a {
     pointer-events: none;
     cursor: forbidden;
+}
+.assignmentAccordionHeader {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px;
+    max-height: 1em;
+    margin: 5px;
 }

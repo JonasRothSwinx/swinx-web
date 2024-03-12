@@ -256,10 +256,7 @@ function InfluencerPicker(props: InfluencerPickerProps) {
             if (removedInfluencers.length > 0) {
                 Promise.all(
                     removedInfluencers.map((candidate) => {
-                        console.log("deleting", candidate);
-                        return dbInterface.candidate
-                            .delete(candidate)
-                            .then((res) => console.log(res));
+                        return dbInterface.candidate.delete(candidate);
                     }),
                 );
             }
