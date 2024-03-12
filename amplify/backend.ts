@@ -78,12 +78,19 @@ backend.addOutput({
 });
 /**
  * Eventbridge Rule, the target is the reminderTrigger lambda
- * The rule is scheduled to run every minute
+ * The rule is scheduled to run every 6 hours, starting at 6:00 AM UTC+1
  * The reminderTrigger lambda is responsible for sending reminders to users
  */
 const reminderTriggerLambda = backend.reminderTrigger.resources.lambda as Function;
 const rule = new eventBridge.Rule(stack, "ReminderTriggerRule", {
-    schedule: eventBridge.Schedule.rate(Duration.minutes(1)),
+    enabled: false,
+    schedule: eventBridge.Schedule.cron({
+        minute: "0",
+        hour: "6/6",
+        month: "*",
+        weekDay: "?",
+        year: "*",
+    }),
     description: "Rule to trigger the reminderTrigger lambda",
 });
 rule.addTarget(new eventBridgeTargets.LambdaFunction(reminderTriggerLambda));
