@@ -1,6 +1,6 @@
-import { sesHandlerEventBody } from "@/amplify/functions/sesHandler/resource";
+import { sesHandlerEventBody } from "@/amplify/functions/sesHandler/types";
 import config from "@/amplifyconfiguration.json";
-const apiUrl = (config as any)?.custom?.sesHandlerUrl;
+const apiUrl = config?.custom?.sesHandlerUrl;
 
 export function fetchApi(body: sesHandlerEventBody) {
     // console.log("fetching", apiUrl, body);

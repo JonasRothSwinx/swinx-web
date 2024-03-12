@@ -1,12 +1,7 @@
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import stylesExporter from "../../styles/stylesExporter";
-import { EventGroup, TypedEventGroup, groupBy } from "../Functions/groupEvents";
-import { Unstable_Grid2 as Grid, GridSize } from "@mui/material";
-import dayjs from "dayjs";
-import { data } from "@/amplify/data/resource";
-import { timelineEventTypes, timelineEventTypesType } from "@/amplify/data/types";
+import { TypedEventGroup, groupBy } from "../Functions/groupEvents";
 import { Event } from "./EventDisplay";
-import { highlighted } from "../../styles/css/timeline.module.css";
 
 interface TypedEventGroupDisplayProps {
     eventGroup: TypedEventGroup;

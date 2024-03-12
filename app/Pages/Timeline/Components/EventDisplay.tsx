@@ -3,7 +3,6 @@ import { Unstable_Grid2 as Grid, GridSize } from "@mui/material";
 import { groupBy } from "../Functions/groupEvents";
 import dayjs from "@/app/configuredDayJs";
 import { timelineEventTypesType } from "@/amplify/data/types";
-import { highlighted } from "../../styles/css/timeline.module.css";
 
 interface EventProps {
     event: TimelineEvent.TimelineEvent;

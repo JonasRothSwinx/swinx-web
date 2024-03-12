@@ -11,11 +11,11 @@ import Influencer from "../types/influencer";
 import { inviteTemplateVariables } from "./templates/invites/invitesTemplate";
 import { templateNames } from "./templates/templates";
 import emailClient from "./emailClient";
+import { fetchApi } from "./sesAPI";
 import {
     sesHandlerSendEmailTemplate,
     sesHandlerSendEmailTemplateBulk,
-} from "@/amplify/functions/sesHandler/resource";
-import { fetchApi } from "./sesAPI";
+} from "@/amplify/functions/sesHandler/types";
 
 export async function sendTestMail() {
     const input: SendEmailCommandInput = {
