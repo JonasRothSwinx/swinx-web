@@ -87,9 +87,6 @@ const rule = new eventBridge.Rule(stack, "ReminderTriggerRule", {
     schedule: eventBridge.Schedule.cron({
         minute: "0",
         hour: "6/6",
-        month: "*",
-        weekDay: "?",
-        year: "*",
     }),
     description: "Rule to trigger the reminderTrigger lambda",
 });
