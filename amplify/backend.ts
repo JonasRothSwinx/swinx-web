@@ -12,7 +12,8 @@ import { PolicyStatement, Effect } from "aws-cdk-lib/aws-iam";
 import { Duration } from "aws-cdk-lib/core";
 import { UsagePlan } from "aws-cdk-lib/aws-apigateway";
 import { randomInt, randomUUID } from "crypto";
-
+import dotenv from "dotenv";
+dotenv.config({ path: ".env.local" });
 export const backend = defineBackend({
     auth,
     data,
@@ -56,8 +57,9 @@ api.root.addMethod("POST", lambdaIntegration, {
 });
 
 const apiKeyValue = process.env.ADMIN_API_KEY;
-const apiKey = api.addApiKey(`InvokeApiKey_${randomUUID()}`, {
-    // apiKeyName: `InvokeApiKey_${process.env.AWS_BRANCH}`,
+// const apiKey = api.addApiKey(`InvokeApiKey_${randomUUID()}`, {
+const apiKey = api.addApiKey(`swinx-web-api-key`, {
+    apiKeyName: `swinx-web-api-key`,
     value: apiKeyValue,
 });
 
