@@ -28,7 +28,7 @@ export async function createAssignment(assignment: Assignment.AssignmentFull, ca
 export async function getAllCandidates(assignmentId: string) {
     const { data, errors } = await client.models.InfluencerAssignment.get(
         { id: assignmentId },
-        { selectionSet: ["candidates.id"] },
+        { selectionSet: ["candidates.id"] }
     );
     return data.candidates;
 }
@@ -83,7 +83,7 @@ export async function deletePlaceholder(assignment: Assignment.AssignmentFull) {
     await Promise.all(
         assignment.timelineEvents.map(async (x) => {
             timelineEvents.delete(x);
-        }),
+        })
     );
 
     await client.models.InfluencerAssignment.delete({ id });

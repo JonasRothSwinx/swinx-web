@@ -1,6 +1,7 @@
 import { sesHandlerEventBody } from "@/amplify/functions/sesHandler/types";
 import config from "@/amplifyconfiguration.json";
-const apiUrl = config?.custom?.sesHandlerUrl;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const apiUrl = (config as any)?.custom?.sesHandlerUrl;
 
 export function fetchApi(body: sesHandlerEventBody) {
     // console.log("fetching", apiUrl, body);

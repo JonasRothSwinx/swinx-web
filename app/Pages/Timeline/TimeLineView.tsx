@@ -3,19 +3,14 @@ import Campaign from "@/app/ServerFunctions/types/campaign";
 import Influencer from "@/app/ServerFunctions/types/influencer";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import dayjs from "@/app/configuredDayJs";
-import { Grid } from "@mui/material";
+import { Unstable_Grid2 as Grid } from "@mui/material";
 import { useEffect, useState } from "react";
 import TimeLineEventDialog from "../Dialogs/TimelineEventDialog";
 import stylesExporter from "../styles/stylesExporter";
 import TimelineControls from "./Components/TimelineControls";
 import TimelineViewItem from "./Components/TimelineViewItem";
 
-import groupEvents, {
-    EventGroup,
-    GroupedEvent,
-    groupBy,
-    groupEvents_v2,
-} from "./Functions/groupEvents";
+import groupEvents, { EventGroup, GroupedEvent, groupBy, groupEvents_v2 } from "./Functions/groupEvents";
 
 const dialogStyles = stylesExporter.dialogs;
 const timelineStyles = stylesExporter.timeline;
@@ -36,12 +31,7 @@ export interface TimelineViewProps {
 }
 
 export default function TimelineView(props: TimelineViewProps) {
-    const {
-        maxItems,
-        orientation = "vertical",
-        controlsPosition = "none",
-        setCampaign: setParent,
-    } = props;
+    const { maxItems, orientation = "vertical", controlsPosition = "none", setCampaign: setParent } = props;
     const [influencers, setInfluencers] = useState(props.influencers);
 
     const [campaign, setCampaign] = useState<Campaign.Campaign>(props.campaign);
@@ -49,8 +39,7 @@ export default function TimelineView(props: TimelineViewProps) {
     const [groups, setGroups] = useState<EventGroup[]>([]);
     const [editingDialogOpen, setEditingDialogOpen] = useState(false);
     const [editingEvent, setEditingEvent] = useState<TimelineEvent.TimelineEvent>();
-    const [controlsPositionState, setControlsPosition] =
-        useState<controlsPosition>(controlsPosition);
+    const [controlsPositionState, setControlsPosition] = useState<controlsPosition>(controlsPosition);
     const [groupBy, setGroupBy] = useState<groupBy>(props.groupBy ?? "week");
     const [editable, setEditable] = useState(props.editable ?? false);
     const [highlightedEvent, setHighlightedEvent] = useState(props.highlightedEvent);

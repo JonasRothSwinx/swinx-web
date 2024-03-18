@@ -30,10 +30,11 @@ import {
 import TimelineEventDialog from "../../../Dialogs/TimelineEventDialog";
 import CandidatePicker from "./CandidatePicker";
 import AssignedInfluencer from "./AssignedInfluencer";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
 type OpenInfluencerDetailsProps = {
     influencers: Influencer.InfluencerFull[];
-    campaign: Campaign.Campaign;
+    campaignId: string;
     setCampaign: (campaign: Campaign.Campaign) => void;
     placeholders: Assignment.Assignment[];
     events: TimelineEvent.TimelineEvent[];
@@ -43,8 +44,12 @@ type OpenInfluencerDetailsProps = {
 type eventDict = { [key: string]: TimelineEvent.TimelineEvent[] };
 
 export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps) {
-    const { campaign, setCampaign, events, placeholders, setHighlightedEvent, influencers } = props;
-    const [openInfluencers, setOpenInfluencers] = useState<Assignment.Assignment[]>([]);
+    const { campaignId, setCampaign, events, placeholders, setHighlightedEvent, influencers } = props;
+    const campaign = useSuspenseQuery({
+        queryKey: ["campaign", campaignId],
+        queryFn: () => dbInterface.campaign.get(campaignId),
+    });
+    const [assignedInfluencers, setAssignedInfluencers] = useState<Assignment.Assignment[]>([]);
     const [isProcessing, setIsProcessing] = useState(false);
     const [targetAssignment, setTargetAssignment] = useState<Assignment.Assignment>();
 
@@ -52,7 +57,7 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
         function getInfluencers() {
             // debugger;
             // console.log(openInfluencers);
-            const assignments: Assignment.Assignment[] = campaign.assignedInfluencers;
+            const assignments: Assignment.Assignment[] = campaign.data.assignedInfluencers ?? [];
 
             for (const event of events /* .filter((event) => event.assignment.isPlaceholder) */) {
                 const assignment = assignments.find((x) => x.id === event.assignment?.id);
@@ -64,15 +69,13 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
             }
 
             for (const assignment of assignments) {
-                assignment.timelineEvents.sort((a, b) =>
-                    a.date && b.date ? a.date.localeCompare(b.date) : 0,
-                );
+                assignment.timelineEvents.sort((a, b) => (a.date && b.date ? a.date.localeCompare(b.date) : 0));
             }
             return assignments;
         }
-        setOpenInfluencers(getInfluencers());
+        setAssignedInfluencers(getInfluencers());
         return () => {};
-    }, [/* placeholders,  */ events, campaign]);
+    }, [/* placeholders,  */ events, campaign.data]);
     const EventHandlers = {
         addAssignment: () => {
             setIsProcessing(true);
@@ -85,22 +88,19 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                 isPlaceholder: true,
                 influencer: null,
             };
-            dbInterface.assignment.create(newPlaceholder, campaign.id).then((id) => {
+            dbInterface.assignment.create(newPlaceholder, campaignId).then((id) => {
                 // console.log("got id");
                 // const newPlaceholders = campaign.assignedInfluencers.map((x) =>
                 //     x.id === tempId ? { ...x, id: id } : x
                 // );
-                const newPlaceholders = [
-                    ...campaign.assignedInfluencers,
-                    { ...newPlaceholder, id },
-                ];
+                const newPlaceholders = [...campaign.data.assignedInfluencers, { ...newPlaceholder, id }];
                 // console.log({ newPlaceholders });
                 setIsProcessing(false);
-                setCampaign({ ...campaign, assignedInfluencers: newPlaceholders });
+                setCampaign({ ...campaign.data, assignedInfluencers: newPlaceholders });
             });
             const newCampaign: Campaign.Campaign = {
-                ...campaign,
-                assignedInfluencers: [...campaign.assignedInfluencers, newPlaceholder],
+                ...campaign.data,
+                assignedInfluencers: [...campaign.data.assignedInfluencers, newPlaceholder],
             };
             setCampaign(newCampaign);
         },
@@ -109,34 +109,35 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
         <>
             <>{/* Dialogs */}</>
             <Accordion defaultExpanded disableGutters variant="outlined">
-                <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls="panel1-content"
-                    id="panel1-header"
-                >
+                <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1-content" id="panel1-header">
                     Influencer
                 </AccordionSummary>
                 <AccordionDetails>
-                    {openInfluencers.map((assignment) => {
-                        // console.log(influencer);
-                        return (
-                            <AssignedInfluencer
-                                key={assignment.id}
-                                assignedInfluencer={assignment}
-                                campaign={campaign}
-                                setCampaign={setCampaign}
-                                influencers={influencers}
-                                isProcessing={isProcessing}
-                                setIsProcessing={setIsProcessing}
-                                setHighlightedEvent={setHighlightedEvent}
-                            />
-                        );
-                    })}
-                    <Button onClick={EventHandlers.addAssignment} disabled={isProcessing}>
-                        <AddIcon />
-                        <Typography>Neuer Influencer</Typography>
-                        {isProcessing && <CircularProgress />}
-                    </Button>
+                    {campaign.data && (
+                        <>
+                            {campaign.data.assignedInfluencers.map((assignment) => {
+                                // console.log(influencer);
+                                return (
+                                    <AssignedInfluencer
+                                        key={assignment.id}
+                                        campaignId={campaign.data.id}
+                                        assignedInfluencer={assignment}
+                                        // campaign={campaign}
+                                        // setCampaign={setCampaign}
+                                        // influencers={influencers}
+                                        isProcessing={isProcessing}
+                                        setIsProcessing={setIsProcessing}
+                                        setHighlightedEvent={setHighlightedEvent}
+                                    />
+                                );
+                            })}
+                            <Button onClick={EventHandlers.addAssignment} disabled={isProcessing}>
+                                <AddIcon />
+                                <Typography>Neuer Influencer</Typography>
+                                {isProcessing && <CircularProgress />}
+                            </Button>
+                        </>
+                    )}
                 </AccordionDetails>
             </Accordion>
         </>

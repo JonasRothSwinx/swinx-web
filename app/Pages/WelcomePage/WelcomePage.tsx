@@ -18,10 +18,7 @@ async function createTodo() {
     console.log({ errors, newTodo });
 }
 function WelcomePage({}) {
-    const { signOut, user, authStatus } = useAuthenticator((context) => [
-        context.user,
-        context.authStatus,
-    ]);
+    const { signOut, user, authStatus } = useAuthenticator((context) => [context.user, context.authStatus]);
     const [openMenu, setOpenMenu] = useState<sideBarButtonId>(sideBarButtonId.campaigns);
     if (authStatus !== "authenticated") return null;
 

@@ -1,3 +1,4 @@
+"use client";
 import UserView from "@/app/Pages/WelcomePage/User";
 import { useEffect, useState } from "react";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
@@ -20,6 +21,7 @@ export interface ISideBarButton {
     title: string;
     description: string;
     allowedGroups: string[];
+    link?: string;
 }
 export enum sideBarButtonId {
     campaigns,
@@ -40,7 +42,7 @@ export const sideBarButtons = [
     },
 ];
 interface ISideBar {
-    setMenuCallback: (menu: sideBarButtonId) => unknown;
+    setMenuCallback?: (menu: sideBarButtonId) => unknown;
 }
 
 function SideBar(props: ISideBar) {
@@ -59,7 +61,7 @@ function SideBar(props: ISideBar) {
                     key={sb.id.toString()}
                     buttonProps={sb}
                     groups={groups}
-                    callback={setMenuCallback}
+                    callback={setMenuCallback ?? (() => {})}
                 />
             ))}
             {groups.includes("admin") && (
@@ -77,7 +79,7 @@ function SideBar(props: ISideBar) {
                         variant="outlined"
                         onClick={async () => {
                             const response = await emailClient.templates.get(
-                                prompt("TemplateName") ?? "CampaignInvite",
+                                prompt("TemplateName") ?? "CampaignInvite"
                             );
                             console.log(response);
                         }}

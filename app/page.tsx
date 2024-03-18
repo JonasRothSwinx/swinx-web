@@ -7,6 +7,7 @@ import { ThemeProvider } from "@emotion/react";
 import { blue, red } from "@mui/material/colors";
 import { CssBaseline, createTheme } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const theme = createTheme({
     palette: {
@@ -17,6 +18,7 @@ const theme = createTheme({
     },
     shape: { borderRadius: 20 },
 });
+const queryClient = new QueryClient();
 
 function Home() {
     const { user, authStatus } = useAuthenticator((context) => [context.user, context.authStatus]);
@@ -24,7 +26,9 @@ function Home() {
         <ThemeProvider theme={theme}>
             {/* <CssBaseline /> */}
             <Authenticator.Provider>
-                <>{authStatus === "authenticated" && <WelcomePage />}</>
+                <QueryClientProvider client={queryClient}>
+                    {authStatus === "authenticated" && <WelcomePage />}
+                </QueryClientProvider>
             </Authenticator.Provider>
         </ThemeProvider>
     );

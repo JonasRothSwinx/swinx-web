@@ -11,14 +11,7 @@ import {
     GridCellParams,
     GridColumnHeaderParams,
 } from "@mui/x-data-grid";
-import {
-    Button,
-    CircularProgress,
-    IconButton,
-    MenuItem,
-    TextField,
-    Typography,
-} from "@mui/material";
+import { Button, CircularProgress, IconButton, MenuItem, TextField, Typography } from "@mui/material";
 import {
     Add as AddIcon,
     Edit as EditIcon,
@@ -40,9 +33,10 @@ import TimelineView from "../Timeline/TimeLineView";
 import stylesExporter from "../styles/stylesExporter";
 import CampaignDetails from "../CampaignDetails/CampaignDetails";
 import { randomId } from "@mui/x-data-grid-generator";
-import { influencers, campaigns } from "@/app/ServerFunctions/dbInterface";
+import dbInterface from "@/app/ServerFunctions/dbInterface";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { groupBy } from "../Timeline/Functions/groupEvents";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 const styles = stylesExporter.dialogs;
 
 const client = generateClient<Schema>();
@@ -92,23 +86,36 @@ type CampaignListProps = {};
 
 function CampaignList(props: CampaignListProps) {
     const {} = props;
-    const [influencerData, setInfluencerData] = useState<Influencer.InfluencerFull[]>([]);
-    const [campaignData, setCampaignData] = useState<Campaign.Campaign[]>();
+    const queryClient = useQueryClient();
+    const influencers = useQuery({ queryKey: ["influencers"], queryFn: () => dbInterface.influencer.list() });
+    const campaigns = useQuery({
+        queryKey: ["campaigns"],
+        queryFn: async () => {
+            const data = await dbInterface.campaign.list();
+            data.map(async (campaign) => {
+                queryClient.setQueryData(["campaign", campaign.id], campaign);
+            });
+            return data;
+        },
+    });
+    // const [influencerData, setInfluencerData] = useState<Influencer.InfluencerFull[]>([]);
+    // const [campaignData, setCampaignData] = useState<Campaign.Campaign[]>();
     const [editingData, setEditingData] = useState<EditableDataTypes>();
     const [groupBy, setGroupBy] = useState<groupBy>("day");
     const [isOpen, setIsOpen] = useState<DialogState>("none");
     const [dialogOptions, setDialogOptions] = useState<DialogOptions>({});
     const [dialogConfig, setDialogConfig] = useState<DialogConfig<DialogType>>({
-        parent: campaignData ?? [],
-        setParent: setCampaignData,
+        parent: campaigns.data ?? [],
+        setParent: (campaigns: Campaign.Campaign[]) => {
+            queryClient.setQueryData(["campaigns"], campaigns);
+        },
         onClose: onDialogClose,
     });
-    const [loading, setLoading] = useState(false);
 
     const ClickHandlers = {
         editCustomer: (id: GridRowId) => {
             return () => {
-                const customer = campaignData?.find((campaign) => campaign.id === id)?.customer;
+                const customer = campaigns.data?.find((campaign) => campaign.id === id)?.customer;
                 if (!customer) return;
                 setEditingData({ ...customer });
                 setDialogOptions({ editing: true });
@@ -127,7 +134,7 @@ function CampaignList(props: CampaignListProps) {
         // },
         showTimeline: (id: GridRowId) => {
             return () => {
-                const campaign = campaignData?.find((campaign) => campaign.id === id);
+                const campaign = campaigns.data?.find((campaign) => campaign.id === id);
                 if (!campaign) return;
                 setIsOpen("details");
                 setEditingData(campaign);
@@ -135,7 +142,7 @@ function CampaignList(props: CampaignListProps) {
         },
         addTimeline: (id: GridRowId) => {
             return () => {
-                const campaign = campaignData?.find((campaign) => campaign.id === id);
+                const campaign = campaigns.data?.find((campaign) => campaign.id === id);
                 if (!campaign) return;
                 setIsOpen("timelineEvent");
                 setDialogOptions({ campaignId: campaign.id });
@@ -180,11 +187,7 @@ function CampaignList(props: CampaignListProps) {
                         <Typography>{customer.company}</Typography>
                         <br />
                         <Typography>{params.value}</Typography>
-                        {customer.companyPosition ? (
-                            <Typography>({customer.companyPosition})</Typography>
-                        ) : (
-                            <></>
-                        )}
+                        {customer.companyPosition ? <Typography>({customer.companyPosition})</Typography> : <></>}
                     </div>
                 );
             },
@@ -257,18 +260,39 @@ function CampaignList(props: CampaignListProps) {
                 const row: Campaign.Campaign = params.row;
                 return (
                     <div
+                        style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            flexBasis: "100%",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            height: "100%",
+                            width: "100%",
+                        }}
                         className={`${styles.cellActionSplit} ${styles.timeline}`}
                         // style={{ display: "flex", flexDirection: "column", flexBasis: "100%" }}
                     >
-                        <div>
-                            <TimelineView
-                                setCampaign={() => {}}
-                                influencers={influencerData}
-                                maxItems={2}
-                                groupBy={groupBy}
-                                campaign={row}
-                                orientation="horizontal"
-                            />
+                        <div
+                            style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                flexBasis: "100%",
+                                justifyContent: "center",
+                                alignItems: "center",
+                            }}
+                        >
+                            {row.campaignTimelineEvents.length < 1 ? (
+                                <Typography>Keine Ereignisse</Typography>
+                            ) : (
+                                <TimelineView
+                                    setCampaign={() => {}}
+                                    influencers={influencers.data ?? []}
+                                    maxItems={2}
+                                    groupBy={groupBy}
+                                    campaign={row}
+                                    orientation="horizontal"
+                                />
+                            )}
                         </div>
                         {/* <div style={{ justifyContent: "flex-end" }}>
                             <Button variant="outlined" color="inherit" onClick={handleAddClickTimeline(row.id)}>
@@ -323,27 +347,27 @@ function CampaignList(props: CampaignListProps) {
         // },
     ];
     //#region useEffects
-    useEffect(() => {
-        const id = randomId();
-        // console.log(id, "requesting influencers");
-        influencers.list().then((items) => {
-            // console.log(id, "Setting influencers to", items);
-            setInfluencerData(items);
-        });
-        return () => {};
-    }, [/* client,  */ campaignData]);
-    useEffect(() => {
-        updateCampaigns();
+    // useEffect(() => {
+    //     const id = randomId();
+    //     // console.log(id, "requesting influencers");
+    //     influencers.list().then((items) => {
+    //         // console.log(id, "Setting influencers to", items);
+    //         setInfluencerData(items);
+    //     });
+    //     return () => {};
+    // }, [/* client,  */ campaignData]);
+    // useEffect(() => {
+    //     updateCampaigns();
 
-        return () => {};
-    }, []);
+    //     return () => {};
+    // }, []);
     useEffect(() => {
         // const dialogPropsNew = { ...dialogProps };
         // dialogPropsNew.rows = rows ?? [];
-        setDialogConfig((prev) => ({ ...prev, parent: campaignData ?? [] }));
+        setDialogConfig((prev) => ({ ...prev, parent: campaigns.data ?? [] }));
 
         return () => {};
-    }, [campaignData]);
+    }, [campaigns.data]);
     //#endregion
     function onDialogClose(hasChanged?: boolean) {
         // console.log("Hi!");
@@ -351,19 +375,19 @@ function CampaignList(props: CampaignListProps) {
         setIsOpen("none");
         if (hasChanged) {
             console.log("Updating Campaign Data");
-            updateCampaigns();
+            queryClient.invalidateQueries({ queryKey: ["campaigns"] });
         }
     }
 
-    async function updateCampaigns() {
-        setLoading(true);
-        // console.log("Starting Update");
-        campaigns.list().then((res) => {
-            // console.log("received Update");
-            setCampaignData(res.data);
-            setLoading(false);
-        });
-    }
+    // async function updateCampaigns() {
+    //     setLoading(true);
+    //     // console.log("Starting Update");
+    //     campaigns.list().then((res) => {
+    //         // console.log("received Update");
+    //         setCampaignData(res.data);
+    //         setLoading(false);
+    //     });
+    // }
 
     // function handleEditClick(id: GridRowId, dialogType: Dialogs) {
     //     return () => {
@@ -395,16 +419,25 @@ function CampaignList(props: CampaignListProps) {
                     editingData={editingData as Webinar}
                 /> */}
                 {isOpen === "details" && (
-                    <CampaignDetails
-                        onClose={onDialogClose}
-                        campaignId={editingData?.id ?? ""}
-                        isOpen={true}
-                    />
+                    <CampaignDetails onClose={onDialogClose} campaignId={editingData?.id ?? ""} isOpen={true} />
                 )}
             </>
 
-            {campaignData === undefined ? (
-                <CircularProgress sx={{ margin: "auto" }} />
+            {campaigns.isLoading && !campaigns.data ? (
+                <div
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        height: "100%",
+                        width: "100%",
+
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}
+                >
+                    <Typography variant="h3">Lade Kampagnen</Typography>
+                    <CircularProgress />
+                </div>
             ) : (
                 <DataGrid
                     localeText={deDE.components.MuiDataGrid.defaultProps.localeText}
@@ -412,7 +445,7 @@ function CampaignList(props: CampaignListProps) {
                         ClickHandlers.showTimeline(id)();
                     }}
                     disableRowSelectionOnClick
-                    rows={campaignData ?? []}
+                    rows={campaigns.data ?? []}
                     columns={columns}
                     initialState={{ columns: { columnVisibilityModel: { id: false } } }}
                     getRowHeight={() => "auto"}
@@ -426,7 +459,7 @@ function CampaignList(props: CampaignListProps) {
                         toolbar: EditToolbar,
                     }}
                     slotProps={{
-                        toolbar: { setIsOpen, isLoading: loading },
+                        toolbar: { setIsOpen, isLoading: campaigns.isFetching },
                     }}
                     autoHeight={true}
                     sx={{

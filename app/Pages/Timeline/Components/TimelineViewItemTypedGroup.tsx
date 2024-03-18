@@ -2,6 +2,7 @@ import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import stylesExporter from "../../styles/stylesExporter";
 import { TypedEventGroup, groupBy } from "../Functions/groupEvents";
 import { Event } from "./EventDisplay";
+import { randomId } from "@mui/x-data-grid-generator";
 
 interface TypedEventGroupDisplayProps {
     eventGroup: TypedEventGroup;
@@ -13,11 +14,7 @@ export default function TypedEventGroupDisplay(props: TypedEventGroupDisplayProp
     return (
         <div className={stylesExporter.timeline.typedEventGroup}>
             <GroupTitle type={eventGroup.type} />
-            <GroupContent
-                events={eventGroup.events}
-                groupBy={groupBy}
-                highlightedEventIds={highlightedEventIds}
-            />
+            <GroupContent events={eventGroup.events} groupBy={groupBy} highlightedEventIds={highlightedEventIds} />
         </div>
     );
 }
@@ -46,7 +43,7 @@ function GroupContent(props: GroupContentProps) {
             {events.map((event, index) => {
                 return (
                     <Event
-                        key={event.id}
+                        key={event.id ?? randomId()}
                         event={event}
                         groupBy={groupBy}
                         highlighted={highlightedEventIds.includes(event.id ?? "")}

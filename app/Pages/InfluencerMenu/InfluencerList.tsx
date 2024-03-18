@@ -21,7 +21,7 @@ import {
     GridPreProcessEditCellProps,
 } from "@mui/x-data-grid";
 import { randomId, randomName, randomUserName } from "@mui/x-data-grid-generator";
-import { Button, TextField, ThemeProvider, createTheme } from "@mui/material";
+import { Button, CircularProgress, TextField, ThemeProvider, Typography, createTheme } from "@mui/material";
 import {
     Add as AddIcon,
     Edit as EditIcon,
@@ -37,10 +37,12 @@ import { deDE } from "@mui/x-data-grid";
 import { deDE as pickersDeDE } from "@mui/x-date-pickers/locales";
 import { deDE as coreDeDE } from "@mui/material/locale";
 import { DialogOptions, DialogConfig } from "@/app/Definitions/types";
-import dbInterface, { influencers } from "@/app/ServerFunctions/dbInterface";
+import dbInterface from "@/app/ServerFunctions/dbInterface";
 import { range } from "@/app/Definitions/utility";
 import { InfluencerDataNew, updateInfluencer } from "@/app/ServerFunctions/database/influencers";
 import { uniqueNamesGenerator, Config, animals, names, colors } from "unique-names-generator";
+import { QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
+import { group } from "console";
 
 const client = generateClient<Schema>();
 const theme = createTheme({}, { deDE, pickersDeDE, coreDeDE });
@@ -58,11 +60,13 @@ function InitInfluencer(props: { id: string }) {
 }
 interface EditToolbarProps {
     setIsOpen: Dispatch<SetStateAction<boolean>>;
-    initiateUpdate: (props: updateInfluencerProps) => void;
+    initiateUpdate: () => void;
     setRows: (rows: Influencer.InfluencerFull[]) => void;
+    queryClient: QueryClient;
+    isPending?: boolean;
 }
 function EditToolbar(props: EditToolbarProps) {
-    const { setIsOpen, initiateUpdate, setRows } = props;
+    const { setIsOpen, initiateUpdate, setRows, queryClient, isPending } = props;
     function handleClick() {
         setIsOpen(true);
     }
@@ -77,7 +81,9 @@ function EditToolbar(props: EditToolbarProps) {
             dbInterface.influencer.create({ data: influencer });
             console.log(influencer);
         }
-        initiateUpdate({ setInfluencers: setRows });
+        queryClient.invalidateQueries({ queryKey: ["influencer"] });
+
+        initiateUpdate();
     }
     return (
         <GridToolbarContainer>
@@ -87,6 +93,7 @@ function EditToolbar(props: EditToolbarProps) {
             <Button color="primary" startIcon={<AddIcon />} onClick={createRandom}>
                 Erstelle Influencer
             </Button>
+            {isPending && <CircularProgress />}
         </GridToolbarContainer>
     );
 }
@@ -105,6 +112,74 @@ function InfluencerList(props: {}) {
     const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
     const [isOpen, setIsOpen] = useState(false);
     const [editingData, setEditingData] = useState<Influencer.InfluencerFull>();
+    const influencers = useQuery({ queryKey: ["influencer"], queryFn: () => dbInterface.influencer.list() });
+    const queryClient = useQueryClient();
+    const [dialogOtions, setDialogOptions] = useState<DialogOptions>({});
+
+    const [dialogProps, setDialogProps] = useState<DialogConfig<Influencer.InfluencerFull[]>>({
+        parent: rows ?? [],
+        setParent: setRows,
+        onClose: () => {
+            setIsOpen(false);
+            setEditingData(undefined);
+            influencers.refetch();
+        },
+    });
+
+    const { user, authStatus } = useAuthenticator((x) => [x.user, x.authStatus]);
+    const groups = useQuery({ queryKey: ["groups"], queryFn: () => getUserGroups() });
+    const [showDialog, setShowDialog] = useState(false);
+
+    // useEffect(() => {
+    //     updateInfluencers({ setInfluencers: setRows });
+    //     return () => {};
+    // }, []);
+
+    useEffect(() => {
+        const dialogPropsNew = { ...dialogProps };
+        dialogPropsNew.parent = influencers.data ?? [];
+        setDialogProps(dialogPropsNew);
+
+        return () => {};
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [influencers.data]);
+
+    useEffect(() => {
+        groups.refetch();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user]);
+
+    const Eventhandlers = {
+        handleEditClick: (id: GridRowId) => {
+            return () => {
+                const editingData = rows?.find((x) => x.id === id);
+                if (!editingData) return;
+                setIsOpen(true);
+                setDialogOptions({ editing: true });
+                setEditingData(editingData);
+            };
+        },
+        handleDeleteClick: (id: GridRowId) => {
+            return () => {
+                const entity = influencers.data?.find((x) => x.id === id);
+                if (!entity) return;
+                console.log({ entity });
+                const { id: publicId } = entity;
+                const { id: privateId } = entity.details;
+                if (!(publicId && privateId)) return;
+                dbInterface.influencer.delete({
+                    publicId,
+                    privateId,
+                });
+                queryClient.setQueryData(["influencer"], (oldData: Influencer.InfluencerFull[] | undefined) => {
+                    if (!oldData) return [];
+                    return oldData.filter((x) => x.id !== id);
+                });
+                // influencers.data = influencers.data?.filter((x) => x.id !== id);
+                influencers.refetch();
+            };
+        },
+    };
 
     const columns: GridColDef[] = [
         {
@@ -154,87 +229,26 @@ function InfluencerList(props: {}) {
                         icon={<EditIcon />}
                         label="Edit"
                         className="textPrimary"
-                        onClick={handleEditClick(id)}
+                        onClick={Eventhandlers.handleEditClick(id)}
                         color="inherit"
                     />,
                     <GridActionsCellItem
                         key={"deleteAction"}
                         icon={<DeleteIcon />}
                         label="Delete"
-                        onClick={handleDeleteClick(id)}
+                        onClick={Eventhandlers.handleDeleteClick(id)}
                         color="inherit"
                     />,
                 ];
             },
         },
     ];
-    const [dialogOtions, setDialogOptions] = useState<DialogOptions>({});
-
-    const [dialogProps, setDialogProps] = useState<DialogConfig<Influencer.InfluencerFull[]>>({
-        parent: rows ?? [],
-        setParent: setRows,
-        onClose: () => {
-            setIsOpen(false);
-            setEditingData(undefined);
-            influencers.list().then((items) =>
-                setRows((prev) => {
-                    console.log("ChangingRows", { prev, items });
-                    return items;
-                })
-            );
-        },
-    });
-
-    const { user, authStatus } = useAuthenticator((x) => [x.user, x.authStatus]);
-    const [groups, setGroups] = useState<string[]>([]);
-    const [showDialog, setShowDialog] = useState(false);
-
-    useEffect(() => {
-        updateInfluencers({ setInfluencers: setRows });
-        return () => {};
-    }, []);
-
-    useEffect(() => {
-        const dialogPropsNew = { ...dialogProps };
-        dialogPropsNew.parent = rows ?? [];
-        setDialogProps(dialogPropsNew);
-
-        return () => {};
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [rows]);
-
-    useEffect(() => {
-        getUserGroups().then((result) => setGroups(result));
-        return () => {};
-    }, [user]);
-    function handleEditClick(id: GridRowId) {
-        return () => {
-            const editingData = rows?.find((x) => x.id === id);
-            if (!editingData) return;
-            setIsOpen(true);
-            setDialogOptions({ editing: true });
-            setEditingData(editingData);
-        };
-        // return () => setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
-    }
-
-    function handleDeleteClick(id: GridRowId) {
-        return () => {
-            const entity = rows?.find((x) => x.id === id);
-            if (!entity) return;
-            console.log({ entity });
-            const { id: publicId } = entity;
-            const { id: privateId } = entity.details;
-            if (!(publicId && privateId)) return;
-            influencers.delete({
-                publicId,
-                privateId,
-            });
-            setRows(rows?.filter((row) => row.id !== id));
-        };
-    }
     return (
         <>
+            {groups.data}
+            {groups.data?.includes("admin") && (
+                <button onClick={() => queryClient.invalidateQueries({ queryKey: ["influencers"] })}>Update</button>
+            )}
             {isOpen && (
                 <InfluencerDialog
                     {...dialogOtions}
@@ -244,40 +258,62 @@ function InfluencerList(props: {}) {
                 />
             )}
             <ThemeProvider theme={theme}>
-                <DataGrid
-                    localeText={deDE.components.MuiDataGrid.defaultProps.localeText}
-                    rows={rows ?? []}
-                    columns={columns}
-                    // rowModesModel={rowModesModel}
-                    // onRowModesModelChange={handleRowModesModelChange}
-                    // onRowEditStop={handleRowEditStop}
-                    // processRowUpdate={processRowUpdate}
-                    // onProcessRowUpdateError={handleProcessRowUpdateError}
-                    slots={{
-                        toolbar: EditToolbar,
-                    }}
-                    slotProps={{
-                        toolbar: { setIsOpen, initiateUpdate: updateInfluencers, setRows },
-                    }}
-                    autoHeight={true}
-                    sx={{
-                        m: 2,
-                        background: "lightgray",
-                        "& .MuiDataGrid-cell": {
-                            // color: "primary.main",
-                            borderLeft: "1px solid black",
-                        },
-                        "& .MuiDataGrid-cell:first-of-type": {
-                            // color: "primary.main",
-                            borderLeft: "none",
-                        },
-                        "& .MuiDataGrid-cell--editing:has(.Mui-error)": {
-                            border: "1px solid red",
-                            backgroundColor: "red",
-                            color: "#ff4343",
-                        },
-                    }}
-                />
+                {influencers.isLoading ? (
+                    <div
+                        style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            height: "100%",
+                            width: "100%",
+                        }}
+                    >
+                        <Typography variant="h3">Lade Influencer</Typography>
+                        <CircularProgress />
+                    </div>
+                ) : (
+                    <DataGrid
+                        localeText={deDE.components.MuiDataGrid.defaultProps.localeText}
+                        rows={influencers.data ?? []}
+                        columns={columns}
+                        // rowModesModel={rowModesModel}
+                        // onRowModesModelChange={handleRowModesModelChange}
+                        // onRowEditStop={handleRowEditStop}
+                        // processRowUpdate={processRowUpdate}
+                        // onProcessRowUpdateError={handleProcessRowUpdateError}
+                        slots={{
+                            toolbar: EditToolbar,
+                        }}
+                        slotProps={{
+                            toolbar: {
+                                setIsOpen,
+                                initiateUpdate: influencers.refetch,
+                                setRows,
+                                queryClient,
+                                isPending: influencers.isFetching,
+                            },
+                        }}
+                        autoHeight={true}
+                        sx={{
+                            m: 2,
+                            background: "lightgray",
+                            "& .MuiDataGrid-cell": {
+                                // color: "primary.main",
+                                borderLeft: "1px solid black",
+                            },
+                            "& .MuiDataGrid-cell:first-of-type": {
+                                // color: "primary.main",
+                                borderLeft: "none",
+                            },
+                            "& .MuiDataGrid-cell--editing:has(.Mui-error)": {
+                                border: "1px solid red",
+                                backgroundColor: "red",
+                                color: "#ff4343",
+                            },
+                        }}
+                    />
+                )}
             </ThemeProvider>
         </>
     );

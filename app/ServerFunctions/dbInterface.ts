@@ -5,6 +5,7 @@ import { createAssignment, deletePlaceholder, updateAssignment } from "./databas
 import {
     createTimelineEvent,
     deleteTimelineEvent,
+    getAssignmentTimelineEvents,
     listTimelineEvents,
     updateTimelineEvent,
 } from "./database/timelineEvents";
@@ -35,6 +36,7 @@ export const timelineEvents = {
     update: updateTimelineEvent,
     delete: deleteTimelineEvent,
     list: listTimelineEvents,
+    listByAssignment: getAssignmentTimelineEvents,
 };
 
 export const assignments = {

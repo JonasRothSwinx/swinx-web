@@ -11,6 +11,7 @@ import { reminderTrigger } from "./functions/reminderTrigger/resource.js";
 import { PolicyStatement, Effect } from "aws-cdk-lib/aws-iam";
 import { Duration } from "aws-cdk-lib/core";
 import { UsagePlan } from "aws-cdk-lib/aws-apigateway";
+import { randomInt, randomUUID } from "crypto";
 
 export const backend = defineBackend({
     auth,
@@ -36,7 +37,7 @@ sesHandlerLambda.addFunctionUrl({
     },
 });
 const api = new apigateway.RestApi(stack, "InvokeRestApi", {
-    restApiName: `InvokeRestApi_swinxWeb_${process.env.AWS_BRANCH}`,
+    restApiName: `InvokeRestApi_swinxWeb_${process.env.AWS_BRANCH ?? randomInt(0, 999999)}`,
     description: "InvokeRestApi",
     apiKeySourceType: apigateway.ApiKeySourceType.HEADER,
     defaultCorsPreflightOptions: {
@@ -55,8 +56,8 @@ api.root.addMethod("POST", lambdaIntegration, {
 });
 
 const apiKeyValue = process.env.ADMIN_API_KEY;
-const apiKey = api.addApiKey(`InvokeApiKey_${process.env.AWS_BRANCH}`, {
-    apiKeyName: `InvokeApiKey_${process.env.AWS_BRANCH}`,
+const apiKey = api.addApiKey(`InvokeApiKey_${randomUUID()}`, {
+    // apiKeyName: `InvokeApiKey_${process.env.AWS_BRANCH}`,
     value: apiKeyValue,
 });
 

@@ -67,9 +67,7 @@ const selectionSet = [
     "assignedInfluencers.influencer.details.*",
 ] as const;
 
-function validateCampaign(
-    rawData: SelectionSet<Schema["Campaign"], typeof selectionSet>,
-): Campaign.Campaign {
+function validateCampaign(rawData: SelectionSet<Schema["Campaign"], typeof selectionSet>): Campaign.Campaign {
     const dataOut: Campaign.Campaign = {
         id: rawData.id,
         campaignManagerId: rawData.campaignManagerId,
@@ -105,25 +103,25 @@ function validateCampaign(
 }
 export async function getCampaign(
     id: string,
-    options: GetCampaignOptions = GetCampaignOptionsDefault,
+    options: GetCampaignOptions = GetCampaignOptionsDefault
 ): Promise<Campaign.Campaign> {
     const { data, errors } = await client.models.Campaign.get(
         { id },
         {
             selectionSet,
-        },
+        }
     );
     const dataOut = validateCampaign(data);
     // console.log(dataOut);
     return dataOut;
 }
-export async function listCampaigns(): Promise<{ data: Campaign.Campaign[]; errors: unknown }> {
+export async function listCampaigns(): Promise<Campaign.Campaign[]> {
     const { data, errors } = await client.models.Campaign.list({
         selectionSet,
     });
     if (errors) {
         console.log({ errors });
-        return { data: [], errors: errors };
+        throw new Error("Error fetching Campaigns: " + JSON.stringify(errors));
     }
     const campaigns: Campaign.Campaign[] = data
         .map((raw) => {
@@ -136,7 +134,7 @@ export async function listCampaigns(): Promise<{ data: Campaign.Campaign[]; erro
         })
         .filter((x): x is Campaign.Campaign => x !== null);
 
-    return { data: campaigns, errors };
+    return campaigns;
 }
 
 export async function deleteCampaign(campaign: Campaign.Campaign) {

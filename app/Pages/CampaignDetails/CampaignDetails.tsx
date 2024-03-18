@@ -1,4 +1,4 @@
-import { campaigns, influencers } from "@/app/ServerFunctions/dbInterface";
+import dbInterface from "@/app/ServerFunctions/dbInterface";
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import Influencer from "@/app/ServerFunctions/types/influencer";
@@ -10,6 +10,10 @@ import stylesExporter from "../styles/stylesExporter";
 import CustomerDetails from "./Components/CustomerDetails";
 import OpenInfluencerDetails from "./Components/OpenInfluencerDetails/OpenInfluencerDetails";
 import CampaignDetailsButtons from "./Components/TopButtons";
+import { user } from "../styles/css/user.module.css";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { data } from "@/amplify/data/resource";
+import { Placeholder } from "@aws-amplify/ui-react";
 
 const styles = stylesExporter.campaignDetails;
 
@@ -21,27 +25,18 @@ interface CampaignDetailsProps {
 
 export default function CampaignDetails(props: CampaignDetailsProps) {
     const { isOpen, onClose, campaignId } = props;
-    const [campaign, setCampaign] = useState<Campaign.Campaign>();
-    const [influencerData, setInfluencerData] = useState<Influencer.InfluencerFull[]>([]);
+    const queryClient = useQueryClient();
+    const campaign = useQuery({
+        queryKey: ["campaign", campaignId],
+        queryFn: () => dbInterface.campaign.get(campaignId),
+    });
+    const influencers = useQuery({
+        queryKey: ["influencers"],
+        queryFn: () => dbInterface.influencer.list(),
+        placeholderData: [],
+    });
     const [assignmentData, setAssignmentData] = useState<Assignment.Assignment[]>([]);
     const [highlightedEvent, setHighlightedEvent] = useState<TimelineEvent.TimelineEvent>();
-    const [loading, setLoading] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-
-    function onDialogClose() {
-        updateCampaign();
-    }
-    function handleClose(hasChanged?: boolean) {
-        if (onClose) {
-            onClose(true || hasChanged);
-        }
-    }
-    // useEffect(() => {
-    //     console.log("applying props", props);
-    //     setInfluencers(props.influencers);
-
-    //     return () => {};
-    // }, [props]);
 
     useEffect(() => {
         console.log("campaign changed");
@@ -49,121 +44,107 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
         return () => {};
     }, [campaign]);
 
-    useEffect(() => {
-        updateCampaign();
-        updateInfluencers();
-
-        return () => {};
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [campaignId]);
-
-    function updateCampaign(background?: boolean) {
-        if (campaignId === "") return;
-        setIsLoading(true);
-        console.log("updating campaign");
-        if (!background) {
-            setLoading(true);
-        }
-        campaigns.get(campaignId).then((result) => {
-            console.log("newCampaign", result);
-            setCampaign(result);
-            setLoading(false);
-            setIsLoading(false);
-        });
-    }
-    function updateInfluencers() {
-        console.log("updating Influencers");
-        influencers.list().then((result) => setInfluencerData(result));
-    }
     // console.log(callbackSetCampaign);
-    function callbackSetCampaign(campaign: Campaign.Campaign) {
-        console.log("callback set triggered");
-        setCampaign(campaign);
-        console.log(campaign);
-        // updateCampaign();
-    }
+    // function callbackSetCampaign(campaign: Campaign.Campaign) {
+    //     console.log("callback set triggered");
+    //     queryClient.setQueryData(["campaign", campaignId], campaign);
+    // }
     // console.log(campaign);
-
+    const EventHandlers = {
+        dialogClose: () => {
+            queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
+            // queryClient.invalidateQueries("campaigns");
+        },
+        handleClose: () => {
+            if (onClose) {
+                onClose();
+            }
+        },
+        updateCampaign: () => {
+            queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
+            campaign.refetch();
+        },
+        setCampaign: (updatedCampaign: Campaign.Campaign) => {
+            console.log("setCampaign", updatedCampaign);
+            queryClient.setQueryData(["campaign", campaignId], updatedCampaign);
+            campaign.refetch();
+        },
+    };
     return (
-        <>
-            {isOpen && (
-                <Dialog
-                    sx={{
-                        padding: "10px",
-                        "& .MuiDialog-container > .MuiPaper-root": {
-                            borderRadius: "20px",
-                            padding: "0px 10px",
-                        },
-                    }}
-                    open={isOpen}
-                    fullScreen
-                >
-                    {loading ? (
-                        <Skeleton></Skeleton>
-                    ) : (
-                        <>
-                            <CampaignDetailsButtons
-                                updateCampaign={updateCampaign}
-                                handleClose={handleClose}
-                                campaign={campaign}
-                                isLoading={isLoading}
-                            />
-                            {isOpen && campaign && (
-                                <Grid
-                                    container
-                                    columns={3}
-                                    sx={{
-                                        maxHeight: "100%",
-                                        "& .MuiGrid2-root": {
-                                            overflowY: "auto",
-                                            overflowX: "hidden",
-                                        },
-                                    }}
-                                    maxHeight={"100%"}
-                                >
-                                    <Grid xs={1} display={"flex"} flexDirection={"column"}>
-                                        <CustomerDetails
-                                            campaign={campaign}
-                                            customer={campaign?.customer}
-                                            setCampaign={callbackSetCampaign}
-                                        />
-                                        <OpenInfluencerDetails
-                                            influencers={influencerData}
-                                            campaign={campaign}
-                                            setCampaign={callbackSetCampaign}
-                                            events={campaign?.campaignTimelineEvents ?? []}
-                                            placeholders={campaign.assignedInfluencers}
-                                            setHighlightedEvent={setHighlightedEvent}
-                                        />
-                                        {/* <AssignedInfluencerDetails
+        <Dialog
+            sx={{
+                padding: "10px",
+                "& .MuiDialog-container > .MuiPaper-root": {
+                    borderRadius: "20px",
+                    padding: "0px 10px",
+                },
+            }}
+            open={isOpen}
+            fullScreen
+        >
+            {campaign.isLoading && !campaign.data ? (
+                <Skeleton variant="rectangular" width={"90vw"} height={"90vh"} sx={{ borderRadius: "20px" }}></Skeleton>
+            ) : (
+                <>
+                    <CampaignDetailsButtons
+                        updateCampaign={EventHandlers.updateCampaign}
+                        handleClose={EventHandlers.handleClose}
+                        campaign={campaign.data}
+                        isLoading={campaign.isFetching}
+                    />
+                    {campaign.data && (
+                        <Grid
+                            container
+                            columns={3}
+                            sx={{
+                                maxHeight: "100%",
+                                "& .MuiGrid2-root": {
+                                    overflowY: "auto",
+                                    overflowX: "hidden",
+                                },
+                            }}
+                            maxHeight={"100%"}
+                        >
+                            <Grid xs={1} display={"flex"} flexDirection={"column"}>
+                                <CustomerDetails
+                                    campaign={campaign.data}
+                                    customer={campaign?.data.customer}
+                                    setCampaign={EventHandlers.setCampaign}
+                                />
+                                <OpenInfluencerDetails
+                                    influencers={influencers.data ?? []}
+                                    campaignId={campaignId}
+                                    setCampaign={EventHandlers.setCampaign}
+                                    events={campaign.data.campaignTimelineEvents ?? []}
+                                    placeholders={campaign.data.assignedInfluencers}
+                                    setHighlightedEvent={setHighlightedEvent}
+                                />
+                                {/* <AssignedInfluencerDetails
                                             events={campaign?.campaignTimelineEvents ?? []}
                                             influencers={influencerData}
                                             setHighlightedEvent={setHighlightedEvent}
                                         /> */}
-                                    </Grid>
-                                    <Grid xs={1} maxHeight={"100%"}>
-                                        <Typography fontSize={8} whiteSpace={"pre-wrap"}>
-                                            {/* JSON.stringify(campaign, null, "\t") */
-                                            /* ?.replaceAll(",", "\n") */}
-                                        </Typography>
-                                    </Grid>
-                                    <Grid id="timeline" xs={1} columns={1}>
-                                        <TimelineView
-                                            setCampaign={callbackSetCampaign}
-                                            influencers={influencerData}
-                                            campaign={campaign}
-                                            orientation="vertical"
-                                            controlsPosition="before"
-                                            editable
-                                            highlightedEvent={highlightedEvent}
-                                        />
-                                    </Grid>
-                                </Grid>
-                            )}
-                        </>
+                            </Grid>
+                            <Grid xs={1} maxHeight={"100%"}>
+                                <Typography fontSize={8} whiteSpace={"pre-wrap"}>
+                                    {JSON.stringify({ ...campaign, data: undefined }, null, "\t")}
+                                </Typography>
+                            </Grid>
+                            <Grid id="timeline" xs={1} columns={1}>
+                                <TimelineView
+                                    setCampaign={EventHandlers.setCampaign}
+                                    influencers={influencers.data ?? []}
+                                    campaign={campaign.data}
+                                    orientation="vertical"
+                                    controlsPosition="before"
+                                    editable
+                                    highlightedEvent={highlightedEvent}
+                                />
+                            </Grid>
+                        </Grid>
                     )}
-                </Dialog>
+                </>
             )}
-        </>
+        </Dialog>
     );
 }

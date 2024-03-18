@@ -1,15 +1,10 @@
+"use client";
 import InfluencerList from "./InfluencerList";
 
-import { useState } from "react";
-import InfluencerDialog from "../Dialogs/InfluencerDialog";
-import { Button } from "@mui/material";
-
+import { QueryClient } from "@tanstack/react-query";
+const queryClient = new QueryClient();
 function InfluencerMenu(props: {}) {
-    return (
-        <>
-            <InfluencerList />
-        </>
-    );
+    return <InfluencerList />;
 }
 
 export default InfluencerMenu;

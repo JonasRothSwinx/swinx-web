@@ -51,9 +51,7 @@ export async function createTimelineEvent(props: TimelineEvent.TimelineEvent) {
         });
         throw new Error("Missing Data");
     }
-    const { data: inviteEventData, errors: inviteEventErrors } = await createInviteEvent(
-        inviteEvent,
-    );
+    const { data: inviteEventData, errors: inviteEventErrors } = await createInviteEvent(inviteEvent);
 
     const { data, errors } = await client.models.TimelineEvent.create(
         {
@@ -64,7 +62,7 @@ export async function createTimelineEvent(props: TimelineEvent.TimelineEvent) {
             influencerAssignmentTimelineEventsId,
             notes,
         },
-        {},
+        {}
     );
     console.log(data);
 
@@ -123,4 +121,39 @@ async function updateInviteEvent(props: PartialWith<TimelineEvent.InviteEvent, "
 
     const { data, errors } = await client.models.InvitesEvent.update({ id, invites }, {});
     return { data, errors };
+}
+
+/**
+ * Retrieves all timeline events for a given assignment.
+ */
+export async function getAssignmentTimelineEvents(assignmentId: string) {
+    const { data, errors } = await client.models.InfluencerAssignment.get(
+        { id: assignmentId },
+        {
+            selectionSet: [
+                "id",
+                "isPlaceholder",
+                "placeholderName",
+                "campaignAssignedInfluencersId",
+                "timelineEvents.*",
+                "timelineEvents.inviteEvent.*",
+            ],
+        }
+    );
+    const dataOut: TimelineEvent.TimelineEvent[] = data.timelineEvents.map((event) => {
+        const validatedEvent: TimelineEvent.TimelineEvent = {
+            ...event,
+            assignment: {
+                id: assignmentId,
+                isPlaceholder: data.isPlaceholder,
+                influencer: null,
+                placeholderName: data.placeholderName ?? null,
+            },
+            campaign: {
+                id: data.campaignAssignedInfluencersId ?? "",
+            },
+        };
+        return validatedEvent;
+    });
+    return dataOut;
 }

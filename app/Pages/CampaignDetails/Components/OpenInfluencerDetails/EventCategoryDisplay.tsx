@@ -17,7 +17,7 @@ export default function EventCategoryDisplay(props: EventCategoryDisplayProps) {
         category: { type: groupType, events },
         setHighlightedEvent,
     } = props;
-    console.log("EventCategoryDisplay", groupType, events);
+    // console.log("EventCategoryDisplay", groupType, events);
     const CategoryTitle: { [key in timelineEventTypesType]: JSX.Element } = {
         Invites: <InviteEventsDisplayTitle events={events} />,
         Post: <PostEventsDisplayTitle events={events} />,
@@ -62,11 +62,7 @@ function EventFinished(props: { date: string }) {
     }
     return (
         <div style={{ maxHeight: ".8em", overflow: "visible" }}>
-            {date.isBefore(dayjs()) ? (
-                <CheckIcon color={"success"} sx={{ overflow: "hidden" }} />
-            ) : (
-                <></>
-            )}
+            {date.isBefore(dayjs()) ? <CheckIcon color={"success"} sx={{ overflow: "hidden" }} /> : <></>}
         </div>
     );
 }
@@ -98,11 +94,7 @@ function InviteEventsDetails(props: {
     return (
         <>
             {events.map((event) => (
-                <InviteEventItem
-                    key={event.id}
-                    event={event}
-                    setHighlightedEvent={setHighlightedEvent}
-                />
+                <InviteEventItem key={event.id} event={event} setHighlightedEvent={setHighlightedEvent} />
             ))}
         </>
     );
@@ -152,11 +144,7 @@ function PostEventsDetails(props: {
     return (
         <>
             {props.events.map((event) => (
-                <PostEventItem
-                    key={event.id}
-                    event={event}
-                    setHighlightedEvent={props.setHighlightedEvent}
-                />
+                <PostEventItem key={event.id} event={event} setHighlightedEvent={props.setHighlightedEvent} />
             ))}
         </>
     );
@@ -204,11 +192,7 @@ function WebinarEventsDisplay(props: {
     return (
         <>
             {props.events.map((event) => (
-                <WebinarEventItem
-                    key={event.id}
-                    event={event}
-                    setHighlightedEvent={props.setHighlightedEvent}
-                />
+                <WebinarEventItem key={event.id} event={event} setHighlightedEvent={props.setHighlightedEvent} />
             ))}
         </>
     );
@@ -257,11 +241,7 @@ function GenericEventsDisplay(props: {
     return (
         <>
             {props.events.map((event) => (
-                <GenericEventItem
-                    key={event.id}
-                    event={event}
-                    setHighlightedEvent={props.setHighlightedEvent}
-                />
+                <GenericEventItem key={event.id} event={event} setHighlightedEvent={props.setHighlightedEvent} />
             ))}
         </>
     );
@@ -309,11 +289,7 @@ function VideoEventsDisplay(props: {
     return (
         <>
             {props.events.map((event) => (
-                <VideoEventItem
-                    key={event.id}
-                    event={event}
-                    setHighlightedEvent={props.setHighlightedEvent}
-                />
+                <VideoEventItem key={event.id} event={event} setHighlightedEvent={props.setHighlightedEvent} />
             ))}
         </>
     );
