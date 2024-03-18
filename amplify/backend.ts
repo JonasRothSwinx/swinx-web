@@ -11,7 +11,7 @@ import { reminderTrigger } from "./functions/reminderTrigger/resource.js";
 import { PolicyStatement, Effect } from "aws-cdk-lib/aws-iam";
 import { Duration } from "aws-cdk-lib/core";
 import { UsagePlan } from "aws-cdk-lib/aws-apigateway";
-import { randomInt, randomUUID } from "crypto";
+import { randomUUID } from "crypto";
 import dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
 export const backend = defineBackend({
@@ -37,9 +37,10 @@ sesHandlerLambda.addFunctionUrl({
         allowedOrigins: ["*"],
     },
 });
+
 const api = new apigateway.RestApi(stack, "swinx-web-api", {
     // restApiName: `InvokeRestApi_swinxWeb_${process.env.AWS_BRANCH ?? randomInt(0, 999999)}`,
-    restApiName: `swinx-web-api`,
+    restApiName: `swinx-web-api-${process.env.AWS_BRANCH ?? randomUUID()}`,
     description: "API for Swinx Web App",
     apiKeySourceType: apigateway.ApiKeySourceType.HEADER,
     defaultCorsPreflightOptions: {
