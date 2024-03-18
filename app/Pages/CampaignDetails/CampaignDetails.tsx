@@ -10,7 +10,6 @@ import stylesExporter from "../styles/stylesExporter";
 import CustomerDetails from "./Components/CustomerDetails";
 import OpenInfluencerDetails from "./Components/OpenInfluencerDetails/OpenInfluencerDetails";
 import CampaignDetailsButtons from "./Components/TopButtons";
-import { user } from "../styles/css/user.module.css";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { data } from "@/amplify/data/resource";
 import { Placeholder } from "@aws-amplify/ui-react";
