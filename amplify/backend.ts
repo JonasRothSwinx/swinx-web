@@ -37,9 +37,10 @@ sesHandlerLambda.addFunctionUrl({
         allowedOrigins: ["*"],
     },
 });
-const api = new apigateway.RestApi(stack, "InvokeRestApi", {
-    restApiName: `InvokeRestApi_swinxWeb_${process.env.AWS_BRANCH ?? randomInt(0, 999999)}`,
-    description: "InvokeRestApi",
+const api = new apigateway.RestApi(stack, "swinx-web-api", {
+    // restApiName: `InvokeRestApi_swinxWeb_${process.env.AWS_BRANCH ?? randomInt(0, 999999)}`,
+    restApiName: `swinx-web-api`,
+    description: "API for Swinx Web App",
     apiKeySourceType: apigateway.ApiKeySourceType.HEADER,
     defaultCorsPreflightOptions: {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
@@ -57,14 +58,13 @@ api.root.addMethod("POST", lambdaIntegration, {
 });
 
 const apiKeyValue = process.env.ADMIN_API_KEY;
-// const apiKey = api.addApiKey(`InvokeApiKey_${randomUUID()}`, {
 const apiKey = api.addApiKey(`swinx-web-api-key`, {
-    apiKeyName: `swinx-web-api-key`,
+    apiKeyName: `swinx-web-api-key-${process.env.AWS_BRANCH}`,
     value: apiKeyValue,
 });
 
-const usagePlan = new UsagePlan(stack, "InvokeUsagePlan", {
-    name: `Image Gen Invoke Usage Plan ${process.env.AWS_BRANCH}`,
+const usagePlan = new UsagePlan(stack, "swinxWebUsagePlan", {
+    name: `swinx-web Usage Plan for ${process.env.AWS_BRANCH}`,
     apiStages: [
         {
             api,
