@@ -7,20 +7,24 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import dayjs, { Dayjs } from "@/app/configuredDayJs";
 
 type AssignedInfluencerDetailsProps = {
-    events: TimelineEvent.TimelineEvent[];
+    events: TimelineEvent.Event[];
     influencers: Influencer.InfluencerFull[];
-    setHighlightedEvent: Dispatch<SetStateAction<TimelineEvent.TimelineEvent | undefined>>;
+    setHighlightedEvent: Dispatch<SetStateAction<TimelineEvent.Event | undefined>>;
 };
 
 export default function AssignedInfluencerDetails(props: AssignedInfluencerDetailsProps) {
     const { influencers, events, setHighlightedEvent } = props;
-    const [involvedInfluencers, setInvolvedInfluencers] = useState<Influencer.AssignedInfluencer[]>([]);
+    const [involvedInfluencers, setInvolvedInfluencers] = useState<Influencer.AssignedInfluencer[]>(
+        [],
+    );
     useEffect(() => {
         function getInfluencers() {
             const involvedInfluencers: Influencer.AssignedInfluencer[] = [];
 
             for (const event of events.filter((event) => !event.assignment.isPlaceholder)) {
-                const influencer = influencers.find((x) => x.id === event.assignment.influencer?.id);
+                const influencer = influencers.find(
+                    (x) => x.id === event.assignment.influencer?.id,
+                );
                 if (!influencer) continue;
                 const involvedInfluencer = involvedInfluencers.find((x) => x.id === influencer.id);
                 switch (true) {
@@ -38,7 +42,9 @@ export default function AssignedInfluencerDetails(props: AssignedInfluencerDetai
                 }
             }
             for (const influencer of involvedInfluencers) {
-                influencer.inviteEvents.sort((a, b) => (a.date && b.date ? a.date.localeCompare(b.date) : 0));
+                influencer.inviteEvents.sort((a, b) =>
+                    a.date && b.date ? a.date.localeCompare(b.date) : 0,
+                );
             }
             return involvedInfluencers;
         }
@@ -48,7 +54,11 @@ export default function AssignedInfluencerDetails(props: AssignedInfluencerDetai
     if (involvedInfluencers.length === 0) return null;
     return (
         <Accordion defaultExpanded disableGutters variant="outlined">
-            <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1-content" id="panel1-header">
+            <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel1-content"
+                id="panel1-header"
+            >
                 Zugewiesene Influencer
             </AccordionSummary>
             <AccordionDetails>
@@ -64,9 +74,12 @@ export default function AssignedInfluencerDetails(props: AssignedInfluencerDetai
                                     <Accordion>
                                         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                                             Invites:{" "}
-                                            {influencer.inviteEvents.reduce((sum: number, event) => {
-                                                return sum + (event?.inviteEvent?.invites ?? 0);
-                                            }, 0)}{" "}
+                                            {influencer.inviteEvents.reduce(
+                                                (sum: number, event) => {
+                                                    return sum + (event?.inviteEvent?.invites ?? 0);
+                                                },
+                                                0,
+                                            )}{" "}
                                             verteilt über {influencer.inviteEvents.length} Termine
                                         </AccordionSummary>
                                         <AccordionDetails>
@@ -82,7 +95,8 @@ export default function AssignedInfluencerDetails(props: AssignedInfluencerDetai
                                                             }}
                                                         >
                                                             <Typography>
-                                                                {date.format("DD.MM.YYYY")} ({date.fromNow()})
+                                                                {date.format("DD.MM.YYYY")} (
+                                                                {date.fromNow()})
                                                             </Typography>
                                                         </Grid>
                                                     );

@@ -14,9 +14,9 @@ const selectionSet = [
     "assignment.influencer.firstName",
     "assignment.influencer.lastName",
     "influencerAssignmentTimelineEventsId",
-    "inviteEvent.invites",
 ] as const;
 export async function getTimelineEvents(timespan: timespan) {
-    const { data: events, errors } = await client.models.TimelineEvent.list({ selectionSet });
-    const inviteEvents = events.filter((event) => event.timelineEventType === "invite");
+    return "not implemented";
+    // const { data: events, errors } = await client.models.TimelineEvent.list({ selectionSet });
+    // const inviteEvents = events.filter((event) => event.timelineEventType === "invite");
 }

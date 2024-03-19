@@ -27,7 +27,7 @@ namespace Influencer {
     }
 
     export type AssignedInfluencer = InfluencerFull & {
-        inviteEvents: TimelineEvent.TimelineEventInvites[];
+        inviteEvents: TimelineEvent.Invites[];
     };
     export type candidateResponse = "pending" | "accepted" | "rejected";
     export type Candidate = {

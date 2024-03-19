@@ -10,7 +10,11 @@ import stylesExporter from "../styles/stylesExporter";
 import TimelineControls from "./Components/TimelineControls";
 import TimelineViewItem from "./Components/TimelineViewItem";
 
-import groupEvents, { EventGroup, GroupedEvent, groupBy, groupEvents_v2 } from "./Functions/groupEvents";
+import {
+    groupBy,
+    EventGroup_v2 as EventGroup,
+    groupEvents_v3 as groupEvents,
+} from "./Functions/groupEvents";
 
 const dialogStyles = stylesExporter.dialogs;
 const timelineStyles = stylesExporter.timeline;
@@ -26,27 +30,32 @@ export interface TimelineViewProps {
     controlsPosition?: controlsPosition;
     groupBy?: groupBy;
     editable?: boolean;
-    highlightedEvent?: TimelineEvent.TimelineEvent;
+    highlightedEvent?: TimelineEvent.Event;
     influencers: Influencer.InfluencerFull[];
 }
 
 export default function TimelineView(props: TimelineViewProps) {
-    const { maxItems, orientation = "vertical", controlsPosition = "none", setCampaign: setParent } = props;
+    const {
+        maxItems,
+        orientation = "vertical",
+        controlsPosition = "none",
+        setCampaign: setParent,
+    } = props;
     const [influencers, setInfluencers] = useState(props.influencers);
-
     const [campaign, setCampaign] = useState<Campaign.Campaign>(props.campaign);
     const [events, setEvents] = useState(campaign?.campaignTimelineEvents ?? []);
     const [groups, setGroups] = useState<EventGroup[]>([]);
     const [editingDialogOpen, setEditingDialogOpen] = useState(false);
-    const [editingEvent, setEditingEvent] = useState<TimelineEvent.TimelineEvent>();
-    const [controlsPositionState, setControlsPosition] = useState<controlsPosition>(controlsPosition);
+    const [editingEvent, setEditingEvent] = useState<TimelineEvent.Event>();
+    const [controlsPositionState, setControlsPosition] =
+        useState<controlsPosition>(controlsPosition);
     const [groupBy, setGroupBy] = useState<groupBy>(props.groupBy ?? "week");
     const [editable, setEditable] = useState(props.editable ?? false);
     const [highlightedEvent, setHighlightedEvent] = useState(props.highlightedEvent);
 
     useEffect(() => {
         // console.log("Events changed, updating groups");
-        const newGroups = groupEvents_v2(events, groupBy);
+        const newGroups = groupEvents(events, groupBy);
         console.log("new groups:", newGroups);
         setGroups([...newGroups]);
         return () => {};

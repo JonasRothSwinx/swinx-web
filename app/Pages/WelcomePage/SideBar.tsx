@@ -13,6 +13,11 @@ import {
 import emailClient from "@/app/ServerFunctions/email/emailClient";
 import { inviteTemplateVariables } from "@/app/ServerFunctions/email/templates/invites/invitesTemplate";
 import { testLambda } from "@/app/ServerFunctions/email/templates/templateFunctions";
+import {
+    createTestData,
+    listCampaignsTest,
+    wipeTestData,
+} from "@/app/ServerFunctions/database/test";
 
 const styles = stylesExporter.sideBar;
 
@@ -79,7 +84,7 @@ function SideBar(props: ISideBar) {
                         variant="outlined"
                         onClick={async () => {
                             const response = await emailClient.templates.get(
-                                prompt("TemplateName") ?? "CampaignInvite"
+                                prompt("TemplateName") ?? "CampaignInvite",
                             );
                             console.log(response);
                         }}
@@ -103,6 +108,33 @@ function SideBar(props: ISideBar) {
                         }}
                     >
                         Test Lambda
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        onClick={async () => {
+                            const response = await createTestData();
+                            console.log(response);
+                        }}
+                    >
+                        Create Test Data
+                    </Button>{" "}
+                    <Button
+                        variant="outlined"
+                        onClick={async () => {
+                            const response = await wipeTestData();
+                            console.log(response);
+                        }}
+                    >
+                        Wipe Test Data
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        onClick={async () => {
+                            const response = await listCampaignsTest();
+                            console.log(response);
+                        }}
+                    >
+                        List Campaigns Test
                     </Button>
                 </>
             )}

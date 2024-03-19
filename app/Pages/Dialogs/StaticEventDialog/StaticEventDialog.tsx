@@ -12,7 +12,7 @@ import {
 import stylesExporter from "../../styles/stylesExporter";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { useState } from "react";
-import { StaticEvent } from "@/app/ServerFunctions/types/staticEvents";
+import StaticEvent from "@/app/ServerFunctions/types/staticEvents";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import dayjs from "@/app/configuredDayJs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -34,7 +34,7 @@ export default function StaticEventDialog(props: StaticEventDialogProps) {
             type: "Webinar",
             date: dayjs().toISOString(),
             campaign: { id: props.campaignId },
-        }
+        },
     );
 
     const EventHandlers = {
@@ -46,7 +46,7 @@ export default function StaticEventDialog(props: StaticEventDialogProps) {
             console.log("submitting");
             console.log(staticEvent);
             dbInterface.staticEvent.create(staticEvent as StaticEvent.StaticEvent);
-            // props.onClose();
+            EventHandlers.handleClose(true)();
         },
         handleTypeChange: (e: SelectChangeEvent<unknown>) => {
             const value = e.target.value as StaticEvent.eventType;
@@ -145,7 +145,10 @@ export default function StaticEventDialog(props: StaticEventDialogProps) {
                     })}
                 </TextField>
             </DialogContent>
-            <DialogContent dividers sx={{ "& .MuiFormControl-root": { flexBasis: "100%", flex: 1 } }}>
+            <DialogContent
+                dividers
+                sx={{ "& .MuiFormControl-root": { flexBasis: "100%", flex: 1 } }}
+            >
                 <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
                     <DatePicker
                         // closeOnSelect={false}

@@ -3,6 +3,7 @@ import Customer from "./customer";
 import Influencer from "./influencer";
 import TimelineEvent from "./timelineEvents";
 import Assignment from "./assignment";
+import StaticEvent from "./staticEvents";
 
 export default Campaign;
 namespace Campaign {
@@ -13,7 +14,7 @@ namespace Campaign {
         // campaignType: string;
         campaignManagerId?: string | null;
         customer: Customer.Customer;
-        campaignTimelineEvents: TimelineEvent.TimelineEvent[];
+        campaignTimelineEvents: TimelineEvent.Event[];
         // assignedInfluencers: Influencer.InfluencerFull[];
         assignedInfluencers: Assignment.AssignmentFull[];
         // campaignStep: string;

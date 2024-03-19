@@ -1,4 +1,4 @@
-import { StaticEvent } from "@/app/ServerFunctions/types/staticEvents";
+import StaticEvent from "@/app/ServerFunctions/types/staticEvents";
 import { DialogContent, TextField } from "@mui/material";
 
 interface WebinarDetailsProps {

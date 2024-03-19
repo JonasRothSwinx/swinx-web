@@ -10,7 +10,7 @@ interface EventCategoryDisplayProps {
     setHighlightedEvent: setHighlightedEventFunction;
 }
 
-type setHighlightedEventFunction = (event?: TimelineEvent.TimelineEvent) => void;
+type setHighlightedEventFunction = (event?: TimelineEvent.Event) => void;
 
 export default function EventCategoryDisplay(props: EventCategoryDisplayProps) {
     const {
@@ -62,13 +62,17 @@ function EventFinished(props: { date: string }) {
     }
     return (
         <div style={{ maxHeight: ".8em", overflow: "visible" }}>
-            {date.isBefore(dayjs()) ? <CheckIcon color={"success"} sx={{ overflow: "hidden" }} /> : <></>}
+            {date.isBefore(dayjs()) ? (
+                <CheckIcon color={"success"} sx={{ overflow: "hidden" }} />
+            ) : (
+                <></>
+            )}
         </div>
     );
 }
 const eventTypeColumnWidth = 5;
 //#region InviteEvents
-function InviteEventsDisplayTitle(props: { events: TimelineEvent.TimelineEvent[] }) {
+function InviteEventsDisplayTitle(props: { events: TimelineEvent.Event[] }) {
     const totalInvites = props.events.reduce((acc, event) => {
         if (TimelineEvent.isInviteEvent(event) && event.inviteEvent?.invites) {
             return acc + event.inviteEvent.invites;
@@ -87,20 +91,24 @@ function InviteEventsDisplayTitle(props: { events: TimelineEvent.TimelineEvent[]
     );
 }
 function InviteEventsDetails(props: {
-    events: TimelineEvent.TimelineEvent[];
+    events: TimelineEvent.Event[];
     setHighlightedEvent: setHighlightedEventFunction;
 }) {
     const { events, setHighlightedEvent } = props;
     return (
         <>
             {events.map((event) => (
-                <InviteEventItem key={event.id} event={event} setHighlightedEvent={setHighlightedEvent} />
+                <InviteEventItem
+                    key={event.id}
+                    event={event}
+                    setHighlightedEvent={setHighlightedEvent}
+                />
             ))}
         </>
     );
 }
 function InviteEventItem(props: {
-    event: TimelineEvent.TimelineEvent;
+    event: TimelineEvent.Event;
     setHighlightedEvent: setHighlightedEventFunction;
 }) {
     const { event, setHighlightedEvent } = props;
@@ -127,7 +135,7 @@ function InviteEventItem(props: {
 //#endregion InviteEvents
 
 //#region PostEvents
-function PostEventsDisplayTitle(props: { events: TimelineEvent.TimelineEvent[] }) {
+function PostEventsDisplayTitle(props: { events: TimelineEvent.Event[] }) {
     return (
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Grid container sx={{ width: "100%" }}>
@@ -138,19 +146,23 @@ function PostEventsDisplayTitle(props: { events: TimelineEvent.TimelineEvent[] }
     );
 }
 function PostEventsDetails(props: {
-    events: TimelineEvent.TimelineEvent[];
+    events: TimelineEvent.Event[];
     setHighlightedEvent: setHighlightedEventFunction;
 }) {
     return (
         <>
             {props.events.map((event) => (
-                <PostEventItem key={event.id} event={event} setHighlightedEvent={props.setHighlightedEvent} />
+                <PostEventItem
+                    key={event.id}
+                    event={event}
+                    setHighlightedEvent={props.setHighlightedEvent}
+                />
             ))}
         </>
     );
 }
 function PostEventItem(props: {
-    event: TimelineEvent.TimelineEvent;
+    event: TimelineEvent.Event;
     setHighlightedEvent: setHighlightedEventFunction;
 }) {
     const { event, setHighlightedEvent } = props;
@@ -174,7 +186,7 @@ function PostEventItem(props: {
 //#endregion PostEvents
 
 //#region WebinarEvents
-function WebinarEventsDisplayTitle(props: { events: TimelineEvent.TimelineEvent[] }) {
+function WebinarEventsDisplayTitle(props: { events: TimelineEvent.Event[] }) {
     return (
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Grid container sx={{ width: "100%" }}>
@@ -186,20 +198,24 @@ function WebinarEventsDisplayTitle(props: { events: TimelineEvent.TimelineEvent[
 }
 
 function WebinarEventsDisplay(props: {
-    events: TimelineEvent.TimelineEvent[];
+    events: TimelineEvent.Event[];
     setHighlightedEvent: setHighlightedEventFunction;
 }) {
     return (
         <>
             {props.events.map((event) => (
-                <WebinarEventItem key={event.id} event={event} setHighlightedEvent={props.setHighlightedEvent} />
+                <WebinarEventItem
+                    key={event.id}
+                    event={event}
+                    setHighlightedEvent={props.setHighlightedEvent}
+                />
             ))}
         </>
     );
 }
 
 function WebinarEventItem(props: {
-    event: TimelineEvent.TimelineEvent;
+    event: TimelineEvent.Event;
     setHighlightedEvent: setHighlightedEventFunction;
 }) {
     const { event, setHighlightedEvent } = props;
@@ -223,7 +239,7 @@ function WebinarEventItem(props: {
 //#endregion WebinarEvents
 
 //#region GenericEvents
-function GenericEventsDisplayTitle(props: { events: TimelineEvent.TimelineEvent[] }) {
+function GenericEventsDisplayTitle(props: { events: TimelineEvent.Event[] }) {
     return (
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Grid container sx={{ width: "100%" }}>
@@ -235,20 +251,24 @@ function GenericEventsDisplayTitle(props: { events: TimelineEvent.TimelineEvent[
 }
 
 function GenericEventsDisplay(props: {
-    events: TimelineEvent.TimelineEvent[];
+    events: TimelineEvent.Event[];
     setHighlightedEvent: setHighlightedEventFunction;
 }) {
     return (
         <>
             {props.events.map((event) => (
-                <GenericEventItem key={event.id} event={event} setHighlightedEvent={props.setHighlightedEvent} />
+                <GenericEventItem
+                    key={event.id}
+                    event={event}
+                    setHighlightedEvent={props.setHighlightedEvent}
+                />
             ))}
         </>
     );
 }
 
 function GenericEventItem(props: {
-    event: TimelineEvent.TimelineEvent;
+    event: TimelineEvent.Event;
     setHighlightedEvent: setHighlightedEventFunction;
 }) {
     const { event, setHighlightedEvent } = props;
@@ -271,7 +291,7 @@ function GenericEventItem(props: {
 //#endregion GenericEvents
 
 //#region VideoEvents
-function VideoEventsDisplayTitle(props: { events: TimelineEvent.TimelineEvent[] }) {
+function VideoEventsDisplayTitle(props: { events: TimelineEvent.Event[] }) {
     return (
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Grid container sx={{ width: "100%" }}>
@@ -283,20 +303,24 @@ function VideoEventsDisplayTitle(props: { events: TimelineEvent.TimelineEvent[] 
 }
 
 function VideoEventsDisplay(props: {
-    events: TimelineEvent.TimelineEvent[];
+    events: TimelineEvent.Event[];
     setHighlightedEvent: setHighlightedEventFunction;
 }) {
     return (
         <>
             {props.events.map((event) => (
-                <VideoEventItem key={event.id} event={event} setHighlightedEvent={props.setHighlightedEvent} />
+                <VideoEventItem
+                    key={event.id}
+                    event={event}
+                    setHighlightedEvent={props.setHighlightedEvent}
+                />
             ))}
         </>
     );
 }
 
 function VideoEventItem(props: {
-    event: TimelineEvent.TimelineEvent;
+    event: TimelineEvent.Event;
     setHighlightedEvent: setHighlightedEventFunction;
 }) {
     const { event, setHighlightedEvent } = props;

@@ -29,7 +29,7 @@ interface AssignedInfluencerProps {
     // influencers: Influencer.InfluencerFull[];
     isProcessing: boolean;
     setIsProcessing: (state: boolean) => void;
-    setHighlightedEvent: (event?: TimelineEvent.TimelineEvent) => void;
+    setHighlightedEvent: (event?: TimelineEvent.Event) => void;
 }
 export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.Element {
     const {
@@ -75,9 +75,12 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
             queryClient.setQueryData(["campaign", campaignId], updatedCampaign);
             campaign.refetch();
             const newAssignmentEvents = campaign.data?.assignedInfluencers.find(
-                (x) => x.id === assignedInfluencer.id
+                (x) => x.id === assignedInfluencer.id,
             )?.timelineEvents;
-            queryClient.setQueryData(["assignmentEvents", assignedInfluencer.id], newAssignmentEvents);
+            queryClient.setQueryData(
+                ["assignmentEvents", assignedInfluencer.id],
+                newAssignmentEvents,
+            );
             assignmentEvents.refetch();
         },
     };
@@ -86,13 +89,23 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
     }
     if (campaign.isLoading || influencers.isLoading || assignmentEvents.isLoading) {
         return (
-            <Skeleton variant="rectangular" width={"100%"} height={"100px"} sx={{ borderRadius: "20px" }}></Skeleton>
+            <Skeleton
+                variant="rectangular"
+                width={"100%"}
+                height={"100px"}
+                sx={{ borderRadius: "20px" }}
+            ></Skeleton>
         );
     }
 
     if (!campaign.data || !influencers.data || !assignmentEvents.data) {
         return (
-            <Skeleton variant="rectangular" width={"100%"} height={"100px"} sx={{ borderRadius: "20px" }}></Skeleton>
+            <Skeleton
+                variant="rectangular"
+                width={"100%"}
+                height={"100px"}
+                sx={{ borderRadius: "20px" }}
+            ></Skeleton>
         );
     }
     return (
@@ -108,7 +121,12 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
                 <div className={stylesExporter.campaignDetails.assignmentAccordionHeader}>
                     <InfluencerName assignedInfluencer={assignedInfluencer} />
                     {assignmentEvents.isFetching ? (
-                        <Skeleton variant="rectangular" width={200} height={40} sx={{ borderRadius: "20px" }}>
+                        <Skeleton
+                            variant="rectangular"
+                            width={200}
+                            height={40}
+                            sx={{ borderRadius: "20px" }}
+                        >
                             <CircularProgress />
                         </Skeleton>
                     ) : (

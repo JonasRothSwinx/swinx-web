@@ -17,7 +17,7 @@ namespace Assignment {
         AssignmentMin & {
             candidates?: Influencer.Candidate[];
             budget?: Nullable<number>;
-            timelineEvents: TimelineEvent.TimelineEvent[];
+            timelineEvents: TimelineEvent.Event[];
             influencer: Nullable<Influencer.InfluencerFull>;
         }
     >;

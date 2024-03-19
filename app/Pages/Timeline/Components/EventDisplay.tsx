@@ -5,7 +5,7 @@ import dayjs from "@/app/configuredDayJs";
 import { timelineEventTypesType } from "@/amplify/data/types";
 
 interface EventProps {
-    event: TimelineEvent.TimelineEvent;
+    event: TimelineEvent.Event;
     groupBy: groupBy;
     totalColumns?: number;
     highlighted?: boolean;
@@ -14,8 +14,13 @@ export function Event(props: EventProps) {
     const { event, groupBy, totalColumns = 12, highlighted = false } = props;
     const dateColumns = groupBy === "day" ? 0 : 1;
     return (
-        <Grid sx={{ paddingLeft: "10px", backgroundColor: highlighted ? "yellow" : undefined }} container>
-            {dateColumns > 0 && <EventDate date={event.date ?? ""} groupBy={groupBy} columnSize={dateColumns} />}
+        <Grid
+            sx={{ paddingLeft: "10px", backgroundColor: highlighted ? "yellow" : undefined }}
+            container
+        >
+            {dateColumns > 0 && (
+                <EventDate date={event.date ?? ""} groupBy={groupBy} columnSize={dateColumns} />
+            )}
             <EventContent event={event} columnSize={totalColumns - dateColumns} />
         </Grid>
     );
@@ -38,7 +43,7 @@ function EventDate(props: EventDateProps) {
 }
 
 interface EventContentProps {
-    event: TimelineEvent.TimelineEvent;
+    event: TimelineEvent.Event;
     columnSize?: number | GridSize;
 }
 function EventContent(props: EventContentProps) {
@@ -53,7 +58,7 @@ function EventContent(props: EventContentProps) {
 
     return (
         <Grid sx={{ paddingLeft: "10px" }} xs={columnSize}>
-            {EventElement[event.timelineEventType as timelineEventTypesType] ?? <></>}
+            {EventElement[event.type as timelineEventTypesType] ?? <></>}
         </Grid>
     );
 }
@@ -106,7 +111,7 @@ function VideoEventContent(props: EventContentProps) {
 }
 
 interface ItemNameProps {
-    event: TimelineEvent.TimelineEvent;
+    event: TimelineEvent.Event;
 }
 function ItemName(props: ItemNameProps) {
     const { event } = props;

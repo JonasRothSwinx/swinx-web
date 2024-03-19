@@ -42,7 +42,9 @@ const schema = a.schema({
         .model({
             assignment: a.belongsTo("InfluencerAssignment"),
             influencer: a.hasOne("InfluencerPublic"),
-            response: a.string().authorization([adminsAndManagers, a.allow.public().to(["read", "update"])]),
+            response: a
+                .string()
+                .authorization([adminsAndManagers, a.allow.public().to(["read", "update"])]),
         })
         .authorization([
             a.allow.public().to(["read"]),
@@ -55,7 +57,6 @@ const schema = a.schema({
             customer: a.hasOne("Customer"),
             // webinar: a.hasOne("Webinar"),
             campaignTimelineEvents: a.hasMany("TimelineEvent"),
-            staticEvents: a.hasMany("StaticEvent"),
             assignedInfluencers: a.hasMany("InfluencerAssignment"),
             // campaignStep: a.string().required().default(campaignSteps[0]),
             notes: a.string(),
@@ -80,6 +81,7 @@ const schema = a.schema({
 
     Customer: a
         .model({
+            campaign: a.belongsTo("Campaign"),
             company: a.string().required(),
             firstName: a.string().required(),
             lastName: a.string().required(),
@@ -93,32 +95,33 @@ const schema = a.schema({
         .model({
             campaign: a.belongsTo("Campaign"),
             timelineEventType: a.string().required(),
-            assignment: a.belongsTo("InfluencerAssignment"),
-            inviteEvent: a.hasOne("InvitesEvent"),
-            webinarEvent: a.hasOne("Webinar"),
+            assignments: a.hasMany("InfluencerAssignment"),
+            eventAssignmentAmount: a.integer(),
+            eventTitle: a.string(),
+            eventTaskAmount: a.integer(),
             date: a.datetime().required(),
             notes: a.string(),
         })
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
 
-    InvitesEvent: a
-        .model({
-            invites: a.integer().required(),
-        })
-        .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
+    // InvitesEvent: a
+    //     .model({
+    //         invites: a.integer().required(),
+    //     })
+    //     .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
 
-    StaticEvent: a
-        .model({
-            type: a.string().required(),
-            assignments: a.hasMany("InfluencerAssignment"),
-            date: a.datetime(),
-            notes: a.string(),
-            campaign: a.belongsTo("Campaign"),
-            // test: a.string(),
-            eventAssignmentAmount: a.integer(),
-            eventTitle: a.string(),
-        })
-        .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
+    // StaticEvent: a
+    //     .model({
+    //         type: a.string().required(),
+    //         assignments: a.hasMany("InfluencerAssignment"),
+    //         date: a.datetime(),
+    //         notes: a.string(),
+    //         campaign: a.belongsTo("Campaign"),
+    //         // test: a.string(),
+    //         eventAssignmentAmount: a.integer(),
+    //         eventTitle: a.string(),
+    //     })
+    //     .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
 });
 
 export type Schema = ClientSchema<typeof schema>;

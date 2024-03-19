@@ -17,8 +17,8 @@ interface TimelineViewItemProps {
     group: EventGroup;
     groupedBy: groupBy;
     editable: boolean;
-    highlightedEvent?: TimelineEvent.TimelineEvent;
-    setEditingEvent: (e: TimelineEvent.TimelineEvent) => void;
+    highlightedEvent?: TimelineEvent.Event;
+    setEditingEvent: (e: TimelineEvent.Event) => void;
     openDialog: () => void;
 }
 export default function TimelineViewItem(props: TimelineViewItemProps) {
@@ -77,7 +77,9 @@ export default function TimelineViewItem(props: TimelineViewItemProps) {
                             key={i}
                             eventGroup={event}
                             groupBy={groupedBy}
-                            highlightedEventIds={highlightedEvent ? [highlightedEvent.id ?? ""] : []}
+                            highlightedEventIds={
+                                highlightedEvent ? [highlightedEvent.id ?? ""] : []
+                            }
                         />
                     );
                 })}
@@ -93,7 +95,7 @@ interface TimelineViewGroupTitleProps {
     setEditing: (e: boolean) => void;
 }
 function TimelineViewGroupTitle(
-    props: TimelineViewGroupTitleProps
+    props: TimelineViewGroupTitleProps,
     // { group, groupedBy, editable, editing, setEditing }
 ) {
     const { group, groupedBy, editable, editing, setEditing } = props;
@@ -130,7 +132,11 @@ function TimelineViewGroupTitle(
                         }
                     })()}
                 </div>
-                <TimelineViewEditButton editable={editable} editing={editing} setEditing={setEditing} />
+                <TimelineViewEditButton
+                    editable={editable}
+                    editing={editing}
+                    setEditing={setEditing}
+                />
             </div>
         </div>
     );

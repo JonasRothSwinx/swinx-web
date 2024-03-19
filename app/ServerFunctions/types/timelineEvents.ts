@@ -1,64 +1,134 @@
-import { Prettify } from "@/app/Definitions/types";
+import { Nullable, Prettify } from "@/app/Definitions/types";
 import Assignment from "./assignment";
 
 namespace TimelineEvent {
-    export type TimelineEvent = Prettify<
-        TimelineEventInvites | TimelineEventPost | TimelineEventVideo | TimelineEventGeneric | TimelineEventWebinar
-    >;
-    export function validate(testData: Partial<TimelineEvent>): testData is TimelineEvent {
-        const testKeys: (keyof TimelineEvent)[] = ["timelineEventType", "assignment", "campaign"];
-        if (testKeys.every((x) => x in testData)) {
-            return true;
-        }
-        return false;
+    export type Event = Prettify<SingleEvent | MultiEvent>;
+
+    //#region Common
+    export const singleEventValues = ["Invites", "Post", "Video", "WebinarSpeaker"] as const;
+    export type singleEventType = (typeof singleEventValues)[number];
+
+    export const multiEventValues = ["Webinar"] as const;
+    export type multiEventType = (typeof multiEventValues)[number];
+
+    export const eventValues = [...singleEventValues, ...multiEventValues] as const;
+    export type eventType = Prettify<singleEventType | multiEventType>;
+
+    export function isTimelineEvent(event: unknown): event is Event {
+        const testEvent = event as Event;
+        return (
+            typeof testEvent === "object" &&
+            testEvent !== null &&
+            typeof testEvent.type === "string" &&
+            eventValues.includes(testEvent.type as eventType)
+        );
     }
-    type TimelineEventStub = {
+    export function isTimelineEventType(type: unknown): type is eventType {
+        return typeof type === "string" && eventValues.includes(type as eventType);
+    }
+    export function validate(testData: Partial<Event>): testData is Event {
+        const testKeys: (keyof Event)[] = ["type", "campaign"];
+        if (!testKeys.every((x) => x in testData)) return false;
+        const { type, campaign } = testData;
+        if (!isTimelineEventType(type)) return false;
+        return true;
+    }
+    type EventCommon = {
         id?: string;
-        timelineEventType: string;
-        assignment: Assignment.AssignmentMin;
-        // influencerAssignmentId: string;
+        type: eventType;
         createdAt?: string;
         updatedAt?: string;
         date?: string;
-        notes?: string | null;
+        notes?: Nullable<string>;
         campaign: { id: string };
+        eventAssignmentAmount: number;
+        eventTaskAmount: Nullable<number>;
+        eventTitle: Nullable<string>;
     };
-    export function isInviteEvent(timelineEvent: TimelineEvent): timelineEvent is TimelineEventInvites {
-        return timelineEvent.timelineEventType === "Invites";
-    }
-    export type TimelineEventInvites = {
-        inviteEvent?: InviteEvent;
-    } & TimelineEventStub;
+    //#endregion Common
+    //#region Single Event Types
+    //#region Types
+    type SingleEventCommon = EventCommon & {
+        type: singleEventType;
+        assignment: Assignment.AssignmentMin;
+        eventAssignmentAmount: 1;
+    };
+    export type SingleEvent = Invites | Post | Video | WebinarSpeaker;
 
-    export function isPostEvent(timelineEvent: TimelineEvent): timelineEvent is TimelineEventPost {
-        return timelineEvent.timelineEventType === "Post";
-    }
-    export type TimelineEventPost = {} & TimelineEventStub;
+    export type Invites = SingleEventCommon & {
+        type: "Invites";
+    };
 
-    export function isVideoEvent(timelineEvent: TimelineEvent): timelineEvent is TimelineEventVideo {
-        return timelineEvent.timelineEventType === "Video";
-    }
-    export type TimelineEventVideo = {} & TimelineEventStub;
+    export type Post = SingleEventCommon & {
+        type: "Post";
+    };
 
-    export type TimelineEventGeneric = {} & TimelineEventStub;
+    export type Video = SingleEventCommon & {
+        type: "Video";
+    };
+    export type WebinarSpeaker = SingleEventCommon & {
+        type: "WebinarSpeaker";
+    };
 
     export type InviteEvent = {
         id?: string;
         invites?: number;
     };
-    export function isWebinarEvent(timelineEvent: TimelineEvent): timelineEvent is TimelineEventWebinar {
-        return timelineEvent.timelineEventType === "Webinar";
+    //#endregion Types
+    //#region Type Guards
+    export function isSingleEvent(event: unknown): event is SingleEvent {
+        const testEvent = event as SingleEvent;
+        return (
+            typeof testEvent === "object" &&
+            testEvent !== null &&
+            typeof testEvent.type === "string" &&
+            singleEventValues.includes(testEvent.type as singleEventType)
+        );
     }
-    export type TimelineEventWebinar = TimelineEventStub & {
-        webinar?: WebinarEvent;
+    export function isSingleEventType(type: unknown): type is singleEventType {
+        return typeof type === "string" && singleEventValues.includes(type as singleEventType);
+    }
+    export function isInviteEvent(timelineEvent: Event): timelineEvent is Invites {
+        return timelineEvent.type === "Invites";
+    }
+    export function isPostEvent(timelineEvent: Event): timelineEvent is Post {
+        return timelineEvent.type === "Post";
+    }
+    export function isVideoEvent(timelineEvent: Event): timelineEvent is Video {
+        return timelineEvent.type === "Video";
+    }
+    //#endregion Type Guards
+    //#endregion Single Event Types
+
+    //#region Multi Event Types
+    //#region Types
+    export type MultiEvent = Webinar;
+    type MultiEventCommon = EventCommon & {
+        type: multiEventType;
+        assignments: Assignment.AssignmentMin[];
     };
-    export type WebinarEvent = {
-        id?: string;
-        date: string;
-        title: string;
+    export type Webinar = MultiEventCommon & {
+        type: "Webinar";
+        eventAssignmentAmount: number;
     };
-    export type WebinarSpeaker = {
-        type: "WebinarSpeaker";
-    } & TimelineEventStub;
+    //#endregion Types
+    //#region Type Guards
+    export function isMultiEvent(event: unknown): event is MultiEvent {
+        const testEvent = event as MultiEvent;
+        return (
+            typeof testEvent === "object" &&
+            testEvent !== null &&
+            typeof testEvent.type === "string" &&
+            multiEventValues.includes(testEvent.type as multiEventType)
+        );
+    }
+    export function isMultiEventType(type: unknown): type is multiEventType {
+        return typeof type === "string" && multiEventValues.includes(type as multiEventType);
+    }
+    export function isWebinarEvent(event: Event): event is Webinar {
+        return event.type === "Webinar";
+    }
+    //#endregion Type Guards
+    //#endregion Multi Event Types
 }
 export default TimelineEvent;

@@ -37,14 +37,15 @@ type OpenInfluencerDetailsProps = {
     campaignId: string;
     setCampaign: (campaign: Campaign.Campaign) => void;
     placeholders: Assignment.Assignment[];
-    events: TimelineEvent.TimelineEvent[];
-    setHighlightedEvent: (event?: TimelineEvent.TimelineEvent) => void;
+    events: TimelineEvent.Event[];
+    setHighlightedEvent: (event?: TimelineEvent.Event) => void;
 };
 
-type eventDict = { [key: string]: TimelineEvent.TimelineEvent[] };
+type eventDict = { [key: string]: TimelineEvent.Event[] };
 
 export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps) {
-    const { campaignId, setCampaign, events, placeholders, setHighlightedEvent, influencers } = props;
+    const { campaignId, setCampaign, events, placeholders, setHighlightedEvent, influencers } =
+        props;
     const campaign = useSuspenseQuery({
         queryKey: ["campaign", campaignId],
         queryFn: () => dbInterface.campaign.get(campaignId),
@@ -69,7 +70,9 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
             }
 
             for (const assignment of assignments) {
-                assignment.timelineEvents.sort((a, b) => (a.date && b.date ? a.date.localeCompare(b.date) : 0));
+                assignment.timelineEvents.sort((a, b) =>
+                    a.date && b.date ? a.date.localeCompare(b.date) : 0,
+                );
             }
             return assignments;
         }
@@ -93,7 +96,10 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                 // const newPlaceholders = campaign.assignedInfluencers.map((x) =>
                 //     x.id === tempId ? { ...x, id: id } : x
                 // );
-                const newPlaceholders = [...campaign.data.assignedInfluencers, { ...newPlaceholder, id }];
+                const newPlaceholders = [
+                    ...campaign.data.assignedInfluencers,
+                    { ...newPlaceholder, id },
+                ];
                 // console.log({ newPlaceholders });
                 setIsProcessing(false);
                 setCampaign({ ...campaign.data, assignedInfluencers: newPlaceholders });
@@ -109,7 +115,11 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
         <>
             <>{/* Dialogs */}</>
             <Accordion defaultExpanded disableGutters variant="outlined">
-                <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1-content" id="panel1-header">
+                <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="panel1-content"
+                    id="panel1-header"
+                >
                     Influencer
                 </AccordionSummary>
                 <AccordionDetails>

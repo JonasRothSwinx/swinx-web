@@ -11,7 +11,14 @@ import {
     GridCellParams,
     GridColumnHeaderParams,
 } from "@mui/x-data-grid";
-import { Button, CircularProgress, IconButton, MenuItem, TextField, Typography } from "@mui/material";
+import {
+    Button,
+    CircularProgress,
+    IconButton,
+    MenuItem,
+    TextField,
+    Typography,
+} from "@mui/material";
 import {
     Add as AddIcon,
     Edit as EditIcon,
@@ -81,13 +88,16 @@ type DialogState = "none" | "customer" | "campaign" | "webinar" | "timelineEvent
 //     details: boolean;
 // };
 
-type EditableDataTypes = Campaign.Campaign | Customer.Customer | TimelineEvent.TimelineEvent;
+type EditableDataTypes = Campaign.Campaign | Customer.Customer | TimelineEvent.Event;
 type CampaignListProps = {};
 
 function CampaignList(props: CampaignListProps) {
     const {} = props;
     const queryClient = useQueryClient();
-    const influencers = useQuery({ queryKey: ["influencers"], queryFn: () => dbInterface.influencer.list() });
+    const influencers = useQuery({
+        queryKey: ["influencers"],
+        queryFn: () => dbInterface.influencer.list(),
+    });
     const campaigns = useQuery({
         queryKey: ["campaigns"],
         queryFn: async () => {
@@ -179,16 +189,20 @@ function CampaignList(props: CampaignListProps) {
             valueGetter(params) {
                 // console.log(params);
                 const customer: Customer.Customer = params.row.customer;
-                return `${customer.firstName} ${customer.lastName}`;
+                return `${customer?.firstName ?? ""} ${customer?.lastName ?? ""}`;
             },
             renderCell(params) {
                 const customer: Customer.Customer = params.row.customer;
                 return (
-                    <div key={params.row.customer.id ?? "new"}>
-                        <Typography>{customer.company}</Typography>
+                    <div key={params.row.customer?.id ?? "new"}>
+                        <Typography>{customer?.company}</Typography>
                         <br />
                         <Typography>{params.value}</Typography>
-                        {customer.companyPosition ? <Typography>({customer.companyPosition})</Typography> : <></>}
+                        {customer?.companyPosition ? (
+                            <Typography>({customer?.companyPosition})</Typography>
+                        ) : (
+                            <></>
+                        )}
                     </div>
                 );
             },
@@ -421,7 +435,10 @@ function CampaignList(props: CampaignListProps) {
         );
     }
     if (campaigns.isError) {
-        const error: { errorType: string; message: string } = JSON.parse(campaigns.error.message)[0];
+        console.error(campaigns.error);
+        const error: { errorType: string; message: string } = JSON.parse(
+            campaigns.error.message,
+        )[0];
         const ErrorMessages: { [key: string]: string } = {
             Unauthorized: "Nicht autorisiert",
         };
@@ -463,7 +480,11 @@ function CampaignList(props: CampaignListProps) {
                     editingData={editingData as Webinar}
                 /> */}
                 {isOpen === "details" && (
-                    <CampaignDetails onClose={onDialogClose} campaignId={editingData?.id ?? ""} isOpen={true} />
+                    <CampaignDetails
+                        onClose={onDialogClose}
+                        campaignId={editingData?.id ?? ""}
+                        isOpen={true}
+                    />
                 )}
             </>
             <DataGrid

@@ -1,12 +1,11 @@
 "use client";
 import { Authenticator, useAuthenticator, withAuthenticator } from "@aws-amplify/ui-react";
 import "@aws-amplify/ui-react/styles.css";
-import WelcomePage from "./Pages/WelcomePage/WelcomePage";
 import { ThemeProvider } from "@emotion/react";
+import WelcomePage from "./Pages/WelcomePage/WelcomePage";
 
-import { blue, red } from "@mui/material/colors";
-import { CssBaseline, createTheme } from "@mui/material";
-import { LocalizationProvider } from "@mui/x-date-pickers";
+import { createTheme } from "@mui/material";
+import { blue } from "@mui/material/colors";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const theme = createTheme({

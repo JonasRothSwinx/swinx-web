@@ -1,6 +1,16 @@
-import { createNewCampaign, deleteCampaign, getCampaign, listCampaigns } from "./database/campaigns";
+import {
+    createNewCampaign,
+    deleteCampaign,
+    getCampaign,
+    listCampaigns,
+} from "./database/campaigns";
 import { createCustomer, deleteCustomer, updateCustomer } from "./database/customers";
-import { createNewInfluencer, deleteInfluencer, listInfluencers, updateInfluencer } from "./database/influencers";
+import {
+    createNewInfluencer,
+    deleteInfluencer,
+    listInfluencers,
+    updateInfluencer,
+} from "./database/influencers";
 import { createAssignment, deletePlaceholder, updateAssignment } from "./database/assignments";
 import {
     createTimelineEvent,
@@ -10,14 +20,14 @@ import {
     updateTimelineEvent,
 } from "./database/timelineEvents";
 import { createCandidate, deleteCandidate, publicProcessResponse } from "./database/candidate";
-import {
-    createNewStaticEvent,
-    getStaticEvent,
-    deleteStaticEvent,
-    listStaticEvents,
-    listStaticEventsByCampaign,
-    updateStaticEvent,
-} from "./database/staticEvent";
+// import {
+//     createNewStaticEvent,
+//     getStaticEvent,
+//     deleteStaticEvent,
+//     listStaticEvents,
+//     listStaticEventsByCampaign,
+//     updateStaticEvent,
+// } from "./database/staticEvent";
 
 export const campaigns = {
     create: createNewCampaign,
@@ -59,14 +69,14 @@ export const candidates = {
     publicUpdate: publicProcessResponse,
 };
 
-export const staticEvents = {
-    create: createNewStaticEvent,
-    get: getStaticEvent,
-    delete: deleteStaticEvent,
-    list: listStaticEvents,
-    listByCampaign: listStaticEventsByCampaign,
-    update: updateStaticEvent,
-};
+// export const staticEvents = {
+//     create: createNewStaticEvent,
+//     get: getStaticEvent,
+//     delete: deleteStaticEvent,
+//     list: listStaticEvents,
+//     listByCampaign: listStaticEventsByCampaign,
+//     update: updateStaticEvent,
+// };
 
 const dbInterface = {
     campaign: campaigns,
@@ -75,7 +85,7 @@ const dbInterface = {
     timelineEvent: timelineEvents,
     assignment: assignments,
     candidate: candidates,
-    staticEvent: staticEvents,
+    // staticEvent: staticEvents,
 };
 
 export default dbInterface;

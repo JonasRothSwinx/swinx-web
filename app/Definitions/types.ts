@@ -28,7 +28,7 @@ type EditableDataTypes =
     | Campaign.Campaign
     | Customer.Customer
     // | Webinar
-    | TimelineEvent.TimelineEvent
+    | TimelineEvent.Event
     | Influencer.InfluencerFull
     | Assignment.Assignment;
 export interface DialogConfig<RowDataType> {

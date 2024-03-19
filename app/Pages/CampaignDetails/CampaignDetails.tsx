@@ -34,16 +34,6 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
         queryFn: () => dbInterface.influencer.list(),
         placeholderData: [],
     });
-
-    const staticEvents = useQuery({
-        queryKey: ["staticEvents"],
-        queryFn: async () => {
-            const response = await dbInterface.staticEvent.list();
-            console.log("staticEvents", response);
-            return response ?? [];
-        },
-        placeholderData: [],
-    });
     const [assignmentData, setAssignmentData] = useState<Assignment.Assignment[]>([]);
     const [highlightedEvent, setHighlightedEvent] = useState<TimelineEvent.TimelineEvent>();
 
@@ -92,7 +82,12 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
             fullScreen
         >
             {campaign.isLoading && !campaign.data ? (
-                <Skeleton variant="rectangular" width={"90vw"} height={"90vh"} sx={{ borderRadius: "20px" }}></Skeleton>
+                <Skeleton
+                    variant="rectangular"
+                    width={"90vw"}
+                    height={"90vh"}
+                    sx={{ borderRadius: "20px" }}
+                ></Skeleton>
             ) : (
                 <>
                     <CampaignDetailsButtons
@@ -148,6 +143,7 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
                                     controlsPosition="before"
                                     editable
                                     highlightedEvent={highlightedEvent}
+                                    staticEvents={staticEvents.data ?? []}
                                 />
                             </Grid>
                         </Grid>
