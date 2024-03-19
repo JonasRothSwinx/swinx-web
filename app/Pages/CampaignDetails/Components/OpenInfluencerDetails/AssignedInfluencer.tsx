@@ -2,7 +2,15 @@ import { ExpandMoreIcon } from "@/app/Definitions/Icons";
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import { Unstable_Grid2 as Grid, Accordion, AccordionDetails, AccordionSummary, Skeleton } from "@mui/material";
+import {
+    Unstable_Grid2 as Grid,
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
+    Skeleton,
+    Typography,
+    CircularProgress,
+} from "@mui/material";
 import dayjs from "@/app/configuredDayJs";
 import { useEffect, useState } from "react";
 import dbInterface from "@/app/ServerFunctions/dbInterface";
@@ -45,7 +53,7 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
         queryFn: () => dbInterface.influencer.list(),
         placeholderData: [],
     });
-    const assignmenEvents = useQuery({
+    const assignmentEvents = useQuery({
         queryKey: ["assignmentEvents", assignedInfluencer.id],
         queryFn: async () => {
             const raw = await dbInterface.timelineEvent.listByAssignment(assignedInfluencer.id);
@@ -58,10 +66,10 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
 
     useEffect(() => {
         console.log("recategorizing events");
-        const newCategorizedEvents = categorizeEvents(assignmenEvents?.data ?? []);
+        const newCategorizedEvents = categorizeEvents(assignmentEvents?.data ?? []);
         setCategorizedEvents(newCategorizedEvents);
         console.log({ newCategorizedEvents });
-    }, [assignmenEvents.data, campaign.data]);
+    }, [assignmentEvents.data, campaign.data]);
     const EventHandlers = {
         setCampaign: (updatedCampaign: Campaign.Campaign) => {
             queryClient.setQueryData(["campaign", campaignId], updatedCampaign);
@@ -70,10 +78,23 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
                 (x) => x.id === assignedInfluencer.id
             )?.timelineEvents;
             queryClient.setQueryData(["assignmentEvents", assignedInfluencer.id], newAssignmentEvents);
-            assignmenEvents.refetch();
+            assignmentEvents.refetch();
         },
     };
+    if (campaign.isError || influencers.isError || assignmentEvents.isError) {
+        return <div>There was an error</div>;
+    }
+    if (campaign.isLoading || influencers.isLoading || assignmentEvents.isLoading) {
+        return (
+            <Skeleton variant="rectangular" width={"100%"} height={"100px"} sx={{ borderRadius: "20px" }}></Skeleton>
+        );
+    }
 
+    if (!campaign.data || !influencers.data || !assignmentEvents.data) {
+        return (
+            <Skeleton variant="rectangular" width={"100%"} height={"100px"} sx={{ borderRadius: "20px" }}></Skeleton>
+        );
+    }
     return (
         <Accordion key={assignedInfluencer.id} defaultExpanded disableGutters variant="outlined">
             <AccordionSummary
@@ -86,8 +107,10 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
             >
                 <div className={stylesExporter.campaignDetails.assignmentAccordionHeader}>
                     <InfluencerName assignedInfluencer={assignedInfluencer} />
-                    {!campaign.data ? (
-                        <Skeleton variant="circular" width={40} height={40} />
+                    {assignmentEvents.isFetching ? (
+                        <Skeleton variant="rectangular" width={200} height={40} sx={{ borderRadius: "20px" }}>
+                            <CircularProgress />
+                        </Skeleton>
                     ) : (
                         <InfluencerDetailsButtons
                             influencers={influencers.data ?? []}
@@ -101,26 +124,31 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
                 </div>
             </AccordionSummary>
             <AccordionDetails>
-                {campaign.isLoading && !campaign.data ? (
-                    <Skeleton
-                        variant="rectangular"
-                        width={"100%"}
-                        height={"100%"}
-                        sx={{ borderRadius: "20px" }}
-                    ></Skeleton>
-                ) : (
-                    <>
-                        {categorizedEvents.map((category, index) => {
-                            return (
-                                <EventCategoryDisplay
-                                    key={index}
-                                    category={category}
-                                    setHighlightedEvent={setHighlightedEvent}
-                                />
-                            );
-                        })}
-                    </>
-                )}
+                <>
+                    {assignmentEvents.isLoading ? (
+                        <Skeleton
+                            variant="rectangular"
+                            width={"100%"}
+                            height={"100px"}
+                            sx={{ borderRadius: "20px" }}
+                        ></Skeleton>
+                    ) : (
+                        <>
+                            {!!assignedInfluencer.budget && (
+                                <Typography>{`Honorar: ${assignedInfluencer.budget}€`}</Typography>
+                            )}
+                            {categorizedEvents.map((category, index) => {
+                                return (
+                                    <EventCategoryDisplay
+                                        key={index}
+                                        category={category}
+                                        setHighlightedEvent={setHighlightedEvent}
+                                    />
+                                );
+                            })}
+                        </>
+                    )}
+                </>
             </AccordionDetails>
         </Accordion>
     );

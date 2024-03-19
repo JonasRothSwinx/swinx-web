@@ -14,13 +14,8 @@ export function Event(props: EventProps) {
     const { event, groupBy, totalColumns = 12, highlighted = false } = props;
     const dateColumns = groupBy === "day" ? 0 : 1;
     return (
-        <Grid
-            sx={{ paddingLeft: "10px", backgroundColor: highlighted ? "yellow" : undefined }}
-            container
-        >
-            {dateColumns > 0 && (
-                <EventDate date={event.date ?? ""} groupBy={groupBy} columnSize={dateColumns} />
-            )}
+        <Grid sx={{ paddingLeft: "10px", backgroundColor: highlighted ? "yellow" : undefined }} container>
+            {dateColumns > 0 && <EventDate date={event.date ?? ""} groupBy={groupBy} columnSize={dateColumns} />}
             <EventContent event={event} columnSize={totalColumns - dateColumns} />
         </Grid>
     );

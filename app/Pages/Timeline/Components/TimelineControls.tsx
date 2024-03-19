@@ -2,8 +2,10 @@ import Campaign from "@/app/ServerFunctions/types/campaign";
 import { Dispatch, SetStateAction, useState } from "react";
 import Influencer from "@/app/ServerFunctions/types/influencer";
 import { DialogConfig, DialogOptions } from "@/app/Definitions/types";
-import { MenuItem, TextField } from "@mui/material";
+import { Button, MenuItem, TextField, Typography } from "@mui/material";
 import { groupBy } from "../Functions/groupEvents";
+import { AddIcon } from "@/app/Definitions/Icons";
+import StaticEventDialog from "../../Dialogs/StaticEventDialog/StaticEventDialog";
 
 interface TimelineControlsProps {
     campaign: Campaign.Campaign;
@@ -33,17 +35,22 @@ export default function TimelineControls(props: TimelineControlsProps) {
     function onDialogClose(hasChanged?: boolean) {
         setOpenDialog("None");
     }
+    const Dialogs: { [key in openDialog]: JSX.Element | null } = {
+        None: null,
+        Timeline: (
+            <StaticEventDialog
+                editing={false}
+                onClose={() => {
+                    onDialogClose();
+                }}
+                campaignId={campaign.id}
+            />
+        ),
+    };
     return (
         <>
             {/* Dialogs */}
-            <>
-                {/* <TimelineEventDialog
-                    {...DialogOptions}
-                    {...DialogConfig}
-                    influencers={influencers}
-                    isOpen={openDialog === "Timeline"}
-                /> */}
-            </>
+            <>{Dialogs[openDialog]}</>
             <div
                 style={{
                     // position: "fixed",
@@ -75,7 +82,7 @@ export default function TimelineControls(props: TimelineControlsProps) {
                     <MenuItem value={"day"}>Tag</MenuItem>
                     <MenuItem value={"week"}>Woche</MenuItem>
                 </TextField>
-                {/* <Button
+                <Button
                     style={{ height: "100%" }}
                     variant="outlined"
                     color="inherit"
@@ -83,7 +90,7 @@ export default function TimelineControls(props: TimelineControlsProps) {
                 >
                     <AddIcon />
                     <Typography variant="body1">Ereignis</Typography>
-                </Button> */}
+                </Button>
             </div>
         </>
     );

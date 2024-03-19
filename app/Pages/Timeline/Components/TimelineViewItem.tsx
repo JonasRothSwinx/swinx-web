@@ -1,7 +1,7 @@
 import { CancelIcon, EditIcon } from "@/app/Definitions/Icons";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import dayjs from "@/app/configuredDayJs";
-import { Grid, IconButton } from "@mui/material";
+import { Unstable_Grid2 as Grid, IconButton, SxProps } from "@mui/material";
 import { GridDeleteForeverIcon } from "@mui/x-data-grid";
 import { useState } from "react";
 import stylesExporter from "../../styles/stylesExporter";
@@ -25,38 +25,39 @@ export default function TimelineViewItem(props: TimelineViewItemProps) {
     const { keyValue, group, groupedBy, setEditingEvent, openDialog, highlightedEvent } = props;
     const [editing, setEditing] = useState(false);
     const [editable, setEditable] = useState(props.editable);
+
+    const sxContent: SxProps = {
+        display: "flex",
+        flexDirection: "column",
+        border: "1px solid black",
+        borderRadius: "10px",
+        height: "fit-content",
+        maxWidth: "100%",
+    };
+    const sxEditing: SxProps = {
+        "& .MuiGrid2-container:hover": {
+            border: "1px solid black",
+            borderRadius: "5px",
+            backgroundColor: "lightgray",
+        },
+        "& .MuiGrid2-container": {
+            alignItems: "center",
+        },
+    };
+    const sxNotEditing: SxProps = {
+        "& .MuiGrid2-container": {
+            alignItems: "center",
+        },
+    };
+
     return (
         <Grid
-            item
             // xs={16}
             key={keyValue}
-            style={{
-                display: "flex",
-                flexDirection: "column",
-                border: "1px solid black",
-                borderRadius: "10px",
-                // padding: "5px",
-                height: "fit-content",
+            sx={{
+                ...sxContent,
+                ...(editing ? sxEditing : sxNotEditing),
             }}
-            sx={
-                editing
-                    ? {
-                          "& .MuiGrid-container:hover": {
-                              border: "1px solid black",
-                              borderRadius: "5px",
-                              // color: "gray",
-                              backgroundColor: "lightgray",
-                          },
-                          "& .MuiGrid-container": {
-                              alignItems: "center",
-                          },
-                      }
-                    : {
-                          "& .MuiGrid-container": {
-                              alignItems: "center",
-                          },
-                      }
-            }
         >
             <TimelineViewGroupTitle
                 group={group}
@@ -76,9 +77,7 @@ export default function TimelineViewItem(props: TimelineViewItemProps) {
                             key={i}
                             eventGroup={event}
                             groupBy={groupedBy}
-                            highlightedEventIds={
-                                highlightedEvent ? [highlightedEvent.id ?? ""] : []
-                            }
+                            highlightedEventIds={highlightedEvent ? [highlightedEvent.id ?? ""] : []}
                         />
                     );
                 })}
@@ -94,7 +93,7 @@ interface TimelineViewGroupTitleProps {
     setEditing: (e: boolean) => void;
 }
 function TimelineViewGroupTitle(
-    props: TimelineViewGroupTitleProps,
+    props: TimelineViewGroupTitleProps
     // { group, groupedBy, editable, editing, setEditing }
 ) {
     const { group, groupedBy, editable, editing, setEditing } = props;
@@ -131,11 +130,7 @@ function TimelineViewGroupTitle(
                         }
                     })()}
                 </div>
-                <TimelineViewEditButton
-                    editable={editable}
-                    editing={editing}
-                    setEditing={setEditing}
-                />
+                <TimelineViewEditButton editable={editable} editing={editing} setEditing={setEditing} />
             </div>
         </div>
     );

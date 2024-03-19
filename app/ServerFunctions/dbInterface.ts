@@ -10,6 +10,14 @@ import {
     updateTimelineEvent,
 } from "./database/timelineEvents";
 import { createCandidate, deleteCandidate, publicProcessResponse } from "./database/candidate";
+import {
+    createNewStaticEvent,
+    getStaticEvent,
+    deleteStaticEvent,
+    listStaticEvents,
+    listStaticEventsByCampaign,
+    updateStaticEvent,
+} from "./database/staticEvent";
 
 export const campaigns = {
     create: createNewCampaign,
@@ -51,6 +59,15 @@ export const candidates = {
     publicUpdate: publicProcessResponse,
 };
 
+export const staticEvents = {
+    create: createNewStaticEvent,
+    get: getStaticEvent,
+    delete: deleteStaticEvent,
+    list: listStaticEvents,
+    listByCampaign: listStaticEventsByCampaign,
+    update: updateStaticEvent,
+};
+
 const dbInterface = {
     campaign: campaigns,
     customer: customers,
@@ -58,6 +75,7 @@ const dbInterface = {
     timelineEvent: timelineEvents,
     assignment: assignments,
     candidate: candidates,
+    staticEvent: staticEvents,
 };
 
 export default dbInterface;

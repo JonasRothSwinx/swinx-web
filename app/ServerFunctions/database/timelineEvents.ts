@@ -140,6 +140,7 @@ export async function getAssignmentTimelineEvents(assignmentId: string) {
             ],
         }
     );
+    // console.log(data);
     const dataOut: TimelineEvent.TimelineEvent[] = data.timelineEvents.map((event) => {
         const validatedEvent: TimelineEvent.TimelineEvent = {
             ...event,

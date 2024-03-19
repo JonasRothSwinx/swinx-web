@@ -89,6 +89,7 @@ export default function TimelineView(props: TimelineViewProps) {
         setEditingDialogOpen(false);
         // setGroups(groupEvents(events, groupBy));
     }
+
     return (
         <>
             {/* Dialogs */}
@@ -123,7 +124,16 @@ export default function TimelineView(props: TimelineViewProps) {
                 columnGap={"5px"}
                 // columnSpacing={1}
                 justifyContent={"space-evenly"}
-                style={{
+                sx={{
+                    "& > .MuiGrid2-root": {
+                        // display: "flex",
+                        // flexDirection: "column",
+                        // overflowY: "auto",
+                        // maxHeight: "90vh",
+                        // paddingTop: "60px",
+                        width: "100%",
+                        // gap: "5px",
+                    },
                     // display: "flex",
                     // flexDirection: "column",
                     // overflowY: "auto",

@@ -121,8 +121,9 @@ export async function listCampaigns(): Promise<Campaign.Campaign[]> {
     });
     if (errors) {
         console.log({ errors });
-        throw new Error("Error fetching Campaigns: " + JSON.stringify(errors));
+        throw new Error(JSON.stringify(errors));
     }
+    // console.log(data);
     const campaigns: Campaign.Campaign[] = data
         .map((raw) => {
             try {

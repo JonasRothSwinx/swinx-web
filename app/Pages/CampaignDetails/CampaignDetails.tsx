@@ -34,6 +34,16 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
         queryFn: () => dbInterface.influencer.list(),
         placeholderData: [],
     });
+
+    const staticEvents = useQuery({
+        queryKey: ["staticEvents"],
+        queryFn: async () => {
+            const response = await dbInterface.staticEvent.list();
+            console.log("staticEvents", response);
+            return response ?? [];
+        },
+        placeholderData: [],
+    });
     const [assignmentData, setAssignmentData] = useState<Assignment.Assignment[]>([]);
     const [highlightedEvent, setHighlightedEvent] = useState<TimelineEvent.TimelineEvent>();
 

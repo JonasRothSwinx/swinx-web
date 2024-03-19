@@ -1,4 +1,4 @@
-import { AddIcon, DeleteIcon, PersonSearchIcon } from "@/app/Definitions/Icons";
+import { AddIcon, DeleteIcon, EuroSymbolIcon, PersonSearchIcon, PrintIcon } from "@/app/Definitions/Icons";
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import Influencer from "@/app/ServerFunctions/types/influencer";
@@ -8,8 +8,12 @@ import dbInterface from "@/app/ServerFunctions/dbInterface";
 import TimelineEventDialog from "@/app/Pages/Dialogs/TimelineEventDialog";
 import AssignmentDialog from "@/app/Pages/Dialogs/AssignmentDialog";
 import CandidatePicker from "../CandidatePicker";
+import BudgetDialog from "@/app/Pages/Dialogs/BudgetDialog";
+import { useQuery } from "@tanstack/react-query";
+import { getUserGroups } from "@/app/ServerFunctions/serverActions";
+import { Confirm } from "@/app/Components/Popups";
 
-type openDialog = "none" | "timelineEvent" | "assignmentDialog" | "candidates";
+type openDialog = "none" | "timelineEvent" | "assignmentDialog" | "candidates" | "budget" | "notes" | "delete";
 interface InfluencerDetailsButtonProps {
     setIsProcessing: (state: boolean) => void;
     isProcessing: boolean;
@@ -21,13 +25,17 @@ interface InfluencerDetailsButtonProps {
 export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
     const { isProcessing, setIsProcessing, campaign, setCampaign, assignment, influencers } = props;
     const [openDialog, setOpenDialog] = useState<openDialog>("none");
+    const userGroups = useQuery({
+        queryKey: ["userGroups"],
+        queryFn: () => getUserGroups(),
+        placeholderData: [],
+    });
 
     const EventHandlers = {
         onDialogClose: () => {
             setOpenDialog("none");
         },
-        deleteAssignment: () => (e: MouseEvent) => {
-            e.stopPropagation();
+        deleteAssignment: () => {
             dbInterface.assignment.delete(assignment);
             const newCampaign = {
                 ...campaign,
@@ -49,11 +57,11 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
         setAssignment: (targetAssignment: Assignment.Assignment, updatedValues?: Partial<Assignment.Assignment>) => {
             // debugger;
             // console.log(targetAssignment);
-            // if (updatedValues) {
-            //     const updateObject = { id: targetAssignment.id, ...updatedValues };
-            //     console.log(updateObject);
-            //     dbInterface.assignment.update(updateObject);
-            // }
+            if (updatedValues) {
+                const updateObject = { id: targetAssignment.id, ...updatedValues };
+                console.log(updateObject);
+                dbInterface.assignment.update(updateObject);
+            }
             const newCampaign: Campaign.Campaign = {
                 ...campaign,
                 assignedInfluencers: [
@@ -62,6 +70,14 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             };
             // console.log({ newCampaign, assignments: newCampaign.assignedInfluencers });
             setCampaign(newCampaign);
+        },
+        openBudget: () => (e: MouseEvent) => {
+            e.stopPropagation();
+            setOpenDialog("budget");
+        },
+        confirmDelete: () => (e: MouseEvent) => {
+            e.stopPropagation();
+            setOpenDialog("delete");
         },
     };
     const DialogElements: {
@@ -94,6 +110,25 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
                 setAssignment={EventHandlers.setAssignment}
             />
         ),
+        budget: (
+            <BudgetDialog
+                previousBudget={assignment.budget ?? 0}
+                onClose={EventHandlers.onDialogClose}
+                onSave={(budget: number) => {
+                    EventHandlers.setAssignment(assignment, { budget });
+                }}
+            />
+        ),
+        delete: (
+            <Confirm
+                title="Löschen"
+                message="Sind Sie sicher, dass Sie diese Zuweisung löschen möchten?"
+                onClose={EventHandlers.onDialogClose}
+                onConfirm={EventHandlers.deleteAssignment}
+                onCancel={() => {}}
+            />
+        ),
+        notes: null,
     };
     return (
         <div
@@ -105,27 +140,48 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             }}
         >
             {DialogElements[openDialog]}
-            <Tooltip title="Kandidaten zuweisen" placement="top">
+            <Tooltip title="Honorar bearbeiten" placement="top">
                 <span>
-                    <IconButton disabled={isProcessing} onClick={EventHandlers.openCandidates()}>
-                        <PersonSearchIcon />
+                    <IconButton disabled={isProcessing} onClick={EventHandlers.openBudget()}>
+                        <EuroSymbolIcon color={assignment.budget ? "inherit" : "error"} />
                     </IconButton>
                 </span>
             </Tooltip>
+            {hasNecessaryData(assignment) && (
+                <Tooltip title="Kandidaten zuweisen" placement="top">
+                    <span>
+                        <IconButton disabled={isProcessing} onClick={EventHandlers.openCandidates()}>
+                            <PersonSearchIcon />
+                        </IconButton>
+                    </span>
+                </Tooltip>
+            )}
             <Tooltip title="Aufgaben zuweisen" placement="top">
                 <span>
                     <IconButton disabled={isProcessing} onClick={EventHandlers.addEvents()}>
-                        <AddIcon />
+                        <AddIcon color={assignment.timelineEvents.length > 0 ? "inherit" : "error"} />
                     </IconButton>
                 </span>
             </Tooltip>
             <Tooltip title="Löschen" placement="top">
                 <span>
-                    <IconButton color="error" onClick={EventHandlers.deleteAssignment()} disabled={isProcessing}>
+                    <IconButton color="error" onClick={EventHandlers.confirmDelete()} disabled={isProcessing}>
                         <DeleteIcon />
                     </IconButton>
                 </span>
             </Tooltip>
+            {userGroups.data?.includes("admin") && (
+                <Tooltip title="Log assignment" placement="top">
+                    <span>
+                        <IconButton disabled={isProcessing} onClick={() => console.log(assignment)}>
+                            <PrintIcon />
+                        </IconButton>
+                    </span>
+                </Tooltip>
+            )}
         </div>
     );
+}
+function hasNecessaryData(assignment: Assignment.Assignment) {
+    return !!assignment.budget && assignment.budget > 0 && assignment.timelineEvents.length > 0;
 }

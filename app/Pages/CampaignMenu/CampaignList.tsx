@@ -97,6 +97,7 @@ function CampaignList(props: CampaignListProps) {
             });
             return data;
         },
+        retry: 1,
     });
     // const [influencerData, setInfluencerData] = useState<Influencer.InfluencerFull[]>([]);
     // const [campaignData, setCampaignData] = useState<Campaign.Campaign[]>();
@@ -279,6 +280,7 @@ function CampaignList(props: CampaignListProps) {
                                 flexBasis: "100%",
                                 justifyContent: "center",
                                 alignItems: "center",
+                                width: "100%",
                             }}
                         >
                             {row.campaignTimelineEvents.length < 1 ? (
@@ -400,6 +402,48 @@ function CampaignList(props: CampaignListProps) {
     // }
 
     // if (influencers.length === 0) return <span>Keine Influenzerdaten vorhanden</span>;
+    if (campaigns.isLoading) {
+        return (
+            <div
+                style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    height: "100%",
+                    width: "100%",
+
+                    justifyContent: "center",
+                    alignItems: "center",
+                }}
+            >
+                <Typography variant="h3">Lade Kampagnen</Typography>
+                <CircularProgress />
+            </div>
+        );
+    }
+    if (campaigns.isError) {
+        const error: { errorType: string; message: string } = JSON.parse(campaigns.error.message)[0];
+        const ErrorMessages: { [key: string]: string } = {
+            Unauthorized: "Nicht autorisiert",
+        };
+        return (
+            <div
+                style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    height: "100%",
+                    width: "100%",
+                    justifyContent: "center",
+                    alignItems: "center",
+                }}
+            >
+                <Typography variant="h3">Fehler beim Laden der Kampagnen</Typography>
+                <Typography variant="h5">
+                    {ErrorMessages[error.errorType as keyof typeof ErrorMessages] ?? ""}
+                </Typography>
+                <Typography variant="h6">{error.message}</Typography>
+            </div>
+        );
+    }
     return (
         <>
             {/* Dialogs */}
@@ -422,75 +466,57 @@ function CampaignList(props: CampaignListProps) {
                     <CampaignDetails onClose={onDialogClose} campaignId={editingData?.id ?? ""} isOpen={true} />
                 )}
             </>
-
-            {campaigns.isLoading && !campaigns.data ? (
-                <div
-                    style={{
-                        display: "flex",
-                        flexDirection: "column",
+            <DataGrid
+                localeText={deDE.components.MuiDataGrid.defaultProps.localeText}
+                onRowClick={({ id }) => {
+                    ClickHandlers.showTimeline(id)();
+                }}
+                disableRowSelectionOnClick
+                rows={campaigns.data ?? []}
+                columns={columns}
+                initialState={{ columns: { columnVisibilityModel: { id: false } } }}
+                getRowHeight={() => "auto"}
+                columnHeaderHeight={80}
+                // rowModesModel={rowModesModel}
+                // onRowModesModelChange={handleRowModesModelChange}
+                // onRowEditStop={handleRowEditStop}
+                // processRowUpdate={processRowUpdate}
+                // onProcessRowUpdateError={handleProcessRowUpdateError}
+                slots={{
+                    toolbar: EditToolbar,
+                }}
+                slotProps={{
+                    toolbar: { setIsOpen, isLoading: campaigns.isFetching },
+                }}
+                autoHeight={true}
+                sx={{
+                    m: 2,
+                    background: "lightgray",
+                    "& .MuiDataGrid-columnHeaderTitleContainerContent": {
+                        overflow: "visible",
+                    },
+                    "& .MuiDataGrid-actionsCell": {
+                        flex: 1,
                         height: "100%",
-                        width: "100%",
-
-                        justifyContent: "center",
-                        alignItems: "center",
-                    }}
-                >
-                    <Typography variant="h3">Lade Kampagnen</Typography>
-                    <CircularProgress />
-                </div>
-            ) : (
-                <DataGrid
-                    localeText={deDE.components.MuiDataGrid.defaultProps.localeText}
-                    onRowClick={({ id }) => {
-                        ClickHandlers.showTimeline(id)();
-                    }}
-                    disableRowSelectionOnClick
-                    rows={campaigns.data ?? []}
-                    columns={columns}
-                    initialState={{ columns: { columnVisibilityModel: { id: false } } }}
-                    getRowHeight={() => "auto"}
-                    columnHeaderHeight={80}
-                    // rowModesModel={rowModesModel}
-                    // onRowModesModelChange={handleRowModesModelChange}
-                    // onRowEditStop={handleRowEditStop}
-                    // processRowUpdate={processRowUpdate}
-                    // onProcessRowUpdateError={handleProcessRowUpdateError}
-                    slots={{
-                        toolbar: EditToolbar,
-                    }}
-                    slotProps={{
-                        toolbar: { setIsOpen, isLoading: campaigns.isFetching },
-                    }}
-                    autoHeight={true}
-                    sx={{
-                        m: 2,
-                        background: "lightgray",
-                        "& .MuiDataGrid-columnHeaderTitleContainerContent": {
-                            overflow: "visible",
-                        },
-                        "& .MuiDataGrid-actionsCell": {
-                            flex: 1,
-                            height: "100%",
-                            display: "flex",
-                            justifyContent: "flex-start",
-                            flexDirection: "column",
-                        },
-                        "& .MuiDataGrid-cell": {
-                            // color: "primary.main",
-                            borderLeft: "1px solid black",
-                        },
-                        "& .MuiDataGrid-cell:first-of-type": {
-                            // color: "primary.main",
-                            borderLeft: "none",
-                        },
-                        "& .MuiDataGrid-cell--editing:has(.Mui-error)": {
-                            border: "1px solid red",
-                            backgroundColor: "red",
-                            color: "#ff4343",
-                        },
-                    }}
-                />
-            )}
+                        display: "flex",
+                        justifyContent: "flex-start",
+                        flexDirection: "column",
+                    },
+                    "& .MuiDataGrid-cell": {
+                        // color: "primary.main",
+                        borderLeft: "1px solid black",
+                    },
+                    "& .MuiDataGrid-cell:first-of-type": {
+                        // color: "primary.main",
+                        borderLeft: "none",
+                    },
+                    "& .MuiDataGrid-cell--editing:has(.Mui-error)": {
+                        border: "1px solid red",
+                        backgroundColor: "red",
+                        color: "#ff4343",
+                    },
+                }}
+            />
         </>
     );
 }

@@ -57,5 +57,8 @@ namespace TimelineEvent {
         date: string;
         title: string;
     };
+    export type WebinarSpeaker = {
+        type: "WebinarSpeaker";
+    } & TimelineEventStub;
 }
 export default TimelineEvent;

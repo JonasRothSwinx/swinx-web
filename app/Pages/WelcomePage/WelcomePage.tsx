@@ -1,6 +1,4 @@
-import { Schema } from "@/amplify/data/resource";
 import { useAuthenticator, withAuthenticator } from "@aws-amplify/ui-react";
-import { generateClient } from "aws-amplify/api";
 import { useEffect, useState } from "react";
 import SideBar, { sideBarButtonId } from "./SideBar";
 import InfluencerMenu from "../InfluencerMenu/InfluencerMenu";
@@ -8,15 +6,6 @@ import CampaignMenu from "../CampaignMenu/CampaignMenu";
 import stylesExporter from "../styles/stylesExporter";
 
 const styles = stylesExporter.welcomePage;
-
-const client = generateClient<Schema>();
-
-async function createTodo() {
-    const content = window.prompt("Todo Content");
-
-    const { errors, data: newTodo } = await client.models.Todo.create({ content });
-    console.log({ errors, newTodo });
-}
 function WelcomePage({}) {
     const { signOut, user, authStatus } = useAuthenticator((context) => [context.user, context.authStatus]);
     const [openMenu, setOpenMenu] = useState<sideBarButtonId>(sideBarButtonId.campaigns);
