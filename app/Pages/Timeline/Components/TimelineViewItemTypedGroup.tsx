@@ -1,23 +1,37 @@
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import stylesExporter from "../../styles/stylesExporter";
-import { TypedEventGroup_v2 as TypedEventGroup, groupBy } from "../Functions/groupEvents";
+import { TypedEventGroup as TypedEventGroup, groupBy } from "../Functions/groupEvents";
 import { Event } from "./EventDisplay";
 import { randomId } from "@mui/x-data-grid-generator";
+import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
+import { highlightData } from "@/app/Definitions/types";
 
 interface TypedEventGroupDisplayProps {
     eventGroup: TypedEventGroup;
     groupBy: groupBy;
-    highlightedEventIds: string[];
+    editing: boolean;
+    campaignId: string;
 }
 export default function TypedEventGroupDisplay(props: TypedEventGroupDisplayProps) {
-    const { eventGroup, groupBy, highlightedEventIds } = props;
+    const { eventGroup, groupBy, editing, campaignId } = props;
+    const queryClient = useQueryClient();
+    const highlightedEventIds = useQuery({
+        queryKey: ["highlightedEvents"],
+        queryFn: async () => {
+            return queryClient.getQueryData<highlightData[]>(["highlightedEvents"]) ?? [];
+        },
+        placeholderData: [],
+    });
+    if (eventGroup.type === "WebinarSpeaker") return <></>;
     return (
         <div className={stylesExporter.timeline.typedEventGroup}>
             <GroupTitle type={eventGroup.type} />
             <GroupContent
                 events={eventGroup.events}
                 groupBy={groupBy}
-                highlightedEventIds={highlightedEventIds}
+                highlightedEventData={highlightedEventIds.data ?? []}
+                editing={editing}
+                campaignId={campaignId}
             />
         </div>
     );
@@ -37,11 +51,13 @@ function GroupTitle(props: GroupTitleProps) {
 interface GroupContentProps {
     events: TimelineEvent.Event[];
     groupBy: groupBy;
-    highlightedEventIds?: string[];
+    highlightedEventData: highlightData[];
+    editing: boolean;
+    campaignId: string;
 }
 
 function GroupContent(props: GroupContentProps) {
-    const { events, groupBy, highlightedEventIds = [] } = props;
+    const { events, groupBy, highlightedEventData, editing, campaignId } = props;
     return (
         <>
             {events.map((event, index) => {
@@ -50,7 +66,9 @@ function GroupContent(props: GroupContentProps) {
                         key={event.id ?? randomId()}
                         event={event}
                         groupBy={groupBy}
-                        highlighted={highlightedEventIds.includes(event.id ?? "")}
+                        highlightData={highlightedEventData.find((x) => x.id === event.id)}
+                        editing={editing}
+                        campaignId={campaignId}
                     />
                 );
             })}

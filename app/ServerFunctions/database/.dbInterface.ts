@@ -1,25 +1,25 @@
+import { createNewCampaign, deleteCampaign, getCampaign, listCampaigns } from "./campaigns";
+import { createCustomer, deleteCustomer, updateCustomer } from "./customers";
+import { createNewInfluencer, deleteInfluencer, listInfluencers, updateInfluencer } from "./influencers";
 import {
-    createNewCampaign,
-    deleteCampaign,
-    getCampaign,
-    listCampaigns,
-} from "./database/campaigns";
-import { createCustomer, deleteCustomer, updateCustomer } from "./database/customers";
+    createAssignment,
+    deletePlaceholder,
+    listAssignments,
+    updateAssignment,
+    getAssignment,
+    getAssignmentTimelineEvents,
+} from "./assignments";
 import {
-    createNewInfluencer,
-    deleteInfluencer,
-    listInfluencers,
-    updateInfluencer,
-} from "./database/influencers";
-import { createAssignment, deletePlaceholder, updateAssignment } from "./database/assignments";
-import {
+    connectToAssignment,
     createTimelineEvent,
     deleteTimelineEvent,
-    getAssignmentTimelineEvents,
+    // getAssignmentTimelineEvents,
+    getCampaignTimelineEvents,
+    getTimelineEvent,
     listTimelineEvents,
     updateTimelineEvent,
-} from "./database/timelineEvents";
-import { createCandidate, deleteCandidate, publicProcessResponse } from "./database/candidate";
+} from "./timelineEvents";
+import { createCandidate, deleteCandidate, publicProcessResponse } from "./candidate";
 // import {
 //     createNewStaticEvent,
 //     getStaticEvent,
@@ -51,16 +51,22 @@ export const influencers = {
 
 export const timelineEvents = {
     create: createTimelineEvent,
+    get: getTimelineEvent,
     update: updateTimelineEvent,
     delete: deleteTimelineEvent,
     list: listTimelineEvents,
-    listByAssignment: getAssignmentTimelineEvents,
+    // listByAssignment: getAssignmentTimelineEvents,
+    listByCampaign: getCampaignTimelineEvents,
+    connectToAssignment: connectToAssignment,
 };
 
 export const assignments = {
     create: createAssignment,
+    list: listAssignments,
     delete: deletePlaceholder,
     update: updateAssignment,
+    get: getAssignment,
+    getTimelineEvents: getAssignmentTimelineEvents,
 };
 
 export const candidates = {

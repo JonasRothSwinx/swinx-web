@@ -29,7 +29,7 @@ const schema = a.schema({
             influencer: a.hasOne("InfluencerPublic").authorization([adminsAndManagers]),
             isPlaceholder: a.boolean().required(),
             placeholderName: a.string().authorization([adminsAndManagers]),
-            timelineEvents: a.hasMany("TimelineEvent"),
+            timelineEvents: a.manyToMany("TimelineEvent", { relationName: "EventAssignments" }),
             candidates: a.hasMany("InfluencerCandidate").authorization([adminsAndManagers]),
             budget: a.integer(),
         })
@@ -42,14 +42,13 @@ const schema = a.schema({
         .model({
             assignment: a.belongsTo("InfluencerAssignment"),
             influencer: a.hasOne("InfluencerPublic"),
-            response: a
-                .string()
-                .authorization([adminsAndManagers, a.allow.public().to(["read", "update"])]),
+            response: a.string().authorization([adminsAndManagers, a.allow.public().to(["read", "update"])]),
         })
         .authorization([
             a.allow.public().to(["read"]),
             a.allow.specificGroups(["admin", "projektmanager"], "userPools"),
         ]),
+
     Campaign: a
         .model({
             campaignManagerId: a.string(),
@@ -94,33 +93,23 @@ const schema = a.schema({
     TimelineEvent: a
         .model({
             campaign: a.belongsTo("Campaign"),
+            campaignCampaignTimelineEventsId: a.id().required(),
             timelineEventType: a.string().required(),
-            assignments: a.hasMany("InfluencerAssignment"),
+            assignments: a.manyToMany("InfluencerAssignment", { relationName: "EventAssignments" }),
             eventAssignmentAmount: a.integer(),
             eventTitle: a.string(),
             eventTaskAmount: a.integer(),
             date: a.datetime().required(),
             notes: a.string(),
         })
+        .secondaryIndexes((index) => [index("campaignCampaignTimelineEventsId")])
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
-
-    // InvitesEvent: a
+    // EventAssignments: a
     //     .model({
-    //         invites: a.integer().required(),
+    //         influencerAssignmentId: a.id().required(),
+    //         timelineEventId: a.id().required(),
     //     })
-    //     .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
-
-    // StaticEvent: a
-    //     .model({
-    //         type: a.string().required(),
-    //         assignments: a.hasMany("InfluencerAssignment"),
-    //         date: a.datetime(),
-    //         notes: a.string(),
-    //         campaign: a.belongsTo("Campaign"),
-    //         // test: a.string(),
-    //         eventAssignmentAmount: a.integer(),
-    //         eventTitle: a.string(),
-    //     })
+    //     .secondaryIndexes((index) => [index("influencerAssignmentId"), index("timelineEventId")])
     //     .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
 });
 

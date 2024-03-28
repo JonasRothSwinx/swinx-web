@@ -1,12 +1,4 @@
-import {
-    Box,
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    TextField,
-} from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import Campaign from "@/app/ServerFunctions/types/campaign";
@@ -15,7 +7,7 @@ import Influencer from "@/app/ServerFunctions/types/influencer";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { DialogOptions, DialogConfig, DialogProps } from "@/app/Definitions/types";
 import stylesExporter from "../styles/stylesExporter";
-import { influencers } from "@/app/ServerFunctions/dbInterface";
+import { influencers } from "@/app/ServerFunctions/database/.dbInterface";
 
 const styles = stylesExporter.dialogs;
 type DialogType = Influencer.InfluencerFull;
@@ -23,14 +15,7 @@ type DialogType = Influencer.InfluencerFull;
 type InfluencerDialogProps = DialogProps<Influencer.InfluencerFull[], DialogType>;
 function InfluencerDialog(props: InfluencerDialogProps) {
     // debugger;
-    const {
-        onClose,
-        parent: rows,
-        setParent: setRows,
-        isOpen = true,
-        editing,
-        editingData,
-    } = props;
+    const { onClose, parent: rows, setParent: setRows, isOpen = true, editing, editingData } = props;
     // const [isModalOpen, setIsModalOpen] = useState(open);
 
     function handleClose() {
@@ -82,9 +67,7 @@ function InfluencerDialog(props: InfluencerDialogProps) {
                             lastName,
                             details: { ...editingData.details, email },
                         };
-                        updatedRows = rows.map((row) =>
-                            row.id === updatedInfluencer.id ? updatedInfluencer : row,
-                        );
+                        updatedRows = rows.map((row) => (row.id === updatedInfluencer.id ? updatedInfluencer : row));
                         // console.log({ rows, updatedRows });
                         console.log("Setting Rows");
 

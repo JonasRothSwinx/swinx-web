@@ -7,7 +7,7 @@ import Influencer from "@/app/ServerFunctions/types/influencer";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { DialogOptions, DialogConfig, DialogProps } from "@/app/Definitions/types";
 import stylesExporter from "../styles/stylesExporter";
-import { influencers } from "@/app/ServerFunctions/dbInterface";
+import { influencers } from "@/app/ServerFunctions/database/.dbInterface";
 import { useEffect, useMemo, useState } from "react";
 
 const styles = stylesExporter.dialogs;

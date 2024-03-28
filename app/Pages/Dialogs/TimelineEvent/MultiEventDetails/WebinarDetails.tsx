@@ -1,9 +1,9 @@
-import StaticEvent from "@/app/ServerFunctions/types/staticEvents";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { DialogContent, TextField } from "@mui/material";
 
 interface WebinarDetailsProps {
-    onChange: (data: Partial<StaticEvent.Webinar>) => void;
-    data: Partial<StaticEvent.Webinar>;
+    onChange: (data: Partial<TimelineEvent.Webinar>) => void;
+    data: Partial<TimelineEvent.Webinar>;
 }
 
 export default function WebinarDetails(props: WebinarDetailsProps): JSX.Element {

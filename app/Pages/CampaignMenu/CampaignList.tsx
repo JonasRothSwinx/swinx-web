@@ -11,14 +11,7 @@ import {
     GridCellParams,
     GridColumnHeaderParams,
 } from "@mui/x-data-grid";
-import {
-    Button,
-    CircularProgress,
-    IconButton,
-    MenuItem,
-    TextField,
-    Typography,
-} from "@mui/material";
+import { Button, CircularProgress, IconButton, MenuItem, TextField, Typography } from "@mui/material";
 import {
     Add as AddIcon,
     Edit as EditIcon,
@@ -35,12 +28,12 @@ import { DialogOptions, DialogConfig } from "@/app/Definitions/types";
 import { deDE } from "@mui/x-data-grid";
 import CustomerDialog from "../Dialogs/CustomerDialog";
 // import WebinarDialog from "../Dialogs/WebinarDialog";
-import TimeLineEventDialog from "../Dialogs/TimelineEventDialog";
+import TimeLineEventDialog from "../Dialogs/TimelineEvent/TimelineEventSingleDialog";
 import TimelineView from "../Timeline/TimeLineView";
 import stylesExporter from "../styles/stylesExporter";
 import CampaignDetails from "../CampaignDetails/CampaignDetails";
 import { randomId } from "@mui/x-data-grid-generator";
-import dbInterface from "@/app/ServerFunctions/dbInterface";
+import dbInterface from "@/app/ServerFunctions/database/.dbInterface";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { groupBy } from "../Timeline/Functions/groupEvents";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -198,11 +191,7 @@ function CampaignList(props: CampaignListProps) {
                         <Typography>{customer?.company}</Typography>
                         <br />
                         <Typography>{params.value}</Typography>
-                        {customer?.companyPosition ? (
-                            <Typography>({customer?.companyPosition})</Typography>
-                        ) : (
-                            <></>
-                        )}
+                        {customer?.companyPosition ? <Typography>({customer?.companyPosition})</Typography> : <></>}
                     </div>
                 );
             },
@@ -436,9 +425,7 @@ function CampaignList(props: CampaignListProps) {
     }
     if (campaigns.isError) {
         console.error(campaigns.error);
-        const error: { errorType: string; message: string } = JSON.parse(
-            campaigns.error.message,
-        )[0];
+        const error: { errorType: string; message: string } = JSON.parse(campaigns.error.message)[0];
         const ErrorMessages: { [key: string]: string } = {
             Unauthorized: "Nicht autorisiert",
         };
@@ -480,11 +467,7 @@ function CampaignList(props: CampaignListProps) {
                     editingData={editingData as Webinar}
                 /> */}
                 {isOpen === "details" && (
-                    <CampaignDetails
-                        onClose={onDialogClose}
-                        campaignId={editingData?.id ?? ""}
-                        isOpen={true}
-                    />
+                    <CampaignDetails onClose={onDialogClose} campaignId={editingData?.id ?? ""} isOpen={true} />
                 )}
             </>
             <DataGrid

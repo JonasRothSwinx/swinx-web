@@ -13,11 +13,8 @@ import {
 import emailClient from "@/app/ServerFunctions/email/emailClient";
 import { inviteTemplateVariables } from "@/app/ServerFunctions/email/templates/invites/invitesTemplate";
 import { testLambda } from "@/app/ServerFunctions/email/templates/templateFunctions";
-import {
-    createTestData,
-    listCampaignsTest,
-    wipeTestData,
-} from "@/app/ServerFunctions/database/test";
+import { createTestData, listCampaignsTest, wipeTestData } from "@/app/ServerFunctions/database/test";
+import { useQueries, useQueryClient } from "@tanstack/react-query";
 
 const styles = stylesExporter.sideBar;
 
@@ -41,7 +38,7 @@ export const sideBarButtons = [
     },
     {
         id: sideBarButtonId.influencers,
-        title: "Influenzer",
+        title: "Influencer",
         description: "Influencer Menu Description placeholder",
         allowedGroups: ["admin", "projektmanager"],
     },
@@ -51,6 +48,7 @@ interface ISideBar {
 }
 
 function SideBar(props: ISideBar) {
+    const queryClient = useQueryClient();
     const { setMenuCallback } = props;
     const [groups, setGroups] = useState<string[]>([]);
     useEffect(() => {
@@ -84,7 +82,7 @@ function SideBar(props: ISideBar) {
                         variant="outlined"
                         onClick={async () => {
                             const response = await emailClient.templates.get(
-                                prompt("TemplateName") ?? "CampaignInvite",
+                                prompt("TemplateName") ?? "CampaignInvite"
                             );
                             console.log(response);
                         }}
@@ -114,6 +112,7 @@ function SideBar(props: ISideBar) {
                         onClick={async () => {
                             const response = await createTestData();
                             console.log(response);
+                            queryClient.invalidateQueries({ queryKey: ["campaigns"] });
                         }}
                     >
                         Create Test Data
@@ -121,8 +120,10 @@ function SideBar(props: ISideBar) {
                     <Button
                         variant="outlined"
                         onClick={async () => {
+                            queryClient.setQueryData(["campaigns"], []);
                             const response = await wipeTestData();
                             console.log(response);
+                            queryClient.invalidateQueries({ queryKey: ["campaigns"] });
                         }}
                     >
                         Wipe Test Data

@@ -1,6 +1,6 @@
 import { RefreshIcon } from "@/app/Definitions/Icons";
 import stylesExporter from "@/app/Pages/styles/stylesExporter";
-import dbInterface from "@/app/ServerFunctions/dbInterface";
+import dbInterface from "@/app/ServerFunctions/database/.dbInterface";
 import emailClient from "@/app/ServerFunctions/email/emailClient";
 import { inviteTemplateVariables } from "@/app/ServerFunctions/email/templates/invites/invitesTemplate";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";

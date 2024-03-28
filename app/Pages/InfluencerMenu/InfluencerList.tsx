@@ -37,7 +37,7 @@ import { deDE } from "@mui/x-data-grid";
 import { deDE as pickersDeDE } from "@mui/x-date-pickers/locales";
 import { deDE as coreDeDE } from "@mui/material/locale";
 import { DialogOptions, DialogConfig } from "@/app/Definitions/types";
-import dbInterface from "@/app/ServerFunctions/dbInterface";
+import dbInterface from "@/app/ServerFunctions/database/.dbInterface";
 import { range } from "@/app/Definitions/utility";
 import { InfluencerDataNew, updateInfluencer } from "@/app/ServerFunctions/database/influencers";
 import { uniqueNamesGenerator, Config, animals, names, colors } from "unique-names-generator";

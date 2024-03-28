@@ -18,7 +18,7 @@ import Grid from "@mui/material/Unstable_Grid2/Grid2";
 import { Dispatch, MouseEvent, SetStateAction, useEffect, useState } from "react";
 import dayjs, { Dayjs } from "@/app/configuredDayJs";
 import AssignmentDialog from "../../../Dialogs/AssignmentDialog";
-import dbInterface from "@/app/ServerFunctions/dbInterface";
+import dbInterface from "@/app/ServerFunctions/database/.dbInterface";
 import {
     randomCity,
     randomDesk,
@@ -27,7 +27,7 @@ import {
     randomTraderName,
     randomUserName,
 } from "@mui/x-data-grid-generator";
-import TimelineEventDialog from "../../../Dialogs/TimelineEventDialog";
+import TimelineEventSingleDialog from "@/app/Pages/Dialogs/TimelineEvent/TimelineEventSingleDialog";
 import CandidatePicker from "./CandidatePicker";
 import AssignedInfluencer from "./AssignedInfluencer";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -38,14 +38,12 @@ type OpenInfluencerDetailsProps = {
     setCampaign: (campaign: Campaign.Campaign) => void;
     placeholders: Assignment.Assignment[];
     events: TimelineEvent.Event[];
-    setHighlightedEvent: (event?: TimelineEvent.Event) => void;
 };
 
 type eventDict = { [key: string]: TimelineEvent.Event[] };
 
 export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps) {
-    const { campaignId, setCampaign, events, placeholders, setHighlightedEvent, influencers } =
-        props;
+    const { campaignId, setCampaign, events, placeholders, influencers } = props;
     const campaign = useSuspenseQuery({
         queryKey: ["campaign", campaignId],
         queryFn: () => dbInterface.campaign.get(campaignId),
@@ -61,18 +59,36 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
             const assignments: Assignment.Assignment[] = campaign.data.assignedInfluencers ?? [];
 
             for (const event of events /* .filter((event) => event.assignment.isPlaceholder) */) {
-                const assignment = assignments.find((x) => x.id === event.assignment?.id);
-                if (!assignment) continue;
-                if (assignment.timelineEvents.find((x) => x.id === event.id)) {
-                    continue;
+                switch (true) {
+                    case TimelineEvent.isSingleEvent(event): {
+                        const assignment = assignments.find((x) => x.id === event.assignment?.id);
+                        if (!assignment) continue;
+                        if (assignment.timelineEvents.find((x) => x.id === event.id)) {
+                            continue;
+                        }
+
+                        assignment.timelineEvents.push(event);
+                        break;
+                    }
+                    case TimelineEvent.isMultiEvent(event): {
+                        const assignment = assignments.find((x) =>
+                            event.assignments?.find((y) => {
+                                y.id === x.id;
+                            })
+                        );
+                        if (!assignment) continue;
+                        if (assignment.timelineEvents.find((x) => x.id === event.id)) {
+                            continue;
+                        }
+
+                        assignment.timelineEvents.push(event);
+                        break;
+                    }
                 }
-                assignment.timelineEvents.push(event);
             }
 
             for (const assignment of assignments) {
-                assignment.timelineEvents.sort((a, b) =>
-                    a.date && b.date ? a.date.localeCompare(b.date) : 0,
-                );
+                assignment.timelineEvents.sort((a, b) => (a.date && b.date ? a.date.localeCompare(b.date) : 0));
             }
             return assignments;
         }
@@ -96,10 +112,7 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                 // const newPlaceholders = campaign.assignedInfluencers.map((x) =>
                 //     x.id === tempId ? { ...x, id: id } : x
                 // );
-                const newPlaceholders = [
-                    ...campaign.data.assignedInfluencers,
-                    { ...newPlaceholder, id },
-                ];
+                const newPlaceholders = [...campaign.data.assignedInfluencers, { ...newPlaceholder, id }];
                 // console.log({ newPlaceholders });
                 setIsProcessing(false);
                 setCampaign({ ...campaign.data, assignedInfluencers: newPlaceholders });
@@ -115,11 +128,7 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
         <>
             <>{/* Dialogs */}</>
             <Accordion defaultExpanded disableGutters variant="outlined">
-                <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls="panel1-content"
-                    id="panel1-header"
-                >
+                <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1-content" id="panel1-header">
                     Influencer
                 </AccordionSummary>
                 <AccordionDetails>
@@ -137,7 +146,6 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                                         // influencers={influencers}
                                         isProcessing={isProcessing}
                                         setIsProcessing={setIsProcessing}
-                                        setHighlightedEvent={setHighlightedEvent}
                                     />
                                 );
                             })}

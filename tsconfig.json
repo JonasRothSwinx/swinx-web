@@ -30,7 +30,8 @@
         "**/*.ts",
         "**/*.tsx",
         ".next/types/**/*.ts",
-        "app/ServerFunctions/database/.dbclient.ts"
+        "app/ServerFunctions/database/.dbclient.ts",
+        "app/ServerFunctions/database/.dbInterface.ts"
     ],
     "exclude": ["node_modules"]
 }

@@ -5,7 +5,8 @@ import { DialogConfig, DialogOptions } from "@/app/Definitions/types";
 import { Button, MenuItem, TextField, Typography } from "@mui/material";
 import { groupBy } from "../Functions/groupEvents";
 import { AddIcon } from "@/app/Definitions/Icons";
-import StaticEventDialog from "../../Dialogs/StaticEventDialog/StaticEventDialog";
+import TimelineEventMultiDialog from "../../Dialogs/TimelineEvent/TimelineEventMultiDialog";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface TimelineControlsProps {
     campaign: Campaign.Campaign;
@@ -13,10 +14,12 @@ interface TimelineControlsProps {
     groupBy: groupBy;
     setGroupBy: (value: groupBy) => void;
     influencers: Influencer.InfluencerFull[];
+    onDataChange: () => void;
 }
 type openDialog = "None" | "Timeline";
 export default function TimelineControls(props: TimelineControlsProps) {
-    const { groupBy, setGroupBy, campaign, influencers, setCampaign: setRows } = props;
+    const queryClient = useQueryClient();
+    const { groupBy, setGroupBy, campaign, influencers, setCampaign: setRows, onDataChange } = props;
     const [openDialog, setOpenDialog] = useState<openDialog>("None");
     const DialogOptions: DialogOptions = {
         campaignId: campaign.id,
@@ -33,19 +36,19 @@ export default function TimelineControls(props: TimelineControlsProps) {
         },
     };
     function onDialogClose(hasChanged?: boolean) {
+        if (hasChanged) {
+            console.log("dialog closed with changes");
+            queryClient.invalidateQueries({ queryKey: ["campaign", campaign.id], refetchType: "all" });
+            queryClient.invalidateQueries({ queryKey: ["events", campaign.id], refetchType: "all" });
+            queryClient.invalidateQueries({ queryKey: ["groups", campaign.id], refetchType: "all" });
+            queryClient.refetchQueries();
+            onDataChange();
+        }
         setOpenDialog("None");
     }
     const Dialogs: { [key in openDialog]: JSX.Element | null } = {
         None: null,
-        Timeline: (
-            <StaticEventDialog
-                editing={false}
-                onClose={() => {
-                    onDialogClose();
-                }}
-                campaignId={campaign.id}
-            />
-        ),
+        Timeline: <TimelineEventMultiDialog onClose={onDialogClose} campaign={campaign} editing={false} />,
     };
     return (
         <>
@@ -68,7 +71,7 @@ export default function TimelineControls(props: TimelineControlsProps) {
                     zIndex: 999,
                 }}
             >
-                <TextField
+                {/*                 <TextField
                     select
                     label={"Gruppieren nach"}
                     SelectProps={{
@@ -81,7 +84,7 @@ export default function TimelineControls(props: TimelineControlsProps) {
                 >
                     <MenuItem value={"day"}>Tag</MenuItem>
                     <MenuItem value={"week"}>Woche</MenuItem>
-                </TextField>
+                </TextField> */}
                 <Button
                     style={{ height: "100%" }}
                     variant="outlined"

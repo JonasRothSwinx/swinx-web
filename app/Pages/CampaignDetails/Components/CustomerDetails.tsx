@@ -55,6 +55,7 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
     };
     const options: DialogOptions = {
         editing: true,
+        campaignId: campaign.id,
     };
 
     function handleEditButton() {

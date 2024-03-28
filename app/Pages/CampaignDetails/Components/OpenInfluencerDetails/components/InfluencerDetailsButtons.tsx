@@ -4,14 +4,15 @@ import Campaign from "@/app/ServerFunctions/types/campaign";
 import Influencer from "@/app/ServerFunctions/types/influencer";
 import { Tooltip, IconButton } from "@mui/material";
 import { MouseEvent, useState } from "react";
-import dbInterface from "@/app/ServerFunctions/dbInterface";
-import TimelineEventDialog from "@/app/Pages/Dialogs/TimelineEventDialog";
+import dbInterface from "@/app/ServerFunctions/database/.dbInterface";
+import TimelineEventSingleDialog from "@/app/Pages/Dialogs/TimelineEvent/TimelineEventSingleDialog";
 import AssignmentDialog from "@/app/Pages/Dialogs/AssignmentDialog";
 import CandidatePicker from "../CandidatePicker";
 import BudgetDialog from "@/app/Pages/Dialogs/BudgetDialog";
 import { useQuery } from "@tanstack/react-query";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import { Confirm } from "@/app/Components/Popups";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 
 type openDialog = "none" | "timelineEvent" | "assignmentDialog" | "candidates" | "budget" | "notes" | "delete";
 interface InfluencerDetailsButtonProps {
@@ -21,9 +22,10 @@ interface InfluencerDetailsButtonProps {
     campaign: Campaign.Campaign;
     assignment: Assignment.Assignment;
     influencers: Influencer.InfluencerFull[];
+    events: TimelineEvent.Event[];
 }
 export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
-    const { isProcessing, setIsProcessing, campaign, setCampaign, assignment, influencers } = props;
+    const { isProcessing, setIsProcessing, campaign, setCampaign, assignment, influencers, events } = props;
     const [openDialog, setOpenDialog] = useState<openDialog>("none");
     const userGroups = useQuery({
         queryKey: ["userGroups"],
@@ -36,6 +38,7 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             setOpenDialog("none");
         },
         deleteAssignment: () => {
+            if (!assignment) return;
             dbInterface.assignment.delete(assignment);
             const newCampaign = {
                 ...campaign,
@@ -85,13 +88,14 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
     } = {
         none: null,
         timelineEvent: (
-            <TimelineEventDialog
+            <TimelineEventSingleDialog
                 // isOpen={openDialog === "timelineEvent"}
                 onClose={EventHandlers.onDialogClose}
                 influencers={[]}
                 parent={campaign}
                 setParent={setCampaign}
                 targetAssignment={assignment}
+                campaignId={campaign.id}
             />
         ),
         assignmentDialog: (
@@ -100,6 +104,7 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
                 parent={campaign}
                 setParent={setCampaign}
                 onClose={EventHandlers.onDialogClose}
+                campaignId={campaign.id}
             />
         ),
         candidates: (
@@ -147,7 +152,7 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
                     </IconButton>
                 </span>
             </Tooltip>
-            {hasNecessaryData(assignment) && (
+            {hasNecessaryData(assignment, events) && (
                 <Tooltip title="Kandidaten zuweisen" placement="top">
                     <span>
                         <IconButton disabled={isProcessing} onClick={EventHandlers.openCandidates()}>
@@ -159,7 +164,7 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             <Tooltip title="Aufgaben zuweisen" placement="top">
                 <span>
                     <IconButton disabled={isProcessing} onClick={EventHandlers.addEvents()}>
-                        <AddIcon color={assignment.timelineEvents.length > 0 ? "inherit" : "error"} />
+                        <AddIcon color={events.length > 0 ? "inherit" : "error"} />
                     </IconButton>
                 </span>
             </Tooltip>
@@ -182,6 +187,6 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
         </div>
     );
 }
-function hasNecessaryData(assignment: Assignment.Assignment) {
-    return !!assignment.budget && assignment.budget > 0 && assignment.timelineEvents.length > 0;
+function hasNecessaryData(assignment: Assignment.Assignment, events: TimelineEvent.Event[]) {
+    return !!assignment.budget && assignment.budget > 0 && events.length > 0;
 }

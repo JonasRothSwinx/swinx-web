@@ -14,10 +14,8 @@ import Assignment from "../ServerFunctions/types/assignment";
 //     private?: InfluencerPrivate;
 // };
 
-export type DialogProps<
-    RowDataType,
-    DataType extends EditableDataTypes,
-> = DialogConfig<RowDataType> & DialogOptions & { isOpen?: boolean; editingData?: DataType };
+export type DialogProps<RowDataType, DataType extends EditableDataTypes> = DialogConfig<RowDataType> &
+    DialogOptions & { isOpen?: boolean; editingData?: DataType };
 
 export interface DialogOptions {
     editing?: boolean;
@@ -43,3 +41,8 @@ export type Prettify<T> = {
 } & {};
 
 export type PartialWith<T, K extends keyof T> = Partial<T> & Pick<T, K>;
+
+export type highlightData = {
+    id: string;
+    color: string;
+};

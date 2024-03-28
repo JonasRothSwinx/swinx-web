@@ -1,17 +1,9 @@
 import { DialogProps } from "@/app/Definitions/types";
-import { campaigns } from "@/app/ServerFunctions/dbInterface";
+import { campaigns } from "@/app/ServerFunctions/database/.dbInterface";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import Customer from "@/app/ServerFunctions/types/customer";
 import dayjs, { Dayjs } from "@/app/configuredDayJs";
-import {
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogContentText,
-    DialogTitle,
-    TextField,
-} from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from "@mui/material";
 import { DateTimeValidationError, PickerChangeHandlerContext } from "@mui/x-date-pickers";
 import { useEffect, useState } from "react";
 import stylesExporter from "../styles/stylesExporter";
@@ -30,21 +22,13 @@ const initialData: Campaign.Campaign = {
     id: "",
     campaignManagerId: "",
     campaignTimelineEvents: [],
-    staticEvents: [],
     assignedInfluencers: [],
     customer: initialCustomer,
 };
 type CampaignDialogProps = DialogProps<Campaign.Campaign[], Campaign.Campaign>;
 
 function CampaignDialog(props: CampaignDialogProps) {
-    const {
-        isOpen = false,
-        onClose,
-        editing,
-        editingData,
-        parent: rows,
-        setParent: setRows,
-    } = props;
+    const { isOpen = false, onClose, editing, editingData, parent: rows, setParent: setRows } = props;
 
     const [campaign, setCampaign] = useState<Campaign.Campaign>(initialData);
     // const [isModalOpen, setIsModalOpen] = useState(open);
@@ -93,10 +77,7 @@ function CampaignDialog(props: CampaignDialogProps) {
         handleClose(true);
     }
 
-    function handleDateChange(
-        newValue: Dayjs | null,
-        context: PickerChangeHandlerContext<DateTimeValidationError>,
-    ) {
+    function handleDateChange(newValue: Dayjs | null, context: PickerChangeHandlerContext<DateTimeValidationError>) {
         // console.log("value", newValue);
         try {
             const newDate = dayjs(newValue);
@@ -179,10 +160,7 @@ function CampaignDialog(props: CampaignDialogProps) {
                     </Select>
                 </FormControl>
             </DialogContent> */}
-            <DialogContent
-                dividers
-                sx={{ "& .MuiFormControl-root:has(#customerEmail)": { flexBasis: "100%" } }}
-            >
+            <DialogContent dividers sx={{ "& .MuiFormControl-root:has(#customerEmail)": { flexBasis: "100%" } }}>
                 <DialogContentText>Kunde</DialogContentText>
                 <TextField
                     autoFocus
@@ -201,7 +179,7 @@ function CampaignDialog(props: CampaignDialogProps) {
                                         ...prevState.customer,
                                         firstName: event.target.value,
                                     },
-                                } satisfies Campaign.Campaign),
+                                } satisfies Campaign.Campaign)
                         )
                     }
                     required
@@ -223,7 +201,7 @@ function CampaignDialog(props: CampaignDialogProps) {
                                         ...prevState.customer,
                                         lastName: event.target.value,
                                     },
-                                } satisfies Campaign.Campaign),
+                                } satisfies Campaign.Campaign)
                         )
                     }
                     required
@@ -244,7 +222,7 @@ function CampaignDialog(props: CampaignDialogProps) {
                                         ...prevState.customer,
                                         email: event.target.value,
                                     },
-                                } satisfies Campaign.Campaign),
+                                } satisfies Campaign.Campaign)
                         )
                     }
                     required
@@ -265,7 +243,7 @@ function CampaignDialog(props: CampaignDialogProps) {
                                         ...prevState.customer,
                                         company: event.target.value,
                                     },
-                                } satisfies Campaign.Campaign),
+                                } satisfies Campaign.Campaign)
                         )
                     }
                     type="text"
@@ -288,7 +266,7 @@ function CampaignDialog(props: CampaignDialogProps) {
                                         ...prevState.customer,
                                         companyPosition: event.target.value,
                                     },
-                                } satisfies Campaign.Campaign),
+                                } satisfies Campaign.Campaign)
                         )
                     }
                 />

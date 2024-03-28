@@ -13,16 +13,16 @@ const dialogStyles = stylesExporter.dialogs;
 const timelineStyles = stylesExporter.timeline;
 
 interface TimelineViewItemProps {
+    campaignId: string;
     keyValue: string | number;
     group: EventGroup;
     groupedBy: groupBy;
     editable: boolean;
-    highlightedEvent?: TimelineEvent.Event;
     setEditingEvent: (e: TimelineEvent.Event) => void;
     openDialog: () => void;
 }
 export default function TimelineViewItem(props: TimelineViewItemProps) {
-    const { keyValue, group, groupedBy, setEditingEvent, openDialog, highlightedEvent } = props;
+    const { keyValue, group, groupedBy, setEditingEvent, openDialog } = props;
     const [editing, setEditing] = useState(false);
     const [editable, setEditable] = useState(props.editable);
 
@@ -77,9 +77,8 @@ export default function TimelineViewItem(props: TimelineViewItemProps) {
                             key={i}
                             eventGroup={event}
                             groupBy={groupedBy}
-                            highlightedEventIds={
-                                highlightedEvent ? [highlightedEvent.id ?? ""] : []
-                            }
+                            editing={editing}
+                            campaignId={props.campaignId}
                         />
                     );
                 })}
@@ -95,10 +94,25 @@ interface TimelineViewGroupTitleProps {
     setEditing: (e: boolean) => void;
 }
 function TimelineViewGroupTitle(
-    props: TimelineViewGroupTitleProps,
+    props: TimelineViewGroupTitleProps
     // { group, groupedBy, editable, editing, setEditing }
 ) {
     const { group, groupedBy, editable, editing, setEditing } = props;
+    const groupStartDate = dayjs(group.dateGroupStart);
+    const titleContentByGroupType: { [key in groupBy]: JSX.Element } = {
+        day: (
+            <>
+                {groupStartDate.format("ddd, DD.MM")} ({groupStartDate.fromNow()})
+            </>
+        ),
+        week: (
+            <>
+                KW {groupStartDate.week()}
+                {groupStartDate.year() !== dayjs().year() && ` - ${groupStartDate.year()}`} (
+                {groupStartDate.format("DD.MM")} - {groupStartDate.day(7).format("DD.MM")})
+            </>
+        ),
+    };
     return (
         <div
             style={{
@@ -110,33 +124,8 @@ function TimelineViewGroupTitle(
             }}
         >
             <div className={dialogStyles.cellActionSplit}>
-                <div>
-                    {(() => {
-                        switch (groupedBy) {
-                            case "day":
-                                return (
-                                    <>
-                                        {dayjs(group.dateGroupStart).format("ddd, DD.MM")} (
-                                        {dayjs(group.dateGroupStart).fromNow()})
-                                    </>
-                                );
-                            case "week":
-                                return (
-                                    <>
-                                        KW {dayjs(group.dateGroupStart).week()} (
-                                        {dayjs(group.dateGroupStart).format("DD.MM")}
-                                        {" - "}
-                                        {dayjs(group.dateGroupStart).day(7).format("DD.MM")})
-                                    </>
-                                );
-                        }
-                    })()}
-                </div>
-                <TimelineViewEditButton
-                    editable={editable}
-                    editing={editing}
-                    setEditing={setEditing}
-                />
+                <div>{titleContentByGroupType[groupedBy]}</div>
+                <TimelineViewEditButton editable={editable} editing={editing} setEditing={setEditing} />
             </div>
         </div>
     );

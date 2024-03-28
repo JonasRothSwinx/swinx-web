@@ -1,6 +1,7 @@
 "use server";
 import { random } from "@mui/x-data-grid-generator";
 import client from "./.dbclient";
+import dbInterface from "./.dbInterface";
 
 export async function createTestData() {
     // create Customer
@@ -27,7 +28,7 @@ export async function createTestData() {
                     placeholderName: "placeholderName",
                     campaignAssignedInfluencersId: campaignData.id,
                 });
-            }),
+            })
     );
     const influencerAssignmentErrors = influencerAssignmentResponse.map((x) => x.errors);
     const influencerAssignmentData = influencerAssignmentResponse.map((x) => x.data);
@@ -41,25 +42,25 @@ export async function createTestData() {
                     timelineEventType: "Invites",
                     date: new Date().toISOString(),
                     notes: "notes",
-                    influencerAssignmentTimelineEventsId: influencerAssignmentData[0].id,
+                    // influencerAssignmentTimelineEventsId: influencerAssignmentData[0].id,
                     campaignCampaignTimelineEventsId: campaignData.id,
                 });
-            }),
+            })
     );
     const timelineEventErrors = timelineEventResponse.map((x) => x.errors);
     const timelineEventData = timelineEventResponse.map((x) => x.data);
 
-    //create connections
-    // const eventAssignmentsResponse = await Promise.all(
-    //     timelineEventData.map(async (event) => {
-    //         return await client.models.EventAssignments.create({
-    //             timelineEventId: event.id,
-    //             influencerAssignmentId: influencerAssignmentData[0].id,
-    //         });
-    //     }),
-    // );
-    // const eventAssignmentsErrors = eventAssignmentsResponse.map((x) => x.errors);
-    // const eventAssignmentsData = eventAssignmentsResponse.map((x) => x.data);
+    // create connections
+    const eventAssignmentsResponse = await Promise.all(
+        timelineEventData.map(async (event) => {
+            return await client.models.EventAssignments.create({
+                influencerAssignmentId: influencerAssignmentData[0].id,
+                timelineEventId: event.id,
+            });
+        })
+    );
+    const eventAssignmentsErrors = eventAssignmentsResponse.map((x) => x.errors);
+    const eventAssignmentsData = eventAssignmentsResponse.map((x) => x.data);
 
     return {
         data: JSON.parse(
@@ -69,7 +70,7 @@ export async function createTestData() {
                 influencerAssignmentData,
                 timelineEventData,
                 // eventAssignmentsData,
-            }),
+            })
         ),
         errors: JSON.parse(
             JSON.stringify({
@@ -78,7 +79,7 @@ export async function createTestData() {
                 influencerAssignmentErrors,
                 timelineEventErrors,
                 // eventAssignmentsErrors,
-            }),
+            })
         ),
     };
 }
@@ -111,56 +112,67 @@ export async function wipeTestData() {
         filter: { placeholderName: { eq: "placeholderName" } },
     }).then((influencerAssignments) => {
         for (const influencerAssignment of influencerAssignments.data) {
-            promises.push(
-                client.models.InfluencerAssignment.delete({ id: influencerAssignment.id }),
-            );
+            promises.push(client.models.InfluencerAssignment.delete({ id: influencerAssignment.id }));
         }
     });
-    // delete TimelineEvent
+
+    //find and delete test TimelineEvents
+    client.models.TimelineEvent.list({
+        selectionSet: ["id"],
+        filter: { notes: { eq: "notes" } },
+    }).then((timelineEvents) => {
+        for (const timelineEvent of timelineEvents.data) {
+            promises.push(dbInterface.timelineEvent.delete({ id: timelineEvent.id }));
+        }
+    });
+    return Promise.all(promises);
 }
 
 export async function listCampaignsTest() {
-    const { data, errors } = await client.models.Campaign.list({
-        // selectionSet: [
-        //     //
-        //     "assignedInfluencers.*",
-        //     "assignedInfluencers.timelineEvents.*",
-        //     "customer.*",
-        //     "campaignTimelineEvents.*",
-        // ],
-        selectionSet: [
-            //
-            "id",
-            // "campaignType",
-            "campaignManagerId",
-            // "campaignStep",
-            "notes",
+    // const { data, errors } = await client.models.Campaign.list({
+    //     // selectionSet: [
+    //     //     //
+    //     //     "assignedInfluencers.*",
+    //     //     "assignedInfluencers.timelineEvents.*",
+    //     //     "customer.*",
+    //     //     "campaignTimelineEvents.*",
+    //     // ],
+    //     selectionSet: [
+    //         //
+    //         "id",
+    //         // "campaignType",
+    //         "campaignManagerId",
+    //         // "campaignStep",
+    //         "notes",
 
-            "customer.*",
+    //         "customer.*",
 
-            "campaignTimelineEvents.*",
-            // "campaignTimelineEvents.campaign.id",
+    //         "campaignTimelineEvents.*",
+    //         "campaignTimelineEvents.campaign.id",
 
-            "campaignTimelineEvents.assignments.*",
-            // "campaignTimelineEvents.assignments.influencer.id",
-            // "campaignTimelineEvents.assignments.influencer.firstName",
-            // "campaignTimelineEvents.assignments.influencer.lastName",
+    //         "campaignTimelineEvents.assignments.*",
+    //         // "campaignTimelineEvents.assignments.influencer.id",
+    //         // "campaignTimelineEvents.assignments.influencer.firstName",
+    //         // "campaignTimelineEvents.assignments.influencer.lastName",
 
-            "assignedInfluencers.*",
-            // "assignedInfluencers.candidates.id",
-            // "assignedInfluencers.candidates.response",
-            // "assignedInfluencers.candidates.influencer.id",
-            // "assignedInfluencers.candidates.influencer.firstName",
-            // "assignedInfluencers.candidates.influencer.lastName",
-            // "assignedInfluencers.candidates.influencer.details.id",
-            // "assignedInfluencers.candidates.influencer.details.email",
-            // "assignedInfluencers.influencer.*",
-            // "assignedInfluencers.influencer.details.*",
-        ],
-        filter: { campaignManagerId: { eq: "123" } },
-    });
-    return {
-        data: JSON.parse(JSON.stringify({ data })),
-        errors: JSON.parse(JSON.stringify({ errors })),
-    };
+    //         "assignedInfluencers.*",
+    //         "assignedInfluencers.candidates.id",
+    //         "assignedInfluencers.candidates.response",
+    //         "assignedInfluencers.candidates.influencer.id",
+    //         "assignedInfluencers.candidates.influencer.firstName",
+    //         "assignedInfluencers.candidates.influencer.lastName",
+    //         "assignedInfluencers.candidates.influencer.details.id",
+    //         "assignedInfluencers.candidates.influencer.details.email",
+    //         "assignedInfluencers.influencer.*",
+    //         "assignedInfluencers.influencer.details.*",
+    //     ],
+    //     filter: { campaignManagerId: { eq: "123" } },
+    // });
+    // return {
+    //     data: JSON.parse(JSON.stringify({ data })),
+    //     errors: JSON.parse(JSON.stringify({ errors })),
+    // };
+
+    const campaigns = await dbInterface.campaign.list();
+    return campaigns;
 }

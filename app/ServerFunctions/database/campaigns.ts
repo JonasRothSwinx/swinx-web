@@ -1,13 +1,12 @@
 "use server";
 
 import client from "./.dbclient";
-import { assignments, customers, timelineEvents } from "../dbInterface";
+import { assignments, customers, timelineEvents } from "./.dbInterface";
 import Campaign from "../types/campaign";
 import Assignment from "../types/assignment";
 import Influencer from "../types/influencer";
 import { SelectionSet } from "aws-amplify/api";
 import { Schema } from "@/amplify/data/resource";
-import StaticEvent from "../types/staticEvents";
 import TimelineEvent from "../types/timelineEvents";
 
 export async function createNewCampaign(campaign: Campaign.Campaign) {
@@ -86,9 +85,9 @@ const selectionSet = [
     "campaignTimelineEvents.campaign.id",
 
     "campaignTimelineEvents.assignments.*",
-    "campaignTimelineEvents.assignments.influencer.id",
-    "campaignTimelineEvents.assignments.influencer.firstName",
-    "campaignTimelineEvents.assignments.influencer.lastName",
+    // "campaignTimelineEvents.assignments.influencerassignment.influencer.id",
+    // "campaignTimelineEvents.assignments.influencerassignment.influencer.firstName",
+    // "campaignTimelineEvents.assignments.influencerassignment.influencer.lastName",
     // "campaignTimelineEvents.inviteEvent.*",
 
     "assignedInfluencers.*",
@@ -102,10 +101,8 @@ const selectionSet = [
     "assignedInfluencers.influencer.*",
     "assignedInfluencers.influencer.details.*",
 ] as const;
-function validateCampaign(
-    rawData: SelectionSet<Schema["Campaign"], typeof selectionSet>,
-): Campaign.Campaign {
-    console.log({ rawData });
+function validateCampaign(rawData: SelectionSet<Schema["Campaign"], typeof selectionSet>): Campaign.Campaign {
+    // console.log({ rawData });
     const dataOut: Campaign.Campaign = {
         id: rawData.id,
         campaignManagerId: rawData.campaignManagerId,
@@ -114,11 +111,10 @@ function validateCampaign(
         campaignTimelineEvents: rawData.campaignTimelineEvents.map((x) => {
             const { id, timelineEventType, date, notes, assignments } = x;
             if (!id) throw new Error("Missing ID");
-            if (!TimelineEvent.isTimelineEventType(timelineEventType))
-                throw new Error("Invalid Type");
+            if (!TimelineEvent.isTimelineEventType(timelineEventType)) throw new Error("Invalid Type");
             switch (true) {
                 case TimelineEvent.isSingleEventType(timelineEventType): {
-                    const assignment = assignments[0];
+                    const assignment: Assignment.AssignmentMin = { ...assignments[0], influencer: null };
                     if (!assignment) throw new Error("Missing Assignment");
                     const dataOut: TimelineEvent.SingleEvent = {
                         id,
@@ -134,7 +130,10 @@ function validateCampaign(
                     return dataOut;
                 }
                 case TimelineEvent.isMultiEventType(timelineEventType): {
-                    const assignments = x.assignments;
+                    const assignments: Assignment.AssignmentMin[] = x.assignments.map((assignment) => {
+                        if (!assignment) throw new Error("Missing Assignment");
+                        return { ...assignment, influencer: null };
+                    });
                     const dataOut: TimelineEvent.MultiEvent = {
                         id,
                         type: timelineEventType,
@@ -153,39 +152,39 @@ function validateCampaign(
                 }
             }
         }),
-        assignedInfluencers: [],
-        // assignedInfluencers: rawData.assignedInfluencers.map((assignment) => {
-        //     const candidates: Influencer.Candidate[] = assignment.candidates.map((candidate) => {
-        //         const validCandidate: Influencer.Candidate = {
-        //             // ...candidate,
-        //             id: candidate.id,
-        //             response: candidate.response ?? "pending",
-        //             influencer: {
-        //                 ...candidate.influencer,
-        //                 details: candidate.influencer.details,
-        //             },
-        //         };
-        //         return candidate;
-        //     });
-        //     const validatedAssignment: Assignment.AssignmentFull = {
-        //         ...assignment,
-        //         timelineEvents: [],
-        //         candidates,
-        //     };
-        //     return validatedAssignment;
-        // }),
+        // assignedInfluencers: [],
+        assignedInfluencers: rawData.assignedInfluencers.map((assignment) => {
+            const candidates: Influencer.Candidate[] = assignment.candidates.map((candidate) => {
+                const validCandidate: Influencer.Candidate = {
+                    // ...candidate,
+                    id: candidate.id,
+                    response: candidate.response ?? "pending",
+                    influencer: {
+                        ...candidate.influencer,
+                        details: candidate.influencer.details,
+                    },
+                };
+                return candidate;
+            });
+            const validatedAssignment: Assignment.AssignmentFull = {
+                ...assignment,
+                timelineEvents: [],
+                candidates,
+            };
+            return validatedAssignment;
+        }),
     };
     return dataOut;
 }
 export async function getCampaign(
     id: string,
-    options: GetCampaignOptions = GetCampaignOptionsDefault,
+    options: GetCampaignOptions = GetCampaignOptionsDefault
 ): Promise<Campaign.Campaign> {
     const { data, errors } = await client.models.Campaign.get(
         { id },
         {
             selectionSet,
-        },
+        }
     );
     if (errors) {
         console.log({ errors });

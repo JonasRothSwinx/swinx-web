@@ -44,6 +44,7 @@ namespace TimelineEvent {
         eventAssignmentAmount: number;
         eventTaskAmount: Nullable<number>;
         eventTitle: Nullable<string>;
+        tempId?: string;
     };
     //#endregion Common
     //#region Single Event Types
@@ -53,7 +54,7 @@ namespace TimelineEvent {
         assignment: Assignment.AssignmentMin;
         eventAssignmentAmount: 1;
     };
-    export type SingleEvent = Invites | Post | Video | WebinarSpeaker;
+    export type SingleEvent = Prettify<Invites | Post | Video | WebinarSpeaker>;
 
     export type Invites = SingleEventCommon & {
         type: "Invites";
@@ -69,21 +70,28 @@ namespace TimelineEvent {
     export type WebinarSpeaker = SingleEventCommon & {
         type: "WebinarSpeaker";
     };
-
-    export type InviteEvent = {
-        id?: string;
-        invites?: number;
-    };
     //#endregion Types
     //#region Type Guards
-    export function isSingleEvent(event: unknown): event is SingleEvent {
+    export function isSingleEvent(event: unknown, verbose = false): event is SingleEvent {
         const testEvent = event as SingleEvent;
-        return (
-            typeof testEvent === "object" &&
-            testEvent !== null &&
-            typeof testEvent.type === "string" &&
-            singleEventValues.includes(testEvent.type as singleEventType)
-        );
+        if (typeof testEvent !== "object") {
+            if (verbose) console.error("isSingleEvent: Not an object");
+            return false;
+        }
+        if (testEvent === null) {
+            if (verbose) console.error("isSingleEvent: Null object");
+            return false;
+        }
+        if (typeof testEvent.type !== "string") {
+            if (verbose) console.error("isSingleEvent: Missing type");
+            return false;
+        }
+        if (!singleEventValues.includes(testEvent.type as singleEventType)) {
+            if (verbose) console.error("isSingleEvent: Invalid type");
+            return false;
+        }
+
+        return true;
     }
     export function isSingleEventType(type: unknown): type is singleEventType {
         return typeof type === "string" && singleEventValues.includes(type as singleEventType);
@@ -113,14 +121,31 @@ namespace TimelineEvent {
     };
     //#endregion Types
     //#region Type Guards
-    export function isMultiEvent(event: unknown): event is MultiEvent {
+    export function isMultiEvent(event: unknown, verbose = false): event is MultiEvent {
         const testEvent = event as MultiEvent;
-        return (
-            typeof testEvent === "object" &&
-            testEvent !== null &&
-            typeof testEvent.type === "string" &&
-            multiEventValues.includes(testEvent.type as multiEventType)
-        );
+        if (typeof testEvent !== "object") {
+            if (verbose) console.error("isMultiEvent: Not an object");
+            return false;
+        }
+        if (testEvent === null) {
+            if (verbose) console.error("isMultiEvent: Null object");
+            return false;
+        }
+        if (typeof testEvent.type !== "string") {
+            if (verbose) console.error("isMultiEvent: Missing type");
+            return false;
+        }
+        if (!multiEventValues.includes(testEvent.type as multiEventType)) {
+            if (verbose) console.error("isMultiEvent: Invalid type");
+            return false;
+        }
+        return true;
+        // return (
+        //     typeof testEvent === "object" &&
+        //     testEvent !== null &&
+        //     typeof testEvent.type === "string" &&
+        //     multiEventValues.includes(testEvent.type as multiEventType)
+        // );
     }
     export function isMultiEventType(type: unknown): type is multiEventType {
         return typeof type === "string" && multiEventValues.includes(type as multiEventType);

@@ -3,7 +3,6 @@ import Customer from "./customer";
 import Influencer from "./influencer";
 import TimelineEvent from "./timelineEvents";
 import Assignment from "./assignment";
-import StaticEvent from "./staticEvents";
 
 export default Campaign;
 namespace Campaign {

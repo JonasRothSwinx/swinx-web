@@ -1,73 +1,89 @@
+import dbInterface from "@/app/ServerFunctions/database/.dbInterface";
+import Campaign from "@/app/ServerFunctions/types/campaign";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import dayjs from "@/app/configuredDayJs";
 import {
-    Dialog,
-    Typography,
     Button,
-    DialogTitle,
+    Dialog,
+    DialogActions,
     DialogContent,
-    TextField,
+    DialogTitle,
     MenuItem,
     SelectChangeEvent,
-    DialogActions,
+    TextField,
 } from "@mui/material";
-import stylesExporter from "../../styles/stylesExporter";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import { useState } from "react";
-import StaticEvent from "@/app/ServerFunctions/types/staticEvents";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import dayjs from "@/app/configuredDayJs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import WebinarDetails from "./EventDetails/WebinarDetails";
-import dbInterface from "@/app/ServerFunctions/dbInterface";
+import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import stylesExporter from "../../styles/stylesExporter";
+import WebinarDetails from "./MultiEventDetails/WebinarDetails";
+import { submitMultiEvent } from "./submitMultiEvent";
 
 const styles = stylesExporter.dialogs;
 
-interface StaticEventDialogProps {
-    onClose: () => void;
+interface timelineEventDialogProps {
+    onClose: (hasChanged: boolean) => void;
     editing?: boolean;
-    editingTarget?: StaticEvent.StaticEvent;
-    campaignId: string;
+    editingTarget?: TimelineEvent.MultiEvent;
+    campaign: Campaign.Campaign;
 }
-export default function StaticEventDialog(props: StaticEventDialogProps) {
-    const { editing, editingTarget } = props;
-    const [staticEvent, setStaticEvent] = useState<Partial<StaticEvent.StaticEvent>>(
+export default function TimelineEventMultiDialog(props: timelineEventDialogProps) {
+    const { editing, editingTarget, campaign, onClose } = props;
+    const [timelineEvent, setTimelineEvent] = useState<Partial<TimelineEvent.MultiEvent>>(
         editingTarget ?? {
             type: "Webinar",
             date: dayjs().toISOString(),
-            campaign: { id: props.campaignId },
-        },
+            campaign: { id: campaign.id },
+            eventAssignmentAmount: 1,
+            assignments: [],
+        }
     );
+
+    const queryClient = useQueryClient();
 
     const EventHandlers = {
         handleClose: (result: boolean) => () => {
-            props.onClose();
+            props.onClose(result);
         },
         onSubmit: (e: React.FormEvent<HTMLFormElement>) => {
             e.preventDefault();
-            console.log("submitting");
-            console.log(staticEvent);
-            dbInterface.staticEvent.create(staticEvent as StaticEvent.StaticEvent);
+            console.log("submitting", timelineEvent);
+            submitMultiEvent({
+                editing: editing ?? false,
+                event: timelineEvent as TimelineEvent.MultiEvent,
+                campaign,
+                queryClient,
+                assignments: timelineEvent.assignments ?? [],
+            });
             EventHandlers.handleClose(true)();
+            // dbInterface.timelineEvent.create(timelineEvent as TimelineEvent.MultiEvent).then((res) => {
+            //     console.log(res);
+            //     EventHandlers.handleClose(true)();
+            // });
+            // EventHandlers.handleClose(true)();
         },
         handleTypeChange: (e: SelectChangeEvent<unknown>) => {
-            const value = e.target.value as StaticEvent.eventType;
-            setStaticEvent((prev) => {
+            const value = e.target.value;
+            if (!TimelineEvent.isMultiEventType(value)) throw new Error("Invalid event type");
+            setTimelineEvent((prev) => {
                 return { ...prev, type: value };
             });
         },
         handleDateChange: (date: dayjs.Dayjs | null) => {
             const dateString = date?.toISOString() ?? "";
-            setStaticEvent((prev) => {
+            setTimelineEvent((prev) => {
                 return { ...prev, date: dateString };
             });
         },
     };
 
-    const EventDetails: { [key in StaticEvent.eventType]: JSX.Element } = {
+    const EventDetails: { [key in TimelineEvent.multiEventType]: JSX.Element } = {
         Webinar: (
             <WebinarDetails
-                data={staticEvent as StaticEvent.Webinar}
+                data={timelineEvent as TimelineEvent.Webinar}
                 onChange={(data) => {
-                    setStaticEvent((prev) => {
+                    setTimelineEvent((prev) => {
                         return { ...prev, ...data };
                     });
                 }}
@@ -119,7 +135,7 @@ export default function StaticEventDialog(props: StaticEventDialogProps) {
                     className={styles.TextField}
                     label="ID"
                     type="text"
-                    defaultValue={staticEvent?.id ?? "new"}
+                    defaultValue={timelineEvent?.id ?? "new"}
                     hidden
                 />
                 <TextField
@@ -127,16 +143,16 @@ export default function StaticEventDialog(props: StaticEventDialogProps) {
                     disabled={editing}
                     name="timelineEventType"
                     label="Ereignistyp"
-                    value={staticEvent.type ?? "Webinar"}
+                    value={timelineEvent.type ?? "Webinar"}
                     size="medium"
                     required
                     SelectProps={{
                         // sx: { minWidth: "15ch" },
-                        value: staticEvent.type ?? "Webinar",
+                        value: timelineEvent.type ?? "Webinar",
                         onChange: EventHandlers.handleTypeChange,
                     }}
                 >
-                    {StaticEvent.eventValues.map((x, i) => {
+                    {TimelineEvent.multiEventValues.map((x, i) => {
                         return (
                             <MenuItem key={`eventtype${i}`} value={x}>
                                 {x}
@@ -145,16 +161,13 @@ export default function StaticEventDialog(props: StaticEventDialogProps) {
                     })}
                 </TextField>
             </DialogContent>
-            <DialogContent
-                dividers
-                sx={{ "& .MuiFormControl-root": { flexBasis: "100%", flex: 1 } }}
-            >
+            <DialogContent dividers sx={{ "& .MuiFormControl-root": { flexBasis: "100%", flex: 1 } }}>
                 <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
                     <DatePicker
                         // closeOnSelect={false}
                         label="Termin"
                         name="date"
-                        value={dayjs(staticEvent.date)}
+                        value={dayjs(timelineEvent.date)}
                         onChange={EventHandlers.handleDateChange}
                         slotProps={{
                             textField: {
@@ -167,7 +180,7 @@ export default function StaticEventDialog(props: StaticEventDialogProps) {
                 </LocalizationProvider>
             </DialogContent>
 
-            {EventDetails[staticEvent.type as StaticEvent.eventType] ?? <></>}
+            {EventDetails[timelineEvent.type as TimelineEvent.multiEventType] ?? <></>}
 
             <DialogActions
                 sx={{

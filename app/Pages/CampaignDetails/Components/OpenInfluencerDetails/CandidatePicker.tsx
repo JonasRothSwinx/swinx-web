@@ -14,7 +14,7 @@ import {
     GridToolbarQuickFilter,
     GridToolbarQuickFilterProps,
 } from "@mui/x-data-grid";
-import dbInterface from "@/app/ServerFunctions/dbInterface";
+import dbInterface from "@/app/ServerFunctions/database/.dbInterface";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import { group } from "console";
 import emailClient from "@/app/ServerFunctions/email/emailClient";
@@ -27,10 +27,7 @@ import { CheckBoxIcon } from "@/app/Definitions/Icons";
 interface CandidatePickerProps {
     influencers: Influencer.InfluencerFull[];
     assignment: Assignment.Assignment;
-    setAssignment: (
-        assignment: Assignment.Assignment,
-        updatedValues?: Partial<Assignment.Assignment>,
-    ) => void;
+    setAssignment: (assignment: Assignment.Assignment, updatedValues?: Partial<Assignment.Assignment>) => void;
     onClose: () => void;
 }
 function getClassByResponse(response: Nullable<string>) {
@@ -96,12 +93,7 @@ export default function CandidatePicker(props: CandidatePickerProps) {
         ),
     } as const;
     return (
-        <Dialog
-            open
-            onClose={props.onClose}
-            fullWidth
-            sx={{ margin: "0", "& .MuiPaper-root": { maxWidth: "75%" } }}
-        >
+        <Dialog open onClose={props.onClose} fullWidth sx={{ margin: "0", "& .MuiPaper-root": { maxWidth: "75%" } }}>
             <>{dialogs[openDialog]}</>
             <Grid container sx={{ maxHeight: "90vh", overflow: "hidden" }}>
                 <Grid xs={6} sx={{ "&": { maxHeight: "90vh", overflowY: "auto" } }}>
@@ -117,10 +109,7 @@ export default function CandidatePicker(props: CandidatePickerProps) {
                         candidates={assignment.candidates ?? []}
                         assignInfluencer={EventHandlers.assignInfluencer}
                     />
-                    <Buttons
-                        setOpenDialog={setOpenDialog}
-                        candidates={assignment.candidates ?? []}
-                    />
+                    <Buttons setOpenDialog={setOpenDialog} candidates={assignment.candidates ?? []} />
                 </Grid>
             </Grid>
         </Dialog>
@@ -220,26 +209,21 @@ function InfluencerPicker(props: InfluencerPickerProps) {
     const Eventhandlers = {
         selectionChange: (selected: GridRowSelectionModel) => {
             setRowSelectionModel(selected);
-            const selectedInfluencers =
-                influencers?.filter((influencer) => selected.includes(influencer.id)) ?? [];
+            const selectedInfluencers = influencers?.filter((influencer) => selected.includes(influencer.id)) ?? [];
 
-            const removedInfluencers = props.candidates.filter(
-                (x) => !selected.includes(x.influencer.id),
-            );
+            const removedInfluencers = props.candidates.filter((x) => !selected.includes(x.influencer.id));
 
             removedInfluencers.map((x) => dbInterface.candidate.delete(x));
 
             const addedInfluencers = selected.filter(
-                (x) => !props.candidates.find((candidate) => candidate.influencer.id === x),
+                (x) => !props.candidates.find((candidate) => candidate.influencer.id === x)
             );
 
             console.log({ selectedInfluencers, removedInfluencers, addedInfluencers });
             // return;
             const candidates: Influencer.Candidate[] = props.candidates.filter(
                 (candidate) =>
-                    !removedInfluencers.find(
-                        (influencer) => influencer.influencer.id === candidate.influencer.id,
-                    ),
+                    !removedInfluencers.find((influencer) => influencer.influencer.id === candidate.influencer.id)
             );
 
             const newCandidates = (influencers ?? [])
@@ -257,28 +241,25 @@ function InfluencerPicker(props: InfluencerPickerProps) {
                 Promise.all(
                     removedInfluencers.map((candidate) => {
                         return dbInterface.candidate.delete(candidate);
-                    }),
+                    })
                 );
             }
             if (addedInfluencers.length > 0) {
-                Promise.all(
-                    newCandidates.map((x) => dbInterface.candidate.create(x, props.assignmentId)),
-                ).then((res) => {
-                    const idPairs = res.map((data) => data.data);
-                    const updatedCandidates = idPairs.map((x) => {
-                        const updated = newCandidates.find(
-                            (candidate) => candidate.influencer.id === x.influencerId,
-                        );
-                        return { ...updated, id: x.id };
-                    }) as Influencer.Candidate[];
-                    const newValues = [
-                        ...candidates.filter((x) => x.id !== null),
-                        ...updatedCandidates,
-                    ];
-                    console.log({ candidates, filtered: candidates.filter((x) => x.id !== null) });
-                    console.log({ newValues });
-                    props.setSelectedInfluencers(newValues);
-                });
+                Promise.all(newCandidates.map((x) => dbInterface.candidate.create(x, props.assignmentId))).then(
+                    (res) => {
+                        const idPairs = res.map((data) => data.data);
+                        const updatedCandidates = idPairs.map((x) => {
+                            const updated = newCandidates.find(
+                                (candidate) => candidate.influencer.id === x.influencerId
+                            );
+                            return { ...updated, id: x.id };
+                        }) as Influencer.Candidate[];
+                        const newValues = [...candidates.filter((x) => x.id !== null), ...updatedCandidates];
+                        console.log({ candidates, filtered: candidates.filter((x) => x.id !== null) });
+                        console.log({ newValues });
+                        props.setSelectedInfluencers(newValues);
+                    }
+                );
             }
             console.log(newCandidates);
             props.setSelectedInfluencers([...candidates, ...newCandidates]);

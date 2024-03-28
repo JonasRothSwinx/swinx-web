@@ -4,7 +4,7 @@ import Campaign from "@/app/ServerFunctions/types/campaign";
 import Customer from "@/app/ServerFunctions/types/customer";
 import React, { ChangeEvent, useEffect, useState } from "react";
 import stylesExporter from "../styles/stylesExporter";
-import { customers } from "@/app/ServerFunctions/dbInterface";
+import { customers } from "@/app/ServerFunctions/database/.dbInterface";
 
 const styles = stylesExporter.dialogs;
 type DialogType = Customer.Customer;
