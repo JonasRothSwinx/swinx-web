@@ -1,9 +1,10 @@
 import { RefreshIcon } from "@/app/Definitions/Icons";
 import stylesExporter from "@/app/Pages/styles/stylesExporter";
-import dbInterface from "@/app/ServerFunctions/database/.dbInterface";
+import database from "@/app/ServerFunctions/database/dbOperations/.database";
 import emailClient from "@/app/ServerFunctions/email/emailClient";
 import { inviteTemplateVariables } from "@/app/ServerFunctions/email/templates/invites/invitesTemplate";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
+import { Candidates } from "@/app/ServerFunctions/types/candidates";
 import Influencer from "@/app/ServerFunctions/types/influencer";
 import {
     Box,
@@ -38,7 +39,7 @@ interface EmailPreviewProps<TemplateVariableType> {
     onClose: () => void;
     templateName: string;
     variables: Partial<TemplateVariableType>;
-    candidates: Influencer.Candidate[];
+    candidates: Candidates.Candidate[];
 }
 /**
  * Renders the email preview component.
@@ -220,9 +221,9 @@ function EmailFrame(props: EmailFrameProps) {
 }
 
 interface EditorProps {
-    selectedCandidate: Influencer.Candidate;
-    setSelectedCandidate: (candidate: Influencer.Candidate) => void;
-    candidates: Influencer.Candidate[];
+    selectedCandidate: Candidates.Candidate;
+    setSelectedCandidate: (candidate: Candidates.Candidate) => void;
+    candidates: Candidates.Candidate[];
 }
 function Editor(props: EditorProps) {
     return (

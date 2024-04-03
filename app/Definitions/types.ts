@@ -14,8 +14,10 @@ import Assignment from "../ServerFunctions/types/assignment";
 //     private?: InfluencerPrivate;
 // };
 
-export type DialogProps<RowDataType, DataType extends EditableDataTypes> = DialogConfig<RowDataType> &
-    DialogOptions & { isOpen?: boolean; editingData?: DataType };
+export type DialogProps<
+    RowDataType,
+    DataType extends EditableDataTypes,
+> = DialogConfig<RowDataType> & DialogOptions & { isOpen?: boolean; editingData?: DataType };
 
 export interface DialogOptions {
     editing?: boolean;
@@ -27,7 +29,7 @@ type EditableDataTypes =
     | Customer.Customer
     // | Webinar
     | TimelineEvent.Event
-    | Influencer.InfluencerFull
+    | Influencer.Full
     | Assignment.Assignment;
 export interface DialogConfig<RowDataType> {
     onClose?: (hasChanged?: boolean) => void;

@@ -9,6 +9,7 @@ namespace Customer {
         firstName: string;
         lastName: string;
         email: string;
+        phoneNumber?: Nullable<string>;
         companyPosition?: string | null;
         notes?: Nullable<string>;
     };

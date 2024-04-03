@@ -14,7 +14,6 @@ import {
 } from "@mui/material";
 import dayjs from "@/app/configuredDayJs";
 import { useEffect, useState } from "react";
-import dbInterface from "@/app/ServerFunctions/database/.dbInterface";
 import categorizeEvents, { EventCategory } from "./functions/categorizeEvents";
 import stylesExporter from "@/app/Pages/styles/stylesExporter";
 import EventCategoryDisplay from "./EventCategoryDisplay";
@@ -22,6 +21,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { InfluencerDetailsButtons } from "./components/InfluencerDetailsButtons";
 import { InfluencerName } from "./components/InfluencerName";
 import QueryDebugDisplay from "@/app/Components/QueryDebugDisplay";
+import dataClient from "@/app/ServerFunctions/database";
 
 interface AssignedInfluencerProps {
     campaignId: string;
@@ -46,7 +46,7 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
     const queryClient = useQueryClient();
     const campaign = useQuery({
         queryKey: ["campaign", campaignId],
-        queryFn: () => dbInterface.campaign.get(campaignId),
+        queryFn: () => dataClient.campaign.get(campaignId, queryClient),
     });
     const campaignEvents = useQuery({
         queryKey: ["campaignEvents", campaignId],
@@ -57,17 +57,23 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
     });
     const influencers = useQuery({
         queryKey: ["influencers"],
-        queryFn: () => dbInterface.influencer.list(),
+        queryFn: () => dataClient.influencer.list(queryClient),
         placeholderData: [],
     });
     const assignedInfluencer = useQuery({
         queryKey: ["assignedInfluencer", props.assignedInfluencer.id],
         queryFn: async () => {
-            const assignment = await dbInterface.assignment.get(props.assignedInfluencer.id);
-            const singleEvent = assignment.timelineEvents.filter((event): event is TimelineEvent.SingleEvent =>
-                TimelineEvent.isSingleEvent(event)
+            const assignment = await dataClient.assignment.get(
+                props.assignedInfluencer.id,
+                queryClient,
             );
-            queryClient.setQueryData(["assignmentEvents", props.assignedInfluencer.id], singleEvent);
+            const singleEvent = assignment.timelineEvents.filter(
+                (event): event is TimelineEvent.SingleEvent => TimelineEvent.isSingleEvent(event),
+            );
+            queryClient.setQueryData(
+                ["assignmentEvents", props.assignedInfluencer.id],
+                singleEvent,
+            );
             return assignment;
         },
         // placeholderData: props.assignedInfluencer,
@@ -76,8 +82,13 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
     const assignmentEvents = useQuery({
         queryKey: ["assignmentEvents", props.assignedInfluencer.id],
         queryFn: async () => {
-            const raw = (await dbInterface.assignment.getTimelineEvents(props.assignedInfluencer)).filter(
-                (event): event is TimelineEvent.SingleEvent => TimelineEvent.isSingleEvent(event)
+            const raw = (
+                await dataClient.timelineEvent.byAssignment(
+                    props.assignedInfluencer.id,
+                    queryClient,
+                )
+            ).filter((event): event is TimelineEvent.SingleEvent =>
+                TimelineEvent.isSingleEvent(event),
             );
             return raw.sort((a, b) => dayjs(a.date).unix() - dayjs(b.date).unix());
         },
@@ -108,13 +119,21 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
             queryClient.setQueryData(["campaign", campaignId], updatedCampaign);
             campaign.refetch();
             const newAssignmentEvents = campaign.data?.assignedInfluencers.find(
-                (x) => x.id === assignedInfluencer.data.id
+                (x) => x.id === assignedInfluencer.data.id,
             )?.timelineEvents;
-            queryClient.setQueryData(["assignmentEvents", assignedInfluencer.data.id], newAssignmentEvents);
+            queryClient.setQueryData(
+                ["assignmentEvents", assignedInfluencer.data.id],
+                newAssignmentEvents,
+            );
             assignmentEvents.refetch();
         },
     };
-    if (campaign.isError || influencers.isError || assignmentEvents.isError || assignedInfluencer.isError) {
+    if (
+        campaign.isError ||
+        influencers.isError ||
+        assignmentEvents.isError ||
+        assignedInfluencer.isError
+    ) {
         const errorMessage: string =
             campaign.error?.message ??
             influencers.error?.message ??
@@ -124,13 +143,22 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
         return (
             <>
                 {DebugDisplay}
-                <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+                <div
+                    style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}
+                >
                     <Typography>There was an error: {errorMessage}</Typography>
                     <IconButton
                         onClick={() => {
-                            [campaign, influencers, assignmentEvents, assignedInfluencer].forEach((query) => {
-                                if (query.isError) query.refetch();
-                            });
+                            [campaign, influencers, assignmentEvents, assignedInfluencer].forEach(
+                                (query) => {
+                                    if (query.isError) query.refetch();
+                                },
+                            );
                         }}
                     >
                         <RefreshIcon />
@@ -139,7 +167,12 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
             </>
         );
     }
-    if (campaign.isLoading || influencers.isLoading || assignmentEvents.isLoading || assignedInfluencer.isLoading) {
+    if (
+        campaign.isLoading ||
+        influencers.isLoading ||
+        assignmentEvents.isLoading ||
+        assignedInfluencer.isLoading
+    ) {
         return (
             <>
                 {DebugDisplay}
@@ -169,7 +202,12 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
     return (
         <>
             {DebugDisplay}
-            <Accordion key={assignedInfluencer.data.id} defaultExpanded disableGutters variant="outlined">
+            <Accordion
+                key={assignedInfluencer.data.id}
+                defaultExpanded
+                disableGutters
+                variant="outlined"
+            >
                 <AccordionSummary
                     expandIcon={<ExpandMoreIcon />}
                     sx={{
@@ -181,7 +219,12 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
                     <div className={stylesExporter.campaignDetails.assignmentAccordionHeader}>
                         <InfluencerName assignedInfluencer={assignedInfluencer.data} />
                         {assignmentEvents.isFetching ? (
-                            <Skeleton variant="rectangular" width={200} height={40} sx={{ borderRadius: "20px" }}>
+                            <Skeleton
+                                variant="rectangular"
+                                width={200}
+                                height={40}
+                                sx={{ borderRadius: "20px" }}
+                            >
                                 <CircularProgress />
                             </Skeleton>
                         ) : (

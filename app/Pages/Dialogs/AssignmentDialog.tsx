@@ -1,4 +1,12 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
+import {
+    Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    TextField,
+} from "@mui/material";
 import { GridColDef } from "@mui/x-data-grid";
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import Campaign from "@/app/ServerFunctions/types/campaign";
@@ -7,7 +15,7 @@ import Influencer from "@/app/ServerFunctions/types/influencer";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { DialogOptions, DialogConfig, DialogProps } from "@/app/Definitions/types";
 import stylesExporter from "../styles/stylesExporter";
-import { influencers } from "@/app/ServerFunctions/database/.dbInterface";
+import { influencers } from "@/app/ServerFunctions/database/dbOperations/.database";
 import { useEffect, useMemo, useState } from "react";
 
 const styles = stylesExporter.dialogs;
@@ -17,12 +25,19 @@ type InfluencerDialogProps = DialogProps<Campaign.Campaign, DialogType>;
 
 function AssignmentDialog(props: InfluencerDialogProps) {
     // debugger;
-    const { onClose, parent: campaign, setParent: setCampaign, isOpen = true, editing, editingData } = props;
+    const {
+        onClose,
+        parent: campaign,
+        setParent: setCampaign,
+        isOpen = true,
+        editing,
+        editingData,
+    } = props;
     const defaultValue: Partial<DialogType> = useMemo(
         () => ({
             placeholderName: `Influencer ${campaign.assignedInfluencers.length + 1}`,
         }),
-        [campaign]
+        [campaign],
     );
     const [assignment, setAssignment] = useState<Partial<DialogType>>(defaultValue);
 

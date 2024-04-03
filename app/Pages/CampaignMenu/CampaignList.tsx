@@ -1,42 +1,32 @@
 import { Schema } from "@/amplify/data/resource";
-import { useAuthenticator } from "@aws-amplify/ui-react";
-import { generateClient } from "aws-amplify/api";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import {
-    DataGrid,
-    GridColDef,
-    GridRowId,
-    GridToolbarContainer,
-    GridToolbar,
-    GridCellParams,
-    GridColumnHeaderParams,
-} from "@mui/x-data-grid";
-import { Button, CircularProgress, IconButton, MenuItem, TextField, Typography } from "@mui/material";
-import {
-    Add as AddIcon,
-    Edit as EditIcon,
-    DeleteOutlined as DeleteIcon,
-    Save as SaveIcon,
-    Close as CancelIcon,
-    Visibility as VisibilityIcon,
-} from "@mui/icons-material";
-import Influencer from "@/app/ServerFunctions/types/influencer";
+import { DialogConfig, DialogOptions } from "@/app/Definitions/types";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import Customer from "@/app/ServerFunctions/types/customer";
+import { Add as AddIcon } from "@mui/icons-material";
+import { Button, CircularProgress, MenuItem, TextField, Typography } from "@mui/material";
+import {
+    DataGrid,
+    GridCellParams,
+    GridColDef,
+    GridColumnHeaderParams,
+    GridRowId,
+    GridToolbar,
+    GridToolbarContainer,
+    deDE,
+} from "@mui/x-data-grid";
+import { generateClient } from "aws-amplify/api";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import CampaignDialog from "../Dialogs/CampaignDialog";
-import { DialogOptions, DialogConfig } from "@/app/Definitions/types";
-import { deDE } from "@mui/x-data-grid";
-import CustomerDialog from "../Dialogs/CustomerDialog";
 // import WebinarDialog from "../Dialogs/WebinarDialog";
-import TimeLineEventDialog from "../Dialogs/TimelineEvent/TimelineEventSingleDialog";
+import CustomErrorBoundary from "@/app/Components/CustomErrorBoundary";
+import dataClient from "@/app/ServerFunctions/database";
+import database from "@/app/ServerFunctions/database/dbOperations/.database";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import CampaignDetails from "../CampaignDetails/CampaignDetails";
+import { groupBy } from "../Timeline/Functions/groupEvents";
 import TimelineView from "../Timeline/TimeLineView";
 import stylesExporter from "../styles/stylesExporter";
-import CampaignDetails from "../CampaignDetails/CampaignDetails";
-import { randomId } from "@mui/x-data-grid-generator";
-import dbInterface from "@/app/ServerFunctions/database/.dbInterface";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import { groupBy } from "../Timeline/Functions/groupEvents";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 const styles = stylesExporter.dialogs;
 
 const client = generateClient<Schema>();
@@ -89,18 +79,12 @@ function CampaignList(props: CampaignListProps) {
     const queryClient = useQueryClient();
     const influencers = useQuery({
         queryKey: ["influencers"],
-        queryFn: () => dbInterface.influencer.list(),
+        queryFn: () => dataClient.influencer.list(queryClient),
     });
     const campaigns = useQuery({
         queryKey: ["campaigns"],
-        queryFn: async () => {
-            const data = await dbInterface.campaign.list();
-            data.map(async (campaign) => {
-                queryClient.setQueryData(["campaign", campaign.id], campaign);
-            });
-            return data;
-        },
-        retry: 1,
+        queryFn: async () => dataClient.campaign.list(queryClient),
+        retry: 2,
     });
     // const [influencerData, setInfluencerData] = useState<Influencer.InfluencerFull[]>([]);
     // const [campaignData, setCampaignData] = useState<Campaign.Campaign[]>();
@@ -191,7 +175,11 @@ function CampaignList(props: CampaignListProps) {
                         <Typography>{customer?.company}</Typography>
                         <br />
                         <Typography>{params.value}</Typography>
-                        {customer?.companyPosition ? <Typography>({customer?.companyPosition})</Typography> : <></>}
+                        {customer?.companyPosition ? (
+                            <Typography>({customer?.companyPosition})</Typography>
+                        ) : (
+                            <></>
+                        )}
                     </div>
                 );
             },
@@ -384,27 +372,28 @@ function CampaignList(props: CampaignListProps) {
         }
     }
 
-    // async function updateCampaigns() {
-    //     setLoading(true);
-    //     // console.log("Starting Update");
-    //     campaigns.list().then((res) => {
-    //         // console.log("received Update");
-    //         setCampaignData(res.data);
-    //         setLoading(false);
-    //     });
-    // }
+    const Dialogs: { [key in DialogState]: JSX.Element } = {
+        none: <></>,
+        campaign: (
+            <CampaignDialog
+                {...dialogConfig}
+                {...dialogOptions}
+                isOpen={true}
+                editingData={editingData as Campaign.Campaign}
+            />
+        ),
+        customer: <></>,
+        webinar: <></>,
+        timelineEvent: <></>,
+        details: (
+            <CampaignDetails
+                onClose={onDialogClose}
+                campaignId={editingData?.id ?? ""}
+                isOpen={true}
+            />
+        ),
+    };
 
-    // function handleEditClick(id: GridRowId, dialogType: Dialogs) {
-    //     return () => {
-    //         const editingData = campaigns?.find((campaign) => campaign.id === id);
-    //         if (!editingData) return;
-    //         setIsOpen((prev) => ({ ...prev, campaign: true }));
-    //         setDialogOptions({ editing: true, editingData });
-    //     };
-    //     // return () => setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
-    // }
-
-    // if (influencers.length === 0) return <span>Keine Influenzerdaten vorhanden</span>;
     if (campaigns.isLoading) {
         return (
             <div
@@ -425,7 +414,9 @@ function CampaignList(props: CampaignListProps) {
     }
     if (campaigns.isError) {
         console.error(campaigns.error);
-        const error: { errorType: string; message: string } = JSON.parse(campaigns.error.message)[0];
+        const error: { errorType: string; message: string } = JSON.parse(
+            campaigns.error.message,
+        )[0];
         const ErrorMessages: { [key: string]: string } = {
             Unauthorized: "Nicht autorisiert",
         };
@@ -448,28 +439,16 @@ function CampaignList(props: CampaignListProps) {
             </div>
         );
     }
+
     return (
-        <>
+        <CustomErrorBoundary
+            message="
+            Error loading Campaigns
+        "
+        >
             {/* Dialogs */}
-            <>
-                {isOpen === "campaign" && (
-                    <CampaignDialog
-                        {...dialogConfig}
-                        {...dialogOptions}
-                        isOpen={true}
-                        editingData={editingData as Campaign.Campaign}
-                    />
-                )}
-                {/* <WebinarDialog
-                    {...dialogConfig}
-                    {...dialogOptions}
-                    isOpen={isOpen.webinar}
-                    editingData={editingData as Webinar}
-                /> */}
-                {isOpen === "details" && (
-                    <CampaignDetails onClose={onDialogClose} campaignId={editingData?.id ?? ""} isOpen={true} />
-                )}
-            </>
+
+            <>{Dialogs[isOpen]}</>
             <DataGrid
                 localeText={deDE.components.MuiDataGrid.defaultProps.localeText}
                 onRowClick={({ id }) => {
@@ -521,7 +500,7 @@ function CampaignList(props: CampaignListProps) {
                     },
                 }}
             />
-        </>
+        </CustomErrorBoundary>
     );
 }
 

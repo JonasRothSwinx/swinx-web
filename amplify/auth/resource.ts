@@ -10,7 +10,7 @@ export const auth = defineAuth({
         email: {
             verificationEmailStyle: "CODE",
             verificationEmailSubject: "Verifiziere deine Email",
-            verificationEmailBody: (code: string) => `Dein Verifizierungscode ist ${code}`,
+            verificationEmailBody: (code: () => string) => `Dein Verifizierungscode ist ${code()}`,
         },
         // add social providers
         // externalProviders: {

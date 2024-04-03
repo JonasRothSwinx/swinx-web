@@ -1,7 +1,7 @@
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import { timelineEvents } from "@/app/ServerFunctions/database/.dbInterface";
+import { timelineEvents } from "@/app/ServerFunctions/database/dbOperations/.database";
 import { randomId } from "@mui/x-data-grid-generator";
 import { Query, QueryClient, useQueryClient } from "@tanstack/react-query";
 import { Dayjs } from "@/app/configuredDayJs";
@@ -31,10 +31,13 @@ async function updateEvent(props: createMultiEventProps) {
         return oldData.map((x) => (x.id === event.id ? event : x));
     });
     assignments.map((assignment) => {
-        queryClient.setQueryData(["assignmentEvents", assignment.id], (oldData: TimelineEvent.SingleEvent[]) => {
-            if (!oldData) return [];
-            return oldData.map((x) => (x.id === event.id ? event : x));
-        });
+        queryClient.setQueryData(
+            ["assignmentEvents", assignment.id],
+            (oldData: TimelineEvent.SingleEvent[]) => {
+                if (!oldData) return [];
+                return oldData.map((x) => (x.id === event.id ? event : x));
+            },
+        );
     });
 }
 async function createEvent(props: createMultiEventProps) {
@@ -49,11 +52,14 @@ async function createEvent(props: createMultiEventProps) {
 
     timelineEvents.create(newEvent).then((res) => {
         queryClient.setQueryData(["event", res], { ...newEvent, id: res });
-        queryClient.setQueryData(["events", campaign.id], (oldData: TimelineEvent.SingleEvent[]) => {
-            if (!oldData) return [];
-            //replace tempEvent
-            return oldData.map((x) => (x.tempId === tempId ? { ...newEvent, id: res } : x));
-        });
+        queryClient.setQueryData(
+            ["events", campaign.id],
+            (oldData: TimelineEvent.SingleEvent[]) => {
+                if (!oldData) return [];
+                //replace tempEvent
+                return oldData.map((x) => (x.tempId === tempId ? { ...newEvent, id: res } : x));
+            },
+        );
     });
     const tempEvent = { ...newEvent, tempId: tempId };
     queryClient.setQueryData(["event", tempId], tempEvent);
@@ -64,7 +70,10 @@ async function createEvent(props: createMultiEventProps) {
     invalidateData(tempEvent, queryClient);
 }
 
-function invalidateData(event: TimelineEvent.MultiEvent, queryClient: ReturnType<typeof useQueryClient>) {
+function invalidateData(
+    event: TimelineEvent.MultiEvent,
+    queryClient: ReturnType<typeof useQueryClient>,
+) {
     // events.map((x) => {
     //     queryClient.invalidateQueries({ queryKey: ["event", x.id] });
     //     queryClient.invalidateQueries({ queryKey: ["assignmentEvents", x.assignment.id] });

@@ -1,8 +1,10 @@
 import { Nullable, Prettify } from "@/app/Definitions/types";
 import Assignment from "./assignment";
+import database from "../database/dbOperations/.database";
 
 namespace TimelineEvent {
     export type Event = Prettify<SingleEvent | MultiEvent>;
+    export type EventOrReference = Event | EventReference;
 
     //#region Common
     export const singleEventValues = ["Invites", "Post", "Video", "WebinarSpeaker"] as const;
@@ -13,6 +15,28 @@ namespace TimelineEvent {
 
     export const eventValues = [...singleEventValues, ...multiEventValues] as const;
     export type eventType = Prettify<singleEventType | multiEventType>;
+
+    export function isEventReference(event: unknown): event is EventReference {
+        const testEvent = event as EventReference;
+        return (
+            typeof testEvent === "object" &&
+            testEvent !== null &&
+            typeof testEvent.id === "string" &&
+            typeof testEvent.type === "string" &&
+            eventValues.includes(testEvent.type as eventType)
+        );
+    }
+
+    export async function resolveEventReference(
+        event: Nullable<EventOrReference>,
+    ): Promise<Nullable<Event>> {
+        if (event === null) return null;
+        else if (!isEventReference(event)) return event;
+        else {
+            const resolvedEvent = database.timelineEvent.get(event.id);
+            return resolvedEvent;
+        }
+    }
 
     export function isTimelineEvent(event: unknown): event is Event {
         const testEvent = event as Event;
@@ -33,6 +57,8 @@ namespace TimelineEvent {
         if (!isTimelineEventType(type)) return false;
         return true;
     }
+    export type EventReference = { id: string; type?: eventType };
+
     type EventCommon = {
         id?: string;
         type: eventType;
@@ -44,15 +70,20 @@ namespace TimelineEvent {
         eventAssignmentAmount: number;
         eventTaskAmount: Nullable<number>;
         eventTitle: Nullable<string>;
+        assignments: Assignment.AssignmentMin[];
         tempId?: string;
+        relatedEvents: {
+            childEvents: EventOrReference[];
+            parentEvent: Nullable<EventOrReference>;
+        };
     };
     //#endregion Common
     //#region Single Event Types
     //#region Types
     type SingleEventCommon = EventCommon & {
         type: singleEventType;
-        assignment: Assignment.AssignmentMin;
-        eventAssignmentAmount: 1;
+        // assignment: Assignment.AssignmentMin;
+        // eventAssignmentAmount: 1;
     };
     export type SingleEvent = Prettify<Invites | Post | Video | WebinarSpeaker>;
 

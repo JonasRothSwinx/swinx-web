@@ -1,5 +1,6 @@
 "use server";
-import Customer from "../types/customer";
+import { Nullable } from "@/app/Definitions/types";
+import Customer from "@/app/ServerFunctions/types/customer";
 import client from "./.dbclient";
 
 export async function createCustomer(customer: Customer.Customer) {

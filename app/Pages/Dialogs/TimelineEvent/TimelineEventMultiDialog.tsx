@@ -1,4 +1,4 @@
-import dbInterface from "@/app/ServerFunctions/database/.dbInterface";
+import database from "@/app/ServerFunctions/database/dbOperations/.database";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import dayjs from "@/app/configuredDayJs";
@@ -37,7 +37,7 @@ export default function TimelineEventMultiDialog(props: timelineEventDialogProps
             campaign: { id: campaign.id },
             eventAssignmentAmount: 1,
             assignments: [],
-        }
+        },
     );
 
     const queryClient = useQueryClient();
@@ -161,7 +161,10 @@ export default function TimelineEventMultiDialog(props: timelineEventDialogProps
                     })}
                 </TextField>
             </DialogContent>
-            <DialogContent dividers sx={{ "& .MuiFormControl-root": { flexBasis: "100%", flex: 1 } }}>
+            <DialogContent
+                dividers
+                sx={{ "& .MuiFormControl-root": { flexBasis: "100%", flex: 1 } }}
+            >
                 <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
                     <DatePicker
                         // closeOnSelect={false}

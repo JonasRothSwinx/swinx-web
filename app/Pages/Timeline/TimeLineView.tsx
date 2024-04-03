@@ -5,23 +5,31 @@ import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import dayjs from "@/app/configuredDayJs";
 import { CircularProgress, Unstable_Grid2 as Grid } from "@mui/material";
 import { useEffect, useState } from "react";
-import TimeLineEventSingleDialog from "../Dialogs/TimelineEvent/TimelineEventSingleDialog";
+import TimeLineEventSingleDialog from "../Dialogs/TimelineEvent/SingleEvent/TimelineEventSingleDialog";
 import stylesExporter from "../styles/stylesExporter";
 import TimelineControls from "./Components/TimelineControls";
 import TimelineViewItem from "./Components/TimelineViewItem";
 import { useWhatChanged } from "@simbathesailor/use-what-changed";
 
-import { groupBy, EventGroup as EventGroup, groupEvents as groupEvents } from "./Functions/groupEvents";
+import {
+    groupBy,
+    EventGroup as EventGroup,
+    groupEvents as groupEvents,
+} from "./Functions/groupEvents";
 import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import QueryDebugDisplay from "../../Components/QueryDebugDisplay";
-import dbInterface from "@/app/ServerFunctions/database/.dbInterface";
+import database from "@/app/ServerFunctions/database/dbOperations/.database";
+import CustomErrorBoundary from "@/app/Components/CustomErrorBoundary";
+import TimelineEventMultiDialog from "../Dialogs/TimelineEvent/TimelineEventMultiDialog";
+import { general as styles } from "../styles/stylesExporter";
 
 const dialogStyles = stylesExporter.dialogs;
 const timelineStyles = stylesExporter.timeline;
 
 type orientation = "horizontal" | "vertical";
 type controlsPosition = "before" | "after" | "none";
+type openDialog = "none" | "editor";
 export interface TimelineViewProps {
     campaign: Campaign.Campaign;
     setCampaign: (data: Campaign.Campaign) => void;
@@ -31,7 +39,7 @@ export interface TimelineViewProps {
     controlsPosition?: controlsPosition;
     groupBy?: groupBy;
     editable?: boolean;
-    influencers: Influencer.InfluencerFull[];
+    influencers: Influencer.Full[];
 }
 
 export default function TimelineView(props: TimelineViewProps) {
@@ -43,7 +51,21 @@ export default function TimelineView(props: TimelineViewProps) {
         setCampaign: setParent,
         editable = false,
     } = props;
+
+    //############################################
+    //#region States
+    // const [groups, setGroups] = useState<EventGroup[]>([]);
     const [groupBy, setGroupBy] = useState<groupBy>(props.groupBy ?? "week");
+    const [editingEvent, setEditingEvent] = useState<TimelineEvent.Event>();
+    const [controlsPositionState, setControlsPosition] =
+        useState<controlsPosition>(controlsPosition);
+    const [campaign, setCampaign] = useState<Campaign.Campaign>(props.campaign);
+    const [openDialog, setOpenDialog] = useState<openDialog>("none");
+    //#endregion States
+    //############################################
+
+    //############################################
+    //#region Queries
     const influencers = useQuery({
         queryKey: ["influencers"],
         queryFn: () => {
@@ -51,17 +73,17 @@ export default function TimelineView(props: TimelineViewProps) {
         },
         placeholderData: [],
     });
-    const [campaign, setCampaign] = useState<Campaign.Campaign>(props.campaign);
     const events = useQuery({
         queryKey: ["events", campaign.id],
         queryFn: async () => {
-            const events = await dbInterface.timelineEvent.listByCampaign(campaign.id);
+            const events = await database.timelineEvent.listByCampaign(campaign.id);
             events.map((event) => {
                 queryClient.setQueryData(["event", event.id], event);
             });
             return events;
         },
     });
+
     const highlightedEventIds = useQuery({
         queryKey: ["highlightedEvents"],
         queryFn: async () => {
@@ -69,6 +91,7 @@ export default function TimelineView(props: TimelineViewProps) {
         },
         placeholderData: [],
     });
+
     const groups = useQuery({
         queryKey: ["groups", campaign.id, groupBy],
         enabled: events.isSuccess,
@@ -77,10 +100,7 @@ export default function TimelineView(props: TimelineViewProps) {
         },
         placeholderData: [],
     });
-    // const [groups, setGroups] = useState<EventGroup[]>([]);
-    const [editingDialogOpen, setEditingDialogOpen] = useState(false);
-    const [editingEvent, setEditingEvent] = useState<TimelineEvent.Event>();
-    const [controlsPositionState, setControlsPosition] = useState<controlsPosition>(controlsPosition);
+
     const userGroups = useQuery({
         queryKey: ["userGroups"],
         queryFn: () => {
@@ -88,7 +108,11 @@ export default function TimelineView(props: TimelineViewProps) {
         },
         placeholderData: [],
     });
+    //#endregion Queries
+    //############################################
 
+    //############################################
+    //#region Effects
     // useWhatChanged([events, groupBy, campaign, controlsPosition], "events.data, groupBy, campaign, controlsPosition");
     useEffect(() => {
         console.log("Events changed, updating groups");
@@ -96,7 +120,7 @@ export default function TimelineView(props: TimelineViewProps) {
         groups.refetch();
         // console.log("Events changed, updating groups");
         return () => {};
-    }, [events.data, groupBy, campaign]);
+    }, [events.data, groupBy, campaign]); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         // console.log("Campaign changed, updating events");
@@ -109,33 +133,70 @@ export default function TimelineView(props: TimelineViewProps) {
         return () => {};
     }, [controlsPosition]);
 
-    function onDialogClose(hasChanged?: boolean) {
-        // console.log("Hi");
-        setEditingDialogOpen(false);
-        // setGroups(groupEvents(events, groupBy));
-    }
+    //#endregion Effects
+    //############################################
+
     const EventHandlers = {
         onDialogClose: (hasChanged?: boolean) => {
-            setEditingDialogOpen(false);
+            setOpenDialog("none");
+            if (hasChanged) {
+                queryClient.invalidateQueries({
+                    queryKey: ["events", campaign.id],
+                    refetchType: "all",
+                });
+                queryClient.invalidateQueries({
+                    queryKey: ["groups", campaign.id],
+                    refetchType: "all",
+                });
+                groups.refetch();
+                events.refetch();
+                queryClient.refetchQueries();
+            }
         },
         onDataChange: () => {
             console.log("Data changed");
-            queryClient.invalidateQueries({ queryKey: ["groups", campaign.id], refetchType: "all" });
-            queryClient.invalidateQueries({ queryKey: ["events", campaign.id], refetchType: "all" });
+            queryClient.invalidateQueries({
+                queryKey: ["groups", campaign.id],
+                refetchType: "all",
+            });
+            queryClient.invalidateQueries({
+                queryKey: ["events", campaign.id],
+                refetchType: "all",
+            });
             groups.refetch();
             events.refetch();
             queryClient.refetchQueries();
         },
+        setDialog: (open: openDialog) => {
+            setOpenDialog(open);
+        },
+    };
+
+    const Dialogs: { [key in openDialog]: JSX.Element } = {
+        none: <></>,
+        editor: (
+            <EditEventDialog
+                {...{
+                    onClose: EventHandlers.onDialogClose,
+                    editingEvent,
+                    campaign,
+                    setCampaign,
+                    influencers: influencers.data ?? [],
+                }}
+            />
+        ),
     };
 
     if (events.isLoading || groups.isLoading || influencers.isLoading) {
         return <Placeholder />;
     }
     if (!events.data || !groups.data || !influencers.data) {
-        return <div>Keine Daten</div>;
+        return <div className={styles.centered}>Keine Daten</div>;
     }
+    if (events.data.length === 0 || groups.data.length === 0)
+        return <div className={styles.centered}>Keine Events</div>;
     if (events.isError || groups.isError || influencers.isError) {
-        return <div>Error</div>;
+        return <div className={styles.centered}>Error</div>;
     }
     // if (events.isFetching || groups.isFetching || influencers.isFetching) {
     //     return <Placeholder />;
@@ -144,20 +205,7 @@ export default function TimelineView(props: TimelineViewProps) {
     return (
         <>
             {/* Dialogs */}
-            {/* <>
-                {editable && (
-                    <TimeLineEventDialog
-                        parent={campaign}
-                        setParent={setParent}
-                        isOpen={editingDialogOpen}
-                        onClose={onDialogClose}
-                        editing={true}
-                        editingData={editingEvent}
-                        influencers={influencers.data ?? []}
-                    />
-                )}
-            </> */}
-
+            {Dialogs[openDialog]}
             {controlsPositionState === "before" && (
                 <TimelineControls
                     {...{ groupBy, setGroupBy }}
@@ -177,7 +225,7 @@ export default function TimelineView(props: TimelineViewProps) {
                     ]}
                 />
             )}
-            <Grid
+            {/* <Grid
                 container
                 direction={orientation === "horizontal" ? "row" : "column"}
                 // rowSpacing={1}
@@ -221,7 +269,14 @@ export default function TimelineView(props: TimelineViewProps) {
                         </Grid>
                     );
                 })}
-            </Grid>
+            </Grid> */}
+            <TimelineViewContent
+                {...props}
+                influencers={influencers.data}
+                groups={groups.data}
+                setEditingEvent={setEditingEvent}
+                setDialog={EventHandlers.setDialog}
+            />
             {controlsPositionState === "after" && (
                 <TimelineControls
                     {...{ groupBy, setGroupBy }}
@@ -235,6 +290,85 @@ export default function TimelineView(props: TimelineViewProps) {
     );
 }
 
+interface TimelineViewContentProps {
+    campaign: Campaign.Campaign;
+    maxItems?: number;
+    // eventDialogProps: TimelineEventDialogProps;
+    orientation?: orientation;
+    controlsPosition?: controlsPosition;
+    groupBy?: groupBy;
+    editable?: boolean;
+    influencers: Influencer.Full[];
+    groups: EventGroup[];
+    setEditingEvent: (event: TimelineEvent.Event) => void;
+    setDialog: (open: openDialog) => void;
+}
+function TimelineViewContent(props: TimelineViewContentProps) {
+    const {
+        campaign,
+        maxItems,
+        orientation,
+        groupBy = "week",
+        editable = false,
+        groups,
+        setEditingEvent,
+        setDialog,
+    } = props;
+
+    const EventHandlers = {
+        editEvent: (event: TimelineEvent.Event) => {
+            setEditingEvent(event);
+            setDialog("editor");
+        },
+    };
+
+    return (
+        <Grid
+            container
+            direction={orientation === "horizontal" ? "row" : "column"}
+            // rowSpacing={1}
+            rowGap={1}
+            // columns={1}
+            columnGap={"5px"}
+            // columnSpacing={1}
+            justifyContent={"space-evenly"}
+            sx={{
+                "& > .MuiGrid2-root": {
+                    // display: "flex",
+                    // flexDirection: "column",
+                    // overflowY: "auto",
+                    // maxHeight: "90vh",
+                    // paddingTop: "60px",
+                    width: "100%",
+                    // gap: "5px",
+                },
+                // display: "flex",
+                // flexDirection: "column",
+                // overflowY: "auto",
+                // maxHeight: "90vh",
+                // paddingTop: "60px",
+                width: "100%",
+                // gap: "5px",
+            }}
+        >
+            {groups.slice(0, maxItems).map((group, i) => {
+                return (
+                    <Grid key={i} xs={orientation === "horizontal" ? 5 : 16}>
+                        <TimelineViewItem
+                            key={i}
+                            keyValue={i}
+                            group={group}
+                            groupedBy={groupBy}
+                            editEvent={EventHandlers.editEvent}
+                            editable={editable}
+                            campaignId={campaign.id}
+                        />
+                    </Grid>
+                );
+            })}
+        </Grid>
+    );
+}
 function Placeholder(): JSX.Element {
     return (
         <div
@@ -251,4 +385,53 @@ function Placeholder(): JSX.Element {
             Loading...
         </div>
     );
+}
+
+interface EditDialogProps {
+    onClose: (hasChanged?: boolean) => void;
+    editingEvent: TimelineEvent.Event | undefined;
+    campaign: Campaign.Campaign;
+    setCampaign: (data: Campaign.Campaign) => void;
+    influencers: Influencer.Full[];
+    editable?: boolean;
+}
+
+function EditEventDialog(props: EditDialogProps): JSX.Element {
+    const { editingEvent, editable = false } = props;
+    if (!(editable && editingEvent)) return <></>;
+    if (TimelineEvent.isSingleEvent(editingEvent)) {
+        return <EditSingleEventDialog {...props} editingEvent={editingEvent} />;
+    } else if (TimelineEvent.isMultiEvent(editingEvent)) {
+        return <EditMultiEventDialog {...props} editingEvent={editingEvent} />;
+    } else {
+        throw new Error("Editing event type not recognized");
+    }
+}
+
+interface EditSingleDialogProps extends EditDialogProps {
+    editingEvent: TimelineEvent.SingleEvent;
+}
+function EditSingleEventDialog(props: EditSingleDialogProps): JSX.Element {
+    const { campaign, setCampaign, onClose, influencers, editingEvent } = props;
+    const targetAssignment = editingEvent.assignment ?? undefined;
+    if (!targetAssignment) throw new Error("Editing event does not have an assignment");
+    return (
+        <TimeLineEventSingleDialog
+            parent={campaign}
+            setParent={setCampaign}
+            isOpen={true}
+            onClose={onClose}
+            editing={true}
+            editingData={editingEvent}
+            influencers={influencers}
+            targetAssignment={targetAssignment}
+        />
+    );
+}
+
+interface EditMultiDialogProps extends EditDialogProps {
+    editingEvent: TimelineEvent.MultiEvent;
+}
+function EditMultiEventDialog(props: EditMultiDialogProps): JSX.Element {
+    return <TimelineEventMultiDialog {...props} />;
 }

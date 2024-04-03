@@ -2,7 +2,7 @@
 import { Button, Typography } from "@mui/material";
 import Grid2 from "@mui/material/Unstable_Grid2/Grid2";
 import { useSearchParams } from "next/navigation";
-import { publicProcessResponse } from "../ServerFunctions/database/candidate";
+import { publicProcessResponse } from "../ServerFunctions/database/dbOperations/candidate";
 import { Suspense, useState } from "react";
 
 async function processResponse(candidateId: string, response: string) {

@@ -1,39 +1,24 @@
-import { AddIcon, DeleteIcon, ExpandMoreIcon, PersonSearchIcon } from "@/app/Definitions/Icons";
-import Campaign from "@/app/ServerFunctions/types/campaign";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import Influencer from "@/app/ServerFunctions/types/influencer";
+import { AddIcon, ExpandMoreIcon } from "@/app/Definitions/Icons";
 import Assignment from "@/app/ServerFunctions/types/assignment";
+import Campaign from "@/app/ServerFunctions/types/campaign";
+import Influencer from "@/app/ServerFunctions/types/influencer";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import {
     Accordion,
     AccordionDetails,
     AccordionSummary,
     Button,
     CircularProgress,
-    Fade,
-    IconButton,
-    Tooltip,
     Typography,
 } from "@mui/material";
-import Grid from "@mui/material/Unstable_Grid2/Grid2";
-import { Dispatch, MouseEvent, SetStateAction, useEffect, useState } from "react";
-import dayjs, { Dayjs } from "@/app/configuredDayJs";
-import AssignmentDialog from "../../../Dialogs/AssignmentDialog";
-import dbInterface from "@/app/ServerFunctions/database/.dbInterface";
-import {
-    randomCity,
-    randomDesk,
-    randomId,
-    randomName,
-    randomTraderName,
-    randomUserName,
-} from "@mui/x-data-grid-generator";
-import TimelineEventSingleDialog from "@/app/Pages/Dialogs/TimelineEvent/TimelineEventSingleDialog";
-import CandidatePicker from "./CandidatePicker";
+import { randomDesk, randomId } from "@mui/x-data-grid-generator";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import AssignedInfluencer from "./AssignedInfluencer";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import dataClient from "@/app/ServerFunctions/database";
 
 type OpenInfluencerDetailsProps = {
-    influencers: Influencer.InfluencerFull[];
+    influencers: Influencer.Full[];
     campaignId: string;
     setCampaign: (campaign: Campaign.Campaign) => void;
     placeholders: Assignment.Assignment[];
@@ -44,9 +29,10 @@ type eventDict = { [key: string]: TimelineEvent.Event[] };
 
 export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps) {
     const { campaignId, setCampaign, events, placeholders, influencers } = props;
+    const queryClient = useQueryClient();
     const campaign = useSuspenseQuery({
         queryKey: ["campaign", campaignId],
-        queryFn: () => dbInterface.campaign.get(campaignId),
+        queryFn: () => dataClient.campaign.get(campaignId, queryClient),
     });
     const [assignedInfluencers, setAssignedInfluencers] = useState<Assignment.Assignment[]>([]);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -61,7 +47,9 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
             for (const event of events /* .filter((event) => event.assignment.isPlaceholder) */) {
                 switch (true) {
                     case TimelineEvent.isSingleEvent(event): {
-                        const assignment = assignments.find((x) => x.id === event.assignment?.id);
+                        const assignment = assignments.find(
+                            (x) => x.id === event.assignments[0]?.id,
+                        );
                         if (!assignment) continue;
                         if (assignment.timelineEvents.find((x) => x.id === event.id)) {
                             continue;
@@ -74,7 +62,7 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                         const assignment = assignments.find((x) =>
                             event.assignments?.find((y) => {
                                 y.id === x.id;
-                            })
+                            }),
                         );
                         if (!assignment) continue;
                         if (assignment.timelineEvents.find((x) => x.id === event.id)) {
@@ -88,7 +76,9 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
             }
 
             for (const assignment of assignments) {
-                assignment.timelineEvents.sort((a, b) => (a.date && b.date ? a.date.localeCompare(b.date) : 0));
+                assignment.timelineEvents.sort((a, b) =>
+                    a.date && b.date ? a.date.localeCompare(b.date) : 0,
+                );
             }
             return assignments;
         }
@@ -106,16 +96,19 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                 timelineEvents: [],
                 isPlaceholder: true,
                 influencer: null,
+                campaign: { id: campaignId },
             };
-            dbInterface.assignment.create(newPlaceholder, campaignId).then((id) => {
+            dataClient.assignment.create(newPlaceholder, queryClient).then((id) => {
                 // console.log("got id");
                 // const newPlaceholders = campaign.assignedInfluencers.map((x) =>
                 //     x.id === tempId ? { ...x, id: id } : x
                 // );
-                const newPlaceholders = [...campaign.data.assignedInfluencers, { ...newPlaceholder, id }];
+                const newPlaceholders = [
+                    ...campaign.data.assignedInfluencers,
+                    { ...newPlaceholder, id },
+                ];
                 // console.log({ newPlaceholders });
                 setIsProcessing(false);
-                setCampaign({ ...campaign.data, assignedInfluencers: newPlaceholders });
             });
             const newCampaign: Campaign.Campaign = {
                 ...campaign.data,
@@ -128,7 +121,11 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
         <>
             <>{/* Dialogs */}</>
             <Accordion defaultExpanded disableGutters variant="outlined">
-                <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1-content" id="panel1-header">
+                <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="panel1-content"
+                    id="panel1-header"
+                >
                     Influencer
                 </AccordionSummary>
                 <AccordionDetails>

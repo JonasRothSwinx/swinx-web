@@ -1,23 +1,32 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
-import { GridColDef } from "@mui/x-data-grid";
-import Assignment from "@/app/ServerFunctions/types/assignment";
-import Campaign from "@/app/ServerFunctions/types/campaign";
-import Customer from "@/app/ServerFunctions/types/customer";
+import { DialogProps } from "@/app/Definitions/types";
 import Influencer from "@/app/ServerFunctions/types/influencer";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import { DialogOptions, DialogConfig, DialogProps } from "@/app/Definitions/types";
+import {
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    TextField,
+} from "@mui/material";
+import React, { useState } from "react";
 import stylesExporter from "../styles/stylesExporter";
-import { influencers } from "@/app/ServerFunctions/database/.dbInterface";
 
 const styles = stylesExporter.dialogs;
-type DialogType = Influencer.InfluencerFull;
+type DialogType = Influencer.Full;
 
-type InfluencerDialogProps = DialogProps<Influencer.InfluencerFull[], DialogType>;
+type InfluencerDialogProps = DialogProps<Influencer.Full[], DialogType>;
 function InfluencerDialog(props: InfluencerDialogProps) {
     // debugger;
-    const { onClose, parent: rows, setParent: setRows, isOpen = true, editing, editingData } = props;
+    const {
+        onClose,
+        parent: rows,
+        setParent: setRows,
+        isOpen = true,
+        editing,
+        editingData,
+    } = props;
     // const [isModalOpen, setIsModalOpen] = useState(open);
-
+    const [influencer, setInfluencer] = useState<Partial<Influencer.Full>>(editingData ?? {});
     function handleClose() {
         if (onClose) {
             onClose();
@@ -25,24 +34,12 @@ function InfluencerDialog(props: InfluencerDialogProps) {
         // setIsModalOpen(false);
     }
 
-    // async function makeInfluencer(args: { firstName: string; lastName: string; email: string }) {
-    //     const { firstName, lastName, email } = args;
-    //     console.log({ firstName, lastName, email });
-    //     if (!(firstName && lastName && email)) {
-    //         return;
-    //     }
-    //     const { data: privateData } = await client.models.InfluencerPrivate.create({
-    //         email,
-    //     });
-    //     const { data: newPublicInfluencer } = await client.models.InfluencerPublic.create({
-    //         firstName,
-    //         lastName,
-    //         details: privateData,
-    //     });
-    //     // console.log({ newPublicInfluencer });
-    //     // console.log(data.get("firstName"), data.get("lastName"),data.);
-    //     handleClose();
-    // }
+    const EventHandlers = {
+        handleClose,
+        submitData: (event: React.FormEvent<HTMLFormElement>) => {
+            event.preventDefault();
+        },
+    };
 
     return (
         <Dialog
@@ -61,13 +58,15 @@ function InfluencerDialog(props: InfluencerDialogProps) {
                     const { id, firstName, lastName, email } = formJson;
                     let updatedRows = [...rows];
                     if (editing && editingData) {
-                        const updatedInfluencer: Influencer.InfluencerFull = {
+                        const updatedInfluencer: Influencer.Full = {
                             ...editingData,
                             firstName,
                             lastName,
-                            details: { ...editingData.details, email },
+                            email,
                         };
-                        updatedRows = rows.map((row) => (row.id === updatedInfluencer.id ? updatedInfluencer : row));
+                        updatedRows = rows.map((row) =>
+                            row.id === updatedInfluencer.id ? updatedInfluencer : row,
+                        );
                         // console.log({ rows, updatedRows });
                         console.log("Setting Rows");
 
@@ -80,7 +79,7 @@ function InfluencerDialog(props: InfluencerDialogProps) {
                             },
                         });
                     } else {
-                        const newInfluencer: Influencer.InfluencerFull = {
+                        const newInfluencer: Influencer.Full = {
                             id: "new",
                             firstName,
                             lastName,
@@ -197,7 +196,7 @@ function InfluencerDialog(props: InfluencerDialogProps) {
                     className={styles.TextField}
                     label="E-Mail"
                     type="email"
-                    defaultValue={editingData?.details.email ?? ""}
+                    defaultValue={editingData?.email ?? ""}
                     required
                 />
                 <Button type="submit" />

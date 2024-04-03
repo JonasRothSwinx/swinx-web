@@ -8,7 +8,13 @@ backend:
                 - nvm use 20
                 - npm ci
                 - env | grep -e ADMIN_API_KEY -e BASE_URL >> .env
-                - npx amplify pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID
+                - |
+                    if [ "${AWS_BRANCH}" = "main" ] || [ "${AWS_BRANCH}" = "dev" ]; then 
+                        npx amplify pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID 
+                    else
+                        npx amplify generate config  --branch dev --app-id $AWS_APP_ID 
+                    fi
+
 frontend:
     phases:
         preBuild:

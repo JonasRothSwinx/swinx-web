@@ -1,33 +1,40 @@
-import { createNewCampaign, deleteCampaign, getCampaign, listCampaigns } from "./campaigns";
+import {
+    createNewCampaign,
+    deleteCampaign,
+    dummyListCampaigns,
+    getCampaign,
+    listCampaigns,
+} from "./campaigns";
 import { createCustomer, deleteCustomer, updateCustomer } from "./customers";
-import { createNewInfluencer, deleteInfluencer, listInfluencers, updateInfluencer } from "./influencers";
+import {
+    createNewInfluencer,
+    deleteInfluencer,
+    getInfluencer,
+    listInfluencers,
+    updateInfluencer,
+} from "./influencers";
 import {
     createAssignment,
     deletePlaceholder,
     listAssignments,
     updateAssignment,
     getAssignment,
-    getAssignmentTimelineEvents,
+    listAssignmentsByCampaign,
 } from "./assignments";
 import {
+    connectEvents,
     connectToAssignment,
     createTimelineEvent,
     deleteTimelineEvent,
+    dummy,
     // getAssignmentTimelineEvents,
     getCampaignTimelineEvents,
     getTimelineEvent,
     listTimelineEvents,
     updateTimelineEvent,
+    getAssignmentTimelineEvents,
 } from "./timelineEvents";
 import { createCandidate, deleteCandidate, publicProcessResponse } from "./candidate";
-// import {
-//     createNewStaticEvent,
-//     getStaticEvent,
-//     deleteStaticEvent,
-//     listStaticEvents,
-//     listStaticEventsByCampaign,
-//     updateStaticEvent,
-// } from "./database/staticEvent";
 
 export const campaigns = {
     create: createNewCampaign,
@@ -43,6 +50,7 @@ export const customers = {
 };
 
 export const influencers = {
+    get: getInfluencer,
     create: createNewInfluencer,
     list: listInfluencers,
     update: updateInfluencer,
@@ -55,9 +63,10 @@ export const timelineEvents = {
     update: updateTimelineEvent,
     delete: deleteTimelineEvent,
     list: listTimelineEvents,
-    // listByAssignment: getAssignmentTimelineEvents,
+    listByAssignment: getAssignmentTimelineEvents,
     listByCampaign: getCampaignTimelineEvents,
     connectToAssignment: connectToAssignment,
+    connectEvents: connectEvents,
 };
 
 export const assignments = {
@@ -66,7 +75,7 @@ export const assignments = {
     delete: deletePlaceholder,
     update: updateAssignment,
     get: getAssignment,
-    getTimelineEvents: getAssignmentTimelineEvents,
+    listByCampaign: listAssignmentsByCampaign,
 };
 
 export const candidates = {
@@ -75,16 +84,12 @@ export const candidates = {
     publicUpdate: publicProcessResponse,
 };
 
-// export const staticEvents = {
-//     create: createNewStaticEvent,
-//     get: getStaticEvent,
-//     delete: deleteStaticEvent,
-//     list: listStaticEvents,
-//     listByCampaign: listStaticEventsByCampaign,
-//     update: updateStaticEvent,
-// };
+export const debug = {
+    debugEventList: dummy,
+    debugCampaignList: dummyListCampaigns,
+};
 
-const dbInterface = {
+const database = {
     campaign: campaigns,
     customer: customers,
     influencer: influencers,
@@ -94,4 +99,4 @@ const dbInterface = {
     // staticEvent: staticEvents,
 };
 
-export default dbInterface;
+export default database;

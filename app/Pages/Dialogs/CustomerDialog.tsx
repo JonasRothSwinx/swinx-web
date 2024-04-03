@@ -1,10 +1,17 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
+import {
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    TextField,
+} from "@mui/material";
 import { DialogProps } from "@/app/Definitions/types";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import Customer from "@/app/ServerFunctions/types/customer";
 import React, { ChangeEvent, useEffect, useState } from "react";
 import stylesExporter from "../styles/stylesExporter";
-import { customers } from "@/app/ServerFunctions/database/.dbInterface";
+import { customers } from "@/app/ServerFunctions/database/dbOperations/.database";
 
 const styles = stylesExporter.dialogs;
 type DialogType = Customer.Customer;
@@ -19,7 +26,14 @@ const initialData: DialogType = {
 type CustomerDialogProps = DialogProps<Campaign.Campaign, Customer.Customer>;
 function CustomerDialog(props: CustomerDialogProps) {
     // debugger;
-    const { onClose, parent: campaign, setParent: setCampaign, isOpen = true, editing, editingData } = props;
+    const {
+        onClose,
+        parent: campaign,
+        setParent: setCampaign,
+        isOpen = true,
+        editing,
+        editingData,
+    } = props;
     const [customer, setCustomer] = useState(editingData);
 
     // const [isModalOpen, setIsModalOpen] = useState(isOpen);
@@ -100,7 +114,10 @@ function CustomerDialog(props: CustomerDialogProps) {
             <DialogTitle>{"Kunde"}</DialogTitle>
             {/* <button onClick={handleCloseModal}>x</button> */}
 
-            <DialogContent dividers sx={{ "& .MuiFormControl-root:has(#customerEmail)": { flexBasis: "100%" } }}>
+            <DialogContent
+                dividers
+                sx={{ "& .MuiFormControl-root:has(#customerEmail)": { flexBasis: "100%" } }}
+            >
                 <TextField
                     autoFocus
                     id="id"
@@ -126,7 +143,7 @@ function CustomerDialog(props: CustomerDialogProps) {
                                 ({
                                     ...(prev ?? initialData),
                                     firstName: e.target.value,
-                                } satisfies Customer.Customer)
+                                } satisfies Customer.Customer),
                         );
                     }}
                     required
@@ -145,7 +162,7 @@ function CustomerDialog(props: CustomerDialogProps) {
                                 ({
                                     ...(prev ?? initialData),
                                     lastName: e.target.value,
-                                } satisfies Customer.Customer)
+                                } satisfies Customer.Customer),
                         );
                     }}
                     required
@@ -163,7 +180,7 @@ function CustomerDialog(props: CustomerDialogProps) {
                                 ({
                                     ...(prev ?? initialData),
                                     email: e.target.value,
-                                } satisfies Customer.Customer)
+                                } satisfies Customer.Customer),
                         );
                     }}
                     required
@@ -182,7 +199,7 @@ function CustomerDialog(props: CustomerDialogProps) {
                                 ({
                                     ...(prev ?? initialData),
                                     company: e.target.value,
-                                } satisfies Customer.Customer)
+                                } satisfies Customer.Customer),
                         );
                     }}
                 />
@@ -200,7 +217,7 @@ function CustomerDialog(props: CustomerDialogProps) {
                                 ({
                                     ...(prev ?? initialData),
                                     companyPosition: e.target.value,
-                                } satisfies Customer.Customer)
+                                } satisfies Customer.Customer),
                         );
                     }}
                 />

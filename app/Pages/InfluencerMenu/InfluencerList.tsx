@@ -21,7 +21,14 @@ import {
     GridPreProcessEditCellProps,
 } from "@mui/x-data-grid";
 import { randomId, randomName, randomUserName } from "@mui/x-data-grid-generator";
-import { Button, CircularProgress, TextField, ThemeProvider, Typography, createTheme } from "@mui/material";
+import {
+    Button,
+    CircularProgress,
+    TextField,
+    ThemeProvider,
+    Typography,
+    createTheme,
+} from "@mui/material";
 import {
     Add as AddIcon,
     Edit as EditIcon,
@@ -37,12 +44,11 @@ import { deDE } from "@mui/x-data-grid";
 import { deDE as pickersDeDE } from "@mui/x-date-pickers/locales";
 import { deDE as coreDeDE } from "@mui/material/locale";
 import { DialogOptions, DialogConfig } from "@/app/Definitions/types";
-import dbInterface from "@/app/ServerFunctions/database/.dbInterface";
 import { range } from "@/app/Definitions/utility";
-import { InfluencerDataNew, updateInfluencer } from "@/app/ServerFunctions/database/influencers";
 import { uniqueNamesGenerator, Config, animals, names, colors } from "unique-names-generator";
 import { QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
 import { group } from "console";
+import dataClient from "@/app/ServerFunctions/database";
 
 const client = generateClient<Schema>();
 const theme = createTheme({}, { deDE, pickersDeDE, coreDeDE });
@@ -61,36 +67,45 @@ function InitInfluencer(props: { id: string }) {
 interface EditToolbarProps {
     setIsOpen: Dispatch<SetStateAction<boolean>>;
     initiateUpdate: () => void;
-    setRows: (rows: Influencer.InfluencerFull[]) => void;
+    setRows: (rows: Influencer.Full[]) => void;
     queryClient: QueryClient;
     isPending?: boolean;
+}
+async function createRandomInfluencers(queryClient: QueryClient) {
+    const amount = parseInt(prompt("Anzahl Influencer") ?? "");
+    if (!amount) return;
+    const promises: Promise<unknown>[] = [];
+    for (const _ of range(amount)) {
+        const influencer: Influencer.Full = {
+            id: null,
+            firstName: uniqueNamesGenerator({ dictionaries: [names], length: 1 }),
+            lastName: uniqueNamesGenerator({
+                dictionaries: [names, animals, colors],
+                length: 2,
+                separator: "",
+            }),
+            email: "jonasroth1@gmail.com",
+        };
+        promises.push(dataClient.influencer.create({ parameters: [influencer], queryClient }));
+        console.log(influencer);
+    }
+    await Promise.all(promises);
 }
 function EditToolbar(props: EditToolbarProps) {
     const { setIsOpen, initiateUpdate, setRows, queryClient, isPending } = props;
     function handleClick() {
         setIsOpen(true);
     }
-    function createRandom() {
-        const amount = parseInt(prompt("Anzahl Influencer") ?? "");
-        for (const _ of range(amount)) {
-            const influencer: InfluencerDataNew = {
-                firstName: uniqueNamesGenerator({ dictionaries: [names], length: 1 }),
-                lastName: uniqueNamesGenerator({ dictionaries: [names, animals, colors], length: 2, separator: "" }),
-                email: "jonasroth1@gmail.com",
-            };
-            dbInterface.influencer.create({ data: influencer });
-            console.log(influencer);
-        }
-        queryClient.invalidateQueries({ queryKey: ["influencer"] });
-
-        initiateUpdate();
-    }
     return (
         <GridToolbarContainer>
             <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
                 Neuer Influencer
             </Button>
-            <Button color="primary" startIcon={<AddIcon />} onClick={createRandom}>
+            <Button
+                color="primary"
+                startIcon={<AddIcon />}
+                onClick={() => createRandomInfluencers(queryClient)}
+            >
                 Erstelle Influencer
             </Button>
             {isPending && <CircularProgress />}
@@ -99,24 +114,23 @@ function EditToolbar(props: EditToolbarProps) {
 }
 // const selectionSet = ["id", "details.id", "details.email"] as const;
 interface updateInfluencerProps {
-    setInfluencers: (influencers: Influencer.InfluencerFull[]) => void;
+    setInfluencers: (influencers: Influencer.Full[]) => void;
 }
-function updateInfluencers(props: updateInfluencerProps) {
-    dbInterface.influencer.list().then((result) => {
-        props.setInfluencers(result);
-    });
-}
+
 function InfluencerList(props: {}) {
     // const [details, setDetails] = useState<Schema["InfluencerPrivate"][]>([]);
-    const [rows, setRows] = useState<Influencer.InfluencerFull[] | undefined>([]);
+    const queryClient = useQueryClient();
+    const [rows, setRows] = useState<Influencer.Full[] | undefined>([]);
     const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
     const [isOpen, setIsOpen] = useState(false);
-    const [editingData, setEditingData] = useState<Influencer.InfluencerFull>();
-    const influencers = useQuery({ queryKey: ["influencer"], queryFn: () => dbInterface.influencer.list() });
-    const queryClient = useQueryClient();
+    const [editingData, setEditingData] = useState<Influencer.Full>();
+    const influencers = useQuery({
+        queryKey: ["influencers"],
+        queryFn: () => dataClient.influencer.list({ parameters: [], queryClient }),
+    });
     const [dialogOtions, setDialogOptions] = useState<DialogOptions>({});
 
-    const [dialogProps, setDialogProps] = useState<DialogConfig<Influencer.InfluencerFull[]>>({
+    const [dialogProps, setDialogProps] = useState<DialogConfig<Influencer.Full[]>>({
         parent: rows ?? [],
         setParent: setRows,
         onClose: () => {
@@ -161,19 +175,15 @@ function InfluencerList(props: {}) {
         },
         handleDeleteClick: (id: GridRowId) => {
             return () => {
+                if (!influencers.data) return;
                 const entity = influencers.data?.find((x) => x.id === id);
                 if (!entity) return;
                 console.log({ entity });
-                const { id: publicId } = entity;
-                const { id: privateId } = entity.details;
-                if (!(publicId && privateId)) return;
-                dbInterface.influencer.delete({
-                    publicId,
-                    privateId,
-                });
-                queryClient.setQueryData(["influencer"], (oldData: Influencer.InfluencerFull[] | undefined) => {
-                    if (!oldData) return [];
-                    return oldData.filter((x) => x.id !== id);
+                const { id: entityId } = entity;
+                if (!entityId) return;
+                dataClient.influencer.delete({
+                    parameters: [{ id: entityId }],
+                    queryClient,
                 });
                 // influencers.data = influencers.data?.filter((x) => x.id !== id);
                 influencers.refetch();
@@ -214,7 +224,8 @@ function InfluencerList(props: {}) {
             headerAlign: "center",
             align: "center",
             valueGetter: ({ row }) => {
-                return row.details.email;
+                row = row as Influencer.Full;
+                return row.email;
             },
         },
         {
@@ -247,7 +258,11 @@ function InfluencerList(props: {}) {
         <>
             {groups.data}
             {groups.data?.includes("admin") && (
-                <button onClick={() => queryClient.invalidateQueries({ queryKey: ["influencers"] })}>Update</button>
+                <button
+                    onClick={() => queryClient.invalidateQueries({ queryKey: ["influencers"] })}
+                >
+                    Update
+                </button>
             )}
             {isOpen && (
                 <InfluencerDialog

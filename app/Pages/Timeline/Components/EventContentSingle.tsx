@@ -52,20 +52,6 @@ function PostEventContent(props: EventContentProps) {
     );
 }
 
-function GenericEventContent(props: EventContentProps) {
-    const { event } = props;
-    return <></>;
-}
-
-function WebinarEventContent(props: EventContentProps) {
-    const { event } = props;
-    return (
-        <Grid xs>
-            <ItemName event={event} />
-        </Grid>
-    );
-}
-
 function VideoEventContent(props: EventContentProps) {
     const { event } = props;
     return (
@@ -80,11 +66,12 @@ interface ItemNameProps {
 }
 function ItemName(props: ItemNameProps) {
     const { event } = props;
+    const assignment = event.assignments[0];
     return (
         <Grid xs>
-            {event.assignment.isPlaceholder
-                ? `Influencer ${event.assignment.placeholderName}`
-                : `${event.assignment.influencer?.firstName} ${event.assignment.influencer?.lastName}`}
+            {assignment.isPlaceholder
+                ? `Influencer ${assignment.placeholderName}`
+                : `${assignment.influencer?.firstName} ${assignment.influencer?.lastName}`}
             {/* {event.assignment.influencer?.firstName} {event.assignment.influencer?.lastName} */}
         </Grid>
     );

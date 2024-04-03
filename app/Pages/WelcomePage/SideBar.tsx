@@ -13,8 +13,13 @@ import {
 import emailClient from "@/app/ServerFunctions/email/emailClient";
 import { inviteTemplateVariables } from "@/app/ServerFunctions/email/templates/invites/invitesTemplate";
 import { testLambda } from "@/app/ServerFunctions/email/templates/templateFunctions";
-import { createTestData, listCampaignsTest, wipeTestData } from "@/app/ServerFunctions/database/test";
+import {
+    createTestData,
+    listCampaignsTest,
+    wipeTestData,
+} from "@/app/ServerFunctions/database/dbOperations/test";
 import { useQueries, useQueryClient } from "@tanstack/react-query";
+import database, { debug } from "@/app/ServerFunctions/database/dbOperations/.database";
 
 const styles = stylesExporter.sideBar;
 
@@ -82,7 +87,7 @@ function SideBar(props: ISideBar) {
                         variant="outlined"
                         onClick={async () => {
                             const response = await emailClient.templates.get(
-                                prompt("TemplateName") ?? "CampaignInvite"
+                                prompt("TemplateName") ?? "CampaignInvite",
                             );
                             console.log(response);
                         }}
@@ -131,11 +136,11 @@ function SideBar(props: ISideBar) {
                     <Button
                         variant="outlined"
                         onClick={async () => {
-                            const response = await listCampaignsTest();
+                            const response = await debug.debugCampaignList();
                             console.log(response);
                         }}
                     >
-                        List Campaigns Test
+                        List Timelineevents
                     </Button>
                 </>
             )}

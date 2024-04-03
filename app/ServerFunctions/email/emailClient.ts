@@ -11,4 +11,6 @@ export const templates = {
     // testRender: testRenderTemplate,
 };
 
-export default { invites, templates };
+const emailClient = { invites, templates };
+
+export default emailClient;

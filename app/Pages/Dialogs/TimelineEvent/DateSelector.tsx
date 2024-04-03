@@ -5,17 +5,34 @@ import { Add as AddIcon, DeleteOutlined as DeleteIcon } from "@mui/icons-materia
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { Dispatch, MouseEvent, SetStateAction, useEffect } from "react";
-import { dates, styles } from "./TimelineEventSingleDialog";
+import { dates, styles } from "./SingleEvent/TimelineEventSingleDialog";
+import { PartialWith } from "@/app/Definitions/types";
+import { useQuery } from "@tanstack/react-query";
 
 interface DateSelectorProps {
+    timelineEvent: PartialWith<TimelineEvent.Event, "id" | "date">;
     isEditing: boolean;
     eventType: TimelineEvent.singleEventType;
-    relatedEvent?: TimelineEvent.MultiEvent;
     dates: dates;
     setDates: Dispatch<SetStateAction<dates>>;
 }
 export function DateSelector(props: DateSelectorProps) {
-    const { dates, setDates, isEditing, relatedEvent } = props;
+    const { dates, setDates, isEditing, timelineEvent } = props;
+
+    if (TimelineEvent.isEventReference(timelineEvent)) {
+        //TODO resolve EventReference
+        throw new Error("EventReference not implemented in DateSelector");
+    }
+
+    const parentEvent = useQuery({
+        queryKey: ["event", timelineEvent.relatedEvents?.parentEvent?.id],
+        queryFn: () =>
+            TimelineEvent.resolveEventReference(timelineEvent.relatedEvents?.parentEvent ?? null),
+    });
+
+    timelineEvent.relatedEvents
+        ? TimelineEvent.resolveEventReference(timelineEvent.relatedEvents.parentEvent)
+        : null;
 
     const EventHandlers = {
         handleAddDateClick: () => {
@@ -46,12 +63,12 @@ export function DateSelector(props: DateSelectorProps) {
             };
         },
     };
-    // trigger update date on relatedEvent Change
+    // trigger update date on parentEvent Change
     useEffect(() => {
-        if (relatedEvent) {
-            EventHandlers.handleDateChange(0, dayjs(relatedEvent.date));
+        if (parentEvent.data) {
+            EventHandlers.handleDateChange(0, dayjs(parentEvent.data.date));
         }
-    }, [relatedEvent]); //eslint-disable-line react-hooks/exhaustive-deps
+    }, [parentEvent]); //eslint-disable-line react-hooks/exhaustive-deps
 
     const isRepeatable: {
         [key in TimelineEvent.singleEventType]: boolean;
@@ -75,11 +92,11 @@ export function DateSelector(props: DateSelectorProps) {
         Invites: null,
         Post: null,
         Video: null,
-        WebinarSpeaker: props.relatedEvent ? dayjs(props.relatedEvent.date) : null,
+        WebinarSpeaker: parentEvent.data ? dayjs(parentEvent.data.date) : null,
     };
     function printVariables() {
         console.log({ dates });
-        console.log({ relatedEvent: props.relatedEvent });
+        console.log({ parentEvent });
         console.log({
             isRepeatable: isRepeatable[props.eventType],
             isFixedDate: isFixedDate[props.eventType],
@@ -91,7 +108,10 @@ export function DateSelector(props: DateSelectorProps) {
         <>
             {/*  */}
             {/* <Button onClick={printVariables}>Print Variables</Button> */}
-            <DialogContent dividers sx={{ "& .MuiFormControl-root": { flexBasis: "100%", flex: 1 } }}>
+            <DialogContent
+                dividers
+                sx={{ "& .MuiFormControl-root": { flexBasis: "100%", flex: 1 } }}
+            >
                 <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
                     <div style={{ flexBasis: "100%" }}>
                         {dates.dates.map((date, index) => {

@@ -6,7 +6,7 @@ import { timelineEventTypesType } from "@/amplify/data/types";
 import EventContentSingle from "./EventContentSingle";
 import EventContentMulti from "./EventContentMulti";
 import { Query, QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
-import dbInterface from "@/app/ServerFunctions/database/.dbInterface";
+import database from "@/app/ServerFunctions/database/dbOperations/.database";
 import { DeleteIcon, EditIcon } from "@/app/Definitions/Icons";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import { highlightData } from "@/app/Definitions/types";
@@ -33,7 +33,7 @@ export function Event(props: EventProps) {
         queryKey: ["event", id],
         queryFn: () => {
             if (tempId !== undefined) return props.event;
-            return dbInterface.timelineEvent.get(id);
+            return database.timelineEvent.get(id);
         },
     });
     if (event.isLoading) {
@@ -63,11 +63,18 @@ export function Event(props: EventProps) {
             return (
                 <Grid sx={{ paddingLeft: "10px", backgroundColor: highlightData?.color }} container>
                     {dateColumns > 0 && (
-                        <EventDate date={event.data.date ?? ""} groupBy={groupBy} columnSize={dateColumns} />
+                        <EventDate
+                            date={event.data.date ?? ""}
+                            groupBy={groupBy}
+                            columnSize={dateColumns}
+                        />
                     )}
                     <EventContentSingle event={event.data} columnSize={contentColumns} />
                     {editing && (
-                        <ModifyButtonGroup columnSize={modifyColumns} deleteFunction={EventHandlers.deleteFunction} />
+                        <ModifyButtonGroup
+                            columnSize={modifyColumns}
+                            deleteFunction={EventHandlers.deleteFunction}
+                        />
                     )}
                 </Grid>
             );
@@ -76,11 +83,18 @@ export function Event(props: EventProps) {
             return (
                 <Grid sx={{ paddingLeft: "10px", backgroundColor: highlightData?.color }} container>
                     {dateColumns > 0 && (
-                        <EventDate date={event.data.date ?? ""} groupBy={groupBy} columnSize={dateColumns} />
+                        <EventDate
+                            date={event.data.date ?? ""}
+                            groupBy={groupBy}
+                            columnSize={dateColumns}
+                        />
                     )}
                     <EventContentMulti event={event.data} columnSize={contentColumns} />
                     {editing && (
-                        <ModifyButtonGroup columnSize={modifyColumns} deleteFunction={EventHandlers.deleteFunction} />
+                        <ModifyButtonGroup
+                            columnSize={modifyColumns}
+                            deleteFunction={EventHandlers.deleteFunction}
+                        />
                     )}
                 </Grid>
             );
@@ -148,7 +162,7 @@ function deleteEvent(event: TimelineEvent.Event, queryClient: QueryClient, campa
             }
             const selectedEvent = event;
             console.log("Deleting event", selectedEvent);
-            dbInterface.timelineEvent.delete(selectedEvent).then(() => {
+            database.timelineEvent.delete(selectedEvent).then(() => {
                 console.log("Event deleted");
             });
 
@@ -161,20 +175,24 @@ function deleteEvent(event: TimelineEvent.Event, queryClient: QueryClient, campa
                 if (!oldData) return;
                 return {
                     ...oldData,
-                    events: oldData.campaignTimelineEvents.filter((e) => e.id !== selectedEvent?.id),
+                    events: oldData.campaignTimelineEvents.filter(
+                        (e) => e.id !== selectedEvent?.id,
+                    ),
                 };
             });
             //switch on event single /multi
             switch (true) {
                 case TimelineEvent.isSingleEvent(selectedEvent): {
                     queryClient.setQueryData(
-                        ["assignmentEvents", selectedEvent.assignment.id],
+                        ["assignmentEvents", selectedEvent.assignments[0].id],
                         (oldData: TimelineEvent.SingleEvent[]) => {
                             if (!oldData) return [];
                             return oldData.filter((e) => e.id !== selectedEvent.id);
-                        }
+                        },
                     );
-                    queryClient.refetchQueries({ queryKey: ["assignmentEvents", selectedEvent.assignment.id] });
+                    queryClient.refetchQueries({
+                        queryKey: ["assignmentEvents", selectedEvent.assignments[0].id],
+                    });
                     break;
                 }
                 case TimelineEvent.isMultiEvent(selectedEvent): {
@@ -184,9 +202,11 @@ function deleteEvent(event: TimelineEvent.Event, queryClient: QueryClient, campa
                             (oldData: TimelineEvent.SingleEvent[]) => {
                                 if (!oldData) return [];
                                 return oldData.filter((e) => e.id !== selectedEvent.id);
-                            }
+                            },
                         );
-                        queryClient.refetchQueries({ queryKey: ["assignmentEvents", assignment.id] });
+                        queryClient.refetchQueries({
+                            queryKey: ["assignmentEvents", assignment.id],
+                        });
                     });
 
                     break;

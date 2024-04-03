@@ -6,9 +6,11 @@ module.exports = {
     },
     extends: [
         "eslint:recommended",
+        "plugin:@next/next/core-web-vitals",
+        "plugin:@next/next/recommended",
         "plugin:@typescript-eslint/recommended",
-        "plugin:react/recommended",
         "plugin:react-hooks/recommended",
+        "plugin:react/recommended",
     ],
     overrides: [
         {
@@ -27,18 +29,25 @@ module.exports = {
         sourceType: "module",
     },
     plugins: ["@typescript-eslint", "react"],
+    settings: {
+        react: {
+            version: "detect",
+        },
+    },
     rules: {
-        "no-empty-function": "off",
-        "@typescript-eslint/no-empty-function": "off",
-        "react/react-in-jsx-scope": "off",
-        "no-empty-pattern": "off",
         "@typescript-eslint/ban-types": "off",
-        "no-unused-vars": "off",
-        "@typescript-eslint/no-unused-vars": ["off"],
-        "@typescript-eslint/no-namespace": "off",
-        "no-debugger": "warn",
-        "no-constant-condition": "warn",
         "@typescript-eslint/ban-ts-comment": "warn",
+        "@typescript-eslint/no-empty-function": "off",
         "@typescript-eslint/no-empty-interface": "warn",
+        "@typescript-eslint/no-namespace": "off",
+        "@typescript-eslint/no-unused-vars": ["off"],
+        "no-case-declarations": "warn",
+        "no-constant-condition": "warn",
+        "no-debugger": "warn",
+        "no-empty-function": "off",
+        "no-empty-pattern": "off",
+        "no-unused-vars": "off",
+        "no-inner-declarations": "off",
+        "react/react-in-jsx-scope": "off",
     },
 };

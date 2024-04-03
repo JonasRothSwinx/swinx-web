@@ -16,6 +16,7 @@ import {
     sesHandlerSendEmailTemplate,
     sesHandlerSendEmailTemplateBulk,
 } from "@/amplify/functions/sesHandler/types";
+import { Candidates } from "../types/candidates";
 
 export async function sendTestMail() {
     const input: SendEmailCommandInput = {
@@ -79,13 +80,13 @@ export async function sendTemplateAPITest() {
     return response.json();
 }
 interface TestBulkMailProps {
-    candidates: Influencer.Candidate[];
+    candidates: Candidates.Candidate[];
 }
 export async function sendTestBulkTemplate(props: TestBulkMailProps) {
     const input: SendBulkEmailCommandInput = {
         BulkEmailEntries: props.candidates.map<BulkEmailEntry>((candidate) => {
             return {
-                Destination: { ToAddresses: [candidate.influencer.details.email] },
+                Destination: { ToAddresses: [candidate.influencer.email] },
                 ReplacementEmailContent: {
                     ReplacementTemplate: {
                         ReplacementTemplateData: JSON.stringify({
@@ -131,7 +132,7 @@ export async function sendTestBulkTemplate(props: TestBulkMailProps) {
     // return { response: responses.map((response) => JSON.parse(JSON.stringify(response))) };
 }
 interface BulkCampaignInviteProps {
-    candidates: Influencer.Candidate[];
+    candidates: Candidates.Candidate[];
     variables: Partial<inviteTemplateVariables>;
 }
 export async function sendBulkCampaignInvite(props: BulkCampaignInviteProps) {
@@ -151,7 +152,7 @@ export async function sendBulkCampaignInvite(props: BulkCampaignInviteProps) {
                 btoa(JSON.stringify({ ...baseParams, response: "rejected" })),
             );
             return {
-                Destination: { ToAddresses: [candidate.influencer.details.email] },
+                Destination: { ToAddresses: [candidate.influencer.email] },
                 ReplacementEmailContent: {
                     ReplacementTemplate: {
                         ReplacementTemplateData: JSON.stringify({
@@ -216,7 +217,7 @@ export async function sendBulkCampaignInviteAPI(props: BulkCampaignInviteProps) 
                     btoa(JSON.stringify({ ...baseParams, response: "rejected" })),
                 );
                 return {
-                    to: candidate.influencer.details.email,
+                    to: candidate.influencer.email,
                     templateData: JSON.stringify({
                         name: `${candidate.influencer.firstName} ${candidate.influencer.lastName}`,
                         linkYes: `q=${encodedParametersYes}`,

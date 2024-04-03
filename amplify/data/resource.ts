@@ -1,32 +1,44 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 import { campaignTypes, campaignSteps, timelineEventTypes } from "./types.js";
+import { sesHandler } from "../functions/sesHandler/resource.js";
 
 const adminsAndManagers = a.allow.specificGroups(["admin", "projektmanager"], "userPools");
 const publicRead = a.allow.public().to(["read"]);
+const allowSESLambda = a.allow.resource(sesHandler);
+
 const schema = a.schema({
-    InfluencerPublic: a
+    Influencer: a
         .model({
-            firstName: a.string().required(),
-            lastName: a.string().required(),
+            //#region Contact Information
+            firstName: a.string().required().authorization([adminsAndManagers, publicRead]),
+            lastName: a.string().required().authorization([adminsAndManagers, publicRead]),
+            email: a.email().authorization([adminsAndManagers]),
+            phoneNumber: a.string().authorization([adminsAndManagers]),
+            //#endregion
+            //#region Job information
+            company: a.string(),
+            position: a.string(),
+            industry: a.string(),
+            //#endregion
+            //#region Social Media
             topic: a.string().array(),
-            details: a.hasOne("InfluencerPrivate").required(),
+            followers: a.integer(),
+            linkedinProfile: a.string(),
+            //#endregion
+            //#region Notes
+            notes: a.string(),
+            emailType: a.string().default("new"),
+            //#endregion
         })
         .authorization([
             //
+            adminsAndManagers,
             a.allow.public().to(["read"]),
-            a.allow.specificGroup("admin", "userPools"),
-            a.allow.specificGroup("projektmanager", "userPools").to(["create", "update", "read"]),
         ]),
-
-    InfluencerPrivate: a
-        .model({
-            email: a.email().required(),
-        })
-        .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
 
     InfluencerAssignment: a
         .model({
-            influencer: a.hasOne("InfluencerPublic").authorization([adminsAndManagers]),
+            influencer: a.hasOne("Influencer").authorization([adminsAndManagers]),
             isPlaceholder: a.boolean().required(),
             placeholderName: a.string().authorization([adminsAndManagers]),
             timelineEvents: a.manyToMany("TimelineEvent", { relationName: "EventAssignments" }),
@@ -41,8 +53,10 @@ const schema = a.schema({
     InfluencerCandidate: a
         .model({
             assignment: a.belongsTo("InfluencerAssignment"),
-            influencer: a.hasOne("InfluencerPublic"),
-            response: a.string().authorization([adminsAndManagers, a.allow.public().to(["read", "update"])]),
+            influencer: a.hasOne("Influencer"),
+            response: a
+                .string()
+                .authorization([adminsAndManagers, a.allow.public().to(["read", "update"])]),
         })
         .authorization([
             a.allow.public().to(["read"]),
@@ -54,26 +68,12 @@ const schema = a.schema({
             campaignManagerId: a.string(),
             // campaignType: a.string().required(),
             customer: a.hasOne("Customer"),
+            replacements: a.hasMany("Customer"),
+            billingAdress: a.hasOne("BillingAdress"),
             // webinar: a.hasOne("Webinar"),
             campaignTimelineEvents: a.hasMany("TimelineEvent"),
             assignedInfluencers: a.hasMany("InfluencerAssignment"),
             // campaignStep: a.string().required().default(campaignSteps[0]),
-            notes: a.string(),
-        })
-        .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
-
-    Webinar: a
-        .model({
-            title: a.string(),
-            speaker: a.hasMany("WebinarSpeaker"),
-            notes: a.string(),
-        })
-        .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
-
-    WebinarSpeaker: a
-        .model({
-            topic: a.string(),
-            influencer: a.hasOne("InfluencerPublic"),
             notes: a.string(),
         })
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
@@ -86,9 +86,19 @@ const schema = a.schema({
             lastName: a.string().required(),
             companyPosition: a.string(),
             email: a.email().required(),
+            phoneNumber: a.string(),
             notes: a.string(),
         })
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
+
+    BillingAdress: a
+        .model({
+            name: a.string().required(),
+            street: a.string().required(),
+            city: a.string().required(),
+            zip: a.string().required(),
+        })
+        .authorization([adminsAndManagers]),
 
     TimelineEvent: a
         .model({
@@ -101,9 +111,19 @@ const schema = a.schema({
             eventTaskAmount: a.integer(),
             date: a.datetime().required(),
             notes: a.string(),
+            relatedEvents: a.hasMany("TimelineEvent"),
+            details: a.string(),
         })
         .secondaryIndexes((index) => [index("campaignCampaignTimelineEventsId")])
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
+
+    ReminderDate: a
+        .model({
+            date: a.datetime().required(),
+            influencerAssignmentId: a.id().required(),
+            timelineEventId: a.id().required(),
+        })
+        .authorization([adminsAndManagers]),
     // EventAssignments: a
     //     .model({
     //         influencerAssignmentId: a.id().required(),

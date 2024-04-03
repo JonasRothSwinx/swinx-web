@@ -1,11 +1,17 @@
-import { AddIcon, DeleteIcon, EuroSymbolIcon, PersonSearchIcon, PrintIcon } from "@/app/Definitions/Icons";
+import {
+    AddIcon,
+    DeleteIcon,
+    EuroSymbolIcon,
+    PersonSearchIcon,
+    PrintIcon,
+} from "@/app/Definitions/Icons";
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import Influencer from "@/app/ServerFunctions/types/influencer";
 import { Tooltip, IconButton } from "@mui/material";
 import { MouseEvent, useState } from "react";
-import dbInterface from "@/app/ServerFunctions/database/.dbInterface";
-import TimelineEventSingleDialog from "@/app/Pages/Dialogs/TimelineEvent/TimelineEventSingleDialog";
+import database from "@/app/ServerFunctions/database/dbOperations/.database";
+import TimelineEventSingleDialog from "@/app/Pages/Dialogs/TimelineEvent/SingleEvent/TimelineEventSingleDialog";
 import AssignmentDialog from "@/app/Pages/Dialogs/AssignmentDialog";
 import CandidatePicker from "../CandidatePicker";
 import BudgetDialog from "@/app/Pages/Dialogs/BudgetDialog";
@@ -14,18 +20,33 @@ import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import { Confirm } from "@/app/Components/Popups";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 
-type openDialog = "none" | "timelineEvent" | "assignmentDialog" | "candidates" | "budget" | "notes" | "delete";
+type openDialog =
+    | "none"
+    | "timelineEvent"
+    | "assignmentDialog"
+    | "candidates"
+    | "budget"
+    | "notes"
+    | "delete";
 interface InfluencerDetailsButtonProps {
     setIsProcessing: (state: boolean) => void;
     isProcessing: boolean;
     setCampaign: (campaign: Campaign.Campaign) => void;
     campaign: Campaign.Campaign;
     assignment: Assignment.Assignment;
-    influencers: Influencer.InfluencerFull[];
+    influencers: Influencer.Full[];
     events: TimelineEvent.Event[];
 }
 export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
-    const { isProcessing, setIsProcessing, campaign, setCampaign, assignment, influencers, events } = props;
+    const {
+        isProcessing,
+        setIsProcessing,
+        campaign,
+        setCampaign,
+        assignment,
+        influencers,
+        events,
+    } = props;
     const [openDialog, setOpenDialog] = useState<openDialog>("none");
     const userGroups = useQuery({
         queryKey: ["userGroups"],
@@ -39,10 +60,12 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
         },
         deleteAssignment: () => {
             if (!assignment) return;
-            dbInterface.assignment.delete(assignment);
+            database.assignment.delete(assignment);
             const newCampaign = {
                 ...campaign,
-                assignedInfluencers: campaign.assignedInfluencers.filter((x) => x.id !== assignment.id),
+                assignedInfluencers: campaign.assignedInfluencers.filter(
+                    (x) => x.id !== assignment.id,
+                ),
             };
             setCampaign(newCampaign);
         },
@@ -57,18 +80,23 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
         preventClickthrough: (e: MouseEvent) => {
             e.stopPropagation();
         },
-        setAssignment: (targetAssignment: Assignment.Assignment, updatedValues?: Partial<Assignment.Assignment>) => {
+        setAssignment: (
+            targetAssignment: Assignment.Assignment,
+            updatedValues?: Partial<Assignment.Assignment>,
+        ) => {
             // debugger;
             // console.log(targetAssignment);
             if (updatedValues) {
                 const updateObject = { id: targetAssignment.id, ...updatedValues };
                 console.log(updateObject);
-                dbInterface.assignment.update(updateObject);
+                database.assignment.update(updateObject);
             }
             const newCampaign: Campaign.Campaign = {
                 ...campaign,
                 assignedInfluencers: [
-                    ...campaign.assignedInfluencers.map((x) => (x.id === targetAssignment.id ? targetAssignment : x)),
+                    ...campaign.assignedInfluencers.map((x) =>
+                        x.id === targetAssignment.id ? targetAssignment : x,
+                    ),
                 ],
             };
             // console.log({ newCampaign, assignments: newCampaign.assignedInfluencers });
@@ -155,7 +183,10 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             {hasNecessaryData(assignment, events) && (
                 <Tooltip title="Kandidaten zuweisen" placement="top">
                     <span>
-                        <IconButton disabled={isProcessing} onClick={EventHandlers.openCandidates()}>
+                        <IconButton
+                            disabled={isProcessing}
+                            onClick={EventHandlers.openCandidates()}
+                        >
                             <PersonSearchIcon />
                         </IconButton>
                     </span>
@@ -170,7 +201,11 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             </Tooltip>
             <Tooltip title="Löschen" placement="top">
                 <span>
-                    <IconButton color="error" onClick={EventHandlers.confirmDelete()} disabled={isProcessing}>
+                    <IconButton
+                        color="error"
+                        onClick={EventHandlers.confirmDelete()}
+                        disabled={isProcessing}
+                    >
                         <DeleteIcon />
                     </IconButton>
                 </span>

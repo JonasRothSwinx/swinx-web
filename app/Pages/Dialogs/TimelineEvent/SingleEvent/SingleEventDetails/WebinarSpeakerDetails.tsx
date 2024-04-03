@@ -1,6 +1,13 @@
-import dbInterface from "@/app/ServerFunctions/database/.dbInterface";
+import database from "@/app/ServerFunctions/database/dbOperations/.database";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import { DialogContent, Menu, MenuItem, SelectChangeEvent, TextField, Typography } from "@mui/material";
+import {
+    DialogContent,
+    Menu,
+    MenuItem,
+    SelectChangeEvent,
+    TextField,
+    Typography,
+} from "@mui/material";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ChangeEvent, ChangeEventHandler, useMemo } from "react";
@@ -9,12 +16,10 @@ interface WebinarDetailsProps {
     onChange: (data: Partial<TimelineEvent.WebinarSpeaker>) => void;
     data: Partial<TimelineEvent.WebinarSpeaker>;
     campaignId: string | undefined;
-    relatedEvent: TimelineEvent.MultiEvent | undefined;
-    setRelatedEvent: (data: TimelineEvent.MultiEvent) => void;
 }
 
 export default function WebinarSpeakerDetails(props: WebinarDetailsProps): JSX.Element {
-    const { onChange, data, campaignId, relatedEvent } = props;
+    const { onChange, data, campaignId } = props;
     const queryClient = useQueryClient();
 
     const events = useQuery({
@@ -22,7 +27,7 @@ export default function WebinarSpeakerDetails(props: WebinarDetailsProps): JSX.E
         queryKey: ["events", campaignId],
         queryFn: async () => {
             if (!campaignId) return [];
-            const events = await dbInterface.timelineEvent.listByCampaign(campaignId, true);
+            const events = await database.timelineEvent.listByCampaign(campaignId, true);
             events.map((event) => {
                 queryClient.setQueryData(["event", event.id], event);
             });
@@ -31,7 +36,10 @@ export default function WebinarSpeakerDetails(props: WebinarDetailsProps): JSX.E
         },
     });
     const webinarEventsData = useMemo(() => {
-        const webinars = events.data?.filter((event): event is TimelineEvent.Webinar => event.type === "Webinar") ?? [];
+        const webinars =
+            events.data?.filter(
+                (event): event is TimelineEvent.Webinar => event.type === "Webinar",
+            ) ?? [];
         if (webinars.length === 0) return [];
         return webinars;
     }, [events.data]);
@@ -41,7 +49,7 @@ export default function WebinarSpeakerDetails(props: WebinarDetailsProps): JSX.E
             const value = e.target.value as string;
             const selectedWebinar = webinarEventsData.find((event) => event.id === value);
             if (!selectedWebinar) return;
-            props.setRelatedEvent(selectedWebinar);
+            onChange({ relatedEvents: { parentEvent: selectedWebinar, childEvents: [] } });
         },
         onTopicChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
             const value = event.target.value;
@@ -77,13 +85,13 @@ export default function WebinarSpeakerDetails(props: WebinarDetailsProps): JSX.E
         >
             {/* Select Webinar */}
             <TextField
-                label={relatedEvent ? "Webinar" : "Webinar auswählen"}
+                label={data.relatedEvents?.parentEvent ? "Webinar" : "Webinar auswählen"}
                 select
                 fullWidth
                 placeholder="Webinar auswählen"
                 SelectProps={{
                     placeholder: "Webinar auswählen",
-                    value: relatedEvent?.id ?? "",
+                    value: data.relatedEvents?.parentEvent?.id ?? "",
                     onChange: EventHandlers.onWebinarSelect,
                 }}
             >
@@ -94,7 +102,11 @@ export default function WebinarSpeakerDetails(props: WebinarDetailsProps): JSX.E
                 ))}
             </TextField>
             {/* Thema */}
-            <TextField label="Thema" value={data.eventTitle ?? ""} onChange={EventHandlers.onTopicChange} />
+            <TextField
+                label="Thema"
+                value={data.eventTitle ?? ""}
+                onChange={EventHandlers.onTopicChange}
+            />
         </DialogContent>
     );
 }

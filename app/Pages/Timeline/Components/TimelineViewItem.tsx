@@ -18,11 +18,10 @@ interface TimelineViewItemProps {
     group: EventGroup;
     groupedBy: groupBy;
     editable: boolean;
-    setEditingEvent: (e: TimelineEvent.Event) => void;
-    openDialog: () => void;
+    editEvent: (event: TimelineEvent.Event) => void;
 }
 export default function TimelineViewItem(props: TimelineViewItemProps) {
-    const { keyValue, group, groupedBy, setEditingEvent, openDialog } = props;
+    const { keyValue, group, groupedBy, editEvent } = props;
     const [editing, setEditing] = useState(false);
     const [editable, setEditable] = useState(props.editable);
 
@@ -94,7 +93,7 @@ interface TimelineViewGroupTitleProps {
     setEditing: (e: boolean) => void;
 }
 function TimelineViewGroupTitle(
-    props: TimelineViewGroupTitleProps
+    props: TimelineViewGroupTitleProps,
     // { group, groupedBy, editable, editing, setEditing }
 ) {
     const { group, groupedBy, editable, editing, setEditing } = props;
@@ -125,7 +124,11 @@ function TimelineViewGroupTitle(
         >
             <div className={dialogStyles.cellActionSplit}>
                 <div>{titleContentByGroupType[groupedBy]}</div>
-                <TimelineViewEditButton editable={editable} editing={editing} setEditing={setEditing} />
+                <TimelineViewEditButton
+                    editable={editable}
+                    editing={editing}
+                    setEditing={setEditing}
+                />
             </div>
         </div>
     );

@@ -1,20 +1,18 @@
-import dbInterface from "@/app/ServerFunctions/database/.dbInterface";
+import CustomErrorBoundary from "@/app/Components/CustomErrorBoundary";
+import QueryDebugDisplay from "@/app/Components/QueryDebugDisplay";
+import { highlightData } from "@/app/Definitions/types";
+import dataClient from "@/app/ServerFunctions/database";
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import Campaign from "@/app/ServerFunctions/types/campaign";
-import Influencer from "@/app/ServerFunctions/types/influencer";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import { Dialog, Unstable_Grid2 as Grid, Skeleton, Typography } from "@mui/material";
+import { Placeholder } from "@aws-amplify/ui-react";
+import { Dialog, Unstable_Grid2 as Grid, Typography } from "@mui/material";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import TimelineView from "../Timeline/TimeLineView";
 import stylesExporter from "../styles/stylesExporter";
 import CustomerDetails from "./Components/CustomerDetails";
 import OpenInfluencerDetails from "./Components/OpenInfluencerDetails/OpenInfluencerDetails";
 import CampaignDetailsButtons from "./Components/TopButtons";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { data } from "@/amplify/data/resource";
-import { Placeholder } from "@aws-amplify/ui-react";
-import QueryDebugDisplay from "@/app/Components/QueryDebugDisplay";
-import { highlightData } from "@/app/Definitions/types";
 
 const styles = stylesExporter.campaignDetails;
 
@@ -29,11 +27,11 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
     const queryClient = useQueryClient();
     const campaign = useQuery({
         queryKey: ["campaign", campaignId],
-        queryFn: () => dbInterface.campaign.get(campaignId),
+        queryFn: () => dataClient.campaign.get(campaignId, queryClient),
     });
     const influencers = useQuery({
         queryKey: ["influencers"],
-        queryFn: () => dbInterface.influencer.list(),
+        queryFn: () => dataClient.influencer.list(queryClient),
         placeholderData: [],
     });
     const [assignmentData, setAssignmentData] = useState<Assignment.Assignment[]>([]);
@@ -82,27 +80,30 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
     return (
         <Dialog
             sx={{
-                padding: "10px",
+                padding: "5px",
                 "& .MuiDialog-container > .MuiPaper-root": {
                     borderRadius: "20px",
-                    padding: "0px 10px",
+                    padding: "10px",
                 },
             }}
             open={isOpen}
             fullScreen
         >
             <>
-                <CampaignDetailsButtons
-                    updateCampaign={EventHandlers.updateCampaign}
-                    handleClose={EventHandlers.handleClose}
-                    campaign={campaign.data}
-                    isLoading={campaign.isFetching}
-                />
+                <CustomErrorBoundary message="Error loading.... Buttons?">
+                    <CampaignDetailsButtons
+                        updateCampaign={EventHandlers.updateCampaign}
+                        handleClose={EventHandlers.handleClose}
+                        campaign={campaign.data}
+                        isLoading={campaign.isFetching}
+                    />
+                </CustomErrorBoundary>
 
                 <Grid
                     container
                     columns={3}
                     sx={{
+                        height: "100%",
                         maxHeight: "100%",
                         "& .MuiGrid2-root": {
                             overflowY: "auto",
@@ -112,18 +113,22 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
                     maxHeight={"100%"}
                 >
                     <Grid xs={1} display={"flex"} flexDirection={"column"}>
-                        <CustomerDetails
-                            campaign={campaign.data}
-                            customer={campaign?.data.customer}
-                            setCampaign={EventHandlers.setCampaign}
-                        />
-                        <OpenInfluencerDetails
-                            influencers={influencers.data ?? []}
-                            campaignId={campaignId}
-                            setCampaign={EventHandlers.setCampaign}
-                            events={campaign.data.campaignTimelineEvents ?? []}
-                            placeholders={campaign.data.assignedInfluencers}
-                        />
+                        <CustomErrorBoundary message="Error loading customer details">
+                            <CustomerDetails
+                                campaign={campaign.data}
+                                customer={campaign?.data.customer}
+                                setCampaign={EventHandlers.setCampaign}
+                            />
+                        </CustomErrorBoundary>
+                        <CustomErrorBoundary message="Error loading influencer details">
+                            <OpenInfluencerDetails
+                                influencers={influencers.data ?? []}
+                                campaignId={campaignId}
+                                setCampaign={EventHandlers.setCampaign}
+                                events={campaign.data.campaignTimelineEvents ?? []}
+                                placeholders={campaign.data.assignedInfluencers}
+                            />
+                        </CustomErrorBoundary>
                     </Grid>
                     <Grid xs={1} maxHeight={"100%"}>
                         <QueryDebugDisplay
@@ -150,14 +155,16 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
                         </Typography>
                     </Grid>
                     <Grid id="timeline" xs={1} columns={1}>
-                        <TimelineView
-                            setCampaign={EventHandlers.setCampaign}
-                            influencers={influencers.data ?? []}
-                            campaign={campaign.data}
-                            orientation="vertical"
-                            controlsPosition="before"
-                            editable
-                        />
+                        <CustomErrorBoundary message="Error loading timeline">
+                            <TimelineView
+                                setCampaign={EventHandlers.setCampaign}
+                                influencers={influencers.data ?? []}
+                                campaign={campaign.data}
+                                orientation="vertical"
+                                controlsPosition="before"
+                                editable
+                            />
+                        </CustomErrorBoundary>
                     </Grid>
                 </Grid>
             </>
