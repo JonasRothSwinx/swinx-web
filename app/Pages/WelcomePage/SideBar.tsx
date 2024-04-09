@@ -13,13 +13,10 @@ import {
 import emailClient from "@/app/ServerFunctions/email/emailClient";
 import { inviteTemplateVariables } from "@/app/ServerFunctions/email/templates/invites/invitesTemplate";
 import { testLambda } from "@/app/ServerFunctions/email/templates/templateFunctions";
-import {
-    createTestData,
-    listCampaignsTest,
-    wipeTestData,
-} from "@/app/ServerFunctions/database/dbOperations/test";
+import { createTestData, listCampaignsTest, wipeTestData } from "@/app/ServerFunctions/database/dbOperations/test";
 import { useQueries, useQueryClient } from "@tanstack/react-query";
-import database, { debug } from "@/app/ServerFunctions/database/dbOperations/.database";
+import { debug } from "@/app/ServerFunctions/database/dbOperations/.database";
+import dataClient from "@/app/ServerFunctions/database";
 
 const styles = stylesExporter.sideBar;
 
@@ -87,7 +84,7 @@ function SideBar(props: ISideBar) {
                         variant="outlined"
                         onClick={async () => {
                             const response = await emailClient.templates.get(
-                                prompt("TemplateName") ?? "CampaignInvite",
+                                prompt("TemplateName") ?? "CampaignInvite"
                             );
                             console.log(response);
                         }}
@@ -118,6 +115,7 @@ function SideBar(props: ISideBar) {
                             const response = await createTestData();
                             console.log(response);
                             queryClient.invalidateQueries({ queryKey: ["campaigns"] });
+                            queryClient.refetchQueries({ queryKey: ["campaigns"] });
                         }}
                     >
                         Create Test Data
@@ -136,11 +134,21 @@ function SideBar(props: ISideBar) {
                     <Button
                         variant="outlined"
                         onClick={async () => {
-                            const response = await debug.debugCampaignList();
+                            const response = await dataClient.campaign.list();
                             console.log(response);
                         }}
                     >
-                        List Timelineevents
+                        List Campaigns
+                    </Button>
+                    {/* Liust events */}
+                    <Button
+                        variant="outlined"
+                        onClick={async () => {
+                            const response = await dataClient.timelineEvent.list();
+                            console.log(response);
+                        }}
+                    >
+                        List Events
                     </Button>
                 </>
             )}

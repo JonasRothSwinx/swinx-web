@@ -10,11 +10,9 @@ import { createCandidate, deleteCandidate } from "./candidate";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { RawData } from "./types";
 import { Candidates } from "../../types/candidates";
+import influencer from "../dataClients/influencer";
 
-export async function createAssignment(
-    assignment: Omit<Assignment.AssignmentFull, "id">,
-    campaignId: string,
-) {
+export async function createAssignment(assignment: Omit<Assignment.AssignmentFull, "id">, campaignId: string) {
     const { placeholderName: name, budget, isPlaceholder = true } = assignment;
     if (!name) throw new Error("Missing Data");
 
@@ -74,7 +72,7 @@ export async function listAssignments() {
 export async function getAllCandidates(assignmentId: string) {
     const { data, errors } = await client.models.InfluencerAssignment.get(
         { id: assignmentId },
-        { selectionSet: ["candidates.id"] },
+        { selectionSet: ["candidates.id"] }
     );
     return data.candidates;
 }
@@ -130,7 +128,7 @@ export async function deletePlaceholder(assignment: PartialWith<Assignment.Assig
     await Promise.all(
         events.map(async (x) => {
             timelineEvents.delete(x);
-        }),
+        })
     );
 
     await client.models.InfluencerAssignment.delete({ id });
@@ -141,7 +139,7 @@ export async function getAssignment(assignmentId: string) {
     const { data, errors } = await client.models.InfluencerAssignment.get(
         { id: assignmentId },
         //@ts-ignore
-        { selectionSet },
+        { selectionSet }
     );
     const dataOut = validateAssignment(data);
     return dataOut;
@@ -149,11 +147,13 @@ export async function getAssignment(assignmentId: string) {
 
 function validateAssignment(rawData: unknown): Assignment.AssignmentMin {
     const rawDataTyped = rawData as RawData.RawAssignmentFull;
-    const influencer: Influencer.InfluencerWithName = {
-        id: rawDataTyped.influencer.id,
-        firstName: rawDataTyped.influencer.firstName,
-        lastName: rawDataTyped.influencer.lastName,
-    };
+    const influencer: Nullable<Influencer.InfluencerWithName> = rawDataTyped.influencer
+        ? {
+              id: rawDataTyped.influencer.id,
+              firstName: rawDataTyped.influencer.firstName,
+              lastName: rawDataTyped.influencer.lastName,
+          }
+        : null;
     const candidates: Candidates.Candidate[] = rawDataTyped.candidates.map((x) => {
         if (!x.influencer.email) throw new Error("Email is required");
         let emailType: Influencer.emailType = "new";
@@ -204,15 +204,15 @@ export async function getAssignmentTimelineEvents(assignment: Assignment.Assignm
                 //@ts-ignore
                 "timelineEvents.timelineEvent.campaign.id",
             ],
-        },
+        }
     );
     const fetchEnd = performance.now();
     console.log("Fetch Time", fetchEnd - fetchStart);
     const validateStart = performance.now();
     const dataOut: TimelineEvent.Event[] = await Promise.all(
         data.timelineEvents.map(async (x: { timelineEvent: RawData.RawTimelineEvent }) =>
-            validateTimelineEvent(x.timelineEvent, assignment),
-        ),
+            validateTimelineEvent(x.timelineEvent, assignment)
+        )
     );
     const validateEnd = performance.now();
     console.log("Validate Time", validateEnd - validateStart);
@@ -238,10 +238,7 @@ export async function listAssignmentsByCampaign(campaignId: string) {
     return validatedAssignments;
 }
 
-function validateTimelineEvent(
-    rawData: unknown,
-    assignment: Assignment.AssignmentMin,
-): TimelineEvent.Event {
+function validateTimelineEvent(rawData: unknown, assignment: Assignment.AssignmentMin): TimelineEvent.Event {
     const rawDataTyped = rawData as RawData.RawTimelineEvent;
     const testEvent = { ...rawDataTyped, type: rawDataTyped.timelineEventType };
     switch (true) {
@@ -259,6 +256,7 @@ function validateTimelineEvent(
                     parentEvent: null,
                     childEvents: [],
                 },
+                details: {},
             };
             return validatedEvent;
         }
@@ -276,6 +274,8 @@ function validateTimelineEvent(
                     parentEvent: null,
                     childEvents: [],
                 },
+
+                details: {},
             };
             return validatedEvent;
         }

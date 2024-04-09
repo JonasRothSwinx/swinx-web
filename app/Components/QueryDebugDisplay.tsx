@@ -1,6 +1,6 @@
 import { PrintIcon, RefreshIcon } from "@/app/Definitions/Icons";
 import { IconButton, Typography } from "@mui/material";
-import { useQuery, useQueryClient, UseQueryResult } from "@tanstack/react-query";
+import { Query, QueryKey, useQuery, useQueryClient, UseQueryResult } from "@tanstack/react-query";
 import { Unstable_Grid2 as Grid } from "@mui/material";
 import { getUserGroups } from "../ServerFunctions/serverActions";
 
@@ -9,6 +9,7 @@ interface TimelineDebugDisplayProps {
 }
 type queryData = UseQueryResult & {
     name: string;
+    queryKey?: QueryKey;
 };
 export default function QueryDebugDisplay(props: TimelineDebugDisplayProps) {
     const { data } = props;
@@ -49,7 +50,8 @@ export default function QueryDebugDisplay(props: TimelineDebugDisplayProps) {
                         </IconButton>
                         <IconButton
                             onClick={() => {
-                                queryClient.invalidateQueries({ queryKey: [query.name] });
+                                console.log(query);
+                                queryClient.invalidateQueries({ queryKey: query.queryKey ?? [query.name] });
                                 query.refetch();
                                 console.log("Refetching", query.name);
                             }}

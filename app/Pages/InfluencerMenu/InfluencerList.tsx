@@ -21,14 +21,7 @@ import {
     GridPreProcessEditCellProps,
 } from "@mui/x-data-grid";
 import { randomId, randomName, randomUserName } from "@mui/x-data-grid-generator";
-import {
-    Button,
-    CircularProgress,
-    TextField,
-    ThemeProvider,
-    Typography,
-    createTheme,
-} from "@mui/material";
+import { Button, CircularProgress, TextField, ThemeProvider, Typography, createTheme } from "@mui/material";
 import {
     Add as AddIcon,
     Edit as EditIcon,
@@ -77,7 +70,7 @@ async function createRandomInfluencers(queryClient: QueryClient) {
     const promises: Promise<unknown>[] = [];
     for (const _ of range(amount)) {
         const influencer: Influencer.Full = {
-            id: null,
+            id: "null",
             firstName: uniqueNamesGenerator({ dictionaries: [names], length: 1 }),
             lastName: uniqueNamesGenerator({
                 dictionaries: [names, animals, colors],
@@ -86,7 +79,7 @@ async function createRandomInfluencers(queryClient: QueryClient) {
             }),
             email: "jonasroth1@gmail.com",
         };
-        promises.push(dataClient.influencer.create({ parameters: [influencer], queryClient }));
+        promises.push(dataClient.influencer.create(influencer));
         console.log(influencer);
     }
     await Promise.all(promises);
@@ -101,11 +94,7 @@ function EditToolbar(props: EditToolbarProps) {
             <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
                 Neuer Influencer
             </Button>
-            <Button
-                color="primary"
-                startIcon={<AddIcon />}
-                onClick={() => createRandomInfluencers(queryClient)}
-            >
+            <Button color="primary" startIcon={<AddIcon />} onClick={() => createRandomInfluencers(queryClient)}>
                 Erstelle Influencer
             </Button>
             {isPending && <CircularProgress />}
@@ -126,7 +115,7 @@ function InfluencerList(props: {}) {
     const [editingData, setEditingData] = useState<Influencer.Full>();
     const influencers = useQuery({
         queryKey: ["influencers"],
-        queryFn: () => dataClient.influencer.list({ parameters: [], queryClient }),
+        queryFn: () => dataClient.influencer.list(),
     });
     const [dialogOtions, setDialogOptions] = useState<DialogOptions>({});
 
@@ -181,10 +170,7 @@ function InfluencerList(props: {}) {
                 console.log({ entity });
                 const { id: entityId } = entity;
                 if (!entityId) return;
-                dataClient.influencer.delete({
-                    parameters: [{ id: entityId }],
-                    queryClient,
-                });
+                dataClient.influencer.delete(entityId);
                 // influencers.data = influencers.data?.filter((x) => x.id !== id);
                 influencers.refetch();
             };
@@ -258,11 +244,7 @@ function InfluencerList(props: {}) {
         <>
             {groups.data}
             {groups.data?.includes("admin") && (
-                <button
-                    onClick={() => queryClient.invalidateQueries({ queryKey: ["influencers"] })}
-                >
-                    Update
-                </button>
+                <button onClick={() => queryClient.invalidateQueries({ queryKey: ["influencers"] })}>Update</button>
             )}
             {isOpen && (
                 <InfluencerDialog

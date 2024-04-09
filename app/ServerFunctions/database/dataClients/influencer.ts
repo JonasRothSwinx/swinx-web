@@ -1,18 +1,16 @@
 import database from "../dbOperations/.database";
 import Influencer from "../../types/influencer";
-import { QueryClient } from "@tanstack/react-query";
 import { resolve } from "path";
 import { PartialWith } from "@/app/Definitions/types";
+import config from "./config";
 
 /**
  * Create a new influencer
  * @param params The parameters for the create operation
  * @returns The created influencer object
  */
-async function createInfluencer(
-    influencer: Omit<Influencer.Full, "id">,
-    queryClient: QueryClient,
-): Promise<Influencer.Full> {
+async function createInfluencer(influencer: Omit<Influencer.Full, "id">): Promise<Influencer.Full> {
+    const queryClient = config.getQueryClient();
     const id = await database.influencer.create(influencer);
     const createdInfluencer = { ...influencer, id };
     queryClient.setQueryData(["influencer", id], { ...influencer, id });
@@ -29,10 +27,10 @@ async function createInfluencer(
 
 /**
  * List all influencers
- * @param queryClient The query client to use for updating the cache
  * @returns The list of influencers
  */
-async function listInfluencers(queryClient: QueryClient): Promise<Influencer.Full[]> {
+async function listInfluencers(): Promise<Influencer.Full[]> {
+    const queryClient = config.getQueryClient();
     const influencers = await database.influencer.list();
     influencers.forEach((influencer) => {
         queryClient.setQueryData(["influencer", influencer.id], influencer);
@@ -44,15 +42,14 @@ async function listInfluencers(queryClient: QueryClient): Promise<Influencer.Ful
 /**
  * Update an influencer *
  * @parma updatedData The updated influencer data
- * @param queryClient The query client to use for updating the cache
  * @param previousInfluencer The previous influencer data
  * @returns The updated influencer object
  */
 async function updateInfluencer(
     updatedData: PartialWith<Influencer.Full, "id">,
-    queryClient: QueryClient,
-    previousInfluencer: Influencer.Full,
+    previousInfluencer: Influencer.Full
 ): Promise<Influencer.Full> {
+    const queryClient = config.getQueryClient();
     await database.influencer.update(updatedData);
     const updatedInfluencer = { ...previousInfluencer, ...updatedData };
     queryClient.setQueryData(["influencer", updatedData.id], updatedInfluencer);
@@ -60,9 +57,7 @@ async function updateInfluencer(
         if (!prev) {
             return [updatedInfluencer];
         }
-        return prev.map((influencer) =>
-            influencer.id === updatedInfluencer.id ? updatedInfluencer : influencer,
-        );
+        return prev.map((influencer) => (influencer.id === updatedInfluencer.id ? updatedInfluencer : influencer));
     });
     queryClient.refetchQueries({ queryKey: ["influencers"] });
     queryClient.refetchQueries({ queryKey: ["influencer", updatedData.id] });
@@ -72,9 +67,9 @@ async function updateInfluencer(
 /**
  * Delete an influencer
  * @param id The parameters for the delete operation
- * @param queryClient The query client to use for updating the cache
  */
-async function deleteInfluencer(id: string, queryClient: QueryClient): Promise<void> {
+async function deleteInfluencer(id: string): Promise<void> {
+    const queryClient = config.getQueryClient();
     if (!id) {
         throw new Error("No ID provided for influencer deletion");
     }
@@ -98,10 +93,10 @@ async function deleteInfluencer(id: string, queryClient: QueryClient): Promise<v
 /**
  * Get an influencer
  * @param id The parameters for the get operation
- * @param queryClient The query client to use for updating the cache
  * @returns The influencer object
  */
-async function getInfluencer(id: string, queryClient: QueryClient): Promise<Influencer.Full> {
+async function getInfluencer(id: string): Promise<Influencer.Full> {
+    const queryClient = config.getQueryClient();
     const influencer = await database.influencer.get(id);
     queryClient.setQueryData(["influencer", id], influencer);
     return influencer;
@@ -110,13 +105,10 @@ async function getInfluencer(id: string, queryClient: QueryClient): Promise<Infl
 /**
  * Resolve Influencer Refereence to full object
  * @param influencer The influencer reference
- * @param queryClient The query client to use for updating the cache
  * @returns The full influencer object
  */
-export async function resolveInfluencerReference(
-    influencer: Influencer.Reference,
-    queryClient: QueryClient,
-): Promise<Influencer.Full> {
+export async function resolveInfluencerReference(influencer: Influencer.Reference): Promise<Influencer.Full> {
+    const queryClient = config.getQueryClient();
     const { id } = influencer;
     if (!id) {
         throw new Error("No ID provided for influencer reference");
@@ -125,7 +117,7 @@ export async function resolveInfluencerReference(
     if (cachedInfluencer) {
         return cachedInfluencer as Influencer.Full;
     }
-    const fullInfluencer = await getInfluencer(id, queryClient);
+    const fullInfluencer = await getInfluencer(id);
     return fullInfluencer;
 }
 

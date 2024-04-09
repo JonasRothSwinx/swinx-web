@@ -16,6 +16,7 @@ namespace Campaign {
         billingAdress: Nullable<BillingAdress>;
         // campaignStep: string;
         notes?: Nullable<string>;
+        budget?: Nullable<number>;
     };
 
     export type CampaignWithReferences = CampaignMin & {
@@ -31,7 +32,7 @@ namespace Campaign {
         campaignTimelineEvents: TimelineEvent.Event[];
     };
 
-    type BillingAdress = {
+    export type BillingAdress = {
         name: string;
         street: string;
         city: string;

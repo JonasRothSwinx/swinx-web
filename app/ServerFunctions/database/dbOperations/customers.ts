@@ -3,8 +3,20 @@ import { Nullable } from "@/app/Definitions/types";
 import Customer from "@/app/ServerFunctions/types/customer";
 import client from "./.dbclient";
 
-export async function createCustomer(customer: Customer.Customer) {
-    const { company, firstName, lastName, email, companyPosition, notes } = customer;
+export async function createCustomer(customer: Omit<Customer.Customer, "id"> & { customerSubstitutesId?: string }) {
+    const {
+        company,
+        firstName,
+        lastName,
+        email,
+        companyPosition,
+        phoneNumber,
+        notes,
+        customerSubstitutesId,
+        substitutes,
+    } = customer;
+
+    // Create primary customer
     const { data, errors } = await client.models.Customer.create({
         company,
         firstName,
@@ -12,8 +24,38 @@ export async function createCustomer(customer: Customer.Customer) {
         email,
         companyPosition,
         notes,
+        phoneNumber,
+        customerSubstitutesId,
     });
-    return { data, errors };
+    if (errors) throw new Error(JSON.stringify(errors));
+
+    // Create substitutes
+    const substitutePromises: Promise<string>[] = [];
+
+    if (substitutes) {
+        for (const substitute of substitutes) {
+            substitutePromises.push(createSubstitute({ ...substitute, customerSubstitutesId: data.id }));
+        }
+    }
+    await Promise.all(substitutePromises);
+    return data.id;
+}
+
+async function createSubstitute(customer: Omit<Customer.Customer, "id"> & { customerSubstitutesId: string }) {
+    const { company, firstName, lastName, email, companyPosition, phoneNumber, notes, customerSubstitutesId } =
+        customer;
+    const { data, errors } = await client.models.Customer.create({
+        company,
+        firstName,
+        lastName,
+        email,
+        companyPosition,
+        notes,
+        phoneNumber,
+        customerSubstitutesId,
+    });
+    if (errors) throw new Error(JSON.stringify(errors));
+    return data.id;
 }
 
 export async function updateCustomer(customer: Customer.Customer) {

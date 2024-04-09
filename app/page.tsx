@@ -7,6 +7,7 @@ import WelcomePage from "./Pages/WelcomePage/WelcomePage";
 import { createTheme } from "@mui/material";
 import { blue } from "@mui/material/colors";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import dataClient from "./ServerFunctions/database";
 
 const theme = createTheme({
     palette: {
@@ -18,6 +19,7 @@ const theme = createTheme({
     shape: { borderRadius: 20 },
 });
 const queryClient = new QueryClient();
+dataClient.config.setQueryClient(queryClient);
 
 function Home() {
     const { user, authStatus } = useAuthenticator((context) => [context.user, context.authStatus]);

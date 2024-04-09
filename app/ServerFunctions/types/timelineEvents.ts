@@ -27,9 +27,7 @@ namespace TimelineEvent {
         );
     }
 
-    export async function resolveEventReference(
-        event: Nullable<EventOrReference>,
-    ): Promise<Nullable<Event>> {
+    export async function resolveEventReference(event: Nullable<EventOrReference>): Promise<Nullable<Event>> {
         if (event === null) return null;
         else if (!isEventReference(event)) return event;
         else {
@@ -76,6 +74,15 @@ namespace TimelineEvent {
             childEvents: EventOrReference[];
             parentEvent: Nullable<EventOrReference>;
         };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        details: Partial<EventDetails>;
+    };
+    export type EventDetails = {
+        topic: string;
+        charLimit: number;
+        draftDeadline: string;
+        instructions: string;
+        maxDuration: number;
     };
     //#endregion Common
     //#region Single Event Types
@@ -89,18 +96,38 @@ namespace TimelineEvent {
 
     export type Invites = SingleEventCommon & {
         type: "Invites";
+        // details?: InvitesDetails;
     };
+    export type InvitesDetails = {};
 
     export type Post = SingleEventCommon & {
         type: "Post";
+        // details?: PostDetails;
+    };
+    type PostDetails = {
+        topic: string;
+        charCount: number;
+        instructions: string;
+        draftDeadline: string;
     };
 
     export type Video = SingleEventCommon & {
         type: "Video";
+        // details?: Nullable<VideoDetails>;
     };
+
+    type VideoDetails = {
+        topic: string;
+        maxDuration: number;
+        instructions: string;
+        draftDeadline: string;
+    };
+
     export type WebinarSpeaker = SingleEventCommon & {
         type: "WebinarSpeaker";
+        // details?: Nullable<WebinarSpeakerDetails>;
     };
+    type WebinarSpeakerDetails = {};
     //#endregion Types
     //#region Type Guards
     export function isSingleEvent(event: unknown, verbose = false): event is SingleEvent {
@@ -144,12 +171,13 @@ namespace TimelineEvent {
     export type MultiEvent = Webinar;
     type MultiEventCommon = EventCommon & {
         type: multiEventType;
-        assignments: Assignment.AssignmentMin[];
     };
     export type Webinar = MultiEventCommon & {
         type: "Webinar";
         eventAssignmentAmount: number;
+        details?: WebinarDetails;
     };
+    type WebinarDetails = {};
     //#endregion Types
     //#region Type Guards
     export function isMultiEvent(event: unknown, verbose = false): event is MultiEvent {

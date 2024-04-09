@@ -105,8 +105,7 @@ function isRawData(data: unknown): data is RawData.RawTimeLineEventFull {
     //check nullable data types
     if (
         !(
-            (typeof testData.eventAssignmentAmount === "number" ||
-                testData.eventAssignmentAmount === null) &&
+            (typeof testData.eventAssignmentAmount === "number" || testData.eventAssignmentAmount === null) &&
             (typeof testData.eventTitle === "string" || testData.eventTitle === null) &&
             (typeof testData.eventTaskAmount === "number" || testData.eventTaskAmount === null) &&
             (typeof testData.date === "string" || testData.date === null) &&
@@ -129,7 +128,7 @@ function isRawData(data: unknown): data is RawData.RawTimeLineEventFull {
                     x.influencerAssignment.influencer.id &&
                     typeof x.influencerAssignment.influencer.id === "string" &&
                     typeof x.influencerAssignment.influencer.firstName === "string" &&
-                    typeof x.influencerAssignment.influencer.lastName === "string"),
+                    typeof x.influencerAssignment.influencer.lastName === "string")
         )
     ) {
         console.log("invalid assignment data");
@@ -143,10 +142,13 @@ function isRawData(data: unknown): data is RawData.RawTimeLineEventFull {
 function validateEvent(rawData: RawData.RawTimeLineEventFull): TimelineEvent.Event {
     const { id, timelineEventType, campaign, assignments, relatedEvents } = rawData;
     // console.log("timeline", { rawData, assignment: rawData.assignments[0] });
+    // console.log("validating", rawData);
     if (!id) throw new Error("Missing ID");
     if (!TimelineEvent.isTimelineEventType(timelineEventType)) throw new Error("Invalid Type");
+
     const relatedEventsParsed = {
-        parentEvent: { id: rawData.timelineEventRelatedEventsId },
+        parentEvent:
+            rawData.timelineEventRelatedEventsId !== null ? { id: rawData.timelineEventRelatedEventsId } : null,
         childEvents: relatedEvents.map((x) => {
             return { id: x.id, type: x.timelineEventType as TimelineEvent.eventType };
         }),
@@ -161,6 +163,7 @@ function validateEvent(rawData: RawData.RawTimeLineEventFull): TimelineEvent.Eve
         influencer: null,
         timelineEvents: [],
     }));
+
     const eventOut: TimelineEvent.Event = {
         id,
         type: timelineEventType,
@@ -172,6 +175,7 @@ function validateEvent(rawData: RawData.RawTimeLineEventFull): TimelineEvent.Eve
         eventTitle: eventTitle ?? "",
         eventTaskAmount: eventTaskAmount ?? 0,
         relatedEvents: relatedEventsParsed,
+        details: {},
     };
     return eventOut;
 }
@@ -196,14 +200,7 @@ export async function listTimelineEvents(): Promise<TimelineEvent.Event[]> {
 
 export async function createTimelineEvent(props: Omit<TimelineEvent.Event, "id">) {
     // console.log(props);
-    const {
-        type: timelineEventType,
-        date,
-        notes,
-        eventAssignmentAmount,
-        eventTitle,
-        eventTaskAmount,
-    } = props;
+    const { type: timelineEventType, date, notes, eventAssignmentAmount, eventTitle, eventTaskAmount } = props;
     const { id: campaignCampaignTimelineEventsId } = props.campaign;
     if (!(date && campaignCampaignTimelineEventsId)) {
         throw new Error("Missing Data");
@@ -219,7 +216,7 @@ export async function createTimelineEvent(props: Omit<TimelineEvent.Event, "id">
             eventTitle,
             eventTaskAmount,
         },
-        {},
+        {}
     );
     //create join table entries
     const assignments = props.assignments ?? [];
@@ -227,13 +224,14 @@ export async function createTimelineEvent(props: Omit<TimelineEvent.Event, "id">
     const connectionResponse = await Promise.all(
         assignments.map(async (assignment) => {
             return await connectToAssignment(data.id, assignment.id);
-        }),
+        })
     );
     const connectionData = connectionResponse.map((x) => x.data);
     const connectionErrors = connectionResponse.map((x) => x.errors);
     console.log({ connectionData, connectionErrors });
     if (errors) throw new Error(JSON.stringify(errors));
-    if (connectionErrors.length > 0) throw new Error(JSON.stringify(connectionErrors));
+    if (connectionErrors.length > 0 && connectionErrors.some((x) => x !== null && x !== undefined))
+        throw new Error(JSON.stringify(connectionErrors));
     console.log(data);
     return data.id;
 }
@@ -272,7 +270,7 @@ export async function deleteTimelineEvent(event: PartialWith<TimelineEvent.Event
             console.log({ connection: x });
             const connection = x as { id: string };
             return client.models.EventAssignments.delete({ id: connection.id });
-        }),
+        })
     );
 
     const { errors } = await client.models.TimelineEvent.delete({ id: event.id });
@@ -286,7 +284,7 @@ export async function getTimelineEvent(id: string) {
             id,
         },
         //@ts-ignore
-        { selectionSet: selectionSetFull },
+        { selectionSet: selectionSetFull }
     );
     if (data === null) return null;
     if (errors) throw new Error(JSON.stringify(errors));
@@ -330,16 +328,15 @@ export async function getCampaignTimelineEvents(campaignId: string, verbose = fa
     //     selectionSet,
     // });
     if (verbose) console.log("getCampaignTimelineEvents", { campaignId });
-    const { data, errors } =
-        await client.models.TimelineEvent.listByCampaignCampaignTimelineEventsId(
-            {
-                campaignCampaignTimelineEventsId: campaignId,
-            },
-            {
-                //@ts-ignore
-                selectionSet: selectionSetFull,
-            },
-        );
+    const { data, errors } = await client.models.TimelineEvent.listByCampaignCampaignTimelineEventsId(
+        {
+            campaignCampaignTimelineEventsId: campaignId,
+        },
+        {
+            //@ts-ignore
+            selectionSet: selectionSetFull,
+        }
+    );
 
     if (verbose) console.log({ campaignId, data });
     if (errors) throw new Error(JSON.stringify(errors));
@@ -384,7 +381,7 @@ export async function disconnectFromAssignment(eventId: string, assignmentId: st
  */
 export async function connectEvents(
     parent: PartialWith<TimelineEvent.Event, "id">,
-    child: PartialWith<TimelineEvent.Event, "id">,
+    child: PartialWith<TimelineEvent.Event, "id">
 ): Promise<void> {
     if (!(parent.id && child.id)) throw new Error("No IDs provided");
     const { data, errors } = await client.models.TimelineEvent.update({

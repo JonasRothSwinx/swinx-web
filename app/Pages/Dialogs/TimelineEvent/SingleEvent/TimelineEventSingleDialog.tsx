@@ -23,6 +23,7 @@ import { DateSelector } from "../DateSelector";
 import InviteDetails from "./SingleEventDetails/InviteEventDetails";
 import WebinarSpeakerDetails from "./SingleEventDetails/WebinarSpeakerDetails";
 import { submitSingleEvent } from "./submitSingleEvent";
+import PostEventDetails from "./SingleEventDetails/PostEventDetails";
 
 export const styles = stylesExporter.dialogs;
 type DialogType = TimelineEvent.SingleEvent;
@@ -64,7 +65,7 @@ export default function TimelineEventSingleDialog(props: TimelineEventDialogProp
     //######################
     //#region States
     const [timelineEvent, setTimelineEvent] = useState<Partial<DialogType>>(
-        editingData ?? { campaign: { id: campaign.id } },
+        editingData ?? { campaign: { id: campaign.id }, assignments: [targetAssignment] }
     );
     const [dates, setDates] = useState<{ number: number; dates: (Dayjs | null)[] }>({
         number: 1,
@@ -120,7 +121,7 @@ export default function TimelineEventSingleDialog(props: TimelineEventDialogProp
                 campaign,
                 dates,
                 queryClient,
-                assignment: targetAssignment,
+                // assignment: targetAssignment,
             });
             console.log("closing");
             EventHandlers.handleClose(true)();
@@ -136,7 +137,7 @@ export default function TimelineEventSingleDialog(props: TimelineEventDialogProp
                                 ...prev,
                                 type: value,
                                 eventTaskAmount: 1000,
-                            } satisfies Partial<TimelineEvent.Invites>),
+                            } satisfies Partial<TimelineEvent.Invites>)
                     );
                     break;
                 case "Video":
@@ -145,7 +146,7 @@ export default function TimelineEventSingleDialog(props: TimelineEventDialogProp
                             ({
                                 ...prev,
                                 type: value,
-                            } satisfies Partial<TimelineEvent.Video>),
+                            } satisfies Partial<TimelineEvent.Video>)
                     );
                     break;
                 case "Post":
@@ -154,7 +155,7 @@ export default function TimelineEventSingleDialog(props: TimelineEventDialogProp
                             ({
                                 ...prev,
                                 type: value,
-                            } satisfies Partial<TimelineEvent.Post>),
+                            } satisfies Partial<TimelineEvent.Post>)
                     );
                     break;
                 case "WebinarSpeaker":
@@ -163,7 +164,7 @@ export default function TimelineEventSingleDialog(props: TimelineEventDialogProp
                             ({
                                 ...prev,
                                 type: value,
-                            } satisfies Partial<TimelineEvent.WebinarSpeaker>),
+                            } satisfies Partial<TimelineEvent.WebinarSpeaker>)
                     );
                     break;
                 default:
@@ -195,7 +196,13 @@ export default function TimelineEventSingleDialog(props: TimelineEventDialogProp
                 data={timelineEvent as Partial<TimelineEvent.Invites>}
             />
         ),
-        Post: <></>,
+        Post: (
+            <PostEventDetails
+                key={"PostDetails"}
+                onChange={setTimelineEvent}
+                data={timelineEvent as Partial<TimelineEvent.Post>}
+            />
+        ),
         Video: <></>,
         WebinarSpeaker: (
             <WebinarSpeakerDetails
@@ -292,14 +299,7 @@ interface EventTypeSelectorProps {
     onTypeChange: (e: SelectChangeEvent<unknown>) => void;
 }
 function GeneralDetails(props: EventTypeSelectorProps) {
-    const {
-        event: timelineEvent,
-        onInfluencerChange,
-        onTypeChange,
-        editing,
-        targetAssignment,
-        campaign,
-    } = props;
+    const { event: timelineEvent, onInfluencerChange, onTypeChange, editing, targetAssignment, campaign } = props;
     return (
         <DialogContent dividers sx={{ "& .MuiFormControl-root": { flexBasis: "100%" } }}>
             <TextField
@@ -332,7 +332,7 @@ function GeneralDetails(props: EventTypeSelectorProps) {
                 size="medium"
                 required
                 SelectProps={{
-                    value: timelineEvent.assignment?.id ?? "",
+                    value: timelineEvent.assignments?.[0].id ?? "",
                     onChange: onInfluencerChange,
                 }}
             >

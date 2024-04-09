@@ -58,13 +58,11 @@ class ErrorBoundary extends Component<Props, State> {
         if (this.state.hasError) {
             return (
                 <Box sx={BoxStyle}>
-                    <Typography>
-                        {this.props.message ?? "In diesem Element is ein Fehler aufgetreten"}
-                    </Typography>
-                    <Typography> {"Bitte laden Sie die Seite neu"}</Typography>
-                    <Typography>
+                    <Typography>{this.props.message ?? "In diesem Element is ein Fehler aufgetreten"}</Typography>
+                    <Typography> Bitte laden Sie die Seite neu</Typography>
+                    {/* <Typography>
                         {JSON.stringify({ error: this.data.error, errorInfo: this.data.errorInfo })}
-                    </Typography>
+                    </Typography> */}
                 </Box>
             );
         }

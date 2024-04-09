@@ -54,9 +54,7 @@ const schema = a.schema({
         .model({
             assignment: a.belongsTo("InfluencerAssignment"),
             influencer: a.hasOne("Influencer"),
-            response: a
-                .string()
-                .authorization([adminsAndManagers, a.allow.public().to(["read", "update"])]),
+            response: a.string().authorization([adminsAndManagers, a.allow.public().to(["read", "update"])]),
         })
         .authorization([
             a.allow.public().to(["read"]),
@@ -68,7 +66,6 @@ const schema = a.schema({
             campaignManagerId: a.string(),
             // campaignType: a.string().required(),
             customer: a.hasOne("Customer"),
-            replacements: a.hasMany("Customer"),
             billingAdress: a.hasOne("BillingAdress"),
             // webinar: a.hasOne("Webinar"),
             campaignTimelineEvents: a.hasMany("TimelineEvent"),
@@ -88,6 +85,7 @@ const schema = a.schema({
             email: a.email().required(),
             phoneNumber: a.string(),
             notes: a.string(),
+            substitutes: a.hasMany("Customer"),
         })
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
 

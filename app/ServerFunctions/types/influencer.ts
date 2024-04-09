@@ -53,27 +53,52 @@ namespace Influencer {
 
     //#endregion
 
-    //region Property Checks
-    function hasId(influencer: Influencer): boolean {
-        return "id" in influencer;
+    //#region Property Checks
+    function hasId(influencer: unknown, debug = false): boolean {
+        const castData = influencer as Influencer;
+        if (typeof castData !== "object" || castData === null) {
+            if (debug) console.log("Influencer is not an object");
+            return false;
+        }
+        return "id" in castData;
     }
 
-    function hasNameInfo(influencer: Influencer): boolean {
-        return ["firstName", "lastName"].every((prop) => prop in influencer);
+    function hasNameInfo(influencer: unknown, debug = false): boolean {
+        const castData = influencer as InfluencerWithName;
+        if (typeof castData !== "object" || castData === null) {
+            if (debug) console.log("Influencer is not an object");
+            return false;
+        }
+        return ["firstName", "lastName"].every((prop) => prop in castData);
     }
 
-    function hasContactInfo(influencer: Influencer): boolean {
-        return ["email"].every((prop) => prop in influencer);
+    function hasContactInfo(influencer: unknown, debug = false): boolean {
+        const castData = influencer as WithContactInfo;
+        if (typeof castData !== "object" || castData === null) {
+            if (debug) console.log("Influencer is not an object");
+            return false;
+        }
+        return ["email"].every((prop) => prop in castData);
     }
 
-    function hasJobInfo(influencer: Influencer): boolean {
+    function hasJobInfo(influencer: unknown, debug = false): boolean {
+        const castData = influencer as Full;
+        if (typeof castData !== "object" || castData === null) {
+            if (debug) console.log("Influencer is not an object");
+            return false;
+        }
         return true;
-        return ["company", "companyPosition", "industry"].every((prop) => prop in influencer);
+        return ["company", "companyPosition", "industry"].every((prop) => prop in castData);
     }
 
-    function hasSocialMedia(influencer: Influencer): boolean {
+    function hasSocialMedia(influencer: unknown, debug = false): boolean {
+        const castData = influencer as Full;
+        if (typeof castData !== "object" || castData === null) {
+            if (debug) console.log("Influencer is not an object");
+            return false;
+        }
         return true;
-        return ["topic", "followers", "linkedinProfile"].every((prop) => prop in influencer);
+        return ["topic", "linkedinProfile", "followers"].every((prop) => prop in castData);
     }
 
     //#endregion
@@ -82,12 +107,21 @@ namespace Influencer {
         return emailTypeValues.includes(type as emailType);
     }
 
-    export function isFull(influencer: Influencer): influencer is Full {
+    export function isFull(influencer: unknown, requireId = true, debug = false): influencer is Full {
+        if (typeof influencer !== "object" || influencer === null) {
+            if (debug) console.log("Influencer is not an object");
+            return false;
+        }
+        if (requireId && !hasId(influencer, debug)) {
+            console.log("Influencer is missing id");
+            return false;
+        }
+        const testData = influencer as Full;
         return (
-            hasNameInfo(influencer) &&
-            hasContactInfo(influencer) &&
-            hasJobInfo(influencer) &&
-            hasSocialMedia(influencer)
+            hasNameInfo(testData, debug) &&
+            hasContactInfo(testData, debug) &&
+            hasJobInfo(testData, debug) &&
+            hasSocialMedia(testData, debug)
         );
     }
 

@@ -1,10 +1,4 @@
-import {
-    AddIcon,
-    DeleteIcon,
-    EuroSymbolIcon,
-    PersonSearchIcon,
-    PrintIcon,
-} from "@/app/Definitions/Icons";
+import { AddIcon, DeleteIcon, EuroSymbolIcon, PersonSearchIcon, PrintIcon } from "@/app/Definitions/Icons";
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import Influencer from "@/app/ServerFunctions/types/influencer";
@@ -19,15 +13,9 @@ import { useQuery } from "@tanstack/react-query";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import { Confirm } from "@/app/Components/Popups";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import dataClient from "@/app/ServerFunctions/database";
 
-type openDialog =
-    | "none"
-    | "timelineEvent"
-    | "assignmentDialog"
-    | "candidates"
-    | "budget"
-    | "notes"
-    | "delete";
+type openDialog = "none" | "timelineEvent" | "assignmentDialog" | "candidates" | "budget" | "notes" | "delete";
 interface InfluencerDetailsButtonProps {
     setIsProcessing: (state: boolean) => void;
     isProcessing: boolean;
@@ -38,15 +26,7 @@ interface InfluencerDetailsButtonProps {
     events: TimelineEvent.Event[];
 }
 export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
-    const {
-        isProcessing,
-        setIsProcessing,
-        campaign,
-        setCampaign,
-        assignment,
-        influencers,
-        events,
-    } = props;
+    const { isProcessing, setIsProcessing, campaign, setCampaign, assignment, influencers, events } = props;
     const [openDialog, setOpenDialog] = useState<openDialog>("none");
     const userGroups = useQuery({
         queryKey: ["userGroups"],
@@ -63,9 +43,7 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             database.assignment.delete(assignment);
             const newCampaign = {
                 ...campaign,
-                assignedInfluencers: campaign.assignedInfluencers.filter(
-                    (x) => x.id !== assignment.id,
-                ),
+                assignedInfluencers: campaign.assignedInfluencers.filter((x) => x.id !== assignment.id),
             };
             setCampaign(newCampaign);
         },
@@ -80,23 +58,17 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
         preventClickthrough: (e: MouseEvent) => {
             e.stopPropagation();
         },
-        setAssignment: (
-            targetAssignment: Assignment.Assignment,
-            updatedValues?: Partial<Assignment.Assignment>,
-        ) => {
+        setAssignment: (targetAssignment: Assignment.Assignment, updatedValues?: Partial<Assignment.Assignment>) => {
             // debugger;
             // console.log(targetAssignment);
             if (updatedValues) {
-                const updateObject = { id: targetAssignment.id, ...updatedValues };
-                console.log(updateObject);
-                database.assignment.update(updateObject);
+                const id = targetAssignment.id;
+                dataClient.assignment.update({ ...updatedValues, id }, targetAssignment);
             }
             const newCampaign: Campaign.Campaign = {
                 ...campaign,
                 assignedInfluencers: [
-                    ...campaign.assignedInfluencers.map((x) =>
-                        x.id === targetAssignment.id ? targetAssignment : x,
-                    ),
+                    ...campaign.assignedInfluencers.map((x) => (x.id === targetAssignment.id ? targetAssignment : x)),
                 ],
             };
             // console.log({ newCampaign, assignments: newCampaign.assignedInfluencers });
@@ -183,10 +155,7 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             {hasNecessaryData(assignment, events) && (
                 <Tooltip title="Kandidaten zuweisen" placement="top">
                     <span>
-                        <IconButton
-                            disabled={isProcessing}
-                            onClick={EventHandlers.openCandidates()}
-                        >
+                        <IconButton disabled={isProcessing} onClick={EventHandlers.openCandidates()}>
                             <PersonSearchIcon />
                         </IconButton>
                     </span>
@@ -201,11 +170,7 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             </Tooltip>
             <Tooltip title="Löschen" placement="top">
                 <span>
-                    <IconButton
-                        color="error"
-                        onClick={EventHandlers.confirmDelete()}
-                        disabled={isProcessing}
-                    >
+                    <IconButton color="error" onClick={EventHandlers.confirmDelete()} disabled={isProcessing}>
                         <DeleteIcon />
                     </IconButton>
                 </span>

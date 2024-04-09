@@ -1,21 +1,18 @@
-import { QueryClient } from "@tanstack/react-query";
 import TimelineEvent from "../../types/timelineEvents";
 import database from "../dbOperations/.database";
-import dataClient from "..";
-import Assignment from "../../types/assignment";
+import config from "./config";
 
 /**
  * Create a new timeline event and update queryClient cache
  * @param timelineEvent The timeline event object to create
- * @param queryClient The query client to use for updating the cache
  * @returns The created timeline event object
  */
 export async function createTimelineEvent(
-    timelineEvent: Omit<TimelineEvent.Event, "id">,
-    queryClient: QueryClient,
+    timelineEvent: Omit<TimelineEvent.Event, "id">
 ): Promise<TimelineEvent.Event> {
+    const queryClient = config.getQueryClient();
     const id = await database.timelineEvent.create(timelineEvent);
-    const createdTimelineEvent = { ...timelineEvent, id };
+    const createdTimelineEvent: TimelineEvent.Event = { ...timelineEvent, id, details: {} };
     queryClient.setQueryData(["timelineEvent", id], { ...timelineEvent, id });
     queryClient.setQueryData(["timelineEvents"], (prev: TimelineEvent.Event[]) => {
         if (!prev) {
@@ -31,15 +28,14 @@ export async function createTimelineEvent(
 /**
  * Update a timeline event
  * @param updatedData The updated timeline event data
- * @param queryClient The query client to use for updating the cache
  * @param previousTimelineEvent The timeline event object before the update, for updating the cache
  * @returns The updated timeline event object
  */
 export async function updateTimelineEvent(
     updatedData: Partial<TimelineEvent.Event>,
-    queryClient: QueryClient,
-    previousTimelineEvent: TimelineEvent.Event,
+    previousTimelineEvent: TimelineEvent.Event
 ): Promise<TimelineEvent.Event> {
+    const queryClient = config.getQueryClient();
     const id = previousTimelineEvent.id;
     const campaignId = previousTimelineEvent.campaign.id;
     if (previousTimelineEvent.type !== updatedData.type) {
@@ -67,20 +63,35 @@ export async function updateTimelineEvent(
 }
 
 /**
- * List all timeline events of a campaign
- * @param campaignId The id of the campaign to list timeline events for
- * @param queryClient The query client to use for updating the cache
+ * List all timeline events
  * @returns The list of timeline events
  */
-export async function listByCampaign(
-    campaignId: string,
-    queryClient: QueryClient,
-): Promise<TimelineEvent.Event[]> {
+
+export async function listAll(): Promise<TimelineEvent.Event[]> {
+    const queryClient = config.getQueryClient();
     //return cache data if available
-    const cachedTimelineEvents = queryClient.getQueryData([
-        "timelineEvents",
-        campaignId,
-    ]) as TimelineEvent.Event[];
+    const cachedTimelineEvents = queryClient.getQueryData(["timelineEvents"]) as TimelineEvent.Event[];
+    if (cachedTimelineEvents) {
+        return cachedTimelineEvents;
+    }
+    const timelineEvents = await database.timelineEvent.list();
+    timelineEvents.forEach((event) => {
+        queryClient.setQueryData(["timelineEvent", event.id], event);
+        queryClient.refetchQueries({ queryKey: ["timelineEvent", event.id] });
+    });
+    queryClient.setQueryData(["timelineEvents"], timelineEvents);
+    return timelineEvents;
+}
+
+/**
+ * List all timeline events of a campaign
+ * @param campaignId The id of the campaign to list timeline events for
+ * @returns The list of timeline events
+ */
+export async function listByCampaign(campaignId: string): Promise<TimelineEvent.Event[]> {
+    const queryClient = config.getQueryClient();
+    //return cache data if available
+    const cachedTimelineEvents = queryClient.getQueryData(["timelineEvents", campaignId]) as TimelineEvent.Event[];
     if (cachedTimelineEvents) {
         return cachedTimelineEvents;
     }
@@ -98,21 +109,44 @@ export async function listByCampaign(
 }
 
 /**
+ * Delete a timeline event
+ * @param id The id of the timeline event to delete
+ * @returns void
+ */
+
+export async function deleteTimelineEvent(id: string): Promise<void> {
+    const queryClient = config.getQueryClient();
+    const timelineEvent = await getTimelineEvent(id);
+    const campaignId = timelineEvent.campaign.id;
+    await database.timelineEvent.delete({ id });
+    queryClient.setQueryData(["timelineEvent", id], undefined);
+    queryClient.setQueryData(["timelineEvents", campaignId], (prev: TimelineEvent.Event[]) => {
+        if (!prev) {
+            return [];
+        }
+        return prev.filter((event) => event.id !== id);
+    });
+    queryClient.setQueryData(["timelineEvents"], (prev: TimelineEvent.Event[]) => {
+        if (!prev) {
+            return [];
+        }
+        return prev.filter((event) => event.id !== id);
+    });
+    queryClient.refetchQueries({ queryKey: ["timelineEvents"] });
+    queryClient.refetchQueries({ queryKey: ["timelineEvents", campaignId] });
+    queryClient.refetchQueries({ queryKey: ["timelineEvent", id] });
+}
+
+/**
  * List all timeline events, belonging to an assignment
  * @param assignmentId The id of the assignment to list timeline events for
- * @param queryClient The query client to use for updating the cache
  * @returns The list of timeline events
  */
 
-export async function listByAssignment(
-    assignmentId: string,
-    queryClient: QueryClient,
-): Promise<TimelineEvent.Event[]> {
+export async function listByAssignment(assignmentId: string): Promise<TimelineEvent.Event[]> {
+    const queryClient = config.getQueryClient();
     //return cache data if available
-    const cachedTimelineEvents = queryClient.getQueryData([
-        "timelineEvents",
-        assignmentId,
-    ]) as TimelineEvent.Event[];
+    const cachedTimelineEvents = queryClient.getQueryData(["timelineEvents", assignmentId]) as TimelineEvent.Event[];
     if (cachedTimelineEvents) {
         return cachedTimelineEvents;
     }
@@ -128,14 +162,11 @@ export async function listByAssignment(
 /**
  * Get a timeline event by id
  * @param id The id of the timeline event to get
- * @param queryClient The query client to use for updating the cache
  * @returns The timeline event object
  */
 
-export async function getTimelineEvent(
-    id: string,
-    queryClient: QueryClient,
-): Promise<TimelineEvent.Event> {
+export async function getTimelineEvent(id: string): Promise<TimelineEvent.Event> {
+    const queryClient = config.getQueryClient();
     const timelineEvent = await database.timelineEvent.get(id);
     if (!timelineEvent) {
         throw new Error("Timeline event not found");
@@ -143,14 +174,14 @@ export async function getTimelineEvent(
     return timelineEvent;
 }
 
-/**
- * Resolve Reference to a Timeline Event
- * @param timelineEvent     The timeline event reference
- * @param queryClient       The query client to use for updating the cache
- * @param resolveRelated    Whether to resolve related references, to avoid infinite loops
- *
- * @returns                 The full timeline event object
- */
+// /**
+//  * Resolve Reference to a Timeline Event
+//  * @param timelineEvent     The timeline event reference
+//  * @param queryClient       The query client to use for updating the cache
+//  * @param resolveRelated    Whether to resolve related references, to avoid infinite loops
+//  *
+//  * @returns                 The full timeline event object
+//  */
 
 /**
  * The timeline event reference resolver
@@ -161,7 +192,9 @@ export async function getTimelineEvent(
 const timelineEvent = {
     create: createTimelineEvent,
     update: updateTimelineEvent,
+    list: listAll,
     get: getTimelineEvent,
+    delete: deleteTimelineEvent,
     byCampaign: listByCampaign,
     byAssignment: listByAssignment,
 };

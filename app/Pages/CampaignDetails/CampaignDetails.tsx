@@ -27,11 +27,11 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
     const queryClient = useQueryClient();
     const campaign = useQuery({
         queryKey: ["campaign", campaignId],
-        queryFn: () => dataClient.campaign.get(campaignId, queryClient),
+        queryFn: () => dataClient.campaign.get(campaignId),
     });
     const influencers = useQuery({
         queryKey: ["influencers"],
-        queryFn: () => dataClient.influencer.list(queryClient),
+        queryFn: () => dataClient.influencer.list(),
         placeholderData: [],
     });
     const [assignmentData, setAssignmentData] = useState<Assignment.Assignment[]>([]);

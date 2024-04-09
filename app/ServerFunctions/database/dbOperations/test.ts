@@ -2,6 +2,7 @@
 import { random } from "@mui/x-data-grid-generator";
 import client from "./.dbclient";
 import database from "./.database";
+import dataClient from "..";
 
 export async function createTestData() {
     // create Customer
@@ -28,7 +29,7 @@ export async function createTestData() {
                     placeholderName: "placeholderName",
                     campaignAssignedInfluencersId: campaignData.id,
                 });
-            }),
+            })
     );
     const influencerAssignmentErrors = influencerAssignmentResponse.map((x) => x.errors);
     const influencerAssignmentData = influencerAssignmentResponse.map((x) => x.data);
@@ -45,7 +46,7 @@ export async function createTestData() {
                     // influencerAssignmentTimelineEventsId: influencerAssignmentData[0].id,
                     campaignCampaignTimelineEventsId: campaignData.id,
                 });
-            }),
+            })
     );
     const timelineEventErrors = timelineEventResponse.map((x) => x.errors);
     const timelineEventData = timelineEventResponse.map((x) => x.data);
@@ -57,7 +58,7 @@ export async function createTestData() {
                 influencerAssignmentId: influencerAssignmentData[0].id,
                 timelineEventId: event.id,
             });
-        }),
+        })
     );
     const eventAssignmentsErrors = eventAssignmentsResponse.map((x) => x.errors);
     const eventAssignmentsData = eventAssignmentsResponse.map((x) => x.data);
@@ -70,7 +71,7 @@ export async function createTestData() {
                 influencerAssignmentData,
                 timelineEventData,
                 // eventAssignmentsData,
-            }),
+            })
         ),
         errors: JSON.parse(
             JSON.stringify({
@@ -79,7 +80,7 @@ export async function createTestData() {
                 influencerAssignmentErrors,
                 timelineEventErrors,
                 // eventAssignmentsErrors,
-            }),
+            })
         ),
     };
 }
@@ -112,9 +113,7 @@ export async function wipeTestData() {
         filter: { placeholderName: { eq: "placeholderName" } },
     }).then((influencerAssignments) => {
         for (const influencerAssignment of influencerAssignments.data) {
-            promises.push(
-                client.models.InfluencerAssignment.delete({ id: influencerAssignment.id }),
-            );
+            promises.push(client.models.InfluencerAssignment.delete({ id: influencerAssignment.id }));
         }
     });
 

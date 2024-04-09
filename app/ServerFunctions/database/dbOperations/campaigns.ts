@@ -20,7 +20,7 @@ const selectionSet = [
     "notes",
 
     "customer.*",
-    "replacements.*",
+    "customer.substitutes.*",
 
     "campaignTimelineEvents.*",
     "campaignTimelineEvents.campaign.id",
@@ -48,7 +48,7 @@ export async function createNewCampaign(campaign: Omit<Campaign.Campaign, "id">)
     const customerResponse = customers.create(campaign.customer);
     const { data, errors } = await client.models.Campaign.create({
         campaignManagerId,
-        campaignCustomerId: (await customerResponse).data.id,
+        campaignCustomerId: await customerResponse,
         notes,
     });
     if (errors) {
@@ -77,7 +77,7 @@ export async function dummyListCampaigns() {
             "notes",
 
             "customer.*",
-            "replacements.*",
+
             "billingAdress.*",
 
             "campaignTimelineEvents.*",
@@ -129,7 +129,7 @@ export async function getCampaign(id: string): Promise<Campaign.CampaignMin> {
         {
             //@ts-expect-error - This is a valid selectionSet
             selectionSet,
-        },
+        }
     );
     if (errors) {
         console.log({ errors });
@@ -164,7 +164,7 @@ export async function listCampaigns(): Promise<Campaign.CampaignMin[]> {
 }
 
 export async function deleteCampaign(
-    campaign: PartialWith<Campaign.Campaign, "id" | "customer" | "campaignTimelineEvents">,
+    campaign: PartialWith<Campaign.Campaign, "id" | "customer" | "campaignTimelineEvents">
 ) {
     if (!campaign.id) throw new Error("Missing Data");
 

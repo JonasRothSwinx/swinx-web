@@ -79,11 +79,11 @@ function CampaignList(props: CampaignListProps) {
     const queryClient = useQueryClient();
     const influencers = useQuery({
         queryKey: ["influencers"],
-        queryFn: () => dataClient.influencer.list(queryClient),
+        queryFn: () => dataClient.influencer.list(),
     });
     const campaigns = useQuery({
         queryKey: ["campaigns"],
-        queryFn: async () => dataClient.campaign.list(queryClient),
+        queryFn: async () => dataClient.campaign.list(),
         retry: 2,
     });
     // const [influencerData, setInfluencerData] = useState<Influencer.InfluencerFull[]>([]);
@@ -175,11 +175,7 @@ function CampaignList(props: CampaignListProps) {
                         <Typography>{customer?.company}</Typography>
                         <br />
                         <Typography>{params.value}</Typography>
-                        {customer?.companyPosition ? (
-                            <Typography>({customer?.companyPosition})</Typography>
-                        ) : (
-                            <></>
-                        )}
+                        {customer?.companyPosition ? <Typography>({customer?.companyPosition})</Typography> : <></>}
                     </div>
                 );
             },
@@ -385,13 +381,7 @@ function CampaignList(props: CampaignListProps) {
         customer: <></>,
         webinar: <></>,
         timelineEvent: <></>,
-        details: (
-            <CampaignDetails
-                onClose={onDialogClose}
-                campaignId={editingData?.id ?? ""}
-                isOpen={true}
-            />
-        ),
+        details: <CampaignDetails onClose={onDialogClose} campaignId={editingData?.id ?? ""} isOpen={true} />,
     };
 
     if (campaigns.isLoading) {
@@ -414,9 +404,7 @@ function CampaignList(props: CampaignListProps) {
     }
     if (campaigns.isError) {
         console.error(campaigns.error);
-        const error: { errorType: string; message: string } = JSON.parse(
-            campaigns.error.message,
-        )[0];
+        const error: { errorType: string; message: string } = JSON.parse(campaigns.error.message)[0];
         const ErrorMessages: { [key: string]: string } = {
             Unauthorized: "Nicht autorisiert",
         };
