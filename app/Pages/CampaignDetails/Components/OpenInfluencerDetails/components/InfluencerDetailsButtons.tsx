@@ -10,7 +10,7 @@ import Campaign from "@/app/ServerFunctions/types/campaign";
 import Influencer from "@/app/ServerFunctions/types/influencer";
 import { Tooltip, IconButton } from "@mui/material";
 import { MouseEvent, useState } from "react";
-import database from "@/app/ServerFunctions/database/dbOperations/.database";
+import database from "@/app/ServerFunctions/database/dbOperations";
 import TimelineEventSingleDialog from "@/app/Pages/Dialogs/TimelineEvent/SingleEvent/TimelineEventSingleDialog";
 import AssignmentDialog from "@/app/Pages/Dialogs/AssignmentDialog";
 import CandidatePicker from "../CandidatePicker";

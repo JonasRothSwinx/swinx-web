@@ -1,7 +1,7 @@
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { Unstable_Grid2 as Grid, GridSize, Typography } from "@mui/material";
 import { groupBy } from "../Functions/groupEvents";
-import dayjs from "@/app/configuredDayJs";
+import dayjs from "@/app/utils/configuredDayJs";
 import { timelineEventTypesType } from "@/amplify/data/types";
 
 interface EventContentProps {

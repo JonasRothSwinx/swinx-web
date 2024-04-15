@@ -1,7 +1,7 @@
 import { DialogProps } from "@/app/Definitions/types";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import Customer from "@/app/ServerFunctions/types/customer";
-import dayjs, { Dayjs } from "@/app/configuredDayJs";
+import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 import {
     Button,
     Dialog,

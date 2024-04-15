@@ -35,6 +35,14 @@ import {
     getAssignmentTimelineEvents,
 } from "./timelineEvents";
 import { createCandidate, deleteCandidate, publicProcessResponse } from "./candidate";
+import {
+    createEmailTrigger,
+    deleteEmailTrigger,
+    listEmailTriggers,
+    updateEmailTrigger,
+    getEmailTriggersForDateRange,
+    getEmailTriggersForEvent,
+} from "./emailTriggers";
 
 export const campaigns = {
     create: createNewCampaign,
@@ -84,6 +92,15 @@ export const candidates = {
     publicUpdate: publicProcessResponse,
 };
 
+export const emailTriggers = {
+    create: createEmailTrigger,
+    list: listEmailTriggers,
+    update: updateEmailTrigger,
+    delete: deleteEmailTrigger,
+    byEvent: getEmailTriggersForEvent,
+    byDateRange: getEmailTriggersForDateRange,
+};
+
 export const debug = {
     debugEventList: dummy,
     debugCampaignList: dummyListCampaigns,
@@ -97,6 +114,7 @@ const database = {
     assignment: assignments,
     candidate: candidates,
     // staticEvent: staticEvents,
+    emailTrigger: emailTriggers,
 };
 
 export default database;

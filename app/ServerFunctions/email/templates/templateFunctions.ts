@@ -1,7 +1,7 @@
 "use server";
 
 import { sesHandlerEventBody } from "@/amplify/functions/sesHandler/types";
-import templateDefinitions from "./templates";
+import templateDefinitions from ".";
 import { fetchApi } from "../sesAPI";
 
 export async function updateTemplates() {

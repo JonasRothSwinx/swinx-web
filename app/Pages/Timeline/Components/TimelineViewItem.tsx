@@ -1,6 +1,6 @@
 import { CancelIcon, EditIcon } from "@/app/Definitions/Icons";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import dayjs from "@/app/configuredDayJs";
+import dayjs from "@/app/utils/configuredDayJs";
 import { Unstable_Grid2 as Grid, IconButton, SxProps } from "@mui/material";
 import { GridDeleteForeverIcon } from "@mui/x-data-grid";
 import { useState } from "react";

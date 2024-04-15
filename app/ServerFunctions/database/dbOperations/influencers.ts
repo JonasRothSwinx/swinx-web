@@ -139,7 +139,7 @@ async function validateInfluencer(influencerRaw: Schema["Influencer"]) {
         lastName: influencerRaw.lastName,
         email: influencerRaw.email,
         phoneNumber: influencerRaw.phoneNumber,
-        emailType,
+        emailLevel: emailType,
         company: influencerRaw.company,
         companyPosition: influencerRaw.position ?? null,
         industry: influencerRaw.industry,

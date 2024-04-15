@@ -1,10 +1,12 @@
 import { Nullable, Prettify } from "@/app/Definitions/types";
 import Assignment from "./assignment";
-import database from "../database/dbOperations/.database";
+import database from "../database/dbOperations";
+import { EmailTriggers } from "./emailTriggers";
 
 namespace TimelineEvent {
     export type Event = Prettify<SingleEvent | MultiEvent>;
     export type EventOrReference = Event | EventReference;
+    export type EventWithId = Prettify<SingleEventWithId | MultiEventWithId>;
 
     //#region Common
     export const singleEventValues = ["Invites", "Post", "Video", "WebinarSpeaker"] as const;
@@ -76,6 +78,7 @@ namespace TimelineEvent {
             childEvents: EventOrReference[];
             parentEvent: Nullable<EventOrReference>;
         };
+        emailTriggers: EmailTriggers.EmailTriggerEventRef[];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         details: Partial<EventDetails>;
     };
@@ -95,6 +98,7 @@ namespace TimelineEvent {
         // eventAssignmentAmount: 1;
     };
     export type SingleEvent = Prettify<Invites | Post | Video | WebinarSpeaker>;
+    export type SingleEventWithId = Prettify<SingleEvent & { id: string }>;
 
     export type Invites = SingleEventCommon & {
         type: "Invites";
@@ -157,6 +161,7 @@ namespace TimelineEvent {
     //#region Multi Event Types
     //#region Types
     export type MultiEvent = Webinar;
+    export type MultiEventWithId = Prettify<MultiEvent & { id: string }>;
     type MultiEventCommon = EventCommon & {
         type: multiEventType;
     };

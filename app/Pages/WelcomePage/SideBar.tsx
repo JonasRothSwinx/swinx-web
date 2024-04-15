@@ -11,7 +11,7 @@ import {
     sendTestTemplate,
 } from "@/app/ServerFunctions/email/invites";
 import emailClient from "@/app/ServerFunctions/email/emailClient";
-import { inviteTemplateVariables } from "@/app/ServerFunctions/email/templates/invites/invitesTemplate";
+import { inviteTemplateVariables } from "@/app/ServerFunctions/email/templates/campaignInvite";
 import { testLambda } from "@/app/ServerFunctions/email/templates/templateFunctions";
 import {
     createTestData,
@@ -19,7 +19,7 @@ import {
     wipeTestData,
 } from "@/app/ServerFunctions/database/dbOperations/test";
 import { useQueries, useQueryClient } from "@tanstack/react-query";
-import { debug } from "@/app/ServerFunctions/database/dbOperations/.database";
+import { debug } from "@/app/ServerFunctions/database/dbOperations";
 import dataClient from "@/app/ServerFunctions/database";
 
 const styles = stylesExporter.sideBar;

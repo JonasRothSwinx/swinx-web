@@ -1,6 +1,6 @@
 import Influencer from "../../types/influencer";
 import { Candidates } from "../../types/candidates";
-import database from "../dbOperations/.database";
+import database from "../dbOperations";
 import config from "./config";
 
 /**
@@ -12,7 +12,7 @@ import config from "./config";
 
 export async function createCandidate(
     influencer: Influencer.Full,
-    assignmentId: string
+    assignmentId: string,
 ): Promise<Candidates.Candidate> {
     const queryClient = config.getQueryClient();
     const newCandidate: Omit<Candidates.Candidate, "id"> = {

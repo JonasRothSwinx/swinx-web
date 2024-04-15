@@ -1,5 +1,5 @@
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import dayjs, { Dayjs } from "@/app/configuredDayJs";
+import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 
 export type groupBy = "day" | "week";
 
@@ -40,7 +40,12 @@ export function groupEvents(events: groupableEvent[], groupBy: groupBy = "week")
             eventGroups = events.reduce((groups: EventGroup[], event: groupableEvent) => {
                 const eventDate = dayjs(event.date);
                 const group = groups.find((group) => {
-                    return eventDate.isBetween(group.dateGroupStart, group.dateGroupEnd, "day", "[]");
+                    return eventDate.isBetween(
+                        group.dateGroupStart,
+                        group.dateGroupEnd,
+                        "day",
+                        "[]",
+                    );
                 });
                 if (group) {
                     sortIntoTypedGroup(group, event);
@@ -65,7 +70,12 @@ export function groupEvents(events: groupableEvent[], groupBy: groupBy = "week")
             eventGroups = events.reduce((groups: EventGroup[], event: groupableEvent) => {
                 const eventDate = dayjs(event.date);
                 const group = groups.find((group) => {
-                    return eventDate.isBetween(group.dateGroupStart, group.dateGroupEnd, "week", "[)");
+                    return eventDate.isBetween(
+                        group.dateGroupStart,
+                        group.dateGroupEnd,
+                        "week",
+                        "[)",
+                    );
                 });
                 if (group) {
                     const newGroup = sortIntoTypedGroup(group, event);
@@ -108,7 +118,9 @@ export function groupEvents(events: groupableEvent[], groupBy: groupBy = "week")
                     .map((typedGroup) => {
                         return {
                             ...typedGroup,
-                            events: typedGroup.events.sort((a, b) => dayjs(a.date).unix() - dayjs(b.date).unix()),
+                            events: typedGroup.events.sort(
+                                (a, b) => dayjs(a.date).unix() - dayjs(b.date).unix(),
+                            ),
                         } satisfies TypedEventGroup;
                     })
                     .sort((a, b) => a.type.localeCompare(b.type)),

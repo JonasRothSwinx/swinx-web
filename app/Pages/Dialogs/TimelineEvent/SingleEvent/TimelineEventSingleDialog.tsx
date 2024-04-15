@@ -14,7 +14,7 @@ import {
     TextField,
 } from "@mui/material";
 
-import dayjs, { Dayjs } from "@/app/configuredDayJs";
+import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 import { useQueryClient } from "@tanstack/react-query";
 import "dayjs/locale/de";
 import { useEffect, useState } from "react";

@@ -1,10 +1,10 @@
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import { timelineEvents } from "@/app/ServerFunctions/database/dbOperations/.database";
+import { timelineEvents } from "@/app/ServerFunctions/database/dbOperations";
 import { randomId } from "@mui/x-data-grid-generator";
 import { Query, QueryClient, useQueryClient } from "@tanstack/react-query";
-import { Dayjs } from "@/app/configuredDayJs";
+import { Dayjs } from "@/app/utils/configuredDayJs";
 
 interface createMultiEventProps {
     editing: boolean;

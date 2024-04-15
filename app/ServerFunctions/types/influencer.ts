@@ -1,11 +1,9 @@
 import { Nullable, Prettify } from "@/app/Definitions/types";
 import TimelineEvent from "./timelineEvents";
+import { EmailTriggers } from "./emailTriggers";
 
 namespace Influencer {
     export type Influencer = Prettify<Reference | InfluencerWithName | Full>;
-
-    export const emailTypeValues = ["new", "reduced", "none"] as const;
-    export type emailType = (typeof emailTypeValues)[number];
 
     //#region Data Fields
     type Basic = {
@@ -20,7 +18,7 @@ namespace Influencer {
     type ContactInfo = {
         phoneNumber?: Nullable<string>;
         email: string;
-        emailType?: emailType;
+        emailLevel?: EmailTriggers.emailLevel;
     };
 
     type JobInfo = {
@@ -103,11 +101,12 @@ namespace Influencer {
 
     //#endregion
     //#region type guards
-    export function isValidEmailType(type: string): type is emailType {
-        return emailTypeValues.includes(type as emailType);
-    }
 
-    export function isFull(influencer: unknown, requireId = true, debug = false): influencer is Full {
+    export function isFull(
+        influencer: unknown,
+        requireId = true,
+        debug = false,
+    ): influencer is Full {
         if (typeof influencer !== "object" || influencer === null) {
             if (debug) console.log("Influencer is not an object");
             return false;

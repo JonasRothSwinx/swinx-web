@@ -1,6 +1,6 @@
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { Button, DialogContent, SelectChangeEvent, TextField, Typography } from "@mui/material";
-import dayjs, { Dayjs } from "@/app/configuredDayJs";
+import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 import { Add as AddIcon, DeleteOutlined as DeleteIcon } from "@mui/icons-material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";

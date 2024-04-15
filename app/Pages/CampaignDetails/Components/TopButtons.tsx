@@ -1,5 +1,5 @@
 import { CloseIcon, DeleteIcon, RefreshIcon } from "@/app/Definitions/Icons";
-import { campaigns as campaigns } from "@/app/ServerFunctions/database/dbOperations/.database";
+import { campaigns as campaigns } from "@/app/ServerFunctions/database/dbOperations";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import { Button, IconButton, Skeleton, Typography } from "@mui/material";
 

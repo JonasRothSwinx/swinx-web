@@ -1,4 +1,4 @@
-import database from "../dbOperations/.database";
+import database from "../dbOperations";
 import Customer from "../../types/customer";
 import config from "./config";
 

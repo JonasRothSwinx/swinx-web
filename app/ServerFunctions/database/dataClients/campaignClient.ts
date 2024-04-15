@@ -1,6 +1,6 @@
 import dataClient from "..";
 import Campaign from "../../types/campaign";
-import database from "../dbOperations/.database";
+import database from "../dbOperations";
 import { PartialWith } from "@/app/Definitions/types";
 import config from "./config";
 

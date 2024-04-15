@@ -1,5 +1,5 @@
 import client from "../../database/dbOperations/.dbclient";
-import { Dayjs } from "@/app/configuredDayJs";
+import { Dayjs } from "@/app/utils/configuredDayJs";
 
 interface timespan {
     start: Dayjs;

@@ -1,7 +1,7 @@
 "use server";
 
 import client from "./.dbclient";
-import { assignments, customers, timelineEvents } from "./.database";
+import { assignments, customers, timelineEvents } from ".";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import Influencer from "@/app/ServerFunctions/types/influencer";

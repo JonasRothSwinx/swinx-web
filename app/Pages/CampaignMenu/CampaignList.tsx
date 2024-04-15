@@ -20,7 +20,7 @@ import CampaignDialog from "../Dialogs/CampaignDialog";
 // import WebinarDialog from "../Dialogs/WebinarDialog";
 import CustomErrorBoundary from "@/app/Components/CustomErrorBoundary";
 import dataClient from "@/app/ServerFunctions/database";
-import database from "@/app/ServerFunctions/database/dbOperations/.database";
+import database from "@/app/ServerFunctions/database/dbOperations";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import CampaignDetails from "../CampaignDetails/CampaignDetails";

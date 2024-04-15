@@ -21,7 +21,14 @@ type DialogType = Influencer.Full;
 type InfluencerDialogProps = DialogProps<Influencer.Full[], DialogType>;
 function InfluencerDialog(props: InfluencerDialogProps) {
     // debugger;
-    const { onClose, parent: rows, setParent: setRows, isOpen = true, editing, editingData } = props;
+    const {
+        onClose,
+        parent: rows,
+        setParent: setRows,
+        isOpen = true,
+        editing,
+        editingData,
+    } = props;
     // const [isModalOpen, setIsModalOpen] = useState(open);
     const [changedData, setChangedData] = useState<Partial<Influencer.Full>>({});
 
@@ -135,7 +142,7 @@ function ContactInfo(props: InfoProps) {
             if (!(typeof event.target.value === "string")) return;
             const emailType = event.target.value as Influencer.emailType;
             if (!Influencer.isValidEmailType(emailType)) return;
-            setChangedData({ ...changedData, emailType });
+            setChangedData({ ...changedData, emailLevel: emailType });
         },
     };
 
@@ -191,7 +198,7 @@ function ContactInfo(props: InfoProps) {
                 label="E-Mail Typ"
                 type="text"
                 SelectProps={{
-                    value: changedData.emailType ?? "new",
+                    value: changedData.emailLevel ?? "new",
                     onChange: Eventhandlers.handleEmailTypeChange,
                 }}
             >

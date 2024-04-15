@@ -1,12 +1,12 @@
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { Box, Unstable_Grid2 as Grid, GridSize, IconButton, Skeleton } from "@mui/material";
 import { groupBy } from "../Functions/groupEvents";
-import dayjs from "@/app/configuredDayJs";
+import dayjs from "@/app/utils/configuredDayJs";
 import { timelineEventTypesType } from "@/amplify/data/types";
 import EventContentSingle from "./EventContentSingle";
 import EventContentMulti from "./EventContentMulti";
 import { Query, QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
-import database from "@/app/ServerFunctions/database/dbOperations/.database";
+import database from "@/app/ServerFunctions/database/dbOperations";
 import { DeleteIcon, EditIcon } from "@/app/Definitions/Icons";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import { highlightData } from "@/app/Definitions/types";

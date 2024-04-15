@@ -1,5 +1,5 @@
 import TimelineEvent from "../../types/timelineEvents";
-import database from "../dbOperations/.database";
+import database from "../dbOperations";
 import config from "./config";
 
 /**
@@ -8,11 +8,11 @@ import config from "./config";
  * @returns The created timeline event object
  */
 export async function createTimelineEvent(
-    timelineEvent: Omit<TimelineEvent.Event, "id">
-): Promise<TimelineEvent.Event> {
+    timelineEvent: Omit<TimelineEvent.Event, "id">,
+): Promise<TimelineEvent.EventWithId> {
     const queryClient = config.getQueryClient();
     const id = await database.timelineEvent.create(timelineEvent);
-    const createdTimelineEvent: TimelineEvent.Event = { ...timelineEvent, id, details: {} };
+    const createdTimelineEvent: TimelineEvent.EventWithId = { ...timelineEvent, id, details: {} };
     queryClient.setQueryData(["timelineEvent", id], { ...timelineEvent, id });
     queryClient.setQueryData(["timelineEvents"], (prev: TimelineEvent.Event[]) => {
         if (!prev) {
@@ -33,7 +33,7 @@ export async function createTimelineEvent(
  */
 export async function updateTimelineEvent(
     updatedData: Partial<TimelineEvent.Event>,
-    previousTimelineEvent: TimelineEvent.Event
+    previousTimelineEvent: TimelineEvent.Event,
 ): Promise<TimelineEvent.Event> {
     const queryClient = config.getQueryClient();
     const id = previousTimelineEvent.id;
@@ -70,7 +70,9 @@ export async function updateTimelineEvent(
 export async function listAll(): Promise<TimelineEvent.Event[]> {
     const queryClient = config.getQueryClient();
     //return cache data if available
-    const cachedTimelineEvents = queryClient.getQueryData(["timelineEvents"]) as TimelineEvent.Event[];
+    const cachedTimelineEvents = queryClient.getQueryData([
+        "timelineEvents",
+    ]) as TimelineEvent.Event[];
     if (cachedTimelineEvents) {
         return cachedTimelineEvents;
     }
@@ -91,7 +93,10 @@ export async function listAll(): Promise<TimelineEvent.Event[]> {
 export async function listByCampaign(campaignId: string): Promise<TimelineEvent.Event[]> {
     const queryClient = config.getQueryClient();
     //return cache data if available
-    const cachedTimelineEvents = queryClient.getQueryData(["timelineEvents", campaignId]) as TimelineEvent.Event[];
+    const cachedTimelineEvents = queryClient.getQueryData([
+        "timelineEvents",
+        campaignId,
+    ]) as TimelineEvent.Event[];
     if (cachedTimelineEvents) {
         return cachedTimelineEvents;
     }
@@ -146,7 +151,10 @@ export async function deleteTimelineEvent(id: string): Promise<void> {
 export async function listByAssignment(assignmentId: string): Promise<TimelineEvent.Event[]> {
     const queryClient = config.getQueryClient();
     //return cache data if available
-    const cachedTimelineEvents = queryClient.getQueryData(["timelineEvents", assignmentId]) as TimelineEvent.Event[];
+    const cachedTimelineEvents = queryClient.getQueryData([
+        "timelineEvents",
+        assignmentId,
+    ]) as TimelineEvent.Event[];
     if (cachedTimelineEvents) {
         return cachedTimelineEvents;
     }

@@ -1,7 +1,7 @@
-import database from "@/app/ServerFunctions/database/dbOperations/.database";
+import database from "@/app/ServerFunctions/database/dbOperations";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import dayjs from "@/app/configuredDayJs";
+import dayjs from "@/app/utils/configuredDayJs";
 import {
     Button,
     Dialog,

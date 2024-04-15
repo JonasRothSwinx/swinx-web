@@ -1,5 +1,5 @@
 import { Nullable } from "@/app/Definitions/types";
-import { candidates } from "../database/dbOperations/.database";
+import { candidates } from "../database/dbOperations";
 import Influencer from "./influencer";
 
 export namespace Candidates {

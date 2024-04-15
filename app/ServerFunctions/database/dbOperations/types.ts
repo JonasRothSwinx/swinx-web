@@ -122,7 +122,8 @@ export namespace RawData {
     export type RawTimeLineEventFull = RawTimelineEvent &
         RawTimelineEventWithRelatedEvents &
         RawTimelineEventWithAssignments &
-        RawTimelineEventWithDetails;
+        RawTimelineEventWithDetails &
+        RawTimelineEventWithTriggers;
 
     export type RawTimelineEvent = {
         id: string;
@@ -152,6 +153,10 @@ export namespace RawData {
         details: TimelineEventDetails;
     };
 
+    export type RawTimelineEventWithTriggers = RawTimelineEvent & {
+        emailTriggers: RawEmailTrigger[];
+    };
+
     type TimelineEventDetails = {
         topic: Nullable<string>;
         charLimit: Nullable<number>;
@@ -178,4 +183,13 @@ export namespace RawData {
 
     //#endregion
     //########################################
+
+    //########################################
+    //#region Email Trigger Types
+    export type RawEmailTrigger = {
+        id: string;
+        type: string;
+        date: string;
+        event: { id: string };
+    };
 }

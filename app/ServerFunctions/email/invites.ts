@@ -8,8 +8,8 @@ import {
 } from "@aws-sdk/client-sesv2";
 import client from "./sesClient";
 import Influencer from "../types/influencer";
-import { inviteTemplateVariables } from "./templates/invites/invitesTemplate";
-import { templateNames } from "./templates/templates";
+import { inviteTemplateVariables } from "./templates/campaignInvite";
+import { templateNames } from "./templates";
 import emailClient from "./emailClient";
 import { fetchApi } from "./sesAPI";
 import {

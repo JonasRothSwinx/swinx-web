@@ -3,10 +3,12 @@
 
 import { Nullable, PartialWith } from "@/app/Definitions/types";
 import Assignment from "@/app/ServerFunctions/types/assignment";
-import Influencer from "@/app/ServerFunctions/types/influencer";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import client from "./.dbclient";
 import { RawData } from "./types";
+import { emailTriggers } from ".";
+import dayjs from "@/app/utils/configuredDayJs";
+import { EmailTriggers } from "../../types/emailTriggers";
 
 export async function dummy() {
     //@ts-expect-error - type instantiation error
@@ -79,6 +81,10 @@ const selectionSetFull = [
     "relatedEvents.id",
     "relatedEvents.timelineEventType",
     "timelineEventRelatedEventsId",
+
+    //email triggers
+    "emailTriggers.*",
+    "emailTriggers.event.id",
 ] as const;
 
 const selectionSetMin = ["id", "timelineEventType", "campaign.id"] as const;
@@ -188,6 +194,12 @@ function validateEvent(rawData: RawData.RawTimeLineEventFull): TimelineEvent.Eve
         eventTaskAmount: eventTaskAmount ?? 0,
         relatedEvents: relatedEventsParsed,
         details,
+        emailTriggers: rawData.emailTriggers.map((x) => ({
+            id: x.id,
+            type: x.type as EmailTriggers.emailTriggerType,
+            event: { id },
+            date: dayjs(x.date),
+        })),
     };
     return eventOut;
 }

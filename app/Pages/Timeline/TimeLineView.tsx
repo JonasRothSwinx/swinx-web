@@ -2,7 +2,7 @@ import { timelineEventTypesType } from "@/amplify/data/types";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import Influencer from "@/app/ServerFunctions/types/influencer";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import dayjs from "@/app/configuredDayJs";
+import dayjs from "@/app/utils/configuredDayJs";
 import { CircularProgress, Unstable_Grid2 as Grid } from "@mui/material";
 import { useEffect, useState } from "react";
 import TimeLineEventSingleDialog from "../Dialogs/TimelineEvent/SingleEvent/TimelineEventSingleDialog";
@@ -19,7 +19,7 @@ import {
 import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import QueryDebugDisplay from "../../Components/QueryDebugDisplay";
-import database from "@/app/ServerFunctions/database/dbOperations/.database";
+import database from "@/app/ServerFunctions/database/dbOperations";
 import CustomErrorBoundary from "@/app/Components/CustomErrorBoundary";
 import TimelineEventMultiDialog from "../Dialogs/TimelineEvent/MultiEvent/TimelineEventMultiDialog";
 import { general as styles } from "../styles/stylesExporter";

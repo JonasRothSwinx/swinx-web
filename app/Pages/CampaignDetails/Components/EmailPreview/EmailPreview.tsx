@@ -1,8 +1,8 @@
 import { RefreshIcon } from "@/app/Definitions/Icons";
 import stylesExporter from "@/app/Pages/styles/stylesExporter";
-import database from "@/app/ServerFunctions/database/dbOperations/.database";
+import database from "@/app/ServerFunctions/database/dbOperations";
 import emailClient from "@/app/ServerFunctions/email/emailClient";
-import { inviteTemplateVariables } from "@/app/ServerFunctions/email/templates/invites/invitesTemplate";
+import { inviteTemplateVariables } from "@/app/ServerFunctions/email/templates/campaignInvite";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import { Candidates } from "@/app/ServerFunctions/types/candidates";
 import Influencer from "@/app/ServerFunctions/types/influencer";

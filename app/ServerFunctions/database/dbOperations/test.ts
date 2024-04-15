@@ -1,7 +1,7 @@
 "use server";
 import { random } from "@mui/x-data-grid-generator";
 import client from "./.dbclient";
-import database from "./.database";
+import database from ".";
 import dataClient from "..";
 
 export async function createTestData() {
