@@ -4,11 +4,12 @@
     "private": true,
     "scripts": {
         "dev": "next dev",
+        "dev:debug": "cross-env NODE_OPTIONS='--inspect' next dev",
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
-        "sandbox": "npx amplify sandbox --name sharedSandBox",
-        "sandbox debug": "npx amplify sandbox --debug --name sharedSandBox",
+        "sandbox": "npx amplify sandbox --identifier sharedSandBox",
+        "sandbox debug": "npx amplify sandbox --debug --identifier sharedSandBox",
         "update amplify beta": "npm i --save-dev @aws-amplify/backend-cli@beta @aws-amplify/backend@beta"
     },
     "dependencies": {
@@ -41,8 +42,8 @@
         "unique-names-generator": "^4.7.1"
     },
     "devDependencies": {
-        "@aws-amplify/backend": "^0.13.0-beta.15",
-        "@aws-amplify/backend-cli": "^0.12.0-beta.17",
+        "@aws-amplify/backend": "^0.13.0-beta.16",
+        "@aws-amplify/backend-cli": "^0.12.0-beta.18",
         "@simbathesailor/use-what-changed": "^2.0.0",
         "@tanstack/eslint-plugin-query": "^5.27.3",
         "@types/aws-lambda": "^8.10.136",
@@ -50,6 +51,7 @@
         "@types/node": "^20",
         "@types/react": "^18",
         "@types/react-dom": "^18",
+        "cross-env": "^7.0.3",
         "dotenv": "^16.4.5",
         "eslint-config-next": "^14.1.4",
         "eslint-plugin-react-hooks": "^4.6.0",

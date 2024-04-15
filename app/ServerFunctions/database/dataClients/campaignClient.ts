@@ -9,7 +9,9 @@ import config from "./config";
  * @param campaign The campaign object to create
  * @returns The created campaign object
  */
-async function createCampaign(campaign: Omit<Campaign.CampaignFull, "id">): Promise<Campaign.CampaignFull> {
+async function createCampaign(
+    campaign: Omit<Campaign.CampaignFull, "id">,
+): Promise<Campaign.CampaignFull> {
     const queryClient = config.getQueryClient();
     const id = await database.campaign.create(campaign);
     const createdCampaign = { ...campaign, id };
@@ -42,7 +44,7 @@ async function listCampaigns(): Promise<Campaign.CampaignFull[]> {
             queryClient.setQueryData(["campaign", campaign.id], resolvedCampaign);
             queryClient.refetchQueries({ queryKey: ["campaign", campaign.id] });
             return resolvedCampaign;
-        })
+        }),
     );
 
     return resolvedCampaigns;
@@ -65,7 +67,7 @@ async function getCampaign(id: string): Promise<Campaign.CampaignFull> {
  * @param campaign The campaign object. needs to contain id, customer and timelineEvents
  */
 async function deleteCampaign(
-    campaign: PartialWith<Campaign.CampaignFull, "id" | "customer" | "campaignTimelineEvents">
+    campaign: PartialWith<Campaign.CampaignFull, "id" | "customers" | "campaignTimelineEvents">,
 ): Promise<void> {
     const queryClient = config.getQueryClient();
     const { id } = campaign;
@@ -83,7 +85,9 @@ async function deleteCampaign(
  * @returns The resolved campaign object
  */
 
-async function resolveCampaignReferences(campaign: Campaign.CampaignMin): Promise<Campaign.CampaignFull> {
+async function resolveCampaignReferences(
+    campaign: Campaign.CampaignMin,
+): Promise<Campaign.CampaignFull> {
     const queryClient = config.getQueryClient();
     const timelineEvents = dataClient.timelineEvent.byCampaign(campaign.id);
     const assignments = dataClient.assignment.byCampaign(campaign.id);

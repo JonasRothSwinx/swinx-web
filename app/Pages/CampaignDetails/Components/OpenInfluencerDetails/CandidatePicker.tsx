@@ -6,7 +6,12 @@ import Assignment from "@/app/ServerFunctions/types/assignment";
 import Influencer from "@/app/ServerFunctions/types/influencer";
 import { Button, Dialog, IconButton, Skeleton, Tooltip, Typography } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2";
-import { DataGrid, GridColDef, GridRowSelectionModel, GridToolbarQuickFilter } from "@mui/x-data-grid";
+import {
+    DataGrid,
+    GridColDef,
+    GridRowSelectionModel,
+    GridToolbarQuickFilter,
+} from "@mui/x-data-grid";
 import { useEffect, useState } from "react";
 import EmailPreview from "../EmailPreview/EmailPreview";
 import { Candidates } from "@/app/ServerFunctions/types/candidates";
@@ -17,7 +22,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 interface CandidatePickerProps {
     influencers: Influencer.Full[];
     assignment: Assignment.Assignment;
-    setAssignment: (assignment: Assignment.Assignment, updatedValues?: Partial<Assignment.Assignment>) => void;
+    setAssignment: (
+        assignment: Assignment.Assignment,
+        updatedValues?: Partial<Assignment.Assignment>,
+    ) => void;
     onClose: () => void;
 }
 function getClassByResponse(response: Nullable<string>) {
@@ -57,7 +65,10 @@ export default function CandidatePicker(props: CandidatePickerProps) {
         queryFn: () => dataClient.assignment.get(props.assignment.id),
     });
 
-    const [changedCandidates, setChangedCandidates] = useState<changedCandidates>({ removed: [], added: [] });
+    const [changedCandidates, setChangedCandidates] = useState<changedCandidates>({
+        removed: [],
+        added: [],
+    });
 
     const [openDialog, setOpenDialog] = useState<openDialog>("none");
 
@@ -86,7 +97,7 @@ export default function CandidatePicker(props: CandidatePickerProps) {
                     influencer: candidate.influencer,
                     isPlaceholder: false,
                 },
-                assignment.data
+                assignment.data,
             );
             props.onClose();
             console.log("assignInfluencer");
@@ -94,19 +105,22 @@ export default function CandidatePicker(props: CandidatePickerProps) {
         submitCandidates: async () => {
             const tasks: Promise<unknown>[] = [];
             // delete removed candidates
-            console.log("submitCandidates", { removed: changedCandidates.removed, added: changedCandidates.added });
+            console.log("submitCandidates", {
+                removed: changedCandidates.removed,
+                added: changedCandidates.added,
+            });
             tasks.push(
                 ...changedCandidates.removed.map((candidate) => {
                     if (!candidate.id) throw new Error("candidate.id is null");
                     return dataClient.candidate.delete(candidate.id, assignment.data.id);
-                })
+                }),
             );
 
             //create new candidates
             tasks.push(
                 ...changedCandidates.added.map((candidate) =>
-                    dataClient.candidate.create(candidate, assignment.data.id)
-                )
+                    dataClient.candidate.create(candidate, assignment.data.id),
+                ),
             );
 
             await Promise.all(tasks);
@@ -157,7 +171,10 @@ export default function CandidatePicker(props: CandidatePickerProps) {
                         candidates={assignment.data.candidates ?? []}
                         assignInfluencer={EventHandlers.assignInfluencer}
                     />
-                    <Buttons setOpenDialog={setOpenDialog} candidates={assignment.data.candidates ?? []} />
+                    <Buttons
+                        setOpenDialog={setOpenDialog}
+                        candidates={assignment.data.candidates ?? []}
+                    />
                 </Grid>
             </Grid>
         </Dialog>
@@ -211,6 +228,7 @@ interface InfluencerPickerProps {
     changedCandidates: changedCandidates;
     setChangedCandidates: (changedCandidates: changedCandidates) => void;
 }
+
 function InfluencerPicker(props: InfluencerPickerProps) {
     const { influencers, changedCandidates, setChangedCandidates, candidates } = props;
     // const [influencers, setInfluencers] = useState<Influencer.InfluencerFull[]>();
@@ -227,21 +245,14 @@ function InfluencerPicker(props: InfluencerPickerProps) {
     //     return () => {};
     // }, []);
 
-    useEffect(() => {
-        const selected = props.candidates.map((x) => x.influencer.id ?? "");
-        setRowSelectionModel(selected);
-        return () => {};
-    }, [props.candidates]);
-
     const [rowSelectionModel, setRowSelectionModel] = useState<GridRowSelectionModel>([
         ...candidates.map((x) => x.influencer.id),
     ]);
 
     //reset rowSelectionModel when element closes
     useEffect(() => {
-        if (!rowSelectionModel) return;
         setRowSelectionModel([...candidates.map((x) => x.influencer.id)]);
-    }, [props.candidates]);
+    }, [candidates]);
 
     const columns: GridColDef[] = [
         // {
@@ -263,21 +274,47 @@ function InfluencerPicker(props: InfluencerPickerProps) {
                 return `${row.firstName} ${row.lastName}`;
             },
         },
+        {
+            field: "industry",
+            headerName: "Branche",
+            flex: 1,
+            minWidth: 100,
+            type: "string",
+            valueGetter({ row }: { row: Influencer.Full }) {
+                return row.industry;
+            },
+        },
+        {
+            field: "topic",
+            headerName: "Themen",
+            flex: 1,
+            minWidth: 100,
+            type: "string",
+            valueGetter({ row }: { row: Influencer.Full }) {
+                return row.topic?.join(", ") ?? "";
+            },
+        },
     ];
     const Eventhandlers = {
         selectionChange: (selected: GridRowSelectionModel) => {
             setRowSelectionModel(selected);
-            const selectedInfluencers = influencers?.filter((influencer) => selected.includes(influencer.id)) ?? [];
+            const selectedInfluencers =
+                influencers?.filter((influencer) => selected.includes(influencer.id)) ?? [];
             const removedInfluencers: Candidates.Candidate[] = props.candidates.filter(
-                (x) => !selectedInfluencers.find((influencer) => influencer.id === x.influencer.id)
+                (x) => !selectedInfluencers.find((influencer) => influencer.id === x.influencer.id),
             );
 
             const addedInfluencers: Influencer.Full[] = selectedInfluencers.filter(
-                (x) => !props.candidates.find((candidate) => candidate.influencer.id === x.id)
+                (x) => !props.candidates.find((candidate) => candidate.influencer.id === x.id),
             );
 
             setChangedCandidates({ removed: removedInfluencers, added: addedInfluencers });
-            console.log({ selectedInfluencers, candidates: props.candidates, removedInfluencers, addedInfluencers });
+            console.log({
+                selectedInfluencers,
+                candidates: props.candidates,
+                removedInfluencers,
+                addedInfluencers,
+            });
             // const removedInfluencers = props.candidates.filter((x) => !selected.includes(x.influencer.id));
 
             // removedInfluencers.map((x) => database.candidate.delete(x));

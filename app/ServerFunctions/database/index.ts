@@ -2,7 +2,7 @@
 import database from "./dbOperations/.database";
 import { QueryClient } from "@tanstack/react-query";
 import influencer from "./dataClients/influencer";
-import campaign from "./dataClients/campaign";
+import campaign from "./dataClients/campaignClient";
 import assignment from "./dataClients/assignments";
 import timelineEvent from "./dataClients/timelineEvent";
 import candidate from "./dataClients/candidate";

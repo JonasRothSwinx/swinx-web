@@ -116,7 +116,7 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
                         <CustomErrorBoundary message="Error loading customer details">
                             <CustomerDetails
                                 campaign={campaign.data}
-                                customer={campaign?.data.customer}
+                                customers={campaign?.data.customers}
                                 setCampaign={EventHandlers.setCampaign}
                             />
                         </CustomErrorBoundary>

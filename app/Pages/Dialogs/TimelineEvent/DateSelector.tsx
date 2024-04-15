@@ -1,23 +1,25 @@
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import { Button, DialogContent } from "@mui/material";
+import { Button, DialogContent, SelectChangeEvent, TextField, Typography } from "@mui/material";
 import dayjs, { Dayjs } from "@/app/configuredDayJs";
 import { Add as AddIcon, DeleteOutlined as DeleteIcon } from "@mui/icons-material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { Dispatch, MouseEvent, SetStateAction, useEffect } from "react";
+import React, { Dispatch, MouseEvent, SetStateAction, useEffect, useMemo } from "react";
 import { dates, styles } from "./SingleEvent/TimelineEventSingleDialog";
 import { PartialWith } from "@/app/Definitions/types";
 import { useQuery } from "@tanstack/react-query";
+import dataClient from "@/app/ServerFunctions/database";
 
 interface DateSelectorProps {
-    timelineEvent: PartialWith<TimelineEvent.Event, "id" | "date">;
+    timelineEvent: PartialWith<TimelineEvent.SingleEvent, "relatedEvents" | "campaign">;
+    setTimelineEvent: Dispatch<SetStateAction<DateSelectorProps["timelineEvent"]>>;
     isEditing: boolean;
     eventType: TimelineEvent.singleEventType;
     dates: dates;
     setDates: Dispatch<SetStateAction<dates>>;
 }
 export function DateSelector(props: DateSelectorProps) {
-    const { dates, setDates, isEditing, timelineEvent } = props;
+    const { dates, setDates, isEditing, timelineEvent, setTimelineEvent } = props;
 
     if (TimelineEvent.isEventReference(timelineEvent)) {
         //TODO resolve EventReference
@@ -70,6 +72,17 @@ export function DateSelector(props: DateSelectorProps) {
         }
     }, [parentEvent]); //eslint-disable-line react-hooks/exhaustive-deps
 
+    function printVariables() {
+        console.log({ dates });
+        console.log({ parentEvent });
+        console.log({
+            isRepeatable: isRepeatable[props.eventType],
+            isFixedDate: isFixedDate[props.eventType],
+            fixedDate: fixedDate[props.eventType],
+        });
+    }
+    //########################################
+    //#region Configuration
     const isRepeatable: {
         [key in TimelineEvent.singleEventType]: boolean;
     } = {
@@ -94,15 +107,18 @@ export function DateSelector(props: DateSelectorProps) {
         Video: null,
         WebinarSpeaker: parentEvent.data ? dayjs(parentEvent.data.date) : null,
     };
-    function printVariables() {
-        console.log({ dates });
-        console.log({ parentEvent });
-        console.log({
-            isRepeatable: isRepeatable[props.eventType],
-            isFixedDate: isFixedDate[props.eventType],
-            fixedDate: fixedDate[props.eventType],
-        });
-    }
+    const hasParentEvent: {
+        [key in TimelineEvent.singleEventType]:
+            | { parentEventType: TimelineEvent.multiEventType }
+            | false;
+    } = {
+        Invites: false,
+        Post: false,
+        Video: false,
+        WebinarSpeaker: { parentEventType: "Webinar" },
+    };
+    //#endregion
+    //########################################
 
     return (
         <>
@@ -136,6 +152,7 @@ export function DateSelector(props: DateSelectorProps) {
                                         slotProps={{
                                             textField: {
                                                 required: true,
+                                                variant: "standard",
                                             },
                                         }}
                                     />
@@ -167,7 +184,94 @@ export function DateSelector(props: DateSelectorProps) {
 
                     {/* <TimePicker name="time" /> */}
                 </LocalizationProvider>
+                <ParentEventSelector
+                    parentEventType={hasParentEvent[props.eventType]}
+                    timelineEvent={timelineEvent}
+                    setTimelineEvent={setTimelineEvent}
+                />
             </DialogContent>
         </>
+    );
+}
+
+interface ParentEventSelectorProps {
+    parentEventType: { parentEventType: TimelineEvent.multiEventType } | false;
+    timelineEvent: PartialWith<TimelineEvent.Event, "relatedEvents" | "campaign">;
+    setTimelineEvent: DateSelectorProps["setTimelineEvent"];
+}
+function ParentEventSelector(props: ParentEventSelectorProps) {
+    const { timelineEvent, setTimelineEvent } = props;
+    const { id: campaignId } = timelineEvent.campaign;
+
+    const parentEventType = props.parentEventType ? props.parentEventType.parentEventType : null;
+
+    //########################################
+    //#region Queries
+    const events = useQuery({
+        queryKey: ["events"],
+        queryFn: async () => {
+            const events = await dataClient.timelineEvent.byCampaign(campaignId);
+            return events;
+        },
+    });
+
+    const parentEventChoices = useMemo(() => {
+        return (
+            events.data?.filter((event) => parentEventType && event.type === parentEventType) ?? []
+        );
+    }, [events.data, parentEventType]);
+    //#endregion
+    //########################################
+
+    const EntryName: { [key in TimelineEvent.multiEventType]: (id: string) => string } = {
+        Webinar: (id) => {
+            const event = parentEventChoices.find((x) => x.id === id);
+            return event?.details?.topic ?? "Webinar";
+        },
+    };
+
+    const NoParentsText: { [key in TimelineEvent.multiEventType]: string } = {
+        Webinar: "Keine Webinare gefunden",
+    };
+
+    const Handler = {
+        onParentEventChange: (e: SelectChangeEvent<unknown>) => {
+            const value = e.target.value;
+            const selectedEvent = parentEventChoices.find((event) => event.id === value);
+            if (!selectedEvent) return;
+            setTimelineEvent((prev) => ({
+                ...prev,
+                relatedEvents: {
+                    parentEvent: selectedEvent,
+                    childEvents: prev.relatedEvents.childEvents,
+                },
+            }));
+        },
+    };
+
+    if (!parentEventType) return null;
+    if (!parentEventChoices || parentEventChoices.length < 1)
+        return (
+            <Typography
+                sx={{
+                    width: "100%",
+                    backgroundColor: "red",
+                    textAlign: "center",
+                }}
+            >
+                {NoParentsText[parentEventType]}
+            </Typography>
+        );
+
+    return (
+        <TextField
+            name="parentEvent"
+            select
+            required
+            SelectProps={{
+                onChange: Handler.onParentEventChange,
+                value: timelineEvent.relatedEvents.parentEvent ?? null,
+            }}
+        ></TextField>
     );
 }

@@ -1,4 +1,12 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField } from "@mui/material";
+import {
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    IconButton,
+    TextField,
+} from "@mui/material";
 import { DialogProps } from "@/app/Definitions/types";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import Customer from "@/app/ServerFunctions/types/customer";
@@ -10,83 +18,94 @@ import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { AddIcon } from "@/app/Definitions/Icons";
 
 const styles = stylesExporter.dialogs;
-type DialogType = Customer.Customer;
+interface InfoProps {
+    customer: Partial<Customer.Customer>;
+    setCustomer: (changedData: Partial<Customer.Customer>, index?: number) => void;
+    deleteCustomer: () => void;
+    index: number;
+}
+interface CustomerDialogProps {
+    customers: Partial<Customer.Customer>[];
+    editing: boolean;
+    editingData?: Partial<Customer.Customer>[];
+    setCustomers: React.Dispatch<React.SetStateAction<Partial<Customer.Customer>[]>>;
+    onClose?: (hasChanged: boolean) => void;
+}
 
-// const initialData: DialogType = {
-//     firstName: "",
-//     lastName: "",
-//     company: "",
-//     email: "",
-//     companyPosition: "",
-// };
-type CustomerDialogProps = DialogProps<Campaign.Campaign, Customer.Customer>;
 function CustomerDialog(props: CustomerDialogProps) {
     // debugger;
-    const { onClose, parent: campaign, setParent: setCampaign, isOpen = true, editing, editingData } = props;
-    const [changedData, setChangedData] = useState<Partial<Customer.Customer>>(
-        editingData ?? { substitutes: [{ ...initialSubstitute }] }
+    //##################
+    //#region Variables
+    const { onClose, editing, editingData, setCustomers, customers } = props;
+    //#endregion Variables
+    //##################
+
+    //##################
+    //#region State
+    const [changedData, setChangedData] = useState<Partial<Customer.Customer>[]>(
+        editingData ?? customers,
     );
 
-    // const [isModalOpen, setIsModalOpen] = useState(isOpen);
-    // useEffect(() => {
-    //     // console.log({ isOpen, editingData });
-    //     setChangedData(editingData ?? "");
-    //     return () => {
-    //         setChangedData(initialData);
-    //     };
-    // }, [props, editingData]);
+    const [tab, setTab] = useState("0");
+    //#endregion
+    //##################
 
-    function handleClose(hasChanged?: boolean) {
-        return () => {
-            if (onClose) {
-                onClose(hasChanged);
+    //##################
+    //#region Event Handlers
+    const EventHandlers = {
+        handleClose: (hasChanged = false) => {
+            return () => {
+                if (onClose) {
+                    onClose(hasChanged);
+                }
+            };
+        },
+        onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
+            event.preventDefault();
+            if (!changedData) return;
+            if (editing) {
+                // console.log({ changedData });
+                dataClient.customer;
+            } else {
+                //check required properties
+                Customer.satisfies(changedData);
+                // customers.create(changedData);
             }
-            setChangedData({ substitutes: [{ ...initialSubstitute }] });
-        };
-        // setIsModalOpen(false);
-    }
-
-    function onSubmit(event: React.FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-        if (!changedData) return;
-        if (editing) {
-            // console.log({ changedData });
-            dataClient.customer;
-        } else {
-            //check required properties
-            Customer.satisfies(changedData);
-            // customers.create(changedData);
-        }
-        handleClose(true)();
-    }
-    // async function makeInfluencer(args: { firstName: string; lastName: string; email: string }) {
-    //     const { firstName, lastName, email } = args;
-    //     console.log({ firstName, lastName, email });
-    //     if (!(firstName && lastName && email)) {
-    //         return;
-    //     }
-    //     const { data: privateData } = await client.models.InfluencerPrivate.create({
-    //         email,
-    //     });
-    //     const { data: newPublicInfluencer } = await client.models.InfluencerPublic.create({
-    //         firstName,
-    //         lastName,
-    //         details: privateData,
-    //     });
-    //     // console.log({ newPublicInfluencer });
-    //     // console.log(data.get("firstName"), data.get("lastName"),data.);
-    //     handleClose();
-    // }
-    const InfoProps: InfoProps = { customer: changedData, setCustomer: setChangedData };
+            EventHandlers.handleClose(true)();
+        },
+        handleTabChange: () => (event: React.SyntheticEvent, newValue: string) => {
+            setTab(newValue);
+        },
+    };
+    const StateChanges = {
+        handleCustomerChange: (changedData: Partial<Customer.Customer>, index = 0) => {
+            setCustomers((prevState) => {
+                const newCustomers = [...prevState];
+                const prevcustomer = newCustomers[index];
+                newCustomers[index] = { ...prevcustomer, ...changedData };
+                return newCustomers;
+            });
+        },
+        deleteCustomer: (index: number) => {
+            if (customers.length <= 1) return;
+            setTab("0");
+            setCustomers((prevState) => {
+                const newCustomers = [...prevState];
+                newCustomers.splice(index, 1);
+                return newCustomers;
+            });
+        },
+    };
+    //#endregion Event Handlers
+    //##################
     return (
         <Dialog
-            // ref={modalRef}
-            open={isOpen}
+            open
             className={styles.dialog}
-            onClose={handleClose(false)}
+            onClose={EventHandlers.handleClose()}
             PaperProps={{
                 component: "form",
-                onSubmit,
+                onSubmit: EventHandlers.onSubmit,
             }}
             sx={{
                 "& .MuiDialogContent-root": {
@@ -109,16 +128,40 @@ function CustomerDialog(props: CustomerDialogProps) {
         >
             <DialogTitle textAlign={"center"}>{"Kunde"}</DialogTitle>
             {/* <button onClick={handleCloseModal}>x</button> */}
-
-            <ContactInfo {...InfoProps} />
-            <JobInfo {...InfoProps} />
-
+            <TabContext value={tab}>
+                <TabList onChange={EventHandlers.handleTabChange()}>
+                    {changedData.map((customer, index) => (
+                        <Tab
+                            key={index}
+                            value={index.toString()}
+                            label={index === 0 ? "Hauptkontakt" : `Vertretung ${index}`}
+                        />
+                    ))}
+                </TabList>
+                {/* <IconButton onClick={EventHandler.addSubstitute}>
+                <AddIcon />
+            </IconButton> */}
+                {changedData.map((customer, index) => {
+                    return (
+                        <TabPanel key={index} value={index.toString()}>
+                            <CustomerDialogContent
+                                customer={customer}
+                                setCustomer={(changedData) =>
+                                    StateChanges.handleCustomerChange(changedData, index)
+                                }
+                                deleteCustomer={() => StateChanges.deleteCustomer(index)}
+                                index={index}
+                            />
+                        </TabPanel>
+                    );
+                })}
+            </TabContext>
             <DialogActions
                 sx={{
                     justifyContent: "space-between",
                 }}
             >
-                <Button onClick={handleClose(false)} color="secondary">
+                <Button onClick={EventHandlers.handleClose(false)} color="secondary">
                     Abbrechen
                 </Button>
                 <Button variant="contained" type="submit">
@@ -130,12 +173,7 @@ function CustomerDialog(props: CustomerDialogProps) {
 }
 
 export default CustomerDialog;
-interface InfoProps {
-    customer: Partial<Customer.Customer>;
-    setCustomer: React.Dispatch<React.SetStateAction<Partial<Customer.Customer>>>;
-    isSubstitute?: boolean;
-    substituteIndex?: number;
-}
+
 const initialSubstitute: Customer.Customer = {
     firstName: "",
     lastName: "",
@@ -144,64 +182,30 @@ const initialSubstitute: Customer.Customer = {
 };
 
 export function CustomerDialogContent(props: InfoProps) {
-    const { customer, setCustomer } = props;
-    const [tab, setTab] = useState("main");
+    //##################
+    //#region prop destructuring
+    const { customer, setCustomer, index, deleteCustomer } = props;
 
-    const EventHandler = {
-        handleChange: () => (event: React.SyntheticEvent, newValue: string) => {
-            if (newValue === "new") {
-                EventHandler.addSubstitute();
-                setTab("main");
-                return;
-            }
-            setTab(newValue);
-        },
-        addSubstitute: () => {
-            setCustomer((prev) => {
-                if (!prev.substitutes) {
-                    prev.substitutes = [];
-                }
-                if (prev.substitutes.length >= 2) return prev;
+    //#endregion prop destructuring
+    //##################
 
-                prev.substitutes.push({ ...initialSubstitute, company: prev.company ?? "" });
-                console.log(prev.substitutes);
-                setTab((prev) => prev.toString());
-                return prev;
-            });
-        },
-    };
+    //##################
+    //#region State
+
+    //#endregion State
+    //##################
+
+    //##################
+    //#region Event Handlers
+    const EventHandler = {};
+    //#endregion Event Handlers
+    //##################
     return (
-        <TabContext value={tab}>
-            <TabList onChange={EventHandler.handleChange()}>
-                <Tab value="main" label="Hauptkontakt" />
-                {customer.substitutes?.map((substitute, index) => (
-                    <Tab key={index} value={index.toString()} label={`Vertretung ${index + 1}`} />
-                ))}
-            </TabList>
-            {/* <IconButton onClick={EventHandler.addSubstitute}>
-                <AddIcon />
-            </IconButton> */}
-            <TabPanel value="main">
-                <DialogContent>
-                    <ContactInfo {...props} />
-                    <JobInfo {...props} />
-                </DialogContent>
-            </TabPanel>
-            {customer.substitutes?.map((substitute, index) => {
-                return (
-                    <TabPanel key={index} value={index.toString()}>
-                        <DialogContent>
-                            <ContactInfo
-                                {...{ customer: substitute, setCustomer, isSubstitute: true, substituteIndex: index }}
-                            />
-                            <JobInfo
-                                {...{ customer: substitute, setCustomer, isSubstitute: true, substituteIndex: index }}
-                            />
-                        </DialogContent>
-                    </TabPanel>
-                );
-            })}
-        </TabContext>
+        <DialogContent>
+            <ContactInfo {...props} />
+            <JobInfo {...props} />
+            {index > 0 && <Button onClick={() => deleteCustomer()}>Vertretung löschen</Button>}
+        </DialogContent>
     );
 }
 
@@ -214,91 +218,19 @@ export function CustomerDialogContent(props: InfoProps) {
  *  phone       - optional
  */
 function ContactInfo(props: InfoProps) {
-    const { customer, setCustomer, isSubstitute = false, substituteIndex } = props;
+    const { customer, setCustomer, index } = props;
     const ChangeHandlers = {
         firstName: (e: ChangeEvent<HTMLInputElement>) => {
-            if (isSubstitute && substituteIndex !== undefined) {
-                setCustomer((prev) => ({
-                    ...prev,
-                    substitutes: prev.substitutes?.map((substitute, index) => {
-                        if (index === substituteIndex) {
-                            return {
-                                ...substitute,
-                                firstName: e.target.value,
-                            };
-                        }
-                        return substitute;
-                    }),
-                }));
-                return;
-            }
-            setCustomer((prev) => ({
-                ...prev,
-                firstName: e.target.value,
-            }));
+            setCustomer({ firstName: e.target.value }, index);
         },
         lastName: (e: ChangeEvent<HTMLInputElement>) => {
-            if (isSubstitute && substituteIndex !== undefined) {
-                setCustomer((prev) => ({
-                    ...prev,
-                    substitutes: prev.substitutes?.map((substitute, index) => {
-                        if (index === substituteIndex) {
-                            return {
-                                ...substitute,
-                                lastName: e.target.value,
-                            };
-                        }
-                        return substitute;
-                    }),
-                }));
-                return;
-            }
-            setCustomer((prev) => ({
-                ...prev,
-                lastName: e.target.value,
-            }));
+            setCustomer({ lastName: e.target.value }, index);
         },
         email: (e: ChangeEvent<HTMLInputElement>) => {
-            if (isSubstitute && substituteIndex !== undefined) {
-                setCustomer((prev) => ({
-                    ...prev,
-                    substitutes: prev.substitutes?.map((substitute, index) => {
-                        if (index === substituteIndex) {
-                            return {
-                                ...substitute,
-                                email: e.target.value,
-                            };
-                        }
-                        return substitute;
-                    }),
-                }));
-                return;
-            }
-            setCustomer((prev) => ({
-                ...prev,
-                email: e.target.value,
-            }));
+            setCustomer({ email: e.target.value }, index);
         },
         phone: (e: ChangeEvent<HTMLInputElement>) => {
-            if (isSubstitute && substituteIndex !== undefined) {
-                setCustomer((prev) => ({
-                    ...prev,
-                    substitutes: prev.substitutes?.map((substitute, index) => {
-                        if (index === substituteIndex) {
-                            return {
-                                ...substitute,
-                                phoneNumber: e.target.value,
-                            };
-                        }
-                        return substitute;
-                    }),
-                }));
-                return;
-            }
-            setCustomer((prev) => ({
-                ...prev,
-                phoneNumber: e.target.value,
-            }));
+            setCustomer({ phoneNumber: e.target.value }, index);
         },
     };
 
@@ -365,50 +297,14 @@ function ContactInfo(props: InfoProps) {
  */
 
 function JobInfo(props: InfoProps) {
-    const { customer: changedData, setCustomer: setChangedData, isSubstitute, substituteIndex } = props;
+    const { customer: changedData, setCustomer: setChangedData, index } = props;
 
     const ChangeHandler = {
         company: (e: ChangeEvent<HTMLInputElement>) => {
-            if (isSubstitute && substituteIndex !== undefined) {
-                setChangedData((prev) => ({
-                    ...prev,
-                    substitutes: prev.substitutes?.map((substitute, index) => {
-                        if (index === substituteIndex) {
-                            return {
-                                ...substitute,
-                                company: e.target.value,
-                            };
-                        }
-                        return substitute;
-                    }),
-                }));
-                return;
-            }
-            setChangedData((prev) => ({
-                ...prev,
-                company: e.target.value,
-            }));
+            setChangedData({ company: e.target.value }, index);
         },
         companyPosition: (e: ChangeEvent<HTMLInputElement>) => {
-            if (isSubstitute && substituteIndex !== undefined) {
-                setChangedData((prev) => ({
-                    ...prev,
-                    substitutes: prev.substitutes?.map((substitute, index) => {
-                        if (index === substituteIndex) {
-                            return {
-                                ...substitute,
-                                companyPosition: e.target.value,
-                            };
-                        }
-                        return substitute;
-                    }),
-                }));
-                return;
-            }
-            setChangedData((prev) => ({
-                ...prev,
-                companyPosition: e.target.value,
-            }));
+            setChangedData({ companyPosition: e.target.value }, index);
         },
     };
     return (

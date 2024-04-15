@@ -5,7 +5,7 @@ import { DialogConfig, DialogOptions } from "@/app/Definitions/types";
 import { Button, MenuItem, TextField, Typography } from "@mui/material";
 import { groupBy } from "../Functions/groupEvents";
 import { AddIcon } from "@/app/Definitions/Icons";
-import TimelineEventMultiDialog from "../../Dialogs/TimelineEvent/TimelineEventMultiDialog";
+import TimelineEventMultiDialog from "../../Dialogs/TimelineEvent/MultiEvent/TimelineEventMultiDialog";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface TimelineControlsProps {

@@ -16,7 +16,7 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import stylesExporter from "../../styles/stylesExporter";
+import stylesExporter from "../../../styles/stylesExporter";
 import WebinarDetails from "./MultiEventDetails/WebinarDetails";
 import { submitMultiEvent } from "./submitMultiEvent";
 

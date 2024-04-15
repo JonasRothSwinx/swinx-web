@@ -4,16 +4,19 @@ import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 export namespace RawData {
     //########################################
     //#region Campaign Types
-    export type RawCampaignFull = RawCampaignWithAssignments & RawCampaignWithTimelineEvents & billingAdress;
+    export type RawCampaignFull = RawCampaignWithAssignments &
+        RawCampaignWithTimelineEvents &
+        billingAdress;
 
     export type RawCampaign = {
         id: string;
         campaignManagerId: string;
         notes: Nullable<string>;
-        customer: RawCustomer;
+        customers: RawCustomer[];
     };
     export type RawCampaignWithTimelineEvents = RawCampaign & {
-        campaignTimelineEvents: (RawTimelineEventWithRelatedEvents & RawTimelineEventWithAssignments)[];
+        campaignTimelineEvents: (RawTimelineEventWithRelatedEvents &
+            RawTimelineEventWithAssignments)[];
     };
 
     export type RawCampaignWithAssignments = RawCampaign & {
@@ -21,10 +24,12 @@ export namespace RawData {
     };
 
     type billingAdress = {
-        name: string;
-        street: string;
-        city: string;
-        zip: string;
+        billingAdress: {
+            name: string;
+            street: string;
+            city: string;
+            zip: string;
+        };
     };
 
     //#endregion
@@ -77,7 +82,9 @@ export namespace RawData {
         RawInfluencerSocialMedia &
         RawInfluencerCompanyInfo;
 
-    export type RawInfluencerPrivate = RawInfluencerDatabaseInfo & RawInfluencerContactInfo & RawInfluencerNotes;
+    export type RawInfluencerPrivate = RawInfluencerDatabaseInfo &
+        RawInfluencerContactInfo &
+        RawInfluencerNotes;
 
     export type RawInfluencerDatabaseInfo = {
         id: string;
@@ -114,7 +121,8 @@ export namespace RawData {
     //#region Timeline Event Types
     export type RawTimeLineEventFull = RawTimelineEvent &
         RawTimelineEventWithRelatedEvents &
-        RawTimelineEventWithAssignments;
+        RawTimelineEventWithAssignments &
+        RawTimelineEventWithDetails;
 
     export type RawTimelineEvent = {
         id: string;
@@ -138,6 +146,18 @@ export namespace RawData {
         assignments: {
             influencerAssignment: RawAssignmentWithInfluencer;
         }[];
+    };
+
+    export type RawTimelineEventWithDetails = RawTimelineEvent & {
+        details: TimelineEventDetails;
+    };
+
+    type TimelineEventDetails = {
+        topic: Nullable<string>;
+        charLimit: Nullable<number>;
+        draftDeadline: Nullable<string>;
+        instructions: Nullable<string>;
+        maxDuration: Nullable<number>;
     };
 
     //#endregion type definitions

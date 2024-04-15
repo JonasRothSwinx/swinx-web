@@ -6,13 +6,21 @@ import Assignment from "./assignment";
 
 export default Campaign;
 namespace Campaign {
+    /**
+     * A campaign is a project that is managed by a campaign manager.
+     * It can have multiple customers and multiple influencers assigned to it.
+     * The first customer is the primary contact, the rest are substitutes.
+     * The campaign can have a budget and a billing address.
+     * The campaign can have multiple timeline events.
+     * The campaign can have notes.
+     */
     export type Campaign = Prettify<CampaignFull>;
 
     export type CampaignMin = {
         id: string;
         // campaignType: string;
         campaignManagerId?: Nullable<string>;
-        customer: Customer.Customer;
+        customers: Customer.Customer[];
         billingAdress: Nullable<BillingAdress>;
         // campaignStep: string;
         notes?: Nullable<string>;
@@ -26,7 +34,6 @@ namespace Campaign {
     };
 
     export type CampaignFull = CampaignMin & {
-        customer: Customer.Customer;
         assignedInfluencers: Assignment.AssignmentFull[];
         billingAdress: Nullable<BillingAdress>;
         campaignTimelineEvents: TimelineEvent.Event[];

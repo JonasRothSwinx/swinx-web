@@ -27,7 +27,9 @@ namespace TimelineEvent {
         );
     }
 
-    export async function resolveEventReference(event: Nullable<EventOrReference>): Promise<Nullable<Event>> {
+    export async function resolveEventReference(
+        event: Nullable<EventOrReference>,
+    ): Promise<Nullable<Event>> {
         if (event === null) return null;
         else if (!isEventReference(event)) return event;
         else {
@@ -104,30 +106,16 @@ namespace TimelineEvent {
         type: "Post";
         // details?: PostDetails;
     };
-    type PostDetails = {
-        topic: string;
-        charCount: number;
-        instructions: string;
-        draftDeadline: string;
-    };
 
     export type Video = SingleEventCommon & {
         type: "Video";
         // details?: Nullable<VideoDetails>;
     };
 
-    type VideoDetails = {
-        topic: string;
-        maxDuration: number;
-        instructions: string;
-        draftDeadline: string;
-    };
-
     export type WebinarSpeaker = SingleEventCommon & {
         type: "WebinarSpeaker";
         // details?: Nullable<WebinarSpeakerDetails>;
     };
-    type WebinarSpeakerDetails = {};
     //#endregion Types
     //#region Type Guards
     export function isSingleEvent(event: unknown, verbose = false): event is SingleEvent {

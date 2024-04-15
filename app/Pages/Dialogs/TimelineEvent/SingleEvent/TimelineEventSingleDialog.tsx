@@ -1,4 +1,4 @@
-import { DialogProps } from "@/app/Definitions/types";
+import { DialogProps, PartialWith } from "@/app/Definitions/types";
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import Influencer from "@/app/ServerFunctions/types/influencer";
@@ -24,6 +24,8 @@ import InviteDetails from "./SingleEventDetails/InviteEventDetails";
 import WebinarSpeakerDetails from "./SingleEventDetails/WebinarSpeakerDetails";
 import { submitSingleEvent } from "./submitSingleEvent";
 import PostEventDetails from "./SingleEventDetails/PostEventDetails";
+import assignment from "@/app/ServerFunctions/database/dataClients/assignments";
+import SingleEventDetails from "./SingleEventDetails/SingleEventDetails";
 
 export const styles = stylesExporter.dialogs;
 type DialogType = TimelineEvent.SingleEvent;
@@ -64,8 +66,14 @@ export default function TimelineEventSingleDialog(props: TimelineEventDialogProp
 
     //######################
     //#region States
-    const [timelineEvent, setTimelineEvent] = useState<Partial<DialogType>>(
-        editingData ?? { campaign: { id: campaign.id }, assignments: [targetAssignment] }
+    const [timelineEvent, setTimelineEvent] = useState<
+        PartialWith<DialogType, "campaign" | "relatedEvents">
+    >(
+        editingData ?? {
+            campaign: { id: campaign.id },
+            assignments: [targetAssignment],
+            relatedEvents: { parentEvent: null, childEvents: [] },
+        },
     );
     const [dates, setDates] = useState<{ number: number; dates: (Dayjs | null)[] }>({
         number: 1,
@@ -101,6 +109,32 @@ export default function TimelineEventSingleDialog(props: TimelineEventDialogProp
     //######################
 
     //######################
+    //#region DefaultValues
+    const typeDefault: {
+        [key in TimelineEvent.singleEventType]: Partial<TimelineEvent.SingleEvent>;
+    } = {
+        Invites: {
+            type: "Invites",
+            eventAssignmentAmount: 1,
+            eventTaskAmount: 1000,
+        },
+        Post: {
+            type: "Post",
+            eventAssignmentAmount: 1,
+        },
+        Video: {
+            type: "Video",
+            eventAssignmentAmount: 1,
+        },
+        WebinarSpeaker: {
+            type: "WebinarSpeaker",
+            eventAssignmentAmount: 1,
+        },
+    };
+    //#endregion DefaultValues
+    //######################
+
+    //######################
     //#region Event Handlers
     const EventHandlers = {
         handleClose: (hasChanged?: boolean) => {
@@ -127,58 +161,28 @@ export default function TimelineEventSingleDialog(props: TimelineEventDialogProp
             EventHandlers.handleClose(true)();
         },
 
-        handleTypeChange: (e: SelectChangeEvent<unknown>) => {
-            const value = e.target.value as TimelineEvent.singleEventType;
-            switch (value) {
-                case "Invites":
-                    setTimelineEvent(
-                        (prev) =>
-                            ({
-                                ...prev,
-                                type: value,
-                                eventTaskAmount: 1000,
-                            } satisfies Partial<TimelineEvent.Invites>)
-                    );
-                    break;
-                case "Video":
-                    setTimelineEvent(
-                        (prev) =>
-                            ({
-                                ...prev,
-                                type: value,
-                            } satisfies Partial<TimelineEvent.Video>)
-                    );
-                    break;
-                case "Post":
-                    setTimelineEvent(
-                        (prev) =>
-                            ({
-                                ...prev,
-                                type: value,
-                            } satisfies Partial<TimelineEvent.Post>)
-                    );
-                    break;
-                case "WebinarSpeaker":
-                    setTimelineEvent(
-                        (prev) =>
-                            ({
-                                ...prev,
-                                type: value,
-                            } satisfies Partial<TimelineEvent.WebinarSpeaker>)
-                    );
-                    break;
-                default:
-                    break;
-            }
-        },
-        handleAssignmentChange: (e: SelectChangeEvent<unknown>) => {
-            const value = e.target.value;
-        },
         printEvent: () => {
             //print all properties of the event on separate lines
             Object.entries(timelineEvent).forEach(([key, value]) => {
                 console.log(`${key}:`, value);
             });
+        },
+    };
+
+    const DataChange = {
+        type: (e: SelectChangeEvent<unknown>) => {
+            const value = e.target.value as TimelineEvent.singleEventType;
+            setTimelineEvent(
+                (prev) =>
+                    ({
+                        ...prev,
+                        ...typeDefault[value],
+                    } satisfies Partial<TimelineEvent.SingleEvent>),
+            );
+        },
+        assignment: (e: SelectChangeEvent<unknown>) => {
+            const value = e.target.value;
+            setTimelineEvent((prev) => ({ ...prev, assignment: value }));
         },
     };
 
@@ -188,31 +192,31 @@ export default function TimelineEventSingleDialog(props: TimelineEventDialogProp
     //######################
     //#region Conditional Elements
 
-    const eventDetailFields: { [key in TimelineEvent.singleEventType]: JSX.Element } = {
-        Invites: (
-            <InviteDetails
-                key="InviteDetails"
-                onChange={(data) => setTimelineEvent((prev) => ({ ...prev, ...data }))}
-                data={timelineEvent as Partial<TimelineEvent.Invites>}
-            />
-        ),
-        Post: (
-            <PostEventDetails
-                key={"PostDetails"}
-                onChange={setTimelineEvent}
-                data={timelineEvent as Partial<TimelineEvent.Post>}
-            />
-        ),
-        Video: <></>,
-        WebinarSpeaker: (
-            <WebinarSpeakerDetails
-                key="WebinarDetails"
-                onChange={(data) => setTimelineEvent((prev) => ({ ...prev, ...data }))}
-                data={timelineEvent as Partial<TimelineEvent.WebinarSpeaker>}
-                campaignId={campaignId}
-            />
-        ),
-    };
+    // const eventDetailFields: { [key in TimelineEvent.singleEventType]: JSX.Element } = {
+    //     Invites: (
+    //         <InviteDetails
+    //             key="InviteDetails"
+    //             onChange={(data) => setTimelineEvent((prev) => ({ ...prev, ...data }))}
+    //             data={timelineEvent as Partial<TimelineEvent.Invites>}
+    //         />
+    //     ),
+    //     Post: (
+    //         <PostEventDetails
+    //             key={"PostDetails"}
+    //             onChange={setTimelineEvent}
+    //             data={timelineEvent as Partial<TimelineEvent.Post>}
+    //         />
+    //     ),
+    //     Video: <></>,
+    //     WebinarSpeaker: (
+    //         <WebinarSpeakerDetails
+    //             key="WebinarDetails"
+    //             onChange={(data) => setTimelineEvent((prev) => ({ ...prev, ...data }))}
+    //             data={timelineEvent as Partial<TimelineEvent.WebinarSpeaker>}
+    //             campaignId={campaignId}
+    //         />
+    //     ),
+    // };
 
     //#endregion Conditional Elements
     //######################
@@ -260,8 +264,8 @@ export default function TimelineEventSingleDialog(props: TimelineEventDialogProp
                 event={timelineEvent}
                 editing={editing}
                 targetAssignment={targetAssignment}
-                onInfluencerChange={EventHandlers.handleAssignmentChange}
-                onTypeChange={EventHandlers.handleTypeChange}
+                onInfluencerChange={DataChange.assignment}
+                onTypeChange={DataChange.type}
                 campaign={campaign}
             />
             <DateSelector
@@ -270,10 +274,17 @@ export default function TimelineEventSingleDialog(props: TimelineEventDialogProp
                 eventType={timelineEvent.type ?? "Invites"}
                 dates={dates}
                 setDates={setDates}
+                setTimelineEvent={setTimelineEvent}
             />
 
             {/* Details */}
-            {timelineEvent.type && eventDetailFields[timelineEvent.type]}
+            <SingleEventDetails
+                key="SingleEventDetails"
+                applyDetailsChange={(data: Partial<TimelineEvent.SingleEvent>) =>
+                    setTimelineEvent((prev) => ({ ...prev, ...data }))
+                }
+                data={timelineEvent}
+            />
 
             <DialogActions
                 sx={{
@@ -299,7 +310,14 @@ interface EventTypeSelectorProps {
     onTypeChange: (e: SelectChangeEvent<unknown>) => void;
 }
 function GeneralDetails(props: EventTypeSelectorProps) {
-    const { event: timelineEvent, onInfluencerChange, onTypeChange, editing, targetAssignment, campaign } = props;
+    const {
+        event: timelineEvent,
+        onInfluencerChange,
+        onTypeChange,
+        editing,
+        targetAssignment,
+        campaign,
+    } = props;
     return (
         <DialogContent dividers sx={{ "& .MuiFormControl-root": { flexBasis: "100%" } }}>
             <TextField
@@ -315,6 +333,8 @@ function GeneralDetails(props: EventTypeSelectorProps) {
                     value: timelineEvent.type ?? "",
                     onChange: onTypeChange,
                 }}
+                error={timelineEvent.type === undefined}
+                variant="standard"
             >
                 {TimelineEvent.singleEventValues.map((x, i) => {
                     return (
@@ -331,6 +351,7 @@ function GeneralDetails(props: EventTypeSelectorProps) {
                 label="Influencer"
                 size="medium"
                 required
+                variant="standard"
                 SelectProps={{
                     value: timelineEvent.assignments?.[0].id ?? "",
                     onChange: onInfluencerChange,

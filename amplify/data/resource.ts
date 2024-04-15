@@ -54,7 +54,9 @@ const schema = a.schema({
         .model({
             assignment: a.belongsTo("InfluencerAssignment"),
             influencer: a.hasOne("Influencer"),
-            response: a.string().authorization([adminsAndManagers, a.allow.public().to(["read", "update"])]),
+            response: a
+                .string()
+                .authorization([adminsAndManagers, a.allow.public().to(["read", "update"])]),
         })
         .authorization([
             a.allow.public().to(["read"]),
@@ -64,13 +66,18 @@ const schema = a.schema({
     Campaign: a
         .model({
             campaignManagerId: a.string(),
-            // campaignType: a.string().required(),
-            customer: a.hasOne("Customer"),
-            billingAdress: a.hasOne("BillingAdress"),
-            // webinar: a.hasOne("Webinar"),
+
+            customers: a.hasMany("Customer"),
+            billingAdress: a.customType({
+                name: a.string().required(),
+                street: a.string().required(),
+                city: a.string().required(),
+                zip: a.string().required(),
+            }),
+
             campaignTimelineEvents: a.hasMany("TimelineEvent"),
             assignedInfluencers: a.hasMany("InfluencerAssignment"),
-            // campaignStep: a.string().required().default(campaignSteps[0]),
+            budget: a.integer(),
             notes: a.string(),
         })
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
@@ -85,18 +92,17 @@ const schema = a.schema({
             email: a.email().required(),
             phoneNumber: a.string(),
             notes: a.string(),
-            substitutes: a.hasMany("Customer"),
         })
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
 
-    BillingAdress: a
-        .model({
-            name: a.string().required(),
-            street: a.string().required(),
-            city: a.string().required(),
-            zip: a.string().required(),
-        })
-        .authorization([adminsAndManagers]),
+    // BillingAdress: a
+    //     .model({
+    //         name: a.string().required(),
+    //         street: a.string().required(),
+    //         city: a.string().required(),
+    //         zip: a.string().required(),
+    //     })
+    //     .authorization([adminsAndManagers]),
 
     TimelineEvent: a
         .model({
@@ -110,7 +116,13 @@ const schema = a.schema({
             date: a.datetime().required(),
             notes: a.string(),
             relatedEvents: a.hasMany("TimelineEvent"),
-            details: a.string(),
+            details: a.customType({
+                topic: a.string(),
+                charLimit: a.integer(),
+                draftDeadline: a.datetime(),
+                instructions: a.string(),
+                maxDuration: a.integer(),
+            }),
         })
         .secondaryIndexes((index) => [index("campaignCampaignTimelineEventsId")])
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),

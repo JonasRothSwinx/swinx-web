@@ -18,18 +18,17 @@ const selectionSet = [
     "id",
     "campaignManagerId",
     "notes",
+    "budget",
+    "customers.*",
 
-    "customer.*",
-    "customer.substitutes.*",
+    // "campaignTimelineEvents.*",
+    // "campaignTimelineEvents.campaign.id",
+    // "campaignTimelineEvents.relatedEvents.id",
+    // "campaignTimelineEvents.relatedEvents.timelineEventType",
+    // "campaignTimelineEvents.timelineEventRelatedEventsId",
 
-    "campaignTimelineEvents.*",
-    "campaignTimelineEvents.campaign.id",
-    "campaignTimelineEvents.relatedEvents.id",
-    "campaignTimelineEvents.relatedEvents.timelineEventType",
-    "campaignTimelineEvents.timelineEventRelatedEventsId",
-
-    "campaignTimelineEvents.assignments.*",
-    "campaignTimelineEvents.assignments.influencerAssignment.influencer.*",
+    // "campaignTimelineEvents.assignments.*",
+    // "campaignTimelineEvents.assignments.influencerAssignment.influencer.*",
     // "campaignTimelineEvents.inviteEvent.*",
 
     // "assignedInfluencers.*",
@@ -41,31 +40,6 @@ const selectionSet = [
     // "assignedInfluencers.candidates.influencer.email",
     // "assignedInfluencers.influencer.*",
 ] as const;
-export async function createNewCampaign(campaign: Omit<Campaign.Campaign, "id">) {
-    const { campaignManagerId, notes } = campaign;
-    // if (!customer) throw new Error("Missing Data");
-
-    const customerResponse = customers.create(campaign.customer);
-    const { data, errors } = await client.models.Campaign.create({
-        campaignManagerId,
-        campaignCustomerId: await customerResponse,
-        notes,
-    });
-    if (errors) {
-        throw new Error(JSON.stringify(errors));
-    }
-    return data.id;
-}
-interface GetCampaignOptions {
-    include: {
-        customer?: boolean;
-        timelineEvents?: boolean;
-    };
-}
-const GetCampaignOptionsDefault: GetCampaignOptions = {
-    include: { customer: true, timelineEvents: true },
-};
-
 export async function dummyListCampaigns() {
     //@ts-expect-error - This is a dummy function
     const { data, errors } = await client.models.Campaign.list({
@@ -76,7 +50,7 @@ export async function dummyListCampaigns() {
             // "campaignStep",
             "notes",
 
-            "customer.*",
+            "customers.*",
 
             "billingAdress.*",
 
@@ -106,6 +80,42 @@ export async function dummyListCampaigns() {
     return { data: JSON.parse(JSON.stringify(data)), errors };
 }
 
+/**
+ * Create a new campaign
+ * @param campaign The campaign data without an id
+ * @returns The id of the created campaign
+ */
+export async function createNewCampaign(campaign: Omit<Campaign.Campaign, "id">) {
+    const { campaignManagerId, notes, budget } = campaign;
+    // if (!customer) throw new Error("Missing Data");
+
+    // const customerResponse = customers.create(campaign.customers);
+    const { data: createdCampaign, errors } = await client.models.Campaign.create({
+        campaignManagerId,
+        notes,
+        budget,
+        billingAdress: campaign.billingAdress ?? undefined,
+    });
+    if (errors) {
+        throw new Error(JSON.stringify(errors));
+    }
+    //Create Customers
+    const customersResponses = await Promise.all(
+        campaign.customers.map((customer) => customers.create(customer, createdCampaign.id)),
+    );
+
+    return createdCampaign.id;
+}
+interface GetCampaignOptions {
+    include: {
+        customer?: boolean;
+        timelineEvents?: boolean;
+    };
+}
+const GetCampaignOptionsDefault: GetCampaignOptions = {
+    include: { customer: true, timelineEvents: true },
+};
+
 function validateCampaign(rawDataInput: unknown): Campaign.CampaignMin {
     const rawData = rawDataInput as RawData.RawCampaignFull;
 
@@ -113,13 +123,8 @@ function validateCampaign(rawDataInput: unknown): Campaign.CampaignMin {
         id: rawData.id,
         campaignManagerId: rawData.campaignManagerId,
         notes: rawData.notes,
-        customer: rawData.customer,
-        billingAdress: {
-            name: "placeholder",
-            street: "placeholder",
-            city: "placeholder",
-            zip: "placeholder",
-        },
+        customers: rawData.customers,
+        billingAdress: rawData.billingAdress,
     };
     return dataOut;
 }
@@ -127,14 +132,15 @@ export async function getCampaign(id: string): Promise<Campaign.CampaignMin> {
     const { data, errors } = await client.models.Campaign.get(
         { id },
         {
-            //@ts-expect-error - This is a valid selectionSet
+            //ts-expect-error - This is a valid selectionSet
             selectionSet,
-        }
+        },
     );
     if (errors) {
         console.log({ errors });
         throw new Error(JSON.stringify(errors));
     }
+
     const dataOut = validateCampaign(data);
     // console.log(dataOut);
     return dataOut;
@@ -142,14 +148,14 @@ export async function getCampaign(id: string): Promise<Campaign.CampaignMin> {
 
 export async function listCampaigns(): Promise<Campaign.CampaignMin[]> {
     const { data, errors } = await client.models.Campaign.list({
-        //@ts-expect-error - This is a valid selectionSet
+        // ts-expect-error - This is a valid selectionSet
         selectionSet,
     });
     if (errors) {
         console.log({ errors });
         throw new Error(JSON.stringify({ errors }));
     }
-    const campaigns: Campaign.CampaignWithReferences[] = data
+    const campaigns: Campaign.CampaignMin[] = data
         .map((raw: unknown) => {
             try {
                 return validateCampaign(raw);
@@ -158,24 +164,22 @@ export async function listCampaigns(): Promise<Campaign.CampaignMin[]> {
                 return null;
             }
         })
-        .filter((x: Campaign.Campaign | null): x is Campaign.Campaign => x !== null);
+        .filter((x: Campaign.CampaignMin | null): x is Campaign.CampaignMin => x !== null);
 
     return campaigns;
 }
 
 export async function deleteCampaign(
-    campaign: PartialWith<Campaign.Campaign, "id" | "customer" | "campaignTimelineEvents">
+    campaign: PartialWith<Campaign.Campaign, "id" | "customers" | "campaignTimelineEvents">,
 ) {
     if (!campaign.id) throw new Error("Missing Data");
 
     const tasks: Promise<unknown>[] = [];
     //Remove Customer
-    tasks.push(customers.delete(campaign.customer));
+    // tasks.push(customers.delete(campaign.customers));
 
     //Remove TimelineEvents
-    tasks.push(...campaign.campaignTimelineEvents.map((event) => timelineEvents.delete(event)));
-
-    //Remove Webinar
+    // tasks.push(...campaign.campaignTimelineEvents.map((event) => timelineEvents.delete(event)));
 
     tasks.push(client.models.Campaign.delete({ id: campaign.id }));
 

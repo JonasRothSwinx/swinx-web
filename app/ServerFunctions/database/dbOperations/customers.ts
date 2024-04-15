@@ -3,7 +3,32 @@ import { Nullable } from "@/app/Definitions/types";
 import Customer from "@/app/ServerFunctions/types/customer";
 import client from "./.dbclient";
 
-export async function createCustomer(customer: Omit<Customer.Customer, "id"> & { customerSubstitutesId?: string }) {
+export async function createCustomer(customer: Omit<Customer.Customer, "id">, campaignId: string) {
+    const { company, firstName, lastName, email, companyPosition, phoneNumber, notes } = customer;
+
+    // Create primary customer
+    const { data: createdCustomer, errors } = await client.models.Customer.create({
+        company,
+        firstName,
+        lastName,
+        email,
+        companyPosition,
+        notes,
+        phoneNumber,
+        campaignCustomersId: campaignId,
+    });
+    if (errors) throw new Error(JSON.stringify(errors));
+
+    // // Create substitutes
+    // const substitutePromises: Promise<string>[] = [];
+
+    // await Promise.all(substitutePromises);
+    return createdCustomer.id;
+}
+
+async function createSubstitute(
+    customer: Omit<Customer.Customer, "id"> & { customerSubstitutesId: string },
+) {
     const {
         company,
         firstName,
@@ -13,10 +38,7 @@ export async function createCustomer(customer: Omit<Customer.Customer, "id"> & {
         phoneNumber,
         notes,
         customerSubstitutesId,
-        substitutes,
     } = customer;
-
-    // Create primary customer
     const { data, errors } = await client.models.Customer.create({
         company,
         firstName,
@@ -25,34 +47,6 @@ export async function createCustomer(customer: Omit<Customer.Customer, "id"> & {
         companyPosition,
         notes,
         phoneNumber,
-        customerSubstitutesId,
-    });
-    if (errors) throw new Error(JSON.stringify(errors));
-
-    // Create substitutes
-    const substitutePromises: Promise<string>[] = [];
-
-    if (substitutes) {
-        for (const substitute of substitutes) {
-            substitutePromises.push(createSubstitute({ ...substitute, customerSubstitutesId: data.id }));
-        }
-    }
-    await Promise.all(substitutePromises);
-    return data.id;
-}
-
-async function createSubstitute(customer: Omit<Customer.Customer, "id"> & { customerSubstitutesId: string }) {
-    const { company, firstName, lastName, email, companyPosition, phoneNumber, notes, customerSubstitutesId } =
-        customer;
-    const { data, errors } = await client.models.Customer.create({
-        company,
-        firstName,
-        lastName,
-        email,
-        companyPosition,
-        notes,
-        phoneNumber,
-        customerSubstitutesId,
     });
     if (errors) throw new Error(JSON.stringify(errors));
     return data.id;

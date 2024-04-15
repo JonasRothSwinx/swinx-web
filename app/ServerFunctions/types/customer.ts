@@ -12,7 +12,6 @@ namespace Customer {
         phoneNumber?: Nullable<string>;
         companyPosition?: string | null;
         notes?: Nullable<string>;
-        substitutes?: Customer[];
     };
 
     export function satisfies(arg: unknown): arg is Customer {
@@ -24,8 +23,7 @@ namespace Customer {
             typeof customer.email === "string" &&
             (typeof customer.phoneNumber === "string" || customer.phoneNumber === null) &&
             (typeof customer.companyPosition === "string" || customer.companyPosition === null) &&
-            (typeof customer.notes === "string" || customer.notes === null) &&
-            (Array.isArray(customer.substitutes) || customer.substitutes === undefined)
+            (typeof customer.notes === "string" || customer.notes === null)
         );
     }
 }

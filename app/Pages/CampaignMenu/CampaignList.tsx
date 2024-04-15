@@ -101,15 +101,15 @@ function CampaignList(props: CampaignListProps) {
     });
 
     const ClickHandlers = {
-        editCustomer: (id: GridRowId) => {
-            return () => {
-                const customer = campaigns.data?.find((campaign) => campaign.id === id)?.customer;
-                if (!customer) return;
-                setEditingData({ ...customer });
-                setDialogOptions({ editing: true });
-                setIsOpen("customer");
-            };
-        },
+        // editCustomer: (id: GridRowId) => {
+        //     return () => {
+        //         const customer = campaigns.data?.find((campaign) => campaign.id === id)?.customers;
+        //         if (!customer) return;
+        //         setEditingData({ ...customer });
+        //         setDialogOptions({ editing: true });
+        //         setIsOpen("customer");
+        //     };
+        // },
         // editWebinar: (id: GridRowId) => {
         //     return () => {
         //         const campaign = campaignData?.find((campaign) => campaign.id === id);
@@ -165,17 +165,21 @@ function CampaignList(props: CampaignListProps) {
             maxWidth: 300,
             valueGetter(params) {
                 // console.log(params);
-                const customer: Customer.Customer = params.row.customer;
+                const customer: Customer.Customer = params.row.customers[0];
                 return `${customer?.firstName ?? ""} ${customer?.lastName ?? ""}`;
             },
             renderCell(params) {
-                const customer: Customer.Customer = params.row.customer;
+                const customer: Customer.Customer = params.row.customers[0];
                 return (
                     <div key={params.row.customer?.id ?? "new"}>
                         <Typography>{customer?.company}</Typography>
                         <br />
                         <Typography>{params.value}</Typography>
-                        {customer?.companyPosition ? <Typography>({customer?.companyPosition})</Typography> : <></>}
+                        {customer?.companyPosition ? (
+                            <Typography>({customer?.companyPosition})</Typography>
+                        ) : (
+                            <></>
+                        )}
                     </div>
                 );
             },
@@ -381,7 +385,13 @@ function CampaignList(props: CampaignListProps) {
         customer: <></>,
         webinar: <></>,
         timelineEvent: <></>,
-        details: <CampaignDetails onClose={onDialogClose} campaignId={editingData?.id ?? ""} isOpen={true} />,
+        details: (
+            <CampaignDetails
+                onClose={onDialogClose}
+                campaignId={editingData?.id ?? ""}
+                isOpen={true}
+            />
+        ),
     };
 
     if (campaigns.isLoading) {
@@ -403,8 +413,11 @@ function CampaignList(props: CampaignListProps) {
         );
     }
     if (campaigns.isError) {
+        console.log(campaigns);
         console.error(campaigns.error);
-        const error: { errorType: string; message: string } = JSON.parse(campaigns.error.message)[0];
+        const errors: { errors: { errorType: string; message: string }[] } = JSON.parse(
+            campaigns.error.message,
+        );
         const ErrorMessages: { [key: string]: string } = {
             Unauthorized: "Nicht autorisiert",
         };
@@ -420,10 +433,11 @@ function CampaignList(props: CampaignListProps) {
                 }}
             >
                 <Typography variant="h3">Fehler beim Laden der Kampagnen</Typography>
-                <Typography variant="h5">
-                    {ErrorMessages[error.errorType as keyof typeof ErrorMessages] ?? ""}
-                </Typography>
-                <Typography variant="h6">{error.message}</Typography>
+                {errors.errors.map((error, index) => (
+                    <Typography key={index} variant="h5">
+                        {ErrorMessages[error.errorType] ?? error.message}
+                    </Typography>
+                ))}
             </div>
         );
     }

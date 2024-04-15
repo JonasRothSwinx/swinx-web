@@ -24,7 +24,6 @@ export async function submitSingleEvent(props: createSingleEventProps) {
         }
     } catch (error) {
         console.log(error);
-        debugger;
     }
 }
 
@@ -44,7 +43,9 @@ async function updateEvent(props: createSingleEventProps) {
     timelineEvents.update(event).then((res) => console.log(res));
     const newCampaign = {
         ...campaign,
-        campaignTimelineEvents: [...campaign.campaignTimelineEvents.map((x) => (x.id === event.id ? event : x))],
+        campaignTimelineEvents: [
+            ...campaign.campaignTimelineEvents.map((x) => (x.id === event.id ? event : x)),
+        ],
     };
     await handleRelatedEvents(event, relatedEvents, assignment);
     queryClient.setQueryData(["campaign", campaign.id], newCampaign);
@@ -53,10 +54,13 @@ async function updateEvent(props: createSingleEventProps) {
         if (!oldData) return [];
         return oldData.map((x) => (x.id === event.id ? event : x));
     });
-    queryClient.setQueryData(["assignmentEvents", event.assignments[0].id], (oldData: TimelineEvent.SingleEvent[]) => {
-        if (!oldData) return [];
-        return oldData.map((x) => (x.id === event.id ? event : x));
-    });
+    queryClient.setQueryData(
+        ["assignmentEvents", event.assignments[0].id],
+        (oldData: TimelineEvent.SingleEvent[]) => {
+            if (!oldData) return [];
+            return oldData.map((x) => (x.id === event.id ? event : x));
+        },
+    );
 }
 async function createEvent(props: createSingleEventProps) {
     const {
@@ -87,7 +91,7 @@ async function createEvent(props: createSingleEventProps) {
             const res = await timelineEvents.create(x);
 
             return { ...x, id: res };
-        })
+        }),
     ).then((res) => {
         appendEventsToTimeline(res, campaign, originalEvents, queryClient);
         invalidateData(res, queryClient);
@@ -99,7 +103,10 @@ async function createEvent(props: createSingleEventProps) {
     // invalidateData(tempEvents, queryClient);
 }
 
-function applyDefaultValues(event: TimelineEvent.SingleEvent, assignment: Assignment.AssignmentMin) {
+function applyDefaultValues(
+    event: TimelineEvent.SingleEvent,
+    assignment: Assignment.AssignmentMin,
+) {
     event.assignments = [assignment];
     event.eventAssignmentAmount = event.eventAssignmentAmount ?? 1;
     event.eventTaskAmount = event.eventTaskAmount ?? 1;
@@ -118,7 +125,7 @@ function appendEventsToTimeline(
     events: TimelineEvent.SingleEvent[],
     campaign: Campaign.Campaign,
     oldTimeline: TimelineEvent.Event[],
-    queryClient: ReturnType<typeof useQueryClient>
+    queryClient: ReturnType<typeof useQueryClient>,
 ) {
     events.map((x) => queryClient.setQueryData(["event", x.id], x));
     const newTimeline = [...oldTimeline, ...events];
@@ -144,7 +151,7 @@ function appendEventsToTimeline(
         (oldData: TimelineEvent.SingleEvent[]) => {
             if (!oldData) return [];
             return newTimeline;
-        }
+        },
     );
     queryClient.refetchQueries({ queryKey: ["assignmentEvents", events[0].assignments[0].id] });
 
@@ -154,7 +161,10 @@ function appendEventsToTimeline(
     // queryClient.refetchQueries({ queryKey: ["assignmentEvents"], exact: false });
 }
 
-function invalidateData(events: TimelineEvent.SingleEvent[], queryClient: ReturnType<typeof useQueryClient>) {
+function invalidateData(
+    events: TimelineEvent.SingleEvent[],
+    queryClient: ReturnType<typeof useQueryClient>,
+) {
     events.map((x) => {
         queryClient.invalidateQueries({ queryKey: ["event", x.id] });
         queryClient.invalidateQueries({ queryKey: ["assignmentEvents", x.assignments[0].id] });
@@ -168,7 +178,7 @@ function invalidateData(events: TimelineEvent.SingleEvent[], queryClient: Return
 async function handleRelatedEvents(
     event: TimelineEvent.SingleEvent,
     relatedEvents: TimelineEvent.SingleEvent["relatedEvents"] | undefined,
-    assignment: Assignment.AssignmentMin
+    assignment: Assignment.AssignmentMin,
 ) {
     if (relatedEvents) {
         const { childEvents, parentEvent } = relatedEvents;
@@ -178,7 +188,7 @@ async function handleRelatedEvents(
             await Promise.all(
                 childEvents.map(async (x) => {
                     await database.timelineEvent.connectEvents(event, x);
-                })
+                }),
             );
         }
         /** if new event has a parent, set the parent reference to the new event
