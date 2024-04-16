@@ -1,3 +1,13 @@
+// Full path: <project-root>/amplify/functions/sesHandler/types.ts
+import {
+    EmailTemplateContent,
+    GetEmailTemplateCommandOutput,
+    SendBulkEmailCommandOutput,
+} from "@aws-sdk/client-sesv2";
+export type Prettify<T> = {
+    [K in keyof T]: Prettify<T[K]>;
+} & {};
+
 export type sesHandlerEventBody =
     | sesHandlerGetTemplate
     | sesHandlerUpdateTemplate
@@ -7,15 +17,17 @@ export type sesHandlerEventBody =
     | sesHandlerSendEmailTemplateBulk
     | sesHandlerSendReminders;
 
+export type operation =
+    | "list"
+    | "get"
+    | "update"
+    | "delete"
+    | "sendEmailTemplate"
+    | "sendEmailTemplateBulk"
+    | "sendReminders";
+
 type sesHandlerMinimal = {
-    operation:
-        | "list"
-        | "get"
-        | "update"
-        | "delete"
-        | "sendEmailTemplate"
-        | "sendEmailTemplateBulk"
-        | "sendReminders";
+    operation: operation;
     debug?: boolean;
 };
 
@@ -48,6 +60,7 @@ export function isseshandlerListTemplate(
 
 export type sesHandlerDeleteTemplate = sesHandlerMinimal & {
     operation: "delete";
+    deleteData: { name: string }[];
 };
 
 export function issseshandlerDeleteTemplate(
@@ -94,3 +107,26 @@ export function isSesHandlerSendEmailTemplateBulk(
 export type sesHandlerSendReminders = sesHandlerMinimal & {
     operation: "sendReminders";
 };
+export type sesHandlerResponse = {
+    statusCode: number;
+    responseData: unknown;
+    event?: unknown;
+    error?: unknown;
+};
+export type sesHandlerGetTemplateResponseBody = Prettify<
+    sesHandlerResponse & {
+        responseData: Prettify<
+            Pick<GetEmailTemplateCommandOutput, "TemplateName" | "TemplateContent">
+        >;
+    }
+>;
+export type sesHandlerUpdateTemplateResponseBody = Prettify<
+    sesHandlerResponse & {
+        responseData: Prettify<EmailTemplateContent[]>;
+    }
+>;
+export type sesHandlerSendEmailTemplateBulkResponseBody = Prettify<
+    sesHandlerResponse & {
+        responseData: Prettify<SendBulkEmailCommandOutput>;
+    }
+>;

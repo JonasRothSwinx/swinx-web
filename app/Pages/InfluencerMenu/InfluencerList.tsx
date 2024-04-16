@@ -21,7 +21,14 @@ import {
     GridPreProcessEditCellProps,
 } from "@mui/x-data-grid";
 import { randomId, randomName, randomUserName } from "@mui/x-data-grid-generator";
-import { Button, CircularProgress, TextField, ThemeProvider, Typography, createTheme } from "@mui/material";
+import {
+    Button,
+    CircularProgress,
+    TextField,
+    ThemeProvider,
+    Typography,
+    createTheme,
+} from "@mui/material";
 import {
     Add as AddIcon,
     Edit as EditIcon,
@@ -94,7 +101,11 @@ function EditToolbar(props: EditToolbarProps) {
             <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
                 Neuer Influencer
             </Button>
-            <Button color="primary" startIcon={<AddIcon />} onClick={() => createRandomInfluencers(queryClient)}>
+            <Button
+                color="primary"
+                startIcon={<AddIcon />}
+                onClick={() => createRandomInfluencers(queryClient)}
+            >
                 Erstelle Influencer
             </Button>
             {isPending && <CircularProgress />}
@@ -155,7 +166,8 @@ function InfluencerList(props: {}) {
     const Eventhandlers = {
         handleEditClick: (id: GridRowId) => {
             return () => {
-                const editingData = rows?.find((x) => x.id === id);
+                // debugger;
+                const editingData = influencers.data?.find((x) => x.id === id);
                 if (!editingData) return;
                 setIsOpen(true);
                 setDialogOptions({ editing: true });
@@ -244,7 +256,11 @@ function InfluencerList(props: {}) {
         <>
             {groups.data}
             {groups.data?.includes("admin") && (
-                <button onClick={() => queryClient.invalidateQueries({ queryKey: ["influencers"] })}>Update</button>
+                <button
+                    onClick={() => queryClient.invalidateQueries({ queryKey: ["influencers"] })}
+                >
+                    Update
+                </button>
             )}
             {isOpen && (
                 <InfluencerDialog

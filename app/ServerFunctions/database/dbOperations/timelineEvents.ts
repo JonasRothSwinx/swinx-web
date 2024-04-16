@@ -198,7 +198,7 @@ function validateEvent(rawData: RawData.RawTimeLineEventFull): TimelineEvent.Eve
             id: x.id,
             type: x.type as EmailTriggers.emailTriggerType,
             event: { id },
-            date: dayjs(x.date),
+            date: x.date,
         })),
     };
     return eventOut;
@@ -243,7 +243,7 @@ export async function createTimelineEvent(props: Omit<TimelineEvent.Event, "id">
     if (!(date && campaignCampaignTimelineEventsId)) {
         throw new Error("Missing Data");
     }
-    console.log("creating multiEvent", { props });
+    // console.log("creating multiEvent", { props });
     const { data, errors } = await client.models.TimelineEvent.create(
         {
             timelineEventType,
@@ -259,7 +259,7 @@ export async function createTimelineEvent(props: Omit<TimelineEvent.Event, "id">
     );
     //create join table entries
     const assignments = props.assignments ?? [];
-    console.log("assignments", assignments);
+    // console.log("assignments", assignments);
     const connectionResponse = await Promise.all(
         assignments.map(async (assignment) => {
             return await connectToAssignment(data.id, assignment.id);
@@ -267,11 +267,11 @@ export async function createTimelineEvent(props: Omit<TimelineEvent.Event, "id">
     );
     const connectionData = connectionResponse.map((x) => x.data);
     const connectionErrors = connectionResponse.map((x) => x.errors);
-    console.log({ connectionData, connectionErrors });
+    // console.log({ connectionData, connectionErrors });
     if (errors) throw new Error(JSON.stringify(errors));
     if (connectionErrors.length > 0 && connectionErrors.some((x) => x !== null && x !== undefined))
         throw new Error(JSON.stringify(connectionErrors));
-    console.log(data);
+    // console.log(data);
     return data.id;
 }
 

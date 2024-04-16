@@ -14,6 +14,7 @@ import React, { useState } from "react";
 import stylesExporter from "../styles/stylesExporter";
 import dataClient from "@/app/ServerFunctions/database";
 import { useQueryClient } from "@tanstack/react-query";
+import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
 
 const styles = stylesExporter.dialogs;
 type DialogType = Influencer.Full;
@@ -33,7 +34,7 @@ function InfluencerDialog(props: InfluencerDialogProps) {
     const [changedData, setChangedData] = useState<Partial<Influencer.Full>>({});
 
     const queryClient = useQueryClient();
-    const infoProps: InfoProps = { changedData, setChangedData };
+    const infoProps: InfoProps = { changedData, editingData, setChangedData };
     const EventHandlers = {
         handleClose: () => {
             if (onClose) {
@@ -46,9 +47,13 @@ function InfluencerDialog(props: InfluencerDialogProps) {
             // debugger;
             if (editing) {
                 // update
-                const id = editingData?.id;
-                if (!id) return;
-                dataClient.influencer.update({ ...changedData, id }, editingData);
+                if (Object.entries(changedData).length === 0) {
+                    console.log("No changes detected");
+                } else {
+                    const id = editingData?.id;
+                    if (!id) return;
+                    dataClient.influencer.update({ ...changedData, id }, editingData);
+                }
             } else {
                 // create
                 if (!Influencer.isFull(changedData, false)) return;
@@ -114,6 +119,7 @@ function InfluencerDialog(props: InfluencerDialogProps) {
 export default InfluencerDialog;
 interface InfoProps {
     changedData: Partial<Influencer.Full>;
+    editingData?: Influencer.Full;
     setChangedData: React.Dispatch<React.SetStateAction<Partial<Influencer.Full>>>;
 }
 
@@ -126,7 +132,7 @@ interface InfoProps {
  * emailType    - optional
  */
 function ContactInfo(props: InfoProps) {
-    const { changedData, setChangedData } = props;
+    const { changedData, editingData, setChangedData } = props;
     const Eventhandlers = {
         handleFirstNameChange: (event: React.ChangeEvent<HTMLInputElement>) => {
             setChangedData({ ...changedData, firstName: event.target.value });
@@ -140,8 +146,8 @@ function ContactInfo(props: InfoProps) {
         handleEmailTypeChange: (event: SelectChangeEvent<unknown>) => {
             //target value is string
             if (!(typeof event.target.value === "string")) return;
-            const emailType = event.target.value as Influencer.emailType;
-            if (!Influencer.isValidEmailType(emailType)) return;
+            const emailType = event.target.value as EmailTriggers.emailLevel;
+            if (!EmailTriggers.isValidEmailType(emailType)) return;
             setChangedData({ ...changedData, emailLevel: emailType });
         },
     };
@@ -165,7 +171,7 @@ function ContactInfo(props: InfoProps) {
                 className={styles.TextField}
                 label="Vorname"
                 type="text"
-                value={changedData.firstName ?? ""}
+                value={changedData.firstName ?? editingData?.firstName ?? ""}
                 onChange={Eventhandlers.handleFirstNameChange}
                 required
             />
@@ -175,7 +181,7 @@ function ContactInfo(props: InfoProps) {
                 className={styles.TextField}
                 label="Nachname"
                 type="text"
-                value={changedData.lastName ?? ""}
+                value={changedData.lastName ?? editingData?.lastName ?? ""}
                 onChange={Eventhandlers.handleLastNameChange}
                 required
             />
@@ -185,7 +191,7 @@ function ContactInfo(props: InfoProps) {
                 className={styles.TextField}
                 label="E-Mail"
                 type="email"
-                value={changedData.email ?? ""}
+                value={changedData.email ?? editingData?.email ?? ""}
                 onChange={Eventhandlers.handleEmailChange}
                 required
             />
@@ -198,11 +204,11 @@ function ContactInfo(props: InfoProps) {
                 label="E-Mail Typ"
                 type="text"
                 SelectProps={{
-                    value: changedData.emailLevel ?? "new",
+                    value: changedData.emailLevel ?? editingData?.emailLevel ?? "new",
                     onChange: Eventhandlers.handleEmailTypeChange,
                 }}
             >
-                {Influencer.emailTypeValues.map((option) => (
+                {EmailTriggers.emailLevels.map((option) => (
                     <MenuItem key={option} value={option}>
                         {option}
                     </MenuItem>
@@ -220,7 +226,7 @@ function ContactInfo(props: InfoProps) {
  * position
  */
 function IndustryInfo(props: InfoProps) {
-    const { changedData, setChangedData } = props;
+    const { changedData, editingData, setChangedData } = props;
     const Eventhandlers = {
         handleIndustryChange: (event: React.ChangeEvent<HTMLInputElement>) => {
             setChangedData({ ...changedData, industry: event.target.value });
@@ -241,7 +247,7 @@ function IndustryInfo(props: InfoProps) {
                 className={styles.TextField}
                 label="Branche"
                 type="text"
-                value={changedData.industry ?? ""}
+                value={changedData.industry ?? editingData?.industry ?? ""}
                 onChange={Eventhandlers.handleIndustryChange}
             />
             <TextField
@@ -250,7 +256,7 @@ function IndustryInfo(props: InfoProps) {
                 className={styles.TextField}
                 label="Firma"
                 type="text"
-                value={changedData.company ?? ""}
+                value={changedData.company ?? editingData?.company ?? ""}
                 onChange={Eventhandlers.handleCompanyChange}
             />
             <TextField
@@ -259,7 +265,7 @@ function IndustryInfo(props: InfoProps) {
                 className={styles.TextField}
                 label="Position"
                 type="text"
-                value={changedData.companyPosition ?? ""}
+                value={changedData.companyPosition ?? editingData?.companyPosition ?? ""}
                 onChange={Eventhandlers.handlePositionChange}
             />
         </DialogContent>
@@ -274,7 +280,7 @@ function IndustryInfo(props: InfoProps) {
  * topics
  */
 function SocialMediaInfo(props: InfoProps) {
-    const { changedData, setChangedData } = props;
+    const { changedData, editingData, setChangedData } = props;
     const Eventhandlers = {
         handleLinkedinChange: (event: React.ChangeEvent<HTMLInputElement>) => {
             setChangedData({ ...changedData, linkedinProfile: event.target.value });
@@ -296,7 +302,7 @@ function SocialMediaInfo(props: InfoProps) {
                 className={styles.TextField}
                 label="LinkedIn"
                 type="text"
-                value={changedData.linkedinProfile ?? ""}
+                value={changedData.linkedinProfile ?? editingData?.linkedinProfile ?? ""}
                 onChange={Eventhandlers.handleLinkedinChange}
             />
             <TextField
@@ -305,7 +311,7 @@ function SocialMediaInfo(props: InfoProps) {
                 className={styles.TextField}
                 label="Follower"
                 type="number"
-                value={changedData.followers ?? ""}
+                value={changedData.followers ?? editingData?.followers ?? 0}
                 onChange={Eventhandlers.handleFollowersChange}
             />
             <TextField
@@ -314,7 +320,7 @@ function SocialMediaInfo(props: InfoProps) {
                 className={styles.TextField}
                 label="Themen"
                 type="text"
-                value={changedData.topic?.join(",") ?? ""}
+                value={(changedData.topic ?? editingData?.topic ?? []).join(",") ?? ""}
                 onChange={Eventhandlers.handleTopicsChange}
             />
         </DialogContent>
@@ -327,7 +333,7 @@ function SocialMediaInfo(props: InfoProps) {
  * notes
  */
 function Notes(props: InfoProps) {
-    const { changedData, setChangedData } = props;
+    const { changedData, editingData, setChangedData } = props;
     const Eventhandlers = {
         handleNotesChange: (event: React.ChangeEvent<HTMLInputElement>) => {
             setChangedData({ ...changedData, notes: event.target.value });
@@ -337,6 +343,8 @@ function Notes(props: InfoProps) {
     return (
         <DialogContent dividers>
             <TextField
+                multiline
+                minRows={3}
                 id="notes"
                 name="notes"
                 className={styles.TextField}

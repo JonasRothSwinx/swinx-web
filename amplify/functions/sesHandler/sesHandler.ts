@@ -63,6 +63,7 @@ export async function handleEvent(body: sesHandlerEventBody) {
         return "No operation provided";
     }
     switch (body.operation ?? "") {
+        //#region template operations
         case "list":
             return modules.listTemplates();
         case "get":
@@ -74,6 +75,9 @@ export async function handleEvent(body: sesHandlerEventBody) {
             return modules.updateTemplates(body.updateData ?? []);
         case "delete":
             return "not implemented";
+        //#endregion
+
+        //#region email operations
         case "sendEmailTemplate":
             body = body as sesHandlerSendEmailTemplate;
             return modules.sendEmailTemplate(body);
@@ -83,6 +87,8 @@ export async function handleEvent(body: sesHandlerEventBody) {
         case "sendReminders":
             body = body as sesHandlerSendReminders;
             return modules.sendReminders();
+        //#endregion
+
         default:
             return "Invalid operation";
     }

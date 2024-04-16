@@ -30,6 +30,9 @@ export default async function updateTemplates(
         }),
     );
 
-    messages.push(templates);
+    const { TemplatesMetadata: newTemplates } = await client.send(
+        new ListEmailTemplatesCommand({}),
+    );
+    messages.push(...(newTemplates ?? []));
     return messages;
 }

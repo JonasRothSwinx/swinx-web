@@ -1,20 +1,18 @@
 import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 import { Nullable, Prettify } from "@/app/Definitions/types";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import { invites } from "../email/emailClient";
-import { act } from "react-dom/test-utils";
 
 export namespace EmailTriggers {
     export type EmailTrigger = Prettify<
-        EmailTriggerEventRef & {
+        Omit<EmailTriggerEventRef, "event"> & {
             event: TimelineEvent.Event;
         }
     >;
     export type EmailTriggerEventRef = {
         id?: string;
-        date: dayjs.Dayjs;
+        date: string;
         type: emailTriggerType;
-        event: Pick<TimelineEvent.Event, "id">;
+        event: { id: string };
     };
 
     export const emailLevels = ["new", "reduced", "none"] as const;

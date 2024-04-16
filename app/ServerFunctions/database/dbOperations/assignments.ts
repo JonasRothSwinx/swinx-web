@@ -11,6 +11,7 @@ import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { RawData } from "./types";
 import { Candidates } from "../../types/candidates";
 import influencer from "../dataClients/influencer";
+import { EmailTriggers } from "../../types/emailTriggers";
 
 export async function createAssignment(
     assignment: Omit<Assignment.AssignmentFull, "id">,
@@ -159,8 +160,8 @@ function validateAssignment(rawData: unknown): Assignment.AssignmentMin {
         : null;
     const candidates: Candidates.Candidate[] = rawDataTyped.candidates.map((x) => {
         if (!x.influencer.email) throw new Error("Email is required");
-        let emailType: Influencer.emailType = "new";
-        if (x.influencer.emailType && Influencer.isValidEmailType(x.influencer.emailType)) {
+        let emailType: EmailTriggers.emailLevel = "new";
+        if (x.influencer.emailType && EmailTriggers.isValidEmailType(x.influencer.emailType)) {
             emailType = x.influencer.emailType;
         }
         const candidate: Candidates.Candidate = {
@@ -247,49 +248,21 @@ function validateTimelineEvent(
 ): TimelineEvent.Event {
     const rawDataTyped = rawData as RawData.RawTimelineEvent;
     const testEvent = { ...rawDataTyped, type: rawDataTyped.timelineEventType };
-    switch (true) {
-        case TimelineEvent.isSingleEvent(testEvent): {
-            const validatedEvent: TimelineEvent.SingleEvent = {
-                id: testEvent.id,
-                date: testEvent.date,
-                type: testEvent.type,
-                eventAssignmentAmount: 1,
-                eventTaskAmount: testEvent.eventTaskAmount,
-                eventTitle: testEvent.eventTitle,
-                campaign: rawDataTyped.campaign,
-                assignments: [assignment],
-                relatedEvents: {
-                    parentEvent: null,
-                    childEvents: [],
-                },
-                details: {},
-            };
-            return validatedEvent;
-        }
-        case TimelineEvent.isMultiEvent(testEvent): {
-            const validatedEvent: TimelineEvent.MultiEvent = {
-                id: testEvent.id,
-                date: testEvent.date,
-                type: testEvent.type,
-                eventAssignmentAmount: testEvent.eventAssignmentAmount,
-                eventTaskAmount: testEvent.eventTaskAmount,
-                eventTitle: testEvent.eventTitle,
-                campaign: rawDataTyped.campaign,
-                assignments: [],
-                relatedEvents: {
-                    parentEvent: null,
-                    childEvents: [],
-                },
-
-                details: {},
-            };
-            return validatedEvent;
-        }
-        default: {
-            console.log({ rawDataTyped, testEvent });
-            TimelineEvent.isSingleEvent(testEvent, true);
-            TimelineEvent.isMultiEvent(testEvent, true);
-            throw new Error("Invalid Type");
-        }
-    }
+    const validatedEvent: TimelineEvent.Event = {
+        id: testEvent.id,
+        date: testEvent.date ?? undefined,
+        type: testEvent.type as TimelineEvent.eventType,
+        eventAssignmentAmount: 1,
+        eventTaskAmount: testEvent.eventTaskAmount,
+        eventTitle: testEvent.eventTitle,
+        campaign: rawDataTyped.campaign,
+        assignments: [assignment],
+        emailTriggers: [],
+        relatedEvents: {
+            parentEvent: null,
+            childEvents: [],
+        },
+        details: {},
+    };
+    return validatedEvent;
 }

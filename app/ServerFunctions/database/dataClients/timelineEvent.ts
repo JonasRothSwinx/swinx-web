@@ -1,6 +1,8 @@
+import { simplify } from "@/app/utils/simplify";
 import TimelineEvent from "../../types/timelineEvents";
 import database from "../dbOperations";
 import config from "./config";
+import dayjs from "@/app/utils/configuredDayJs";
 
 /**
  * Create a new timeline event and update queryClient cache
@@ -11,7 +13,7 @@ export async function createTimelineEvent(
     timelineEvent: Omit<TimelineEvent.Event, "id">,
 ): Promise<TimelineEvent.EventWithId> {
     const queryClient = config.getQueryClient();
-    const id = await database.timelineEvent.create(timelineEvent);
+    const id = await database.timelineEvent.create(simplify(timelineEvent));
     const createdTimelineEvent: TimelineEvent.EventWithId = { ...timelineEvent, id, details: {} };
     queryClient.setQueryData(["timelineEvent", id], { ...timelineEvent, id });
     queryClient.setQueryData(["timelineEvents"], (prev: TimelineEvent.Event[]) => {
@@ -77,6 +79,7 @@ export async function listAll(): Promise<TimelineEvent.Event[]> {
         return cachedTimelineEvents;
     }
     const timelineEvents = await database.timelineEvent.list();
+
     timelineEvents.forEach((event) => {
         queryClient.setQueryData(["timelineEvent", event.id], event);
         queryClient.refetchQueries({ queryKey: ["timelineEvent", event.id] });

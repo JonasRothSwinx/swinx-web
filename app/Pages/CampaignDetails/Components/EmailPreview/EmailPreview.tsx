@@ -1,11 +1,10 @@
 import { RefreshIcon } from "@/app/Definitions/Icons";
 import stylesExporter from "@/app/Pages/styles/stylesExporter";
-import database from "@/app/ServerFunctions/database/dbOperations";
-import emailClient from "@/app/ServerFunctions/email/emailClient";
-import { inviteTemplateVariables } from "@/app/ServerFunctions/email/templates/campaignInvite";
+import emailClient from "@/app/ServerFunctions/email/";
+import templateDefinitions, { templateName } from "@/app/ServerFunctions/email/templates";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
+import Assignment from "@/app/ServerFunctions/types/assignment";
 import { Candidates } from "@/app/ServerFunctions/types/candidates";
-import Influencer from "@/app/ServerFunctions/types/influencer";
 import {
     Box,
     Button,
@@ -18,7 +17,11 @@ import {
     Typography,
 } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
-import { useEffect, useMemo, useState } from "react";
+import { UseQueryResult, useQueries, useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import sendInvites from "./sendMail";
+import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
+import { Nullable } from "@/app/Definitions/types";
 
 interface GetTemplateProps {
     setIsLoading: (value: boolean) => void;
@@ -35,22 +38,60 @@ function getTemplate(props: GetTemplateProps) {
     });
 }
 
-interface EmailPreviewProps<TemplateVariableType> {
+interface EmailPreviewProps {
     onClose: () => void;
-    templateName: string;
-    variables: Partial<TemplateVariableType>;
+    // templateName: string;
+    // variables: Partial<TemplateVariableType>;
     candidates: Candidates.Candidate[];
+    assignment: Assignment.AssignmentFull;
 }
+
+type inviteTemplateVariables = typeof templateDefinitions.mailTypes.CampaignInvite.defaultParams;
 /**
  * Renders the email preview component.
  *
  * @param props - The component props.
  * @returns The rendered email preview component.
  */
-export default function EmailPreview(props: EmailPreviewProps<inviteTemplateVariables>) {
-    const [emailPreview, setEmailPreview] = useState<string>();
+export default function EmailPreview(props: EmailPreviewProps) {
+    const { assignment } = props;
+    // const [emailPreview, setEmailPreview] = useState<string>();
     const [isLoading, setIsLoading] = useState(false);
-    const [variables, setVariables] = useState({ ...props.variables });
+    const [variables, setVariables] = useState<Partial<inviteTemplateVariables>>({
+        name: "testName",
+        assignments: [{ assignmentDescription: "Fliege zum Mars" }],
+        honorar: "0€",
+        linkBase: "http://localhost:3000/Response?",
+        linkYes: "q=Yes",
+        linkNo: "q=No",
+    });
+    const [templateName, setTemplateName] = useState<templateName>("CampaignInviteNew");
+    // const template = useQuery({
+    //     queryKey: ["template", templateName],
+    //     queryFn: () => emailClient.templates.get(templateName),
+    //     placeholderData: { TemplateName: "placeholder", TemplateContent: { Html: "" } },
+    // });
+    const templates = useQueries({
+        queries: templateDefinitions.mailTypes.CampaignInvite.templateNames.map((templateName) => {
+            return {
+                queryKey: ["template", templateName],
+                queryFn: () => emailClient.templates.get(templateName),
+            };
+        }),
+        combine(result) {
+            const out: {
+                [key in EmailTriggers.emailLevel]: Nullable<string>;
+            } & { isLoading: boolean; isFetching: boolean; original: typeof result } = {
+                none: null,
+                new: result[0].data?.TemplateContent?.Html ?? "",
+                reduced: result[1].data?.TemplateContent?.Html ?? "",
+                isLoading: result.some((x) => x.isLoading),
+                isFetching: result.some((x) => x.isFetching),
+                original: result,
+            };
+            return out;
+        },
+    });
     const [selectedCandidate, setSelectedCandidate] = useState(props.candidates[0]);
     const [groups, setGroups] = useState<string[]>([]);
 
@@ -62,14 +103,6 @@ export default function EmailPreview(props: EmailPreviewProps<inviteTemplateVari
         };
     }, []);
 
-    useEffect(() => {
-        getTemplate({
-            setIsLoading,
-            setEmailPreview,
-            templateName: "CampaignInvite",
-        });
-        return () => {};
-    }, [props.templateName]);
     useEffect(() => {
         setVariables((prev) => {
             return {
@@ -83,17 +116,19 @@ export default function EmailPreview(props: EmailPreviewProps<inviteTemplateVari
 
     const EventHandlers = {
         sendEmail: async () => {
-            const response = await emailClient.invites.sendBulk({
+            const responses = await sendInvites({
                 candidates: props.candidates,
-                variables: { ...variables, name: undefined },
+                assignment,
             });
-            console.log(response);
+            console.log(responses);
             props.onClose();
         },
         cancel: () => {
             props.onClose();
         },
     };
+    //Loading placeholder
+    // if (!template.data) return <div>Template not found</div>;
     return (
         <Dialog
             open
@@ -108,20 +143,16 @@ export default function EmailPreview(props: EmailPreviewProps<inviteTemplateVari
                 <Grid xs={4}>
                     {groups.includes("admin") && (
                         <IconButton
-                            onClick={() =>
-                                getTemplate({
-                                    setIsLoading,
-                                    setEmailPreview,
-                                    templateName: "CampaignInvite",
-                                })
-                            }
+                            onClick={() => templates.original.forEach((x) => x.refetch())}
                             sx={{
                                 position: "absolute",
                                 bottom: "0",
                                 animationPlayState: "running",
                                 animationName: "spin",
                                 animationDuration: "500ms",
-                                animationIterationCount: `${isLoading ? "infinite" : "0"}`,
+                                animationIterationCount: `${
+                                    templates.isFetching ? "infinite" : "0"
+                                }`,
                                 animationTimingFunction: "linear",
                                 "@keyframes spin": {
                                     "100%": { transform: `rotate(360deg)` },
@@ -145,7 +176,11 @@ export default function EmailPreview(props: EmailPreviewProps<inviteTemplateVari
                     ) : (
                         <>
                             <EmailFrame
-                                emailPreview={emailPreview ?? ""}
+                                emailPreview={
+                                    templates[selectedCandidate.influencer.emailLevel ?? "new"] ??
+                                    null
+                                }
+                                isLoading={templates.isLoading}
                                 variables={{
                                     ...variables,
                                     name: `${selectedCandidate.influencer.firstName} ${selectedCandidate.influencer.lastName}`,
@@ -208,10 +243,44 @@ function replaceVariables(template: string, variables: Partial<inviteTemplateVar
 }
 
 interface EmailFrameProps {
-    emailPreview: string;
+    isLoading?: boolean;
+    emailPreview: Nullable<string>;
     variables: Partial<inviteTemplateVariables>;
 }
 function EmailFrame(props: EmailFrameProps) {
+    const { emailPreview } = props;
+    if (props.isLoading) return <CircularProgress />;
+    if (emailPreview === null) {
+        return (
+            <Box
+                display={"flex"}
+                width={"100%"}
+                height={"100%"}
+                padding={"10px"}
+                alignContent={"center"}
+                alignItems={"center"}
+                justifyContent={"center"}
+                textAlign={"center"}
+            >
+                <Typography>Dieser Influenzer erhält keine automatischen Emails</Typography>
+            </Box>
+        );
+    }
+    if (emailPreview === "")
+        return (
+            <Box
+                display={"flex"}
+                width={"100%"}
+                height={"100%"}
+                padding={"10px"}
+                alignContent={"center"}
+                alignItems={"center"}
+                justifyContent={"center"}
+                textAlign={"center"}
+            >
+                <Typography>Kein Email-Template gefunden</Typography>;
+            </Box>
+        );
     return (
         <iframe
             className={stylesExporter.campaignDetails.emailPreviewIframe}

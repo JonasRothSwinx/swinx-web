@@ -6,6 +6,7 @@ export default async function sendEmailTemplateBulk(props: sesHandlerSendEmailTe
     const {
         bulkEmailData: { from, emailData, templateName, defaultTemplateData },
     } = props;
+    console.log("Sending bulk email", props, emailData);
     const response = await client.send(
         new SendBulkEmailCommand({
             BulkEmailEntries: emailData.map((entry) => {
@@ -24,7 +25,7 @@ export default async function sendEmailTemplateBulk(props: sesHandlerSendEmailTe
             DefaultContent: {
                 Template: {
                     TemplateName: templateName,
-                    TemplateData: JSON.stringify(defaultTemplateData),
+                    TemplateData: defaultTemplateData,
                 },
             },
         }),

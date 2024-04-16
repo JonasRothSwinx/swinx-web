@@ -4,6 +4,7 @@ import client from "./.dbclient";
 import Influencer from "@/app/ServerFunctions/types/influencer";
 import { PartialWith } from "@/app/Definitions/types";
 import { Schema } from "@/amplify/data/resource";
+import { EmailTriggers } from "../../types/emailTriggers";
 
 /**
  * Create a new influencer
@@ -70,6 +71,7 @@ export async function updateInfluencer(updatedData: PartialWith<Influencer.Full,
         firstName,
         lastName,
         email,
+        emailLevel,
         phoneNumber,
         company,
         companyPosition: position,
@@ -81,11 +83,12 @@ export async function updateInfluencer(updatedData: PartialWith<Influencer.Full,
     if (!id) {
         throw new Error("No ID provided for influencer update");
     }
-    const { data, errors } = await client.models.Influencer.update({
+    const newInfluencer = {
         id,
         firstName,
         lastName,
         email,
+        emailType: emailLevel,
         phoneNumber,
         company,
         position,
@@ -93,12 +96,15 @@ export async function updateInfluencer(updatedData: PartialWith<Influencer.Full,
         topic,
         followers,
         linkedinProfile,
+    };
+    const { data, errors } = await client.models.Influencer.update({
+        ...newInfluencer,
     });
     if (errors) {
         throw new Error(errors.map((error) => error.message).join("\n"));
     }
-    const updatedInfluencer = validateInfluencer(data);
-    return updatedInfluencer;
+    // const updatedInfluencer = validateInfluencer(data);
+    // return updatedInfluencer;
 }
 
 export async function deleteInfluencer(
@@ -129,8 +135,8 @@ async function validateInfluencer(influencerRaw: Schema["Influencer"]) {
     if (!influencerRaw.email) {
         throw new Error("Email is required for influencer");
     }
-    let emailType: Influencer.emailType = "new";
-    if (influencerRaw.emailType && Influencer.isValidEmailType(influencerRaw.emailType)) {
+    let emailType: EmailTriggers.emailLevel = "new";
+    if (influencerRaw.emailType && EmailTriggers.isValidEmailType(influencerRaw.emailType)) {
         emailType = influencerRaw.emailType;
     }
     const influencerOut: Influencer.Full = {

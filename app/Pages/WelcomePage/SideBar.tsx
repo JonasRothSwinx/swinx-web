@@ -4,23 +4,16 @@ import { useEffect, useState } from "react";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import stylesExporter from "../styles/stylesExporter";
 import { Button } from "@mui/material";
-import {
-    sendTemplateAPITest,
-    sendTestBulkTemplate,
-    sendTestMail,
-    sendTestTemplate,
-} from "@/app/ServerFunctions/email/invites";
-import emailClient from "@/app/ServerFunctions/email/emailClient";
-import { inviteTemplateVariables } from "@/app/ServerFunctions/email/templates/campaignInvite";
-import { testLambda } from "@/app/ServerFunctions/email/templates/templateFunctions";
+import emailClient from "@/app/ServerFunctions/email";
 import {
     createTestData,
     listCampaignsTest,
     wipeTestData,
 } from "@/app/ServerFunctions/database/dbOperations/test";
 import { useQueries, useQueryClient } from "@tanstack/react-query";
-import { debug } from "@/app/ServerFunctions/database/dbOperations";
 import dataClient from "@/app/ServerFunctions/database";
+import dayjs from "@/app/utils/configuredDayJs";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 
 const styles = stylesExporter.sideBar;
 
@@ -98,20 +91,29 @@ function SideBar(props: ISideBar) {
                     <Button
                         variant="outlined"
                         onClick={async () => {
-                            const response = await sendTemplateAPITest();
+                            const response = await emailClient.email.campaignInvites.send({
+                                level: "new",
+                                props: {
+                                    candidates: [
+                                        {
+                                            influencer: {
+                                                id: "testID",
+                                                firstName: "Test",
+                                                lastName: "Influencer",
+                                                email: "jonasroth1@gmail.com",
+                                            },
+                                            id: "testID",
+                                            response: "pending",
+                                        },
+                                    ],
+                                    taskDescriptions: ["Test Task"],
+                                },
+                            });
+
                             console.log(response);
                         }}
                     >
                         Send Template
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        onClick={async () => {
-                            const response = await testLambda();
-                            console.log(response);
-                        }}
-                    >
-                        Test Lambda
                     </Button>
                     <Button
                         variant="outlined"
@@ -154,6 +156,44 @@ function SideBar(props: ISideBar) {
                         }}
                     >
                         List Events
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        onClick={async () => {
+                            const env = process.env;
+                            console.log(env);
+                        }}
+                    >
+                        Print env
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        onClick={async () => {
+                            const date = dayjs();
+                            date.toISOString();
+                            const response = await dataClient.emailTrigger.create({
+                                date: date.toISOString(),
+                                event: { id: "testID" } as TimelineEvent.Event & { id: string },
+                                type: "test",
+                            });
+                            console.log(response);
+                        }}
+                    >
+                        Create Trigger
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        onClick={async () => {
+                            const start = dayjs().subtract(1, "day");
+                            const end = dayjs().add(1, "year");
+                            const response = await dataClient.emailTrigger.inRange({
+                                startDate: start,
+                                endDate: end,
+                            });
+                            console.log("Events in range", start.toLocaleString(), end, response);
+                        }}
+                    >
+                        Test Email Triggers
                     </Button>
                 </>
             )}

@@ -20,6 +20,7 @@ import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import { Confirm } from "@/app/Components/Popups";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import dataClient from "@/app/ServerFunctions/database";
+import EmailPreview from "../../EmailPreview/EmailPreview";
 
 type openDialog =
     | "none"
@@ -28,7 +29,11 @@ type openDialog =
     | "candidates"
     | "budget"
     | "notes"
-    | "delete";
+    | "delete"
+    | "emailPreview";
+
+export type InfluencerDetailsButtonsOpenDialog = openDialog;
+
 interface InfluencerDetailsButtonProps {
     setIsProcessing: (state: boolean) => void;
     isProcessing: boolean;
@@ -56,8 +61,8 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
     });
 
     const EventHandlers = {
-        onDialogClose: () => {
-            setOpenDialog("none");
+        onDialogClose: (hasChanged = false, newDialog: openDialog = "none") => {
+            setOpenDialog(newDialog);
         },
         deleteAssignment: () => {
             if (!assignment) return;
@@ -161,6 +166,12 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
                 onCancel={() => {}}
             />
         ),
+        emailPreview: null,
+        // <EmailPreview
+        //     assignment={assignment}
+        //     onClose={EventHandlers.onDialogClose}
+        //     candidates={assignment.candidates ?? []}
+        // />
         notes: null,
     };
     return (

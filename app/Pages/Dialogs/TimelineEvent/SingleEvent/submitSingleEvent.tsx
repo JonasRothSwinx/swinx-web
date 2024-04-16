@@ -81,7 +81,7 @@ async function createEvent(props: createSingleEventProps) {
         .map((date) => {
             if (date === null) return;
             const event: TimelineEvent.SingleEvent = { ...newEvent, date: date.toISOString() };
-            return newEvent;
+            return event;
         })
         .filter((x): x is TimelineEvent.SingleEvent => x !== undefined);
     const createdEvents = await Promise.all(
@@ -230,16 +230,23 @@ async function handleRelatedEvents(
 
 async function createEmailTriggers(event: Prettify<TimelineEvent.SingleEvent & { id: string }>) {
     const triggers = event.emailTriggers;
-    if (triggers && triggers.length) {
-        await Promise.all(
-            triggers.map(async (x) => {
-                const trigger = {
-                    ...x,
-                    event: event,
-                };
-                await dataClient.emailTrigger.create(trigger);
-            }),
-        );
+    console.log("Creating email triggers", triggers);
+    try {
+        if (triggers && triggers.length) {
+            await Promise.all(
+                triggers.map(async (x) => {
+                    const trigger = {
+                        ...x,
+                        event: event,
+                    };
+                    console.log("Telling dataClient to create email trigger", trigger);
+                    const createdTrigger = await dataClient.emailTrigger.create(trigger);
+                    console.log("Created email trigger", createdTrigger);
+                }),
+            );
+        }
+    } catch (error) {
+        console.error("Error creating email triggers", error);
     }
 }
 
@@ -247,15 +254,15 @@ function applyEmailTriggerDefaults(event: TimelineEvent.SingleEventWithId) {
     const { emailTriggers, type } = event;
     if (emailTriggers && emailTriggers.length) return emailTriggers;
     const defaults = EmailTriggers.EventEmailTriggerDefaults[type];
-    const triggers: EmailTriggers.EmailTrigger[] = [];
+    const triggers: EmailTriggers.EmailTriggerEventRef[] = [];
     Object.entries(defaults).forEach(([key, value]) => {
         if (value === null) return;
         const offset = value.offset;
 
-        const newTrigger: EmailTriggers.EmailTrigger = {
-            date: dayjs(event.date).add(offset),
+        const newTrigger: EmailTriggers.EmailTriggerEventRef = {
+            date: dayjs(event.date).add(offset).toISOString(),
             type: key as EmailTriggers.emailTriggerType,
-            event,
+            event: { id: event.id },
         };
         triggers.push(newTrigger);
     });

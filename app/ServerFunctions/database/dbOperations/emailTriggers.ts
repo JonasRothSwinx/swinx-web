@@ -7,13 +7,14 @@ import client from "./.dbclient";
 import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 import { RawData } from "./types";
 
+const selectionSet = ["id", "date", "event.id", "type"] as const;
 /**
  * List all email triggers
  * @returns The list of email triggers
  */
 export async function listEmailTriggers(): Promise<EmailTriggers.EmailTriggerEventRef[]> {
     const { data, errors } = await client.models.EmailTrigger.list({
-        selectionSet: ["date", "event.id"],
+        selectionSet,
     });
     if (errors) {
         throw new Error(errors.map((error) => error.message).join("\n"));
@@ -40,9 +41,10 @@ export async function listEmailTriggers(): Promise<EmailTriggers.EmailTriggerEve
 export async function createEmailTrigger(
     trigger: Omit<EmailTriggers.EmailTriggerEventRef, "id">,
 ): Promise<string> {
+    console.log("Creating email trigger", trigger);
     const { date, event, type } = trigger;
     const { data, errors } = await client.models.EmailTrigger.create({
-        date: date.toISOString(),
+        date,
         type,
         event: { id: event.id },
     });
@@ -59,12 +61,12 @@ export async function createEmailTrigger(
  * @returns The ID of the updated email trigger
  */
 export async function updateEmailTrigger(
-    trigger: PartialWith<EmailTriggers.EmailTriggerEventRef, "id">,
+    trigger: PartialWith<EmailTriggers.EmailTriggerEventRef, "id"> & { id: string },
 ): Promise<string> {
     const { id, date, event } = trigger;
     const { data, errors } = await client.models.EmailTrigger.update({
         id,
-        date: date?.toISOString(),
+        date: date,
         event: event ? { id: event.id } : undefined,
     });
     if (errors) {
@@ -77,9 +79,7 @@ export async function updateEmailTrigger(
  * Delete an email trigger
  * @param trigger The email trigger object to delete
  */
-export async function deleteEmailTrigger(
-    trigger: Pick<EmailTriggers.EmailTriggerEventRef, "id">,
-): Promise<void> {
+export async function deleteEmailTrigger(trigger: { id: string }): Promise<void> {
     const { id } = trigger;
     await client.models.EmailTrigger.delete({ id });
 }
@@ -94,7 +94,7 @@ export async function getEmailTriggersForEvent(
 ): Promise<EmailTriggers.EmailTriggerEventRef[]> {
     const { data, errors } = await client.models.EmailTrigger.list({
         filter: { timelineEventEmailTriggersId: { eq: event.id } },
-        selectionSet: ["date", "event.id"],
+        selectionSet,
     });
     if (errors) {
         throw new Error(errors.map((error) => error.message).join("\n"));
@@ -114,16 +114,16 @@ export async function getEmailTriggersForEvent(
 
 /**
  * Get all email triggers for a date range
- * @param start The start date of the range
- * @param end The end date of the range
+ * @param start The start date of the range as ISO string
+ * @param end The end date of the range as ISO string
  */
 export async function getEmailTriggersForDateRange(
-    start: Dayjs,
-    end: Dayjs,
+    start: string,
+    end: string,
 ): Promise<EmailTriggers.EmailTriggerEventRef[]> {
     const { data, errors } = await client.models.EmailTrigger.list({
-        filter: { date: { between: [start.toISOString(), end.toISOString()] } },
-        selectionSet: ["date", "event.id"],
+        filter: { date: { between: [start, end] } },
+        selectionSet,
     });
     if (errors) {
         throw new Error(errors.map((error) => error.message).join("\n"));
@@ -146,7 +146,7 @@ export async function getEmailTriggersForDateRange(
  * @param raw The raw data from the database
  * @returns The email trigger object
  */
-export function validateEmailTrigger(raw: unknown): EmailTriggers.EmailTriggerEventRef {
+function validateEmailTrigger(raw: unknown): EmailTriggers.EmailTriggerEventRef {
     if (typeof raw !== "object" || raw === null) {
         throw new Error("Invalid Email Trigger");
     }
@@ -157,7 +157,7 @@ export function validateEmailTrigger(raw: unknown): EmailTriggers.EmailTriggerEv
     return {
         id,
         type: type as EmailTriggers.emailTriggerType,
-        date: dayjs(date),
+        date,
         event,
     };
 }

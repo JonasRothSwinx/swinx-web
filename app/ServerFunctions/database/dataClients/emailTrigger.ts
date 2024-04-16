@@ -15,8 +15,8 @@ const emailTriggerClient = {
     list: listEmailTriggers,
     update: updateEmailTrigger,
     delete: deleteEmailTrigger,
-    getEmailTriggersForEvent,
-    getEmailTriggersForDateRange,
+    byEvent: getEmailTriggersForEvent,
+    inRange: getEmailTriggersForDateRange,
 };
 
 export default emailTriggerClient;
@@ -30,21 +30,28 @@ export default emailTriggerClient;
  * @returns The created email trigger object
  */
 async function createEmailTrigger(
-    trigger: Omit<EmailTriggers.EmailTrigger, "id">,
+    trigger: Omit<EmailTriggers.EmailTrigger, "id"> & { event: { id: string } },
 ): Promise<EmailTriggers.EmailTrigger> {
-    const queryClient = config.getQueryClient();
-    const id = await dbOperations.emailTrigger.create(trigger);
-    const createdTrigger = { ...trigger, id };
-    queryClient.setQueryData(["emailTrigger", id], { ...trigger, id });
-    queryClient.setQueryData(["emailTriggers"], (prev: EmailTriggers.EmailTrigger[]) => {
-        if (!prev) {
-            return [createdTrigger];
-        }
-        return [...prev, createdTrigger];
-    });
-    queryClient.refetchQueries({ queryKey: ["emailTriggers"] });
-    queryClient.refetchQueries({ queryKey: ["emailTrigger", id] });
-    return createdTrigger;
+    try {
+        console.log("In datacclient emailTrigger createEmailTrigger", trigger);
+        const queryClient = config.getQueryClient();
+
+        const id = await dbOperations.emailTrigger.create({ ...trigger });
+        const createdTrigger = { ...trigger, id };
+        queryClient.setQueryData(["emailTrigger", id], { ...trigger, id });
+        queryClient.setQueryData(["emailTriggers"], (prev: EmailTriggers.EmailTrigger[]) => {
+            if (!prev) {
+                return [createdTrigger];
+            }
+            return [...prev, createdTrigger];
+        });
+        queryClient.refetchQueries({ queryKey: ["emailTriggers"] });
+        queryClient.refetchQueries({ queryKey: ["emailTrigger", id] });
+        return createdTrigger;
+    } catch (error) {
+        console.error("Error creating email trigger", error);
+        throw error;
+    }
 }
 
 /**
@@ -72,10 +79,14 @@ export async function listEmailTriggers(): Promise<EmailTriggers.EmailTrigger[]>
  */
 export async function updateEmailTrigger(
     updatedData: PartialWith<EmailTriggers.EmailTrigger, "id">,
-    previousTrigger: EmailTriggers.EmailTrigger,
+    previousTrigger: EmailTriggers.EmailTrigger & { id: string },
 ): Promise<EmailTriggers.EmailTrigger> {
     const queryClient = config.getQueryClient();
-    await dbOperations.emailTrigger.update(updatedData);
+
+    await dbOperations.emailTrigger.update({
+        ...updatedData,
+        id: previousTrigger.id,
+    });
     const updated = { ...previousTrigger, ...updatedData };
     queryClient.setQueryData(["emailTrigger", updated.id], updated);
     queryClient.setQueryData(["emailTriggers"], (prev: EmailTriggers.EmailTrigger[]) => {
@@ -94,7 +105,7 @@ export async function updateEmailTrigger(
  * @param trigger The email trigger object to delete
  */
 export async function deleteEmailTrigger(
-    trigger: Pick<EmailTriggers.EmailTrigger, "id">,
+    trigger: Pick<EmailTriggers.EmailTrigger, "id"> & { id: string },
 ): Promise<void> {
     const queryClient = config.getQueryClient();
     await dbOperations.emailTrigger.delete(trigger);
@@ -145,9 +156,14 @@ export async function getEmailTriggersForDateRange(props: {
     const queryClient = config.getQueryClient();
     const triggers = queryClient.getQueryData<EmailTriggers.EmailTrigger[]>(["emailTriggers"]);
     if (triggers && useCache) {
-        return triggers.filter((trigger) => trigger.date.isBetween(startDate, endDate, null, "[]"));
+        return triggers.filter((trigger) =>
+            dayjs(trigger.date).isBetween(dayjs(startDate), dayjs(endDate), null, "[]"),
+        );
     }
-    const dateTriggers = await dbOperations.emailTrigger.byDateRange(startDate, endDate);
+    const dateTriggers = await dbOperations.emailTrigger.byDateRange(
+        startDate.toISOString(),
+        endDate.toISOString(),
+    );
     const validatedTriggers = await Promise.all(dateTriggers.map(validateEmailTrigger));
     queryClient.setQueryData(["emailTriggers"], validatedTriggers);
     return validatedTriggers;

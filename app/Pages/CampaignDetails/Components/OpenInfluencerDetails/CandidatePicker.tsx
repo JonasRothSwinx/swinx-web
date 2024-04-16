@@ -17,6 +17,7 @@ import EmailPreview from "../EmailPreview/EmailPreview";
 import { Candidates } from "@/app/ServerFunctions/types/candidates";
 import dataClient from "@/app/ServerFunctions/database";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { InfluencerDetailsButtonsOpenDialog } from "./components/InfluencerDetailsButtons";
 
 // eslint-disable-next-line
 interface CandidatePickerProps {
@@ -26,7 +27,7 @@ interface CandidatePickerProps {
         assignment: Assignment.Assignment,
         updatedValues?: Partial<Assignment.Assignment>,
     ) => void;
-    onClose: () => void;
+    onClose: (hasChanged?: boolean, newDialog?: InfluencerDetailsButtonsOpenDialog) => void;
 }
 function getClassByResponse(response: Nullable<string>) {
     switch (response) {
@@ -127,7 +128,11 @@ export default function CandidatePicker(props: CandidatePickerProps) {
             //refetch assignment
             queryClient.invalidateQueries({ queryKey: ["assignment", assignment.data.id] });
             queryClient.refetchQueries({ queryKey: ["assignment", assignment.data.id] });
-            EventHandlers.onClose(false);
+            // EventHandlers.onClose(false);
+        },
+        openDialog: async (dialog: openDialog) => {
+            await EventHandlers.submitCandidates();
+            setOpenDialog(dialog);
         },
     };
     const dialogs: { [state in openDialog]: JSX.Element | null } = {
@@ -135,14 +140,15 @@ export default function CandidatePicker(props: CandidatePickerProps) {
         emailPreview: (
             <EmailPreview
                 onClose={EventHandlers.dialogClose}
-                templateName="CampaignInvite"
-                variables={{
-                    honorar: "0.50€",
-                    assignments: [
-                        { assignmentDescription: "Krebs heilen" },
-                        { assignmentDescription: "Weltfrieden sichern" },
-                    ],
-                }}
+                // templateName="CampaignInvite"
+                // variables={{
+                //     honorar: "0.50€",
+                //     assignments: [
+                //         { assignmentDescription: "Krebs heilen" },
+                //         { assignmentDescription: "Weltfrieden sichern" },
+                //     ],
+                // }}
+                assignment={assignment.data}
                 candidates={assignment.data.candidates ?? []}
             />
         ),
@@ -172,7 +178,7 @@ export default function CandidatePicker(props: CandidatePickerProps) {
                         assignInfluencer={EventHandlers.assignInfluencer}
                     />
                     <Buttons
-                        setOpenDialog={setOpenDialog}
+                        setOpenDialog={EventHandlers.openDialog}
                         candidates={assignment.data.candidates ?? []}
                     />
                 </Grid>
@@ -389,7 +395,7 @@ function InfluencerPicker(props: InfluencerPickerProps) {
 }
 interface ButtonProps {
     candidates: Candidates.Candidate[];
-    setOpenDialog: (dialog: openDialog) => void;
+    setOpenDialog: (dialog: openDialog) => Promise<void>;
 }
 function Buttons(props: ButtonProps) {
     const [userGroups, setUserGroups] = useState<string[]>([]);
