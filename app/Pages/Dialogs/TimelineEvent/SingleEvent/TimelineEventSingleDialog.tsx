@@ -20,10 +20,7 @@ import "dayjs/locale/de";
 import { useEffect, useState } from "react";
 import stylesExporter from "../../../styles/stylesExporter";
 import { DateSelector } from "../DateSelector";
-import InviteDetails from "./SingleEventDetails/InviteEventDetails";
-import WebinarSpeakerDetails from "./SingleEventDetails/WebinarSpeakerDetails";
 import { submitSingleEvent } from "./submitSingleEvent";
-import PostEventDetails from "./SingleEventDetails/PostEventDetails";
 import assignment from "@/app/ServerFunctions/database/dataClients/assignments";
 import SingleEventDetails from "./SingleEventDetails/SingleEventDetails";
 
