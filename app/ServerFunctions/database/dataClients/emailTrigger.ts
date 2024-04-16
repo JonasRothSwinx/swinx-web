@@ -78,7 +78,7 @@ export async function listEmailTriggers(): Promise<EmailTriggers.EmailTrigger[]>
  * @returns The updated email trigger object
  */
 export async function updateEmailTrigger(
-    updatedData: PartialWith<EmailTriggers.EmailTrigger, "id">,
+    updatedData: Partial<EmailTriggers.EmailTriggerEventRef>,
     previousTrigger: EmailTriggers.EmailTrigger & { id: string },
 ): Promise<EmailTriggers.EmailTrigger> {
     const queryClient = config.getQueryClient();
@@ -87,7 +87,7 @@ export async function updateEmailTrigger(
         ...updatedData,
         id: previousTrigger.id,
     });
-    const updated = { ...previousTrigger, ...updatedData };
+    const updated = { ...previousTrigger, ...updatedData, event: previousTrigger.event };
     queryClient.setQueryData(["emailTrigger", updated.id], updated);
     queryClient.setQueryData(["emailTriggers"], (prev: EmailTriggers.EmailTrigger[]) => {
         if (!prev) {

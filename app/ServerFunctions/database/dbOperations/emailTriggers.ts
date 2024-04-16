@@ -61,7 +61,7 @@ export async function createEmailTrigger(
  * @returns The ID of the updated email trigger
  */
 export async function updateEmailTrigger(
-    trigger: PartialWith<EmailTriggers.EmailTriggerEventRef, "id"> & { id: string },
+    trigger: Partial<EmailTriggers.EmailTriggerEventRef> & { id: string },
 ): Promise<string> {
     const { id, date, event } = trigger;
     const { data, errors } = await client.models.EmailTrigger.update({
