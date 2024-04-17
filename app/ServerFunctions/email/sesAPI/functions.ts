@@ -54,33 +54,37 @@ export async function listTemplates() {
 }
 
 export async function updateTemplates(templateNames: templateName[] = []) {
-    const updateData: SesHandlerTypes.sesHandlerUpdateTemplate["updateData"] = Object.entries(
-        templateDefinitions.mailTypes,
-    ).reduce((acc, [key, template]) => {
-        const templateName: templateName = key as templateName;
-        const newData = Object.entries(template.levels).reduce((acc, [level, levelData]) => {
-            if (templateNames.length && !templateNames.includes(templateName)) return acc;
-            return [...acc, levelData];
-        }, acc);
-        return [...acc, ...newData];
-    }, [] as typeof updateData);
+    const entries = Object.entries(templateDefinitions.mailTypes);
+    const updateData: SesHandlerTypes.sesHandlerUpdateTemplate["updateData"] = entries.reduce(
+        (acc, [key, template]) => {
+            const levels = template.levels;
+            const newTemplates = Object.entries(levels).map(([level, template]) => {
+                return template;
+            });
+            newTemplates.filter(
+                (template) => !templateNames.includes(template.name as templateName),
+            );
+            acc = [...acc, ...newTemplates];
+            return acc;
+        },
+        [] as typeof updateData,
+    );
 
-    return;
     const responses = [];
     let processed = 0;
     const total = updateData.length;
     while (updateData.length > 0) {
-        const chunk = updateData.splice(0, 2);
+        const chunk = updateData.splice(0, 5);
         const requestBody: SesHandlerTypes.sesHandlerUpdateTemplate = {
             operation: "update",
             updateData: chunk,
         };
-        for (let attempts = 0; attempts < 5; attempts++) {
+        for (let attempts = 0; attempts < 10; attempts++) {
             const response = (await sendRequest(
                 requestBody,
             )) as SesHandlerTypes.sesHandlerUpdateTemplateResponseBody; //TODO: validation
             if (response.error) {
-                if (attempts === 4) {
+                if (attempts === 10) {
                     throw new Error(JSON.stringify(response.error));
                 }
                 console.log(`Error updating templates attempt ${attempts}`, response.error);
@@ -92,7 +96,7 @@ export async function updateTemplates(templateNames: templateName[] = []) {
             console.log(`Updated ${processed} of ${total} templates`);
             break;
         }
-        await sleep(500);
+        await sleep(200);
     }
     console.log(responses);
     return responses;

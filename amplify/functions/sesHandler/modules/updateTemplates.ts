@@ -3,6 +3,8 @@ import {
     UpdateEmailTemplateCommandInput,
     UpdateEmailTemplateCommand,
     CreateEmailTemplateCommand,
+    EmailTemplateMetadata,
+    ListEmailTemplatesCommandOutput,
 } from "@aws-sdk/client-sesv2";
 import client from "./clients/SESclient.js";
 
@@ -10,7 +12,17 @@ export default async function updateTemplates(
     updateData: { name: string; subjectLine: string; html: string }[],
 ) {
     const messages = [];
-    const { TemplatesMetadata: templates } = await client.send(new ListEmailTemplatesCommand({}));
+    const templates: EmailTemplateMetadata[] = [];
+    let nextToken: string | undefined = undefined;
+    do {
+        const response: ListEmailTemplatesCommandOutput = await client.send(
+            new ListEmailTemplatesCommand({ NextToken: nextToken }),
+        );
+        nextToken = response.NextToken;
+        templates.push(...(response.TemplatesMetadata ?? []));
+    } while (nextToken);
+
+    console.log(`Found ${templates.length} templates`);
 
     await Promise.all(
         updateData.map((template) => {
