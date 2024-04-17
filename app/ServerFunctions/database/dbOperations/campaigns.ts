@@ -9,7 +9,6 @@ import { SelectionSet } from "aws-amplify/api";
 import { Schema } from "@/amplify/data/resource";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { Nullable, PartialWith } from "@/app/Definitions/types";
-import { RawData } from "./types";
 import { Candidates } from "@/app/ServerFunctions/types/candidates";
 import AssignedInfluencer from "@/app/Pages/CampaignDetails/Components/OpenInfluencerDetails/AssignedInfluencer";
 
@@ -20,61 +19,41 @@ const selectionSet = [
     "notes",
     "budget",
     "customers.*",
-
-    // "campaignTimelineEvents.*",
-    // "campaignTimelineEvents.campaign.id",
-    // "campaignTimelineEvents.relatedEvents.id",
-    // "campaignTimelineEvents.relatedEvents.timelineEventType",
-    // "campaignTimelineEvents.timelineEventRelatedEventsId",
-
-    // "campaignTimelineEvents.assignments.*",
-    // "campaignTimelineEvents.assignments.influencerAssignment.influencer.*",
-    // "campaignTimelineEvents.inviteEvent.*",
-
-    // "assignedInfluencers.*",
-    // "assignedInfluencers.candidates.id",
-    // "assignedInfluencers.candidates.response",
-    // "assignedInfluencers.candidates.influencer.id",
-    // "assignedInfluencers.candidates.influencer.firstName",
-    // "assignedInfluencers.candidates.influencer.lastName",
-    // "assignedInfluencers.candidates.influencer.email",
-    // "assignedInfluencers.influencer.*",
+    "billingAdress.*",
 ] as const;
+
+type RawCampaign = SelectionSet<Schema["Campaign"], typeof selectionSet>;
 export async function dummyListCampaigns() {
-    //@ts-expect-error - This is a dummy function
     const { data, errors } = await client.models.Campaign.list({
         selectionSet: [
             "id",
-            // "campaignType",
             "campaignManagerId",
-            // "campaignStep",
             "notes",
 
             "customers.*",
 
             "billingAdress.*",
 
-            "campaignTimelineEvents.*",
-            "campaignTimelineEvents.campaign.id",
-            "campaignTimelineEvents.relatedEvents.id",
-            "campaignTimelineEvents.relatedEvents.timelineEventType",
-            //@ts-expect-error - This exists in the schema
-            "campaignTimelineEvents.timelineEventRelatedEventsId",
+            // "timelineEvents.*",
+            // "timelineEvents.campaign.id",
+            // "timelineEvents.relatedEvents.id",
+            // "timelineEvents.relatedEvents.timelineEventType",
+            // "timelineEvents.Id",
 
-            "campaignTimelineEvents.assignments.*",
-            "campaignTimelineEvents.assignments.influencer.*",
-            "campaignTimelineEvents.assignments.influencer.firstName",
-            "campaignTimelineEvents.assignments.influencer.lastName",
+            // "campaignTimelineEvents.assignments.*",
+            // "campaignTimelineEvents.assignments.influencer.*",
+            // "campaignTimelineEvents.assignments.influencer.firstName",
+            // "campaignTimelineEvents.assignments.influencer.lastName",
             // "campaignTimelineEvents.inviteEvent.*",
 
-            "assignedInfluencers.*",
-            "assignedInfluencers.candidates.id",
-            "assignedInfluencers.candidates.response",
-            "assignedInfluencers.candidates.influencer.id",
-            "assignedInfluencers.candidates.influencer.firstName",
-            "assignedInfluencers.candidates.influencer.lastName",
-            "assignedInfluencers.candidates.influencer.email",
-            "assignedInfluencers.influencer.*",
+            // "assignedInfluencers.*",
+            // "assignedInfluencers.candidates.id",
+            // "assignedInfluencers.candidates.response",
+            // "assignedInfluencers.candidates.influencer.id",
+            // "assignedInfluencers.candidates.influencer.firstName",
+            // "assignedInfluencers.candidates.influencer.lastName",
+            // "assignedInfluencers.candidates.influencer.email",
+            // "assignedInfluencers.influencer.*",
         ],
     });
     return { data: JSON.parse(JSON.stringify(data)), errors };
@@ -116,15 +95,13 @@ const GetCampaignOptionsDefault: GetCampaignOptions = {
     include: { customer: true, timelineEvents: true },
 };
 
-function validateCampaign(rawDataInput: unknown): Campaign.CampaignMin {
-    const rawData = rawDataInput as RawData.RawCampaignFull;
-
+function validateCampaign(rawCampaign: RawCampaign): Campaign.CampaignMin {
     const dataOut: Campaign.CampaignMin = {
-        id: rawData.id,
-        campaignManagerId: rawData.campaignManagerId,
-        notes: rawData.notes,
-        customers: rawData.customers,
-        billingAdress: rawData.billingAdress,
+        id: rawCampaign.id,
+        campaignManagerId: rawCampaign.campaignManagerId,
+        notes: rawCampaign.notes,
+        customers: rawCampaign.customers,
+        billingAdress: rawCampaign.billingAdress ?? null,
     };
     return dataOut;
 }
@@ -132,7 +109,6 @@ export async function getCampaign(id: string): Promise<Campaign.CampaignMin> {
     const { data, errors } = await client.models.Campaign.get(
         { id },
         {
-            //ts-expect-error - This is a valid selectionSet
             selectionSet,
         },
     );
@@ -156,7 +132,7 @@ export async function listCampaigns(): Promise<Campaign.CampaignMin[]> {
         throw new Error(JSON.stringify({ errors }));
     }
     const campaigns: Campaign.CampaignMin[] = data
-        .map((raw: unknown) => {
+        .map((raw) => {
             try {
                 return validateCampaign(raw);
             } catch (error) {

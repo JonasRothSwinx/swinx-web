@@ -226,7 +226,7 @@ function ParentEventSelector(props: ParentEventSelectorProps) {
     const EntryName: { [key in TimelineEvent.multiEventType]: (id: string) => string } = {
         Webinar: (id) => {
             const event = parentEventChoices.find((x) => x.id === id);
-            return event?.details?.topic ?? "Webinar";
+            return event?.info?.topic ?? "Webinar";
         },
     };
 

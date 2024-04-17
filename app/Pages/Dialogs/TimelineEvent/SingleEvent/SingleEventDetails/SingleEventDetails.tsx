@@ -13,13 +13,13 @@ interface DetailsProps {
         Partial<
             Pick<
                 TimelineEvent.SingleEvent,
-                "eventTitle" | "details" | "eventTaskAmount" | "type" | "relatedEvents"
+                "eventTitle" | "info" | "eventTaskAmount" | "type" | "relatedEvents"
             >
         >
     >;
 }
 type relevantDetails = Prettify<
-    Pick<TimelineEvent.SingleEvent, "eventTitle" | "eventTaskAmount"> & TimelineEvent.EventDetails
+    Pick<TimelineEvent.SingleEvent, "eventTitle" | "eventTaskAmount"> & TimelineEvent.EventInfo
 >;
 type DetailsConfigEntry =
     | {
@@ -157,15 +157,15 @@ export default function SingleEventDetails(props: DetailsProps): JSX.Element {
     } = {
         topic: (value) => {
             if (!(typeof value === "string")) return;
-            applyDetailsChange({ details: { ...data.details, topic: value } });
+            applyDetailsChange({ info: { ...data.info, topic: value } });
         },
         charLimit: (value) => {
             if (!(typeof value === "number")) return;
-            applyDetailsChange({ details: { ...data.details, charLimit: value } });
+            applyDetailsChange({ info: { ...data.info, charLimit: value } });
         },
         maxDuration: (value) => {
             if (!(typeof value === "number")) return;
-            applyDetailsChange({ details: { ...data.details, maxDuration: value } });
+            applyDetailsChange({ info: { ...data.info, maxDuration: value } });
         },
         eventTitle: (value) => {
             if (!(typeof value === "string")) return;
@@ -177,21 +177,21 @@ export default function SingleEventDetails(props: DetailsProps): JSX.Element {
         },
         draftDeadline: (value) => {
             if (!(typeof value === "string")) return;
-            applyDetailsChange({ details: { ...data.details, draftDeadline: value } });
+            applyDetailsChange({ info: { ...data.info, draftDeadline: value } });
         },
         instructions: (value) => {
             if (!(typeof value === "string")) return;
-            applyDetailsChange({ details: { ...data.details, instructions: value } });
+            applyDetailsChange({ info: { ...data.info, instructions: value } });
         },
     };
     const PropertyValue: { [key in keyof relevantDetails]: string | number | undefined | null } =
         useMemo(() => {
             return {
-                topic: data.details?.topic,
-                charLimit: data.details?.charLimit,
-                draftDeadline: data.details?.draftDeadline,
-                instructions: data.details?.instructions,
-                maxDuration: data.details?.maxDuration,
+                topic: data.info?.topic,
+                charLimit: data.info?.charLimit,
+                draftDeadline: data.info?.draftDeadline,
+                instructions: data.info?.instructions,
+                maxDuration: data.info?.maxDuration,
                 eventTitle: data.eventTitle,
                 eventTaskAmount: data.eventTaskAmount,
             };

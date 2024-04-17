@@ -72,10 +72,8 @@ type DialogState = "none" | "customer" | "campaign" | "webinar" | "timelineEvent
 // };
 
 type EditableDataTypes = Campaign.Campaign | Customer.Customer | TimelineEvent.Event;
-type CampaignListProps = {};
 
-function CampaignList(props: CampaignListProps) {
-    const {} = props;
+function CampaignList() {
     const queryClient = useQueryClient();
     const influencers = useQuery({
         queryKey: ["influencers"],
@@ -415,9 +413,7 @@ function CampaignList(props: CampaignListProps) {
     if (campaigns.isError) {
         console.log(campaigns);
         console.error(campaigns.error);
-        const errors: { errors: { errorType: string; message: string }[] } = JSON.parse(
-            campaigns.error.message,
-        );
+
         const ErrorMessages: { [key: string]: string } = {
             Unauthorized: "Nicht autorisiert",
         };
@@ -433,11 +429,9 @@ function CampaignList(props: CampaignListProps) {
                 }}
             >
                 <Typography variant="h3">Fehler beim Laden der Kampagnen</Typography>
-                {errors.errors.map((error, index) => (
-                    <Typography key={index} variant="h5">
-                        {ErrorMessages[error.errorType] ?? error.message}
-                    </Typography>
-                ))}
+                <Typography>
+                    {ErrorMessages[campaigns.error.message] ?? campaigns.error.message}
+                </Typography>
             </div>
         );
     }

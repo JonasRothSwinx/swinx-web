@@ -49,6 +49,12 @@ const schema = a.schema({
             notes: a.string(),
             emailType: a.string().default("new"),
             //#endregion
+            //#region Relations
+
+            assignments: a.hasMany("InfluencerAssignment", "influencerId"),
+
+            candidatures: a.hasMany("InfluencerCandidate", "influencerId"),
+            //#endregion
         })
         .authorization([
             //
@@ -67,30 +73,50 @@ const schema = a.schema({
      * @property {string} notes                         - Notes about the assignment
      * @property {string} emailType                     - Type of email sent to the influencer
      */
+    //#region InfluencerAssignment
+
     InfluencerAssignment: a
         .model({
-            influencer: a.hasOne("Influencer").authorization([adminsAndManagers]),
+            budget: a.integer(),
             isPlaceholder: a.boolean().required(),
             placeholderName: a.string().authorization([adminsAndManagers]),
-            timelineEvents: a.manyToMany("TimelineEvent", { relationName: "EventAssignments" }),
-            candidates: a.hasMany("InfluencerCandidate").authorization([adminsAndManagers]),
-            budget: a.integer(),
+
+            //#region Relations
+            influencerId: a.id().authorization([adminsAndManagers]),
+            influencer: a
+                .belongsTo("Influencer", "influencerId")
+                .authorization([adminsAndManagers]),
+
+            timelineEvents: a.hasMany("EventAssignment", "assignmentId"),
+
+            campaignId: a.id().required(),
+            campaign: a.belongsTo("Campaign", "campaignId"),
+
+            candidates: a
+                .hasMany("InfluencerCandidate", "candidateAssignmentId")
+                .authorization([adminsAndManagers]),
+            //#endregion
         })
         .authorization([
             a.allow.public().to(["read"]),
             a.allow.specificGroups(["admin", "projektmanager"], "userPools"),
         ]),
+    //#endregion InfluencerAssignment
 
+    //#region InfluencerCandidate
     /**
      * InfluencerCandidate model - Represents a candidate for an influencer assignment
      * @property {InfluencerAssignment} assignment      - The assignment the candidate is for
      * @property {Influencer} influencer                - The influencer candidate
      * @property {string} response                      - Response of the influencer
      */
+
     InfluencerCandidate: a
         .model({
-            assignment: a.belongsTo("InfluencerAssignment"),
-            influencer: a.hasOne("Influencer"),
+            candidateAssignmentId: a.id().required(),
+            assignment: a.belongsTo("InfluencerAssignment", "candidateAssignmentId"),
+            influencerId: a.id().required(),
+            influencer: a.belongsTo("Influencer", "influencerId"),
             response: a
                 .string()
                 .authorization([adminsAndManagers, a.allow.public().to(["read", "update"])]),
@@ -99,9 +125,26 @@ const schema = a.schema({
             a.allow.public().to(["read"]),
             a.allow.specificGroups(["admin", "projektmanager"], "userPools"),
         ]),
+    //#endregion InfluencerCandidate
+
+    //#region EventAssignment
+    /**
+     * EventAssignment model - Join Table for InfluencerAssignment and TimelineEvent many-to-many relation
+     */
+    EventAssignment: a
+        .model({
+            assignmentId: a.id().required(),
+            assignment: a.belongsTo("InfluencerAssignment", "assignmentId"),
+            timelineEventId: a.id().required(),
+            timelineEvent: a.belongsTo("TimelineEvent", "timelineEventId"),
+        })
+        .secondaryIndexes((index) => [index("assignmentId"), index("timelineEventId")])
+        .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
+    //#endregion EventAssignment
     //#endregion Influencer
     //##############################################
 
+    //#region Campaign
     /**
      * Campaign model - Represents a campaign
      * @property {string} campaignManagerId                   - ID of the campaign manager
@@ -115,8 +158,9 @@ const schema = a.schema({
     Campaign: a
         .model({
             campaignManagerId: a.string(),
+            budget: a.integer(),
+            notes: a.string(),
 
-            customers: a.hasMany("Customer"),
             billingAdress: a.customType({
                 name: a.string().required(),
                 street: a.string().required(),
@@ -124,13 +168,14 @@ const schema = a.schema({
                 zip: a.string().required(),
             }),
 
-            campaignTimelineEvents: a.hasMany("TimelineEvent"),
-            assignedInfluencers: a.hasMany("InfluencerAssignment"),
-            budget: a.integer(),
-            notes: a.string(),
+            customers: a.hasMany("Customer", "campaignId"),
+            timelineEvents: a.hasMany("TimelineEvent", "campaignId"),
+            assignedInfluencers: a.hasMany("InfluencerAssignment", "campaignId"),
         })
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
+    //#endregion Campaign
 
+    //#region Customer
     /**
      * Customer model - Represents a contact person for a campaign
      * @property {Campaign} campaign      - Campaign the customer is assigned to
@@ -143,7 +188,6 @@ const schema = a.schema({
      */
     Customer: a
         .model({
-            campaign: a.belongsTo("Campaign"),
             company: a.string().required(),
             firstName: a.string().required(),
             lastName: a.string().required(),
@@ -151,18 +195,16 @@ const schema = a.schema({
             email: a.email().required(),
             phoneNumber: a.string(),
             notes: a.string(),
+
+            //#region Relations
+            campaignId: a.id().required(),
+            campaign: a.belongsTo("Campaign", "campaignId"),
+            //#endregion Relations
         })
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
+    //#endregion Customer
 
-    // BillingAdress: a
-    //     .model({
-    //         name: a.string().required(),
-    //         street: a.string().required(),
-    //         city: a.string().required(),
-    //         zip: a.string().required(),
-    //     })
-    //     .authorization([adminsAndManagers]),
-
+    //#region TimelineEvent
     /**
      * TimelineEvent model - Represents an event in the timeline of a campaign
      * @property {Campaign} campaign                          - Campaign the event is assigned to
@@ -186,28 +228,45 @@ const schema = a.schema({
      */
     TimelineEvent: a
         .model({
-            campaign: a.belongsTo("Campaign"),
-            campaignCampaignTimelineEventsId: a.id().required(),
             timelineEventType: a.string().required(),
-            assignments: a.manyToMany("InfluencerAssignment", { relationName: "EventAssignments" }),
             eventAssignmentAmount: a.integer(),
             eventTitle: a.string(),
             eventTaskAmount: a.integer(),
             date: a.datetime().required(),
             notes: a.string(),
-            relatedEvents: a.hasMany("TimelineEvent"),
-            emailTriggers: a.hasMany("EmailTrigger"),
-            details: a.customType({
+            info: a.customType({
                 topic: a.string(),
                 charLimit: a.integer(),
                 draftDeadline: a.datetime(),
                 instructions: a.string(),
                 maxDuration: a.integer(),
             }),
-        })
-        .secondaryIndexes((index) => [index("campaignCampaignTimelineEventsId")])
-        .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
 
+            //###  Relations  ####
+            //####################
+
+            campaignId: a.id().required(),
+            campaign: a.belongsTo("Campaign", "campaignId"),
+
+            //####################
+
+            assignments: a.hasMany("EventAssignment", "timelineEventId"),
+
+            //####################
+
+            parentEventId: a.id(),
+            parentEvent: a.belongsTo("TimelineEvent", "parentEventId"),
+            relatedEvents: a.hasMany("TimelineEvent", "parentEventId"),
+
+            //####################
+
+            emailTriggers: a.hasMany("EmailTrigger", "eventId"),
+        })
+        .secondaryIndexes((index) => [index("campaignId")])
+        .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
+    //#endregion TimelineEvent
+
+    //#region EmailTrigger
     /**
      * EmailTrigger model - Represents a trigger for sending an email
      *
@@ -218,16 +277,13 @@ const schema = a.schema({
         .model({
             date: a.datetime().required(),
             type: a.string().required(),
-            event: a.belongsTo("TimelineEvent"),
+
+            //Relations
+            eventId: a.id().required(),
+            event: a.belongsTo("TimelineEvent", "eventId"),
         })
         .authorization([adminsAndManagers]),
-    // EventAssignments: a
-    //     .model({
-    //         influencerAssignmentId: a.id().required(),
-    //         timelineEventId: a.id().required(),
-    //     })
-    //     .secondaryIndexes((index) => [index("influencerAssignmentId"), index("timelineEventId")])
-    //     .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
+    //#endregion EmailTrigger
 });
 
 export type Schema = ClientSchema<typeof schema>;

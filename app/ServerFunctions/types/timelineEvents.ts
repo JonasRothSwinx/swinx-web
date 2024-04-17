@@ -79,10 +79,9 @@ namespace TimelineEvent {
             parentEvent: Nullable<EventOrReference>;
         };
         emailTriggers: EmailTriggers.EmailTriggerEventRef[];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        details: Partial<EventDetails>;
+        info: Partial<EventInfo>;
     };
-    export type EventDetails = {
+    export type EventInfo = {
         topic: string;
         charLimit: number;
         draftDeadline: string;
@@ -104,7 +103,6 @@ namespace TimelineEvent {
         type: "Invites";
         // details?: InvitesDetails;
     };
-    export type InvitesDetails = {};
 
     export type Post = SingleEventCommon & {
         type: "Post";
@@ -168,9 +166,7 @@ namespace TimelineEvent {
     export type Webinar = MultiEventCommon & {
         type: "Webinar";
         eventAssignmentAmount: number;
-        details?: WebinarDetails;
     };
-    type WebinarDetails = {};
     //#endregion Types
     //#region Type Guards
     export function isMultiEvent(event: unknown, verbose = false): event is MultiEvent {

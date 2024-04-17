@@ -7,11 +7,11 @@ import { Candidates } from "../../types/candidates";
 
 export async function createCandidate(
     candidate: Omit<Candidates.Candidate, "id">,
-    influencerAssignmentCandidatesId: string
+    candidateAssignmentId: string,
 ) {
     const { data, errors } = await client.models.InfluencerCandidate.create({
-        influencerAssignmentCandidatesId,
-        influencerCandidateInfluencerId: candidate.influencer.id ?? undefined,
+        candidateAssignmentId,
+        influencerId: candidate.influencer.id ?? undefined,
         response: "pending",
     });
 
@@ -26,7 +26,9 @@ export async function deleteCandidate(candidate: PartialWith<Candidates.Candidat
     return { errors };
 }
 
-export async function publicProcessResponse(candidate: PartialWith<Candidates.Candidate, "id" | "response">) {
+export async function publicProcessResponse(
+    candidate: PartialWith<Candidates.Candidate, "id" | "response">,
+) {
     const { id, response } = candidate;
 
     if (typeof id !== "string") throw new Error("Missing Id");
@@ -36,7 +38,7 @@ export async function publicProcessResponse(candidate: PartialWith<Candidates.Ca
         { id, response },
         {
             authMode: "apiKey",
-        }
+        },
     );
 
     return { errors };

@@ -10,8 +10,5 @@ node_modules
 
 # amplify
 
-.vscode
-.vscode/*
-.vscode/settings.json
 .env*
 tsconfig.tsbuildinfo

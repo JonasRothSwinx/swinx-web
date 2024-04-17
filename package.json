@@ -10,7 +10,8 @@
         "lint": "next lint",
         "sandbox": "npx amplify sandbox --identifier sharedSandBox",
         "sandbox debug": "npx amplify sandbox --debug --identifier sharedSandBox",
-        "update amplify beta": "npm i --save-dev @aws-amplify/backend-cli@beta @aws-amplify/backend@beta"
+        "update amplify beta": "npm i --save-dev @aws-amplify/backend-cli@beta @aws-amplify/backend@beta",
+        "delete sandbox": "npx amplify sandbox delete --identifier sharedSandBox"
     },
     "dependencies": {
         "@aws-amplify/adapter-nextjs": "^1.0.17",
@@ -42,8 +43,8 @@
         "unique-names-generator": "^4.7.1"
     },
     "devDependencies": {
-        "@aws-amplify/backend": "^0.13.0-beta.16",
-        "@aws-amplify/backend-cli": "^0.12.0-beta.18",
+        "@aws-amplify/backend": "^0.13.0-beta.18",
+        "@aws-amplify/backend-cli": "^0.12.0-beta.20",
         "@simbathesailor/use-what-changed": "^2.0.0",
         "@tanstack/eslint-plugin-query": "^5.27.3",
         "@types/aws-lambda": "^8.10.136",

@@ -1,21 +1,19 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 "use server";
 
 import { Nullable, PartialWith } from "@/app/Definitions/types";
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import client from "./.dbclient";
-import { RawData } from "./types";
 import { emailTriggers } from ".";
 import dayjs from "@/app/utils/configuredDayJs";
 import { EmailTriggers } from "../../types/emailTriggers";
+import { SelectionSet } from "aws-amplify/api";
+import { Schema } from "@/amplify/data/resource";
 
 export async function dummy() {
-    //@ts-expect-error - type instantiation error
     const { data, errors } = await client.models.TimelineEvent.list({
-        //@ts-ignore
         selectionSet: [
-            //Event details
+            //Event info
             "id",
             "timelineEventType",
             "eventAssignmentAmount",
@@ -23,39 +21,33 @@ export async function dummy() {
             "eventTaskAmount",
             "date",
             "notes",
-            "details.*",
+            "info.*",
 
-            //campaign details
+            //campaign info
             "campaign.id",
 
-            //assignment details
+            //assignment info
             "assignments.*",
-            //@ts-ignore
-            "assignments.influencerAssignment.id",
-            //@ts-ignore
-            "assignments.influencerAssignment.isPlaceholder",
-            //@ts-ignore
-            "assignments.influencerAssignment.placeholderName",
-            //@ts-ignore
-            "assignments.influencerAssignment.influencer.id",
-            //@ts-ignore
-            "assignments.influencerAssignment.influencer.firstName",
-            //@ts-ignore
-            "assignments.influencerAssignment.influencer.lastName",
+            "assignments.assignment.id",
+            "assignments.assignment.isPlaceholder",
+            "assignments.assignment.placeholderName",
+            "assignments.assignment.influencer.id",
+            "assignments.assignment.influencer.firstName",
+            "assignments.assignment.influencer.lastName",
 
             // "assignments.influencerAssignment.id",
 
-            "assignments.influencerassignment.id",
+            "assignments.assignment.id",
 
             //related events
             "relatedEvents.id",
-            "timelineEventRelatedEventsId",
+            "parentEventId",
         ],
     });
     return { data: JSON.parse(JSON.stringify(data)), errors };
 }
 const selectionSetFull = [
-    //Event details
+    //Event info
     "id",
     "timelineEventType",
     "eventAssignmentAmount",
@@ -63,123 +55,120 @@ const selectionSetFull = [
     "eventTaskAmount",
     "date",
     "notes",
-    "details.*",
+    "info.*",
 
-    //campaign details
+    //campaign info
     "campaign.id",
 
-    //assignment details
+    //assignment info
     "assignments.*",
-    "assignments.influencerAssignment.id",
-    "assignments.influencerAssignment.isPlaceholder",
-    "assignments.influencerAssignment.placeholderName",
-    "assignments.influencerAssignment.influencer.id",
-    "assignments.influencerAssignment.influencer.firstName",
-    "assignments.influencerAssignment.influencer.lastName",
+    "assignments.assignment.id",
+    "assignments.assignment.isPlaceholder",
+    "assignments.assignment.placeholderName",
+    "assignments.assignment.influencer.id",
+    "assignments.assignment.influencer.firstName",
+    "assignments.assignment.influencer.lastName",
 
     //related events
     "relatedEvents.id",
     "relatedEvents.timelineEventType",
-    "timelineEventRelatedEventsId",
+    "parentEventId",
 
     //email triggers
     "emailTriggers.*",
-    "emailTriggers.event.id",
 ] as const;
+type RawEvent = SelectionSet<Schema["TimelineEvent"], typeof selectionSetFull>;
 
 const selectionSetMin = ["id", "timelineEventType", "campaign.id"] as const;
 
-function isRawData(data: unknown): data is RawData.RawTimeLineEventFull {
-    const testData = data as RawData.RawTimeLineEventFull;
-    // check with debug outputs
-    // console.log("checking", { testData });
+// function isRawData(data: unknown): data is RawData.RawTimeLineEventFull {
+//     const testData = data as RawData.RawTimeLineEventFull;
+//     // check with debug outputs
+//     // console.log("checking", { testData });
 
-    if (!testData) {
-        console.log("testData is falsy");
-        return false;
-    }
-    //check required data types
-    if (
-        !(
-            typeof testData.id === "string" &&
-            typeof testData.timelineEventType === "string" &&
-            typeof testData.campaign.id === "string" &&
-            Array.isArray(testData.assignments)
-        )
-    ) {
-        console.log("invalid data types");
-        return false;
-    }
-    //check nullable data types
-    if (
-        !(
-            (typeof testData.eventAssignmentAmount === "number" ||
-                testData.eventAssignmentAmount === null) &&
-            (typeof testData.eventTitle === "string" || testData.eventTitle === null) &&
-            (typeof testData.eventTaskAmount === "number" || testData.eventTaskAmount === null) &&
-            (typeof testData.date === "string" || testData.date === null) &&
-            (typeof testData.notes === "string" || testData.notes === null)
-        )
-    ) {
-        console.log("invalid nullable data types");
-        return false;
-    }
-    if (
-        !testData.assignments.every(
-            (x) =>
-                (x.influencerAssignment &&
-                    x.influencerAssignment.id &&
-                    typeof x.influencerAssignment.id === "string" &&
-                    typeof x.influencerAssignment.isPlaceholder === "boolean" &&
-                    typeof x.influencerAssignment.placeholderName === "string" &&
-                    x.influencerAssignment.influencer === null) ||
-                (x.influencerAssignment.influencer &&
-                    x.influencerAssignment.influencer.id &&
-                    typeof x.influencerAssignment.influencer.id === "string" &&
-                    typeof x.influencerAssignment.influencer.firstName === "string" &&
-                    typeof x.influencerAssignment.influencer.lastName === "string"),
-        )
-    ) {
-        console.log("invalid assignment data");
-        return false;
-    }
+//     if (!testData) {
+//         console.log("testData is falsy");
+//         return false;
+//     }
+//     //check required data types
+//     if (
+//         !(
+//             typeof testData.id === "string" &&
+//             typeof testData.timelineEventType === "string" &&
+//             typeof testData.campaign.id === "string" &&
+//             Array.isArray(testData.assignments)
+//         )
+//     ) {
+//         console.log("invalid data types");
+//         return false;
+//     }
+//     //check nullable data types
+//     if (
+//         !(
+//             (typeof testData.eventAssignmentAmount === "number" ||
+//                 testData.eventAssignmentAmount === null) &&
+//             (typeof testData.eventTitle === "string" || testData.eventTitle === null) &&
+//             (typeof testData.eventTaskAmount === "number" || testData.eventTaskAmount === null) &&
+//             (typeof testData.date === "string" || testData.date === null) &&
+//             (typeof testData.notes === "string" || testData.notes === null)
+//         )
+//     ) {
+//         console.log("invalid nullable data types");
+//         return false;
+//     }
+//     if (
+//         !testData.assignments.every(
+//             (x) =>
+//                 (x.influencerAssignment &&
+//                     x.influencerAssignment.id &&
+//                     typeof x.influencerAssignment.id === "string" &&
+//                     typeof x.influencerAssignment.isPlaceholder === "boolean" &&
+//                     typeof x.influencerAssignment.placeholderName === "string" &&
+//                     x.influencerAssignment.influencer === null) ||
+//                 (x.influencerAssignment.influencer &&
+//                     x.influencerAssignment.influencer.id &&
+//                     typeof x.influencerAssignment.influencer.id === "string" &&
+//                     typeof x.influencerAssignment.influencer.firstName === "string" &&
+//                     typeof x.influencerAssignment.influencer.lastName === "string"),
+//         )
+//     ) {
+//         console.log("invalid assignment data");
+//         return false;
+//     }
 
-    return true;
-}
+//     return true;
+// }
 
 // function validateEvent(rawData: SelectionSet<Schema["TimelineEvent"], typeof selectionSet>): TimelineEvent.Event { //
-function validateEvent(rawData: RawData.RawTimeLineEventFull): TimelineEvent.Event {
-    const { id, timelineEventType, campaign, assignments, relatedEvents } = rawData;
+function validateEvent(rawEvent: RawEvent): TimelineEvent.Event {
+    const { id, timelineEventType, campaign, assignments, relatedEvents, parentEventId } = rawEvent;
     // console.log("timeline", { rawData, assignment: rawData.assignments[0] });
     // console.log("validating", rawData);
     if (!id) throw new Error("Missing ID");
     if (!TimelineEvent.isTimelineEventType(timelineEventType)) throw new Error("Invalid Type");
 
-    const relatedEventsParsed = {
-        parentEvent:
-            rawData.timelineEventRelatedEventsId !== null
-                ? { id: rawData.timelineEventRelatedEventsId }
-                : null,
+    const relatedEventsParsed: TimelineEvent.Event["relatedEvents"] = {
+        parentEvent: parentEventId ? { id: parentEventId } : null,
         childEvents: relatedEvents.map((x) => {
             return { id: x.id, type: x.timelineEventType as TimelineEvent.eventType };
         }),
     };
 
-    const { date, notes, eventAssignmentAmount, eventTitle, eventTaskAmount } = rawData;
-    const validatedAssignments: Assignment.AssignmentMin[] = assignments.map((x) => ({
-        id: x.influencerAssignment.id,
-        isPlaceholder: x.influencerAssignment.isPlaceholder,
-        placeholderName: x.influencerAssignment.placeholderName,
+    const { date, notes, eventAssignmentAmount, eventTitle, eventTaskAmount } = rawEvent;
+    const validatedAssignments: Assignment.AssignmentMin[] = assignments.map(({ assignment }) => ({
+        id: assignment.id,
+        isPlaceholder: assignment.isPlaceholder,
+        placeholderName: assignment.placeholderName,
         campaign: { id: campaign.id },
         influencer: null,
         timelineEvents: [],
     }));
-    const details: Partial<TimelineEvent.Event["details"]> = {
-        topic: rawData.details?.topic ?? undefined,
-        charLimit: rawData.details?.charLimit ?? undefined,
-        draftDeadline: rawData.details?.draftDeadline ?? undefined,
-        instructions: rawData.details?.instructions ?? undefined,
-        maxDuration: rawData.details?.maxDuration ?? undefined,
+    const info: Partial<TimelineEvent.Event["info"]> = {
+        topic: rawEvent.info?.topic ?? undefined,
+        charLimit: rawEvent.info?.charLimit ?? undefined,
+        draftDeadline: rawEvent.info?.draftDeadline ?? undefined,
+        instructions: rawEvent.info?.instructions ?? undefined,
+        maxDuration: rawEvent.info?.maxDuration ?? undefined,
     };
 
     const eventOut: TimelineEvent.Event = {
@@ -193,8 +182,8 @@ function validateEvent(rawData: RawData.RawTimeLineEventFull): TimelineEvent.Eve
         eventTitle: eventTitle ?? "",
         eventTaskAmount: eventTaskAmount ?? 0,
         relatedEvents: relatedEventsParsed,
-        details,
-        emailTriggers: rawData.emailTriggers.map((x) => ({
+        info,
+        emailTriggers: rawEvent.emailTriggers.map((x) => ({
             id: x.id,
             type: x.type as EmailTriggers.emailTriggerType,
             event: { id },
@@ -206,16 +195,11 @@ function validateEvent(rawData: RawData.RawTimeLineEventFull): TimelineEvent.Eve
 
 export async function listTimelineEvents(): Promise<TimelineEvent.Event[]> {
     const { data, errors } = await client.models.TimelineEvent.list({
-        //@ts-expect-error - type instantiation error
         selectionSet: selectionSetFull,
     });
     if (errors) throw new Error(JSON.stringify(errors));
     console.log("timeline", { data });
-    const events: TimelineEvent.Event[] = data.map((event: unknown) => {
-        if (!isRawData(event)) throw new Error("Invalid Data");
-
-        const type = event.timelineEventType;
-        if (!TimelineEvent.isTimelineEventType(type)) throw new Error("Invalid Event Type");
+    const events: TimelineEvent.Event[] = data.map((event) => {
         const validatedEvent = validateEvent(event);
         return validatedEvent;
     });
@@ -237,10 +221,10 @@ export async function createTimelineEvent(props: Omit<TimelineEvent.Event, "id">
         eventAssignmentAmount,
         eventTitle,
         eventTaskAmount,
-        details,
+        info,
     } = props;
-    const { id: campaignCampaignTimelineEventsId } = props.campaign;
-    if (!(date && campaignCampaignTimelineEventsId)) {
+    const { id: campaignId } = props.campaign;
+    if (!(date && campaignId)) {
         throw new Error("Missing Data");
     }
     // console.log("creating multiEvent", { props });
@@ -248,12 +232,12 @@ export async function createTimelineEvent(props: Omit<TimelineEvent.Event, "id">
         {
             timelineEventType,
             date,
-            campaignCampaignTimelineEventsId,
+            campaignId,
             notes,
             eventAssignmentAmount,
             eventTitle,
             eventTaskAmount,
-            details,
+            info: info,
         },
         {},
     );
@@ -282,9 +266,9 @@ export async function createTimelineEvent(props: Omit<TimelineEvent.Event, "id">
  * @throws - Error if any required data is missing or if there are any errors during the update.
  */
 export async function updateTimelineEvent(props: Partial<TimelineEvent.Event>) {
-    const { id, type: timelineEventType, date, notes, details } = props;
-    const { id: campaignCampaignTimelineEventsId } = props.campaign ?? {};
-    if (!(id && timelineEventType && date && campaignCampaignTimelineEventsId)) {
+    const { id, type: timelineEventType, date, notes, info } = props;
+    const { id: campaignId } = props.campaign ?? {};
+    if (!(id && timelineEventType && date && campaignId)) {
         throw new Error("Missing Data");
     }
 
@@ -292,9 +276,9 @@ export async function updateTimelineEvent(props: Partial<TimelineEvent.Event>) {
         id,
         timelineEventType,
         date,
-        campaignCampaignTimelineEventsId,
+        campaignId,
         notes,
-        details,
+        info: info,
     });
     if (errors) throw new Error(JSON.stringify(errors));
     // console.log({ data, errors });
@@ -311,9 +295,7 @@ export async function deleteTimelineEvent(event: PartialWith<TimelineEvent.Event
 
     //find and delete all connections
     const { data: connectionData, errors: connectionErrors } =
-        // @ts-expect-error - type instantiation error
-        await client.models.EventAssignments.list({
-            //@ts-expect-error - id exists
+        await client.models.EventAssignment.list({
             selectionSet: ["id"],
             filter: { timelineEventId: { eq: event.id } },
         });
@@ -323,7 +305,7 @@ export async function deleteTimelineEvent(event: PartialWith<TimelineEvent.Event
         connectionData.map(async (x: unknown) => {
             console.log({ connection: x });
             const connection = x as { id: string };
-            return client.models.EventAssignments.delete({ id: connection.id });
+            return client.models.EventAssignment.delete({ id: connection.id });
         }),
     );
 
@@ -343,15 +325,10 @@ export async function getTimelineEvent(id: string) {
         {
             id,
         },
-        //@ts-ignore
         { selectionSet: selectionSetFull },
     );
     if (data === null) return null;
     if (errors) throw new Error(JSON.stringify(errors));
-    if (!isRawData(data)) {
-        console.log({ data });
-        throw new Error("Invalid Data");
-    }
     // console.log({ id, data });
     const event = validateEvent(data);
     return event;
@@ -364,18 +341,54 @@ export async function getTimelineEvent(id: string) {
  * @returns An array of timeline events.
  */
 export async function getAssignmentTimelineEvents(assignmentId: string) {
-    const { data, errors } = await client.models.EventAssignments.list({
-        filter: { influencerAssignmentId: { eq: assignmentId } },
-        //@ts-ignore
-        selectionSet: [...selectionSetFull.map((x) => `timelineEvent.${x}`)],
-    });
+    const { data, errors } = await client.models.EventAssignment.listByAssignmentId(
+        {
+            assignmentId,
+        },
+        {
+            selectionSet: [
+                "timelineEvent.id",
+                "timelineEvent.timelineEventType",
+                "timelineEvent.eventAssignmentAmount",
+                "timelineEvent.eventTitle",
+                "timelineEvent.eventTaskAmount",
+                "timelineEvent.date",
+                "timelineEvent.notes",
+                "timelineEvent.parentEventId",
+
+                // Event info
+                "timelineEvent.info.*",
+                // campaign info
+                "timelineEvent.campaign.id",
+                //assignment info
+                "timelineEvent.assignments.*",
+                "timelineEvent.assignments.assignment.id",
+                "timelineEvent.assignments.assignment.isPlaceholder",
+                "timelineEvent.assignments.assignment.placeholderName",
+                "timelineEvent.assignments.assignment.influencer.id",
+                "timelineEvent.assignments.assignment.influencer.firstName",
+                "timelineEvent.assignments.assignment.influencer.lastName",
+                //related events
+                "timelineEvent.relatedEvents.id",
+                "timelineEvent.relatedEvents.timelineEventType",
+                "timelineEvent.parentEventId",
+                //email triggers
+                "timelineEvent.emailTriggers.*",
+            ],
+        },
+    );
     if (errors) throw new Error(JSON.stringify(errors));
     // console.log({ data });
-    const events: TimelineEvent.Event[] = data.map((event: unknown) => {
-        const castEvent = event as { timelineEvent: unknown };
-        if (!isRawData(castEvent.timelineEvent)) throw new Error("Invalid Data");
-        const validatedEvent = validateEvent(castEvent.timelineEvent);
-        return validatedEvent;
+    type infoorig = RawEvent["info"];
+    const infovalue = data[0].timelineEvent.info;
+    type info = typeof infovalue;
+    const events: TimelineEvent.Event[] = data.map((x) => {
+        try {
+            return validateEvent(x.timelineEvent as RawEvent);
+        } catch (e) {
+            console.log({ x });
+            throw e;
+        }
     });
     return events;
 }
@@ -393,39 +406,33 @@ export async function getCampaignTimelineEvents(campaignId: string, verbose = fa
     //     selectionSet,
     // });
     if (verbose) console.log("getCampaignTimelineEvents", { campaignId });
-    const { data, errors } =
-        await client.models.TimelineEvent.listByCampaignCampaignTimelineEventsId(
-            {
-                campaignCampaignTimelineEventsId: campaignId,
-            },
-            {
-                //@ts-ignore
-                selectionSet: selectionSetFull,
-            },
-        );
+    const { data, errors } = await client.models.TimelineEvent.listByCampaignId(
+        {
+            campaignId,
+        },
+        {
+            selectionSet: selectionSetFull,
+        },
+    );
 
     if (verbose) console.log({ campaignId, data });
     if (errors) throw new Error(JSON.stringify(errors));
-    const events: TimelineEvent.Event[] = data.map((event: unknown) => {
-        if (!isRawData(event)) throw new Error("Invalid Data");
-        const validatedEvent = validateEvent(event);
-        return validatedEvent;
-    });
+    const events: TimelineEvent.Event[] = data.map((event) => validateEvent(event));
     return events;
 }
 
 /**
  * Connects an event to an assignment in the database.
  *
- * @param eventId - The ID of the timeline event.
+ * @param timelineEventId - The ID of the timeline event.
  * @param assignmentId - The ID of the influencer assignment.
  * @returns An object containing the data and errors, if any.
  * @throws If there are any errors during the database operation.
  */
-export async function connectToAssignment(eventId: string, assignmentId: string) {
-    const { data, errors } = await client.models.EventAssignments.create({
-        timelineEventId: eventId,
-        influencerAssignmentId: assignmentId,
+export async function connectToAssignment(timelineEventId: string, assignmentId: string) {
+    const { data, errors } = await client.models.EventAssignment.create({
+        timelineEventId: timelineEventId,
+        assignmentId,
     });
     if (errors) throw new Error(JSON.stringify(errors));
     return { data: JSON.parse(JSON.stringify(data)), errors };
@@ -438,14 +445,13 @@ export async function connectToAssignment(eventId: string, assignmentId: string)
  * @throws {Error} If there are any errors during the disconnection process.
  */
 export async function disconnectFromAssignment(eventId: string, assignmentId: string) {
-    const { data, errors } = (await client.models.EventAssignments.list({
-        filter: { timelineEventId: { eq: eventId }, influencerAssignmentId: { eq: assignmentId } },
-        //@ts-ignore
+    const { data, errors } = (await client.models.EventAssignment.list({
+        filter: { timelineEventId: { eq: eventId }, assignmentId: { eq: assignmentId } },
         selectionSet: ["id"],
     })) as { data: { id: string }[]; errors: unknown };
     if (errors) throw new Error(JSON.stringify(errors));
     if (data.length === 0) return;
-    const { errors: deleteErrors } = await client.models.EventAssignments.delete({
+    const { errors: deleteErrors } = await client.models.EventAssignment.delete({
         id: data[0].id,
     });
     if (deleteErrors) throw new Error(JSON.stringify(deleteErrors));
@@ -466,7 +472,7 @@ export async function connectEvents(
     if (!(parent.id && child.id)) throw new Error("No IDs provided");
     const { data, errors } = await client.models.TimelineEvent.update({
         id: child.id,
-        timelineEventRelatedEventsId: parent.id,
+        parentEventId: parent.id,
     });
     if (errors) {
         throw new Error("Failed to update timeline event");

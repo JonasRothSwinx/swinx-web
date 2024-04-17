@@ -180,6 +180,19 @@ function SideBar(props: ISideBar) {
                     >
                         Test Email Triggers
                     </Button>
+                    <Button
+                        variant="outlined"
+                        onClick={async () => {
+                            const assignments = await dataClient.assignment.list();
+                            console.log({ assignments });
+                            const events = await dataClient.timelineEvent.byAssignment(
+                                assignments[0].id,
+                            );
+                            console.log({ events });
+                        }}
+                    >
+                        Test EventByAssignment
+                    </Button>
                 </>
             )}
         </div>

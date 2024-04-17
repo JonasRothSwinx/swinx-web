@@ -15,7 +15,7 @@ export async function createCustomer(customer: Omit<Customer.Customer, "id">, ca
         companyPosition,
         notes,
         phoneNumber,
-        campaignCustomersId: campaignId,
+        campaignId,
     });
     if (errors) throw new Error(JSON.stringify(errors));
 
@@ -24,32 +24,6 @@ export async function createCustomer(customer: Omit<Customer.Customer, "id">, ca
 
     // await Promise.all(substitutePromises);
     return createdCustomer.id;
-}
-
-async function createSubstitute(
-    customer: Omit<Customer.Customer, "id"> & { customerSubstitutesId: string },
-) {
-    const {
-        company,
-        firstName,
-        lastName,
-        email,
-        companyPosition,
-        phoneNumber,
-        notes,
-        customerSubstitutesId,
-    } = customer;
-    const { data, errors } = await client.models.Customer.create({
-        company,
-        firstName,
-        lastName,
-        email,
-        companyPosition,
-        notes,
-        phoneNumber,
-    });
-    if (errors) throw new Error(JSON.stringify(errors));
-    return data.id;
 }
 
 export async function updateCustomer(customer: Customer.Customer) {

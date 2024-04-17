@@ -17,7 +17,7 @@ export async function createTestData() {
         company: "company",
         email: "email@email.email",
         notes: "notes",
-        campaignCustomersId: campaignData.id,
+        campaignId: campaignData.id,
     });
     //Create 2 InfluencerAssignment Placeholders
     const influencerAssignmentResponse = await Promise.all(
@@ -27,7 +27,7 @@ export async function createTestData() {
                 return await client.models.InfluencerAssignment.create({
                     isPlaceholder: true,
                     placeholderName: "placeholderName",
-                    campaignAssignedInfluencersId: campaignData.id,
+                    campaignId: campaignData.id,
                 });
             }),
     );
@@ -44,7 +44,7 @@ export async function createTestData() {
                     date: new Date().toISOString(),
                     notes: "notes",
                     // influencerAssignmentTimelineEventsId: influencerAssignmentData[0].id,
-                    campaignCampaignTimelineEventsId: campaignData.id,
+                    campaignId: campaignData.id,
                 });
             }),
     );
@@ -54,8 +54,8 @@ export async function createTestData() {
     // create connections
     const eventAssignmentsResponse = await Promise.all(
         timelineEventData.map(async (event) => {
-            return await client.models.EventAssignments.create({
-                influencerAssignmentId: influencerAssignmentData[0].id,
+            return await client.models.EventAssignment.create({
+                assignmentId: influencerAssignmentData[0].id,
                 timelineEventId: event.id,
             });
         }),

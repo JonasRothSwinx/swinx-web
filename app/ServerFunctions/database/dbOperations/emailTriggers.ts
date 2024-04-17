@@ -6,18 +6,21 @@ import TimelineEvent from "../../types/timelineEvents";
 import client from "./.dbclient";
 import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 import { RawData } from "./types";
+import { SelectionSet } from "aws-amplify/api";
+import { Schema } from "@/amplify/data/resource";
 
 const selectionSet = [
     "id",
     "date",
     "type",
     "event.id",
-    "event.assignments.influencerAssignment.influencer.id",
-    "event.assignments.influencerAssignment.influencer.firstName",
-    "event.assignments.influencerAssignment.influencer.lastName",
-    "event.assignments.influencerAssignment.influencer.email",
-    "event.assignments.influencerAssignment.influencer.emailType",
+    "event.assignments.assignment.influencer.id",
+    "event.assignments.assignment.influencer.firstName",
+    "event.assignments.assignment.influencer.lastName",
+    "event.assignments.assignment.influencer.email",
+    "event.assignments.assignment.influencer.emailType",
 ] as const;
+type RawEmailTrigger = SelectionSet<Schema["EmailTrigger"], typeof selectionSet>;
 async function testDummy() {
     const { data } = await client.models.EmailTrigger.list({
         selectionSet: [
@@ -25,6 +28,7 @@ async function testDummy() {
             "date",
             "event.id",
             "type",
+
             // "event.assignments.influencerAssignment.influencer.emailType",
         ],
     });
@@ -34,24 +38,20 @@ async function testDummy() {
  * @returns The list of email triggers
  */
 export async function listEmailTriggers(): Promise<EmailTriggers.EmailTriggerEventRef[]> {
-    //@ts-expect-error - selectionSet is not typed correctly
     const { data, errors } = await client.models.EmailTrigger.list({
-        //@ts-expect-error - selectionSet is not typed correctly
         selectionSet,
     });
     if (errors) {
         throw new Error(JSON.stringify(errors));
     }
-    const validated: Nullable<ReturnType<typeof validateEmailTrigger>>[] = data.map(
-        (trigger: unknown) => {
-            try {
-                return validateEmailTrigger(trigger);
-            } catch (error) {
-                console.log(error);
-                return null;
-            }
-        },
-    );
+    const validated: Nullable<ReturnType<typeof validateEmailTrigger>>[] = data.map((trigger) => {
+        try {
+            return validateEmailTrigger(trigger);
+        } catch (error) {
+            console.log(error);
+            return null;
+        }
+    });
 
     return validated.filter(
         (trigger): trigger is EmailTriggers.EmailTriggerEventRef => trigger !== null,
@@ -71,7 +71,7 @@ export async function createEmailTrigger(
     const { data, errors } = await client.models.EmailTrigger.create({
         date,
         type,
-        event: { id: event.id },
+        eventId: event.id,
     });
     if (errors) {
         throw new Error(errors.map((error) => error.message).join("\n"));
@@ -118,24 +118,20 @@ export async function getEmailTriggersForEvent(
     event: Pick<TimelineEvent.Event, "id">,
 ): Promise<EmailTriggers.EmailTriggerEventRef[]> {
     const { data, errors } = await client.models.EmailTrigger.list({
-        filter: { timelineEventEmailTriggersId: { eq: event.id } },
-
-        //@ts-expect-error - selectionSet is not typed correctly
+        filter: { eventId: { eq: event.id } },
         selectionSet,
     });
     if (errors) {
         throw new Error(JSON.stringify(errors));
     }
-    const validated: Nullable<ReturnType<typeof validateEmailTrigger>>[] = data.map(
-        (trigger: unknown) => {
-            try {
-                return validateEmailTrigger(trigger);
-            } catch (error) {
-                console.log(error);
-                return null;
-            }
-        },
-    );
+    const validated: Nullable<ReturnType<typeof validateEmailTrigger>>[] = data.map((trigger) => {
+        try {
+            return validateEmailTrigger(trigger);
+        } catch (error) {
+            console.log(error);
+            return null;
+        }
+    });
     return validated.filter(
         (trigger): trigger is EmailTriggers.EmailTriggerEventRef => trigger !== null,
     );
@@ -152,22 +148,19 @@ export async function getEmailTriggersForDateRange(
 ): Promise<EmailTriggers.EmailTriggerEventRef[]> {
     const { data, errors } = await client.models.EmailTrigger.list({
         filter: { date: { between: [start, end] } },
-        //@ts-expect-error - selectionSet is not typed correctly
         selectionSet,
     });
     if (errors) {
         throw new Error(JSON.stringify(errors));
     }
-    const validated: Nullable<ReturnType<typeof validateEmailTrigger>>[] = data.map(
-        (trigger: unknown) => {
-            try {
-                return validateEmailTrigger(trigger);
-            } catch (error) {
-                // console.log(error);
-                return null;
-            }
-        },
-    );
+    const validated: Nullable<ReturnType<typeof validateEmailTrigger>>[] = data.map((trigger) => {
+        try {
+            return validateEmailTrigger(trigger);
+        } catch (error) {
+            // console.log(error);
+            return null;
+        }
+    });
     return validated.filter(
         (trigger): trigger is EmailTriggers.EmailTriggerEventRef => trigger !== null,
     );
@@ -178,23 +171,23 @@ export async function getEmailTriggersForDateRange(
  * @param raw The raw data from the database
  * @returns The email trigger object
  */
-function validateEmailTrigger(raw: unknown): EmailTriggers.EmailTriggerEventRef {
-    if (typeof raw !== "object" || raw === null) {
-        throw new Error("Invalid Email Trigger");
-    }
-    const { id, date, event, type } = raw as RawData.RawEmailTrigger;
+function validateEmailTrigger(raw: RawEmailTrigger): EmailTriggers.EmailTriggerEventRef {
+    const { id, date, event, type } = raw;
     if (!id || !date || !event) {
         throw new Error("Invalid Email Trigger");
     }
-    const influencer = event.assignments[0].influencerAssignment.influencer;
-    if (!influencer) {
+    const influencer = event.assignments[0].assignment.influencer;
+    if (!influencer || !influencer.email) {
         throw new Error("Invalid Email Trigger");
     }
+    const { email } = influencer;
     const emailLevel = influencer.emailType as EmailTriggers.emailLevel;
     const trigger: EmailTriggers.EmailTriggerEventRef = {
         id,
         type: type as EmailTriggers.emailTriggerType,
-        ...(influencer ? { influencer: { ...influencer, emailLevel } } : {}),
+        ...(influencer && influencer.email
+            ? { influencer: { ...influencer, emailLevel, email } }
+            : {}),
         date,
         event,
     };

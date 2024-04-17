@@ -14,7 +14,7 @@ export async function createTimelineEvent(
 ): Promise<TimelineEvent.EventWithId> {
     const queryClient = config.getQueryClient();
     const id = await database.timelineEvent.create(simplify(timelineEvent));
-    const createdTimelineEvent: TimelineEvent.EventWithId = { ...timelineEvent, id, details: {} };
+    const createdTimelineEvent: TimelineEvent.EventWithId = { ...timelineEvent, id, info: {} };
     queryClient.setQueryData(["timelineEvent", id], { ...timelineEvent, id });
     queryClient.setQueryData(["timelineEvents"], (prev: TimelineEvent.Event[]) => {
         if (!prev) {

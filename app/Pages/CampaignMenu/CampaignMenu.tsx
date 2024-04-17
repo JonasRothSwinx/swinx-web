@@ -3,7 +3,7 @@ import CampaignList from "./CampaignList";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import { Box, CircularProgress, Typography } from "@mui/material";
 
-export default function CampaignMenu(props: {}) {
+export default function CampaignMenu() {
     const userGroups = useQuery({
         queryKey: ["userGroups"],
         queryFn: async () => {
@@ -11,7 +11,6 @@ export default function CampaignMenu(props: {}) {
             return userGroups;
         },
         refetchOnWindowFocus: false,
-        placeholderData: [],
     });
     if (userGroups.isLoading)
         return (
