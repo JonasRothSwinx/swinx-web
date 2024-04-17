@@ -14,24 +14,24 @@ export type inviteTemplateVariables = {
     linkNo: string;
 };
 
-const templateNew: MailTemplate = {
+const templateNew = {
     name: "CampaignInviteNew",
     subjectLine: "Einladung zu Kampagne",
     html: htmlNew,
-} as const;
+} as const satisfies MailTemplate;
 
-const templateReduced: MailTemplate = {
+const templateReduced = {
     name: "CampaignInviteReduced",
     subjectLine: "Einladung zu Kampagne",
     html: htmlReduced,
-} as const;
+} as const satisfies MailTemplate;
 
 const templates: EmailLevelDefinition = {
     new: templateNew,
     reduced: templateReduced,
 };
 
-export const inviteTemplateNames: string[] = [templateNew.name, templateReduced.name] as const;
+export const templateNames = [templateNew.name, templateReduced.name] as const;
 
 const defaultParams: inviteTemplateVariables = {
     name: "testName",
@@ -49,7 +49,7 @@ const inviteEmails: Template = {
         new: templateNew,
         reduced: templateReduced,
     },
-    templateNames: [...inviteTemplateNames],
+    templateNames,
 } as const;
 export default inviteEmails;
 
@@ -70,7 +70,7 @@ function extractVariables(event: TimelineEvent.Event): inviteTemplateVariables {
 async function send(props: SendMailProps) {
     const {
         level,
-        props: { candidates, assignment, taskDescriptions },
+        context: { candidates, assignment, taskDescriptions },
     } = props;
     console.log("Sending invites for level", level, props);
     // debugger;
@@ -79,7 +79,7 @@ async function send(props: SendMailProps) {
 
     const templateName = templates[level].name;
     return sendBulkCampaignInvite({
-        templateName,
+        templateName: templateName as (typeof templateNames)[number],
         candidates,
         variables: {
             assignments: taskDescriptions.map((assignmentDescription) => ({

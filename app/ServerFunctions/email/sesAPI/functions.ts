@@ -4,6 +4,7 @@ import * as SesHandlerTypes from "@/amplify/functions/sesHandler/types";
 import config from "@/amplifyconfiguration.json";
 import templateDefinitions, { templateName } from "../templates";
 import dotenv from "dotenv";
+import sleep from "@/app/utils/sleep";
 dotenv.config({ path: ".env.local" });
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const apiUrl = (config as any)?.custom?.sesHandlerUrl;
@@ -56,25 +57,46 @@ export async function updateTemplates(templateNames: templateName[] = []) {
     const updateData: SesHandlerTypes.sesHandlerUpdateTemplate["updateData"] = Object.entries(
         templateDefinitions.mailTypes,
     ).reduce((acc, [key, template]) => {
+        const templateName: templateName = key as templateName;
         const newData = Object.entries(template.levels).reduce((acc, [level, levelData]) => {
-            if (templateNames.length && !templateNames.includes(key)) return acc;
+            if (templateNames.length && !templateNames.includes(templateName)) return acc;
             return [...acc, levelData];
         }, acc);
         return [...acc, ...newData];
     }, [] as typeof updateData);
 
-    const requestBody: SesHandlerTypes.sesHandlerUpdateTemplate = {
-        operation: "update",
-        updateData,
-    };
-    const response = (await sendRequest(
-        requestBody,
-    )) as SesHandlerTypes.sesHandlerUpdateTemplateResponseBody; //TODO: validation
-    if (response.error) {
-        throw new Error(JSON.stringify(response.error));
+    return;
+    const responses = [];
+    let processed = 0;
+    const total = updateData.length;
+    while (updateData.length > 0) {
+        const chunk = updateData.splice(0, 2);
+        const requestBody: SesHandlerTypes.sesHandlerUpdateTemplate = {
+            operation: "update",
+            updateData: chunk,
+        };
+        for (let attempts = 0; attempts < 5; attempts++) {
+            const response = (await sendRequest(
+                requestBody,
+            )) as SesHandlerTypes.sesHandlerUpdateTemplateResponseBody; //TODO: validation
+            if (response.error) {
+                if (attempts === 4) {
+                    throw new Error(JSON.stringify(response.error));
+                }
+                console.log(`Error updating templates attempt ${attempts}`, response.error);
+                await sleep(1000);
+                continue;
+            }
+            responses.push(response);
+            processed += chunk.length;
+            console.log(`Updated ${processed} of ${total} templates`);
+            break;
+        }
+        await sleep(500);
     }
-    console.log(response);
-    return response;
+    console.log(responses);
+    return responses;
+    // return response;
 }
 
 export async function getTemplate(templateName: string) {

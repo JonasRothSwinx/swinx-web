@@ -190,6 +190,19 @@ export namespace RawData {
         id: string;
         type: string;
         date: string;
-        event: { id: string };
+        event: {
+            id: string;
+            assignments: {
+                influencerAssignment: {
+                    influencer: {
+                        id: string;
+                        firstName: string;
+                        lastName: string;
+                        email: string;
+                        emailType: string;
+                    };
+                };
+            }[];
+        };
     };
 }

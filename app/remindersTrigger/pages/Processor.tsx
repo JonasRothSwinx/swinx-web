@@ -11,6 +11,7 @@ export default function Processor() {
             console.log(finished);
             return finished;
         },
+        refetchOnWindowFocus: false,
         placeholderData: false,
     });
 

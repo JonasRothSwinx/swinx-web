@@ -9,6 +9,7 @@ import dataClient from "..";
 import { PartialWith } from "@/app/Definitions/types";
 import TimelineEvent from "../../types/timelineEvents";
 import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
+import influencer from "./influencer";
 
 const emailTriggerClient = {
     create: createEmailTrigger,
@@ -87,7 +88,12 @@ export async function updateEmailTrigger(
         ...updatedData,
         id: previousTrigger.id,
     });
-    const updated = { ...previousTrigger, ...updatedData, event: previousTrigger.event };
+    const updated = {
+        ...previousTrigger,
+        ...updatedData,
+        event: previousTrigger.event,
+        influencer: previousTrigger.influencer,
+    };
     queryClient.setQueryData(["emailTrigger", updated.id], updated);
     queryClient.setQueryData(["emailTriggers"], (prev: EmailTriggers.EmailTrigger[]) => {
         if (!prev) {
@@ -182,7 +188,7 @@ export async function getEmailTriggersForDateRange(props: {
 async function validateEmailTrigger(
     trigger: EmailTriggers.EmailTriggerEventRef,
 ): Promise<EmailTriggers.EmailTrigger> {
-    const { id, date, event, type } = trigger;
+    const { id, date, event, type, influencer } = trigger;
     if (!event?.id) {
         throw new Error(`Event ID is required for email trigger with ID ${id}`);
     }
@@ -190,10 +196,12 @@ async function validateEmailTrigger(
     if (!fullEvent) {
         throw new Error(`Event with ID ${event.id} not found`);
     }
+
     return {
         id,
         date,
         type,
         event: fullEvent,
+        influencer,
     };
 }

@@ -31,18 +31,8 @@
     <body>
         <span>Hallo {{name}}!</span><br /><br />
 
-        <span> Du wurdest eingeladen, an einer Kampagne teilzunehmen.</span><br />
-        <span>Du wärst dabei für folgende Aufgaben zuständig:</span> <br />
-        <ul>
-            {{#each assignments}}
-            <li>{{assignmentDescription}}</li>
-            {{/each}}
-        </ul>
-        Das Honorar dafür ist {{honorar}}
+        <span>ReducedVersion</span><br />
 
-        <div class="buttonContainer">
-            <a class="responseButton" href="{{linkBase}}{{linkYes}}" target="_blank">Ja</a>
-            <a class="responseButton" href="{{linkBase}}{{linkNo}}" target="_blank">Nein</a>
-        </div>
+        <span>Du sollst heute {{inviteAmount}} Einladungen für ein Event verschicken</span><br />
     </body>
 </html>

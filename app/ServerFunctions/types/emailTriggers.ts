@@ -1,6 +1,7 @@
 import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 import { Nullable, Prettify } from "@/app/Definitions/types";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import Influencer from "./influencer";
 
 export namespace EmailTriggers {
     export type EmailTrigger = Prettify<
@@ -13,6 +14,7 @@ export namespace EmailTriggers {
         date: string;
         type: emailTriggerType;
         event: { id: string };
+        influencer?: Prettify<Influencer.WithContactInfo>;
     };
 
     export const emailLevels = ["new", "reduced", "none"] as const;
@@ -21,7 +23,7 @@ export namespace EmailTriggers {
         return emailLevels.includes(level as emailLevel);
     }
 
-    export const emailTriggerTypes: string[] = ["actionReminder", "deadlineReminder"] as const;
+    export const emailTriggerTypes = ["actionReminder", "deadlineReminder"] as const;
     export type emailTriggerType = (typeof emailTriggerTypes)[number];
 
     type EmailConfig = { templateName: string };

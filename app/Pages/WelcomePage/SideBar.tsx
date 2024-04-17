@@ -93,7 +93,7 @@ function SideBar(props: ISideBar) {
                         onClick={async () => {
                             const response = await emailClient.email.campaignInvites.send({
                                 level: "new",
-                                props: {
+                                context: {
                                     candidates: [
                                         {
                                             influencer: {
@@ -165,21 +165,6 @@ function SideBar(props: ISideBar) {
                         }}
                     >
                         Print env
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        onClick={async () => {
-                            const date = dayjs();
-                            date.toISOString();
-                            const response = await dataClient.emailTrigger.create({
-                                date: date.toISOString(),
-                                event: { id: "testID" } as TimelineEvent.Event & { id: string },
-                                type: "test",
-                            });
-                            console.log(response);
-                        }}
-                    >
-                        Create Trigger
                     </Button>
                     <Button
                         variant="outlined"

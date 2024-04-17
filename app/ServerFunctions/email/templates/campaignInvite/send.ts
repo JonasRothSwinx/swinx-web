@@ -2,12 +2,12 @@
 import { Candidates } from "@/app/ServerFunctions/types/candidates";
 import { sesHandlerSendEmailTemplateBulk } from "@/amplify/functions/sesHandler/types";
 import sesAPIClient from "../../sesAPI";
-import { inviteTemplateVariables, inviteTemplateNames } from ".";
+import { inviteTemplateVariables, templateNames } from ".";
 
 interface BulkCampaignInviteProps {
     candidates: Candidates.Candidate[];
     variables: Pick<inviteTemplateVariables, "assignments" | "honorar">;
-    templateName: (typeof inviteTemplateNames)[number];
+    templateName: (typeof templateNames)[number];
 }
 export default async function sendBulkCampaignInviteAPI(props: BulkCampaignInviteProps) {
     const { templateName, variables, candidates } = props;

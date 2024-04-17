@@ -1,34 +1,35 @@
 import htmlNew from "./new.html";
 import htmlReduced from "./reduced.html";
-import { MailTemplate, SendMailProps, Template } from "../../templates";
+import { MailTemplate, SendMailProps, Template } from "../../../templates";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { sesHandlerSendEmailTemplateBulk } from "@/amplify/functions/sesHandler/types";
-import sesAPIClient from "../../sesAPI";
+import sesAPIClient from "../../../sesAPI";
 
-type inviteReminderVariables = {
+type TemplateVariables = {
     name: string;
-    inviteAmount: string;
 };
+const templateBaseName = "VideoReminder";
+const subjectLineBase = "Erinnerung: Beitragsveröffentlichung";
 
 const templateNew = {
-    name: "InvitesReminderNew",
-    subjectLine: "Erinnerung: Einladungen",
+    name: `${templateBaseName}New`,
+    subjectLine: subjectLineBase,
     html: htmlNew,
 } as const satisfies MailTemplate;
 
 const templateReduced = {
-    name: "InvitesReminderReduced",
-    subjectLine: "Erinnerung: Einladungen (reduced)",
+    name: `${templateBaseName}Reduced`,
+    subjectLine: `${subjectLineBase} (reduced)`,
     html: htmlReduced,
 } as const satisfies MailTemplate;
+
 export const templateNames = [templateNew.name, templateReduced.name] as const;
 
-const defaultParams: inviteReminderVariables = {
+const defaultParams: TemplateVariables = {
     name: "testName",
-    inviteAmount: "0",
 };
 
-const inviteReminderTemplates: Template = {
+const VideoReminder = {
     defaultParams,
     send,
     levels: {
@@ -36,8 +37,9 @@ const inviteReminderTemplates: Template = {
         reduced: templateReduced,
     },
     templateNames,
-};
-export default inviteReminderTemplates;
+} as const satisfies Template;
+
+export default VideoReminder;
 
 async function send(props: SendMailProps) {
     const {
@@ -51,7 +53,7 @@ async function send(props: SendMailProps) {
     if (level === "none") {
         return;
     }
-    const templateName = inviteReminderTemplates.levels[level].name;
+    const templateName = VideoReminder.levels[level].name;
     const requestBody: sesHandlerSendEmailTemplateBulk = {
         operation: "sendEmailTemplateBulk",
         bulkEmailData: {
@@ -66,8 +68,7 @@ async function send(props: SendMailProps) {
                         to: influencer.email,
                         templateData: JSON.stringify({
                             name: `${influencer.firstName} ${influencer.lastName}`,
-                            inviteAmount: event.eventTaskAmount.toString(),
-                        } satisfies Partial<inviteReminderVariables>),
+                        } satisfies Partial<TemplateVariables>),
                     },
                 ];
             }, [] as { to: string; templateData: string }[]),

@@ -22,11 +22,15 @@ export default async function updateTemplates(
                     // Text: compiledHtmlConvert(template.html),
                 },
             };
-
-            if (templates?.find((x) => x.TemplateName === template.name)) {
-                return client.send(new UpdateEmailTemplateCommand(content));
+            try {
+                if (templates?.find((x) => x.TemplateName === template.name)) {
+                    return client.send(new UpdateEmailTemplateCommand(content));
+                }
+                return client.send(new CreateEmailTemplateCommand(content));
+            } catch (error) {
+                console.error(error);
+                messages.push({ error, template });
             }
-            return client.send(new CreateEmailTemplateCommand(content));
         }),
     );
 

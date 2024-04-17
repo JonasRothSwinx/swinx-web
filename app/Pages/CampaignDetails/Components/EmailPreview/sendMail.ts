@@ -31,7 +31,7 @@ export default async function sendInvites(props: SendInvitesProps) {
             console.log("Sending invites for level", level, candidates);
             const response = await emailClient.email.campaignInvites.send({
                 level: level as EmailTriggers.emailLevel,
-                props: {
+                context: {
                     candidates,
                     taskDescriptions: ["Make Tea"],
                     assignment,
