@@ -9,14 +9,14 @@ import {
 import client from "./clients/SESclient.js";
 
 export default async function updateTemplates(
-    updateData: { name: string; subjectLine: string; html: string }[],
+    updateData: { name: string; subjectLine: string; html: string; text: string }[]
 ) {
-    const messages = [];
+    const messages: { error: unknown; template: (typeof updateData)[number] }[] = [];
     const templates: EmailTemplateMetadata[] = [];
     let nextToken: string | undefined = undefined;
     do {
         const response: ListEmailTemplatesCommandOutput = await client.send(
-            new ListEmailTemplatesCommand({ NextToken: nextToken }),
+            new ListEmailTemplatesCommand({ NextToken: nextToken })
         );
         nextToken = response.NextToken;
         templates.push(...(response.TemplatesMetadata ?? []));
@@ -31,7 +31,7 @@ export default async function updateTemplates(
                 TemplateContent: {
                     Subject: template.subjectLine,
                     Html: template.html,
-                    // Text: compiledHtmlConvert(template.html),
+                    Text: template.text,
                 },
             };
             try {
@@ -43,12 +43,11 @@ export default async function updateTemplates(
                 console.error(error);
                 messages.push({ error, template });
             }
-        }),
+        })
     );
 
-    const { TemplatesMetadata: newTemplates } = await client.send(
-        new ListEmailTemplatesCommand({}),
-    );
-    messages.push(...(newTemplates ?? []));
+    const { TemplatesMetadata: newTemplates } = await client.send(new ListEmailTemplatesCommand({}));
+
+    // messages.push(...(newTemplates ?? []));
     return messages;
 }

@@ -9,7 +9,7 @@ const templates = {
 };
 
 const email = {
-    campaignInvites: templateDefinitions.mailTypes.CampaignInvite,
+    campaignInvites: templateDefinitions.mailTypes.campaignInvite.CampaignInvite,
 } as const;
 
 const emailClient = { email, templates };

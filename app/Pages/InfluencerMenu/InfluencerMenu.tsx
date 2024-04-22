@@ -3,7 +3,7 @@ import InfluencerList from "./InfluencerList";
 
 import { QueryClient } from "@tanstack/react-query";
 const queryClient = new QueryClient();
-function InfluencerMenu(props: {}) {
+function InfluencerMenu() {
     return <InfluencerList />;
 }
 

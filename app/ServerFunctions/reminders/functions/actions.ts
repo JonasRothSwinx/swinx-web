@@ -45,7 +45,7 @@ export async function startReminderRoutine(): Promise<boolean> {
         handling.push(
             handler(triggers).catch((error: Error) => {
                 console.error(`Error handling triggers for event type ${eventType}`, error.message);
-            }),
+            })
         );
     });
 
@@ -64,22 +64,19 @@ interface GetEmailTriggerProps {
 async function getEmailTriggers(props: GetEmailTriggerProps) {
     const { startDate, endDate } = props;
     console.log("Getting email triggers", startDate.toString(), endDate.toString());
-    const triggers = await database.emailTrigger.byDateRange(
-        startDate.toISOString(),
-        endDate.toISOString(),
-    );
+    const triggers = await database.emailTrigger.byDateRange(startDate.toISOString(), endDate.toISOString());
     const fullTriggers: EmailTriggers.EmailTrigger[] = (
         await Promise.all(
             triggers.map(async (trigger) => {
                 return await getEventsByEmailTrigger(trigger);
-            }),
+            })
         )
     ).filter((trigger): trigger is EmailTriggers.EmailTrigger => trigger !== null);
     return fullTriggers;
 }
 
 async function getEventsByEmailTrigger(
-    trigger: EmailTriggers.EmailTriggerEventRef,
+    trigger: EmailTriggers.EmailTriggerEventRef
 ): Promise<EmailTriggers.EmailTrigger | null> {
     console.log("Getting events by trigger", trigger);
     const event = await database.timelineEvent.get(trigger.event.id);
@@ -131,14 +128,14 @@ function groupTriggers(triggers: EmailTriggers.EmailTrigger[]): TriggerGroup {
     return grouped;
 }
 function makeEventInfluencerTuple(
-    trigger: EmailTriggers.EmailTrigger,
+    trigger: EmailTriggers.EmailTrigger
 ): [event: TimelineEvent.Event, influencer: Influencer.WithContactInfo] | null {
     const { event, influencer } = trigger;
     if (!event || !influencer) return null;
     return [event, influencer];
 }
 function makeEventInfluencerTuples(
-    triggers: EmailTriggers.EmailTrigger[],
+    triggers: EmailTriggers.EmailTrigger[]
 ): [event: TimelineEvent.Event, influencer: Influencer.WithContactInfo][] {
     return triggers.reduce((acc, trigger) => {
         const tuple = makeEventInfluencerTuple(trigger);
@@ -161,7 +158,7 @@ async function handleInviteMails(triggers: GroupedTrigger) {
                         level: level as EmailTriggers.emailLevel,
                         context,
                     };
-                    promises.push(templateDefinitions.mailTypes.InviteEvents.send(sendProps));
+                    promises.push(templateDefinitions.mailTypes.invites.InviteEvents.send(sendProps));
                 });
                 break;
             }
@@ -188,7 +185,7 @@ async function handlePostMails(triggers: GroupedTrigger) {
                         level: level as EmailTriggers.emailLevel,
                         context,
                     };
-                    promises.push(templateDefinitions.mailTypes.PostActionReminder.send(sendProps));
+                    promises.push(templateDefinitions.mailTypes.post.PostActionReminder.send(sendProps));
                 });
                 break;
             }
@@ -201,9 +198,7 @@ async function handlePostMails(triggers: GroupedTrigger) {
                         level: level as EmailTriggers.emailLevel,
                         context,
                     };
-                    promises.push(
-                        templateDefinitions.mailTypes.PostDeadlineReminder.send(sendProps),
-                    );
+                    promises.push(templateDefinitions.mailTypes.post.PostDeadlineReminder.send(sendProps));
                 });
                 break;
             }
@@ -227,9 +222,7 @@ async function handleVideoMails(triggers: GroupedTrigger) {
                         level: level as EmailTriggers.emailLevel,
                         context,
                     };
-                    promises.push(
-                        templateDefinitions.mailTypes.VideoActionReminder.send(sendProps),
-                    );
+                    promises.push(templateDefinitions.mailTypes.video.VideoActionReminder.send(sendProps));
                 });
                 break;
             }
@@ -242,9 +235,7 @@ async function handleVideoMails(triggers: GroupedTrigger) {
                         level: level as EmailTriggers.emailLevel,
                         context,
                     };
-                    promises.push(
-                        templateDefinitions.mailTypes.VideoDeadlineReminder.send(sendProps),
-                    );
+                    promises.push(templateDefinitions.mailTypes.video.VideoDeadlineReminder.send(sendProps));
                 });
                 break;
             }
@@ -254,9 +245,34 @@ async function handleVideoMails(triggers: GroupedTrigger) {
 }
 
 async function handleWebinarSpeakerMails(triggers: GroupedTrigger) {
-    throw new Error("Not implemented");
+    console.log("Handling webinar speaker mails", triggers);
+    const promises: Promise<unknown>[] = [];
+    Object.entries(triggers).forEach(([emailType, eventTriggers]) => {
+        emailType = emailType as EmailTriggers.emailTriggerType;
+        switch (emailType) {
+            case "actionReminder": {
+                Object.entries(eventTriggers).forEach(([level, levelTriggers]) => {
+                    const context = {
+                        eventWithInfluencer: makeEventInfluencerTuples(levelTriggers),
+                    };
+                    const sendProps = {
+                        level: level as EmailTriggers.emailLevel,
+                        context,
+                    };
+                    promises.push(
+                        templateDefinitions.mailTypes.webinarSpeaker.WebinarSpeakerActionReminder.send(sendProps)
+                    );
+                });
+                break;
+            }
+            case "deadlineReminder":
+                console.log("Encountered Webinar Speaker Deadline Reminder. This should not exist.");
+                break;
+        }
+    });
+    await Promise.all(promises);
 }
 
 async function handleWebinarMails(triggers: GroupedTrigger) {
-    throw new Error("Not implemented");
+    console.error("Handling webinar mails is not implemented yet", triggers);
 }

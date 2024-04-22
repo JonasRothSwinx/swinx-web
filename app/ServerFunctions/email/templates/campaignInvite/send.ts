@@ -2,11 +2,11 @@
 import { Candidates } from "@/app/ServerFunctions/types/candidates";
 import { sesHandlerSendEmailTemplateBulk } from "@/amplify/functions/sesHandler/types";
 import sesAPIClient from "../../sesAPI";
-import { inviteTemplateVariables, templateNames } from ".";
+import { TemplateVariables, templateNames } from ".";
 
 interface BulkCampaignInviteProps {
     candidates: Candidates.Candidate[];
-    variables: Pick<inviteTemplateVariables, "assignments" | "honorar">;
+    variables: Pick<TemplateVariables, "assignments" | "honorar">;
     templateName: (typeof templateNames)[number];
 }
 export default async function sendBulkCampaignInviteAPI(props: BulkCampaignInviteProps) {
@@ -22,9 +22,8 @@ export default async function sendBulkCampaignInviteAPI(props: BulkCampaignInvit
                 assignments: variables.assignments ?? [{ assignmentDescription: "Make Tea" }],
                 honorar: variables.honorar ?? "<Honorar nicht definiert>",
                 linkBase: baseUrl + "/Response?",
-                linkYes: "q=Yes",
-                linkNo: "q=No",
-            } satisfies inviteTemplateVariables),
+                linkData: "testData",
+            } satisfies TemplateVariables),
             emailData: props.candidates.map((candidate) => {
                 const baseParams = {
                     firstName: candidate.influencer.firstName,
@@ -32,23 +31,21 @@ export default async function sendBulkCampaignInviteAPI(props: BulkCampaignInvit
                     id: candidate.id,
                 };
                 const encodedParametersYes = encodeURIComponent(
-                    btoa(JSON.stringify({ ...baseParams, response: "accepted" })),
+                    btoa(JSON.stringify({ ...baseParams, response: "accepted" }))
                 );
                 const encodedParametersNo = encodeURIComponent(
-                    btoa(JSON.stringify({ ...baseParams, response: "rejected" })),
+                    btoa(JSON.stringify({ ...baseParams, response: "rejected" }))
                 );
+                const encodedData = encodeURIComponent(btoa(JSON.stringify(baseParams)));
                 return {
                     to: candidate.influencer.email,
                     templateData: JSON.stringify({
-                        assignments: variables.assignments ?? [
-                            { assignmentDescription: "Make Tea" },
-                        ],
+                        name: `${candidate.influencer.firstName} ${candidate.influencer.lastName}`,
+                        assignments: variables.assignments ?? [{ assignmentDescription: "Make Tea" }],
                         honorar: variables.honorar ?? "<Honorar nicht definiert>",
                         linkBase: baseUrl + "/Response?",
-                        name: `${candidate.influencer.firstName} ${candidate.influencer.lastName}`,
-                        linkYes: `q=${encodedParametersYes}`,
-                        linkNo: `q=${encodedParametersNo}`,
-                    } satisfies Partial<inviteTemplateVariables>),
+                        linkData: encodedData,
+                    } satisfies Partial<TemplateVariables>),
                 };
             }),
         },

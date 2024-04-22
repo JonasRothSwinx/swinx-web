@@ -1,29 +1,36 @@
-import htmlNew from "./new.html";
-import htmlReduced from "./reduced.html";
-import { MailTemplate, SendMailProps, Template } from "../../templates";
+import { MailTemplate, SendMailProps, Template } from "../types";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { sesHandlerSendEmailTemplateBulk } from "@/amplify/functions/sesHandler/types";
 import sesAPIClient from "../../sesAPI";
+import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
+import InvitesReminderMail from "./InvitesReminderMail";
+import { renderAsync } from "@react-email/render";
 
-type inviteReminderVariables = {
+export type TemplateVariables = {
     name: string;
     inviteAmount: string;
 };
 
-const templateNew = {
-    name: "InvitesReminderNew",
-    subjectLine: "Erinnerung: Einladungen",
-    html: htmlNew,
-} as const satisfies MailTemplate;
+const templateBaseName = "InvitesReminder";
+const subjectLineBase = "Erinnerung: Einladungen";
 
-const templateReduced = {
-    name: "InvitesReminderReduced",
-    subjectLine: "Erinnerung: Einladungen (reduced)",
-    html: htmlReduced,
-} as const satisfies MailTemplate;
-export const templateNames = [templateNew.name, templateReduced.name] as const;
+const templates: { [key in Exclude<EmailTriggers.emailLevel, "none">]: MailTemplate } = {
+    new: {
+        name: `${templateBaseName}New`,
+        subjectLine: subjectLineBase,
+        html: renderAsync(InvitesReminderMail({ emailLevel: "new" })),
+        text: renderAsync(InvitesReminderMail({ emailLevel: "new" }), { plainText: true }),
+    },
+    reduced: {
+        name: `${templateBaseName}Reduced`,
+        subjectLine: subjectLineBase,
+        html: renderAsync(InvitesReminderMail({ emailLevel: "reduced" })),
+        text: renderAsync(InvitesReminderMail({ emailLevel: "reduced" }), { plainText: true }),
+    },
+} as const;
+export const templateNames = [...Object.values(templates).map((template) => template.name)] as const;
 
-const defaultParams: inviteReminderVariables = {
+const defaultParams: TemplateVariables = {
     name: "testName",
     inviteAmount: "0",
 };
@@ -31,10 +38,7 @@ const defaultParams: inviteReminderVariables = {
 const inviteReminderTemplates: Template = {
     defaultParams,
     send,
-    levels: {
-        new: templateNew,
-        reduced: templateReduced,
-    },
+    levels: templates,
     templateNames,
 };
 export default inviteReminderTemplates;
@@ -67,7 +71,7 @@ async function send(props: SendMailProps) {
                         templateData: JSON.stringify({
                             name: `${influencer.firstName} ${influencer.lastName}`,
                             inviteAmount: event.eventTaskAmount.toString(),
-                        } satisfies Partial<inviteReminderVariables>),
+                        } satisfies Partial<TemplateVariables>),
                     },
                 ];
             }, [] as { to: string; templateData: string }[]),

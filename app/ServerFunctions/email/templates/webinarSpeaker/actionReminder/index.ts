@@ -2,27 +2,28 @@ import { EmailLevelDefinition, MailTemplate, SendMailProps, Template } from "../
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { sesHandlerSendEmailTemplateBulk } from "@/amplify/functions/sesHandler/types";
 import sesAPIClient from "../../../sesAPI";
-import PostDraftDeadlineReminderEmail from "./PostDeadlineReminderEmail";
 import { renderAsync } from "@react-email/render";
+import WebinarSpeakerActionReminderMail from "./WebinarSpeakerDateReminder";
 
 export type TemplateVariables = {
     name: string;
 };
-const templateBaseName = "PostDraftDeadlineReminder";
-const subjectLineBase = "Erinnerung: Entwurf für Beitrag";
+
+const templateBaseName = "WebinarSpeakerActionReminder";
+const subjectLineBase = "Erinnerung: Webinar";
 
 const templates: EmailLevelDefinition = {
     new: {
         name: `${templateBaseName}New`,
         subjectLine: subjectLineBase,
-        html: renderAsync(PostDraftDeadlineReminderEmail({ emailLevel: "new" })),
-        text: renderAsync(PostDraftDeadlineReminderEmail({ emailLevel: "new" }), { plainText: true }),
+        html: renderAsync(WebinarSpeakerActionReminderMail({ emailLevel: "new" })),
+        text: renderAsync(WebinarSpeakerActionReminderMail({ emailLevel: "new" }), { plainText: true }),
     },
     reduced: {
         name: `${templateBaseName}Reduced`,
         subjectLine: subjectLineBase,
-        html: renderAsync(PostDraftDeadlineReminderEmail({ emailLevel: "reduced" })),
-        text: renderAsync(PostDraftDeadlineReminderEmail({ emailLevel: "reduced" }), { plainText: true }),
+        html: renderAsync(WebinarSpeakerActionReminderMail({ emailLevel: "reduced" })),
+        text: renderAsync(WebinarSpeakerActionReminderMail({ emailLevel: "reduced" }), { plainText: true }),
     },
 } as const;
 
@@ -30,16 +31,16 @@ export const templateNames = [...Object.values(templates).map((template) => temp
 
 const defaultParams: TemplateVariables = {
     name: "testName",
-} as const;
+};
 
-const PostReminder = {
+const WebinarSpeakerActionReminder = {
     defaultParams,
     send,
     levels: templates,
     templateNames,
 } as const satisfies Template;
 
-export default PostReminder;
+export default WebinarSpeakerActionReminder;
 
 async function send(props: SendMailProps) {
     const {
@@ -53,7 +54,7 @@ async function send(props: SendMailProps) {
     if (level === "none") {
         return;
     }
-    const templateName = PostReminder.levels[level].name;
+    const templateName = WebinarSpeakerActionReminder.levels[level].name;
     const requestBody: sesHandlerSendEmailTemplateBulk = {
         operation: "sendEmailTemplateBulk",
         bulkEmailData: {

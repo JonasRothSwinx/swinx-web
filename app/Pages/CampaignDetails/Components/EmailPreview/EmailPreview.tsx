@@ -46,7 +46,7 @@ interface EmailPreviewProps {
     assignment: Assignment.AssignmentFull;
 }
 
-type inviteTemplateVariables = typeof templateDefinitions.mailTypes.CampaignInvite.defaultParams;
+type inviteTemplateVariables = typeof templateDefinitions.mailTypes.campaignInvite.CampaignInvite.defaultParams;
 /**
  * Renders the email preview component.
  *
@@ -62,17 +62,11 @@ export default function EmailPreview(props: EmailPreviewProps) {
         assignments: [{ assignmentDescription: "Fliege zum Mars" }],
         honorar: "0€",
         linkBase: "http://localhost:3000/Response?",
-        linkYes: "q=Yes",
-        linkNo: "q=No",
+        linkData: "testData",
     });
     const [templateName, setTemplateName] = useState<templateName>("CampaignInviteNew");
-    // const template = useQuery({
-    //     queryKey: ["template", templateName],
-    //     queryFn: () => emailClient.templates.get(templateName),
-    //     placeholderData: { TemplateName: "placeholder", TemplateContent: { Html: "" } },
-    // });
     const templates = useQueries({
-        queries: templateDefinitions.mailTypes.CampaignInvite.templateNames.map((templateName) => {
+        queries: templateDefinitions.mailTypes.campaignInvite.CampaignInvite.templateNames.map((templateName) => {
             return {
                 queryKey: ["template", templateName],
                 queryFn: () => emailClient.templates.get(templateName),
@@ -129,6 +123,7 @@ export default function EmailPreview(props: EmailPreviewProps) {
     };
     //Loading placeholder
     // if (!template.data) return <div>Template not found</div>;
+    if (!selectedCandidate) return <div>Selected Candidate not found</div>;
     return (
         <Dialog
             open
@@ -150,9 +145,7 @@ export default function EmailPreview(props: EmailPreviewProps) {
                                 animationPlayState: "running",
                                 animationName: "spin",
                                 animationDuration: "500ms",
-                                animationIterationCount: `${
-                                    templates.isFetching ? "infinite" : "0"
-                                }`,
+                                animationIterationCount: `${templates.isFetching ? "infinite" : "0"}`,
                                 animationTimingFunction: "linear",
                                 "@keyframes spin": {
                                     "100%": { transform: `rotate(360deg)` },
@@ -176,10 +169,7 @@ export default function EmailPreview(props: EmailPreviewProps) {
                     ) : (
                         <>
                             <EmailFrame
-                                emailPreview={
-                                    templates[selectedCandidate.influencer.emailLevel ?? "new"] ??
-                                    null
-                                }
+                                emailPreview={templates[selectedCandidate.influencer.emailLevel ?? "new"] ?? null}
                                 isLoading={templates.isLoading}
                                 variables={{
                                     ...variables,

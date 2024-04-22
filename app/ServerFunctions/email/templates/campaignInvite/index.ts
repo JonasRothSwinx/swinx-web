@@ -1,62 +1,53 @@
-import htmlNew from "./new.html";
 import htmlReduced from "./reduced.html";
-import { MailTemplate, Template, SendMailProps, EmailLevelDefinition } from "..";
+import { MailTemplate, Template, SendMailProps, EmailLevelDefinition } from "../types";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import dotenv from "dotenv";
 import sendBulkCampaignInvite from "./send";
+import { render, renderAsync } from "@react-email/render";
+import CampaignInviteEmail from "./CampaignInviteEmail";
 
-export type inviteTemplateVariables = {
+export type TemplateVariables = {
     name: string;
     assignments: { assignmentDescription: string }[];
     honorar: string;
     linkBase: string;
-    linkYes: string;
-    linkNo: string;
+    linkData: string;
 };
 
-const templateNew = {
-    name: "CampaignInviteNew",
-    subjectLine: "Einladung zu Kampagne",
-    html: htmlNew,
-} as const satisfies MailTemplate;
-
-const templateReduced = {
-    name: "CampaignInviteReduced",
-    subjectLine: "Einladung zu Kampagne",
-    html: htmlReduced,
-} as const satisfies MailTemplate;
-
+const templateNameBase = "CampaignInvite";
+const subjectLineBase = "Einladung zur Kampagne";
 const templates: EmailLevelDefinition = {
-    new: templateNew,
-    reduced: templateReduced,
-};
+    new: {
+        name: `${templateNameBase}New`,
+        subjectLine: subjectLineBase,
+        html: renderAsync(CampaignInviteEmail({ emailLevel: "new" })),
+        text: renderAsync(CampaignInviteEmail({ emailLevel: "new" }), { plainText: true }),
+    },
+    reduced: {
+        name: `${templateNameBase}Reduced`,
+        subjectLine: subjectLineBase,
+        html: renderAsync(CampaignInviteEmail({ emailLevel: "reduced" })),
+        text: renderAsync(CampaignInviteEmail({ emailLevel: "reduced" }), { plainText: true }),
+    },
+} as const;
 
-export const templateNames = [templateNew.name, templateReduced.name] as const;
+export const templateNames = [...Object.values(templates).map((template) => template.name)] as const;
 
-const defaultParams: inviteTemplateVariables = {
+const defaultParams: TemplateVariables = {
     name: "testName",
     assignments: [{ assignmentDescription: "Fliege zum Mars" }],
     honorar: "0€",
     linkBase: "http://localhost:3000/Response?",
-    linkYes: "q=Yes",
-    linkNo: "q=No",
+    linkData: "testData",
 };
 
 const inviteEmails: Template = {
     defaultParams,
     send,
-    levels: {
-        new: templateNew,
-        reduced: templateReduced,
-    },
+    levels: templates,
     templateNames,
 } as const;
 export default inviteEmails;
-
-function extractVariables(event: TimelineEvent.Event): inviteTemplateVariables {
-    const name = "";
-    throw new Error("Not implemented yet");
-}
 
 /**
  * Send campaign invites to candidates

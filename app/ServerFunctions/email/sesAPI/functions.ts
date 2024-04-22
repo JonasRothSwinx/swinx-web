@@ -5,12 +5,13 @@ import config from "@/amplifyconfiguration.json";
 import templateDefinitions, { templateName } from "../templates";
 import dotenv from "dotenv";
 import sleep from "@/app/utils/sleep";
+import { Prettify } from "@/app/Definitions/types";
 dotenv.config({ path: ".env.local" });
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const apiUrl = (config as any)?.custom?.sesHandlerUrl;
 
 export async function sendRequest(
-    body: SesHandlerTypes.sesHandlerEventBody,
+    body: SesHandlerTypes.sesHandlerEventBody
 ): Promise<SesHandlerTypes.sesHandlerResponse> {
     const apiKey = process.env.ADMIN_API_KEY;
     if (!apiKey) {
@@ -34,9 +35,7 @@ export async function sendEmailTemplate(body: SesHandlerTypes.sesHandlerSendEmai
 }
 
 export async function sendEmailTemplateBulk(body: SesHandlerTypes.sesHandlerSendEmailTemplateBulk) {
-    const response = (await sendRequest(
-        body,
-    )) as SesHandlerTypes.sesHandlerSendEmailTemplateBulkResponseBody;
+    const response = (await sendRequest(body)) as SesHandlerTypes.sesHandlerSendEmailTemplateBulkResponseBody;
     if (response.error) {
         throw new Error(JSON.stringify(response.error));
     }
@@ -53,36 +52,44 @@ export async function listTemplates() {
     return response;
 }
 
-export async function updateTemplates(templateNames: templateName[] = []) {
-    const entries = Object.entries(templateDefinitions.mailTypes);
-    const updateData: SesHandlerTypes.sesHandlerUpdateTemplate["updateData"] = entries.reduce(
-        (acc, [key, template]) => {
-            const levels = template.levels;
-            const newTemplates = Object.entries(levels).map(([level, template]) => {
-                return template;
-            });
-            newTemplates.filter(
-                (template) => !templateNames.includes(template.name as templateName),
-            );
-            acc = [...acc, ...newTemplates];
-            return acc;
-        },
-        [] as typeof updateData,
-    );
+type updateDataWithPromises = Prettify<
+    Omit<SesHandlerTypes.sesHandlerUpdateTemplate["updateData"][number], "html" | "text"> & {
+        html: string | Promise<string>;
+        text: string | Promise<string>;
+    }
+>[];
+type updateDataResolved = Prettify<SesHandlerTypes.sesHandlerUpdateTemplate["updateData"][number]>[];
 
-    const responses = [];
+export async function updateTemplates(templateNames: templateName[] = []) {
+    const entries = Object.entries(templateDefinitions.mailTypesFlat);
+    const updateDataWithPromises: updateDataWithPromises = entries.reduce((acc, [key, template]) => {
+        const levels = template.levels;
+        const newTemplates = Object.entries(levels).map(([level, template]) => {
+            return template;
+        });
+
+        newTemplates.filter((template) => !templateNames.includes(template.name as templateName));
+        acc = [...acc, ...newTemplates];
+        return acc;
+    }, [] as updateDataWithPromises);
+    const updateData: updateDataResolved = await Promise.all(
+        updateDataWithPromises.map(async (template) => {
+            const [html, text] = await Promise.all([template.html, template.text]);
+
+            return { ...template, html, text };
+        })
+    );
+    let responses: SesHandlerTypes.sesHandlerUpdateTemplateResponseBody["responseData"] = [];
     let processed = 0;
     const total = updateData.length;
     while (updateData.length > 0) {
-        const chunk = updateData.splice(0, 5);
+        const chunk = updateData.splice(0, 2);
         const requestBody: SesHandlerTypes.sesHandlerUpdateTemplate = {
             operation: "update",
             updateData: chunk,
         };
         for (let attempts = 0; attempts < 10; attempts++) {
-            const response = (await sendRequest(
-                requestBody,
-            )) as SesHandlerTypes.sesHandlerUpdateTemplateResponseBody; //TODO: validation
+            const response = (await sendRequest(requestBody)) as SesHandlerTypes.sesHandlerUpdateTemplateResponseBody; //TODO: validation
             if (response.error) {
                 if (attempts === 10) {
                     throw new Error(JSON.stringify(response.error));
@@ -91,7 +98,7 @@ export async function updateTemplates(templateNames: templateName[] = []) {
                 await sleep(1000);
                 continue;
             }
-            responses.push(response);
+            responses = [...responses, ...response.responseData];
             processed += chunk.length;
             console.log(`Updated ${processed} of ${total} templates`);
             break;
@@ -102,15 +109,17 @@ export async function updateTemplates(templateNames: templateName[] = []) {
     return responses;
     // return response;
 }
+function fixHrefPlaceholders(html: string) {
+    //replace
+    return html.replace(/{{\s*href\s*}}/g, "{{= href }}");
+}
 
 export async function getTemplate(templateName: string) {
     const requestBody: SesHandlerTypes.sesHandlerGetTemplate = {
         operation: "get",
         templateName,
     };
-    const response = (await sendRequest(
-        requestBody,
-    )) as SesHandlerTypes.sesHandlerGetTemplateResponseBody; //TODO validation;
+    const response = (await sendRequest(requestBody)) as SesHandlerTypes.sesHandlerGetTemplateResponseBody; //TODO validation;
     if (response.error) {
         throw new Error(JSON.stringify(response.error));
     }
@@ -118,9 +127,7 @@ export async function getTemplate(templateName: string) {
     return response.responseData;
 }
 
-export async function deleteTemplates(
-    deleteData: SesHandlerTypes.sesHandlerDeleteTemplate["deleteData"],
-) {
+export async function deleteTemplates(deleteData: SesHandlerTypes.sesHandlerDeleteTemplate["deleteData"]) {
     const requestBody: SesHandlerTypes.sesHandlerDeleteTemplate = {
         operation: "delete",
         deleteData,

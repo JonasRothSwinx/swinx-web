@@ -1,29 +1,32 @@
-import htmlNew from "./new.html";
-import htmlReduced from "./reduced.html";
-import { MailTemplate, SendMailProps, Template } from "../../../templates";
+import { EmailLevelDefinition, MailTemplate, SendMailProps, Template } from "../../types";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { sesHandlerSendEmailTemplateBulk } from "@/amplify/functions/sesHandler/types";
 import sesAPIClient from "../../../sesAPI";
+import VideoDraftDeadlineReminderEmail from "./VideoDraftDeadlineReminderEmail";
+import { renderAsync } from "@react-email/render";
 
-type TemplateVariables = {
+export type TemplateVariables = {
     name: string;
 };
 const templateBaseName = "VideoDraftDeadlineReminder";
 const subjectLineBase = "Erinnerung: Entwurf für Video";
 
-const templateNew = {
-    name: `${templateBaseName}New`,
-    subjectLine: subjectLineBase,
-    html: htmlNew,
-} as const satisfies MailTemplate;
+const templates: EmailLevelDefinition = {
+    new: {
+        name: `${templateBaseName}New`,
+        subjectLine: subjectLineBase,
+        html: renderAsync(VideoDraftDeadlineReminderEmail({ emailLevel: "new" })),
+        text: renderAsync(VideoDraftDeadlineReminderEmail({ emailLevel: "new" }), { plainText: true }),
+    },
+    reduced: {
+        name: `${templateBaseName}Reduced`,
+        subjectLine: subjectLineBase,
+        html: renderAsync(VideoDraftDeadlineReminderEmail({ emailLevel: "reduced" })),
+        text: renderAsync(VideoDraftDeadlineReminderEmail({ emailLevel: "reduced" }), { plainText: true }),
+    },
+} as const;
 
-const templateReduced = {
-    name: `${templateBaseName}Reduced`,
-    subjectLine: `${subjectLineBase} (reduced)`,
-    html: htmlReduced,
-} as const satisfies MailTemplate;
-
-export const templateNames = [templateNew.name, templateReduced.name] as const;
+export const templateNames = [...Object.values(templates).map((template) => template.name)] as const;
 
 const defaultParams: TemplateVariables = {
     name: "testName",
@@ -32,10 +35,7 @@ const defaultParams: TemplateVariables = {
 const PostReminder = {
     defaultParams,
     send,
-    levels: {
-        new: templateNew,
-        reduced: templateReduced,
-    },
+    levels: templates,
     templateNames,
 } as const satisfies Template;
 
