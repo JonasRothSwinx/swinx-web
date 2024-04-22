@@ -1,7 +1,7 @@
 import { Prettify } from "@/app/Definitions/types";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import { DialogContent, SxProps, TextField } from "@mui/material";
-import React, { useMemo, useState } from "react";
+import { Button, DialogContent, SxProps, TextField } from "@mui/material";
+import React, { Dispatch, SetStateAction, useMemo, useState } from "react";
 import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -10,17 +10,16 @@ interface DetailsProps {
     applyDetailsChange: (data: Partial<TimelineEvent.SingleEvent>) => void;
     data: Prettify<
         //optional properties
-        Partial<
-            Pick<
-                TimelineEvent.SingleEvent,
-                "eventTitle" | "info" | "eventTaskAmount" | "type" | "relatedEvents"
-            >
-        >
+        Partial<Pick<TimelineEvent.SingleEvent, "eventTitle" | "info" | "eventTaskAmount" | "type" | "relatedEvents">>
     >;
+    isEditing?: boolean;
+    updatedData: Prettify<Partial<TimelineEvent.SingleEvent>>;
+    setUpdatedData: Dispatch<SetStateAction<Partial<TimelineEvent.SingleEvent>>>;
 }
 type relevantDetails = Prettify<
     Pick<TimelineEvent.SingleEvent, "eventTitle" | "eventTaskAmount"> & TimelineEvent.EventInfo
 >;
+type relevantDetailsKey = Prettify<keyof relevantDetails>;
 type DetailsConfigEntry =
     | {
           enabled: true;
@@ -33,7 +32,7 @@ type DetailsConfigEntry =
           enabled: false;
       };
 type DetailsConfig = {
-    [key in keyof relevantDetails]: DetailsConfigEntry;
+    [key in relevantDetailsKey]: DetailsConfigEntry;
 };
 
 const EventTypeConfig: { [key in TimelineEvent.singleEventType]: DetailsConfig } = {
@@ -149,53 +148,98 @@ const EventTypeConfig: { [key in TimelineEvent.singleEventType]: DetailsConfig }
     },
 };
 
-export default function SingleEventDetails(props: DetailsProps): JSX.Element {
-    const { applyDetailsChange, data } = props;
+function getDataKey(
+    key: relevantDetailsKey,
+    data: Partial<TimelineEvent.SingleEvent>,
+    updatedData: Partial<TimelineEvent.SingleEvent>
+): string | number | null | undefined {
+    switch (key) {
+        case "topic":
+            return updatedData.info?.topic ?? data.info?.topic;
+        case "charLimit":
+            return updatedData.info?.charLimit ?? data.info?.charLimit;
+        case "maxDuration":
+            return updatedData.info?.maxDuration ?? data.info?.maxDuration;
+        case "eventTitle":
+            return updatedData.eventTitle ?? data.eventTitle;
+        case "eventTaskAmount":
+            return updatedData.eventTaskAmount ?? data.eventTaskAmount;
+        case "draftDeadline":
+            return updatedData.info?.draftDeadline ?? data.info?.draftDeadline;
+        case "instructions":
+            return updatedData.info?.instructions ?? data.info?.instructions;
+    }
+}
 
-    const ChangeHandler: {
-        [key in keyof relevantDetails]: (value: string | number | Dayjs) => void;
-    } = {
-        topic: (value) => {
-            if (!(typeof value === "string")) return;
-            applyDetailsChange({ info: { ...data.info, topic: value } });
-        },
-        charLimit: (value) => {
-            if (!(typeof value === "number")) return;
-            applyDetailsChange({ info: { ...data.info, charLimit: value } });
-        },
-        maxDuration: (value) => {
-            if (!(typeof value === "number")) return;
-            applyDetailsChange({ info: { ...data.info, maxDuration: value } });
-        },
-        eventTitle: (value) => {
-            if (!(typeof value === "string")) return;
-            applyDetailsChange({ eventTitle: value });
-        },
-        eventTaskAmount: (value) => {
-            if (!(typeof value === "number")) return;
-            applyDetailsChange({ eventTaskAmount: value });
-        },
-        draftDeadline: (value) => {
-            if (!(typeof value === "string")) return;
-            applyDetailsChange({ info: { ...data.info, draftDeadline: value } });
-        },
-        instructions: (value) => {
-            if (!(typeof value === "string")) return;
-            applyDetailsChange({ info: { ...data.info, instructions: value } });
-        },
-    };
-    const PropertyValue: { [key in keyof relevantDetails]: string | number | undefined | null } =
-        useMemo(() => {
-            return {
-                topic: data.info?.topic,
-                charLimit: data.info?.charLimit,
-                draftDeadline: data.info?.draftDeadline,
-                instructions: data.info?.instructions,
-                maxDuration: data.info?.maxDuration,
-                eventTitle: data.eventTitle,
-                eventTaskAmount: data.eventTaskAmount,
-            };
-        }, [data]);
+export default function SingleEventDetails(props: DetailsProps): JSX.Element {
+    const { applyDetailsChange, data, isEditing = false, setUpdatedData, updatedData } = props;
+
+    function handleChange(key: relevantDetailsKey, value: string | number | Dayjs) {
+        const oldData = isEditing ? updatedData : data;
+        const handler = isEditing ? setUpdatedData : applyDetailsChange;
+        switch (key) {
+            case "eventTitle":
+            case "eventTaskAmount": {
+                const newData = { ...oldData, [key]: value };
+                handler(newData);
+                break;
+            }
+            case "topic":
+            case "charLimit":
+            case "draftDeadline":
+            case "instructions":
+            case "maxDuration": {
+                const newData = { ...oldData, info: { ...oldData.info, [key]: value } };
+                handler(newData);
+                break;
+            }
+        }
+    }
+    // const ChangeHandler: {
+    //     [key in keyof relevantDetails]: (value: string | number | Dayjs) => void;
+    // } = {
+    //     topic: (value) => {
+    //         if (!(typeof value === "string")) return;
+
+    //         applyDetailsChange({ info: { ...data.info, topic: value } });
+    //     },
+    //     charLimit: (value) => {
+    //         if (!(typeof value === "number")) return;
+    //         applyDetailsChange({ info: { ...data.info, charLimit: value } });
+    //     },
+    //     maxDuration: (value) => {
+    //         if (!(typeof value === "number")) return;
+    //         applyDetailsChange({ info: { ...data.info, maxDuration: value } });
+    //     },
+    //     eventTitle: (value) => {
+    //         if (!(typeof value === "string")) return;
+    //         applyDetailsChange({ eventTitle: value });
+    //     },
+    //     eventTaskAmount: (value) => {
+    //         if (!(typeof value === "number")) return;
+    //         applyDetailsChange({ eventTaskAmount: value });
+    //     },
+    //     draftDeadline: (value) => {
+    //         if (!(typeof value === "string")) return;
+    //         applyDetailsChange({ info: { ...data.info, draftDeadline: value } });
+    //     },
+    //     instructions: (value) => {
+    //         if (!(typeof value === "string")) return;
+    //         applyDetailsChange({ info: { ...data.info, instructions: value } });
+    //     },
+    // };
+    // const PropertyValue: { [key in relevantDetailsKey]: string | number | undefined | null } = useMemo(() => {
+    //     console.log("Updating in usememo", data);
+    //     return {
+    //         topic: updatedData.info?.topic ?? data.info?.topic,
+    //         charLimit: updatedData.info?.charLimit ?? data.info?.charLimit,
+    //         maxDuration: updatedData.info?.maxDuration ?? data.info?.maxDuration,
+    //         eventTitle: updatedData.eventTitle ?? data.eventTitle,
+    //         eventTaskAmount: updatedData.eventTaskAmount ?? data.eventTaskAmount,
+    //         draftDeadline: updatedData.info?.draftDeadline ?? data.info?.draftDeadline,
+    //         instructions: updatedData.info?.instructions ?? data.info?.instructions,
+    //     };
+    // }, [data, updatedData]);
     const fullWidthFields: (keyof relevantDetails)[] = ["topic", "instructions"];
     const sxTest: Record<string, Record<string, string> | string> = { test: "test" };
     fullWidthFields.map((field) => {
@@ -205,40 +249,30 @@ export default function SingleEventDetails(props: DetailsProps): JSX.Element {
         };
     });
     const sxProps = sxTest as SxProps;
-    // const ChangeHandler: { [key in keyof TimelineEvent.EventDetails]: (value: any) => void } = {
-    //     topic: (value) =>
-    //         onChange((prev) => {
-    //             return { ...prev, details: { ...prev.details, topic: value } };
-    //         }),
-    //     maxDuration: (value) => {
-    //         return;
-    //     },
-    //     charLimit: (value) =>
-    //         onChange((prev) => {
-    //             return { ...prev, details: { ...prev.details, charLimit: value } };
-    //         }),
-    //     draftDeadline: (value) =>
-    //         onChange((prev) => {
-    //             return { ...prev, details: { ...prev.details, draftDeadline: value } };
-    //         }),
-    //     instructions: (value) =>
-    //         onChange((prev) => {
-    //             return { ...prev, details: { ...prev.details, instructions: value } };
-    //         }),
-    // };
+    function printData() {
+        console.log({ data, updatedData });
+        Object.keys(data).map((key) => {
+            console.log({ key, value: data[key as keyof typeof data] });
+            console.log(getDataKey(key as relevantDetailsKey, data, updatedData));
+            console.log("----------");
+        });
+    }
     if (!data.type) return <></>;
     return (
         <DialogContent dividers sx={sxProps}>
+            <Button onClick={printData}>Print Data</Button>
             {Object.entries(EventTypeConfig[data.type]).map(([key, config]) => {
-                const keyName = key as keyof relevantDetails;
+                const keyName = key as relevantDetailsKey;
+                const value = getDataKey(keyName, data, updatedData);
+                // console.log({ keyName, value });
                 return (
                     <EventDetailField
                         key={key}
                         name={keyName}
                         event={data}
-                        value={PropertyValue[keyName]}
+                        value={value}
                         config={config}
-                        changeHandler={ChangeHandler[keyName]}
+                        changeHandler={(value) => handleChange(keyName, value)}
                     />
                 );
             })}
@@ -290,7 +324,7 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
                         onChange={(value) => {
                             changeHandler(value?.toISOString() ?? "");
                         }}
-                        maxDate={event.date ? dayjs(event.date) : null}
+                        // maxDate={event.date ? dayjs(event.date) : null}
                         minDate={dayjs()}
                         onError={(error) => {
                             console.log({ error });

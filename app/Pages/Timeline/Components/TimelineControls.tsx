@@ -17,16 +17,10 @@ interface TimelineControlsProps {
     onDataChange: () => void;
 }
 type openDialog = "None" | "Timeline";
+
 export default function TimelineControls(props: TimelineControlsProps) {
     const queryClient = useQueryClient();
-    const {
-        groupBy,
-        setGroupBy,
-        campaign,
-        influencers,
-        setCampaign: setRows,
-        onDataChange,
-    } = props;
+    const { groupBy, setGroupBy, campaign, influencers, setCampaign: setRows, onDataChange } = props;
     const [openDialog, setOpenDialog] = useState<openDialog>("None");
     const DialogOptions: DialogOptions = {
         campaignId: campaign.id,
@@ -64,9 +58,7 @@ export default function TimelineControls(props: TimelineControlsProps) {
     }
     const Dialogs: { [key in openDialog]: JSX.Element | null } = {
         None: null,
-        Timeline: (
-            <TimelineEventMultiDialog onClose={onDialogClose} campaign={campaign} editing={false} />
-        ),
+        Timeline: <TimelineEventMultiDialog onClose={onDialogClose} campaign={campaign} editing={false} />,
     };
     return (
         <>

@@ -1,15 +1,26 @@
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import { Box, Unstable_Grid2 as Grid, GridSize, IconButton, Skeleton } from "@mui/material";
+import {
+    Box,
+    CircularProgress,
+    Unstable_Grid2 as Grid,
+    GridSize,
+    IconButton,
+    Skeleton,
+    Typography,
+} from "@mui/material";
 import { groupBy } from "../Functions/groupEvents";
 import dayjs from "@/app/utils/configuredDayJs";
 import { timelineEventTypesType } from "@/amplify/data/types";
 import EventContentSingle from "./EventContentSingle";
 import EventContentMulti from "./EventContentMulti";
 import { Query, QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
-import database from "@/app/ServerFunctions/database/dbOperations";
-import { DeleteIcon, EditIcon } from "@/app/Definitions/Icons";
+import { AddIcon, DeleteIcon, EditIcon, RefreshIcon } from "@/app/Definitions/Icons";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import { highlightData } from "@/app/Definitions/types";
+import dataClient from "@/app/ServerFunctions/database";
+import { useState } from "react";
+import TimelineEventSingleDialog from "../../Dialogs/TimelineEvent/SingleEvent/TimelineEventSingleDialog";
+import TimelineEventMultiDialog from "../../Dialogs/TimelineEvent/MultiEvent/TimelineEventMultiDialog";
 
 interface EventProps {
     campaignId: string;
@@ -30,10 +41,16 @@ export function Event(props: EventProps) {
     } = props;
     const queryClient = useQueryClient();
     const event = useQuery({
-        queryKey: ["event", id],
+        queryKey: ["timelineEvent", id],
         queryFn: () => {
             if (tempId !== undefined) return props.event;
-            return database.timelineEvent.get(id);
+            return dataClient.timelineEvent.get(id);
+        },
+    });
+    const campaign = useQuery({
+        queryKey: ["campaign", campaignId],
+        queryFn: () => {
+            return dataClient.campaign.get(campaignId);
         },
     });
     if (event.isLoading) {
@@ -50,30 +67,58 @@ export function Event(props: EventProps) {
     }
     if (!event.data) return <></>;
     const EventHandlers = {
-        deleteFunction: () => {
+        deleteFunction: async () => {
+            if (!event.data || !event.data.id) return;
+            await dataClient.timelineEvent.delete(event.data.id);
+        },
+        setEvent: async (updatedData: Partial<TimelineEvent.Event>) => {
             if (!event.data) return;
-            deleteEvent(event.data, queryClient, campaignId);
+            console.log("Updating event", updatedData, event.data);
+            const newEvent = await dataClient.timelineEvent.update(updatedData, event.data);
+            console.log("Updated event", newEvent);
         },
     };
     const dateColumns = groupBy === "day" ? 0 : 1;
     const modifyColumns = editing ? 2 : 0;
     const contentColumns = totalColumns - dateColumns - modifyColumns;
+
+    //assure data is available
+    if (!event.data || !campaign.data) return <></>;
+    if (event.isLoading || campaign.isLoading) return <Skeleton width={"100%"} />;
+
     switch (true) {
         case TimelineEvent.isSingleEvent(event.data): {
             return (
-                <Grid sx={{ paddingLeft: "10px", backgroundColor: highlightData?.color }} container>
+                <Grid
+                    sx={{ position: "relative", paddingLeft: "10px", backgroundColor: highlightData?.color }}
+                    container
+                >
                     {dateColumns > 0 && (
-                        <EventDate
-                            date={event.data.date ?? ""}
-                            groupBy={groupBy}
-                            columnSize={dateColumns}
-                        />
+                        <EventDate date={event.data.date ?? ""} groupBy={groupBy} columnSize={dateColumns} />
                     )}
                     <EventContentSingle event={event.data} columnSize={contentColumns} />
+                    {/* Floating Progress indicator */}
+
+                    <CircularProgress
+                        size={25}
+                        sx={{
+                            position: "absolute",
+                            top: "10px",
+                            left: "50%",
+                            zIndex: 1000,
+                            ...{
+                                display: event.isFetching ? "block" : "none",
+                            },
+                        }}
+                    />
                     {editing && (
                         <ModifyButtonGroup
-                            columnSize={modifyColumns}
-                            deleteFunction={EventHandlers.deleteFunction}
+                            {...({
+                                deleteFunction: EventHandlers.deleteFunction,
+                                event: event.data,
+                                setEvent: EventHandlers.setEvent,
+                                campaign: campaign.data,
+                            } satisfies ModifyButtonGroupProps)}
                         />
                     )}
                 </Grid>
@@ -83,17 +128,17 @@ export function Event(props: EventProps) {
             return (
                 <Grid sx={{ paddingLeft: "10px", backgroundColor: highlightData?.color }} container>
                     {dateColumns > 0 && (
-                        <EventDate
-                            date={event.data.date ?? ""}
-                            groupBy={groupBy}
-                            columnSize={dateColumns}
-                        />
+                        <EventDate date={event.data.date ?? ""} groupBy={groupBy} columnSize={dateColumns} />
                     )}
                     <EventContentMulti event={event.data} columnSize={contentColumns} />
                     {editing && (
                         <ModifyButtonGroup
-                            columnSize={modifyColumns}
-                            deleteFunction={EventHandlers.deleteFunction}
+                            {...({
+                                deleteFunction: EventHandlers.deleteFunction,
+                                event: event.data,
+                                setEvent: EventHandlers.setEvent,
+                                campaign: campaign.data,
+                            } satisfies ModifyButtonGroupProps)}
                         />
                     )}
                 </Grid>
@@ -105,12 +150,83 @@ export function Event(props: EventProps) {
     }
 }
 
-function EditButton() {
+interface ModifyButtonGroupProps {
+    columnSize?: number | GridSize;
+    deleteFunction: () => void;
+    campaign: Campaign.Campaign;
+    event: TimelineEvent.Event;
+    setEvent: (updatedData: Partial<TimelineEvent.Event>) => void;
+}
+function ModifyButtonGroup(props: ModifyButtonGroupProps) {
+    const { setEvent, event, deleteFunction, columnSize, campaign } = props;
     return (
-        <IconButton>
-            <EditIcon />
-        </IconButton>
+        <Grid xs={columnSize}>
+            <Box>
+                <EditButton {...{ setEvent, event, campaign }} />
+                <DeleteButton deleteFunction={deleteFunction} />
+            </Box>
+        </Grid>
     );
+}
+interface EditButtonProps {
+    setEvent: (updatedData: Partial<TimelineEvent.Event>) => void;
+    event: TimelineEvent.Event;
+    campaign: Campaign.Campaign;
+}
+function EditButton(props: EditButtonProps) {
+    const { event, campaign } = props;
+    const [isOpen, setIsOpen] = useState(false);
+
+    const EventHandler = {
+        openDialog: () => {
+            setIsOpen(true);
+        },
+        closeDialog: () => {
+            setIsOpen(false);
+        },
+    };
+    switch (true) {
+        case TimelineEvent.isSingleEvent(event): {
+            return (
+                <>
+                    {isOpen && (
+                        <TimelineEventSingleDialog
+                            {...{
+                                onClose: EventHandler.closeDialog,
+                                parent: campaign,
+                                editing: true,
+                                editingData: event,
+                                campaignId: event.campaign.id,
+                                targetAssignment: event.assignments[0],
+                            }}
+                        />
+                    )}
+                    <IconButton
+                        onClick={() => {
+                            console.log("Opening dialog");
+                            console.log(event);
+                            EventHandler.openDialog();
+                        }}
+                    >
+                        <EditIcon />
+                    </IconButton>
+                </>
+            );
+        }
+        case TimelineEvent.isMultiEvent(event): {
+            return (
+                <>
+                    {/* {isOpen && <TimelineEventMultiDialog onClose={EventHandler.closeDialog} />} */}
+                    <IconButton>
+                        <EditIcon />
+                    </IconButton>
+                </>
+            );
+        }
+        default: {
+            return <></>;
+        }
+    }
 }
 interface DeleteButtonProps {
     deleteFunction: () => void;
@@ -120,21 +236,6 @@ function DeleteButton(props: DeleteButtonProps) {
         <IconButton onClick={props.deleteFunction}>
             <DeleteIcon color="error" />
         </IconButton>
-    );
-}
-interface ModifyButtonGroupProps {
-    columnSize?: number | GridSize;
-    deleteFunction: () => void;
-}
-
-function ModifyButtonGroup(props: ModifyButtonGroupProps) {
-    return (
-        <Grid xs={props.columnSize}>
-            <Box>
-                <EditButton />
-                <DeleteButton deleteFunction={props.deleteFunction} />
-            </Box>
-        </Grid>
     );
 }
 interface EventDateProps {
@@ -153,66 +254,64 @@ function EventDate(props: EventDateProps) {
     return <Grid xs={columnSize}>{dateDisplay[groupBy]}</Grid>;
 }
 
-function deleteEvent(event: TimelineEvent.Event, queryClient: QueryClient, campaignId: string) {
-    {
-        if (confirm("Are you sure you want to delete this event?")) {
-            if (!(event && event.id)) {
-                console.error("Event id not found");
-                return;
-            }
-            const selectedEvent = event;
-            console.log("Deleting event", selectedEvent);
-            database.timelineEvent.delete(selectedEvent).then(() => {
-                console.log("Event deleted");
-            });
+// function deleteEvent(event: TimelineEvent.Event, queryClient: QueryClient, campaignId: string) {
+//     {
+//         if (confirm("Are you sure you want to delete this event?")) {
+//             if (!(event && event.id)) {
+//                 console.error("Event id not found");
+//                 return;
+//             }
+//             const selectedEvent = event;
+//             console.log("Deleting event", selectedEvent);
+//             dataClient.timelineEvent.delete(selectedEvent).then(() => {
+//                 console.log("Event deleted");
+//             });
 
-            queryClient.setQueryData(["event", selectedEvent.id], undefined);
-            queryClient.setQueryData(["events", campaignId], (oldData: TimelineEvent.Event[]) => {
-                if (!oldData) return [];
-                return oldData.filter((e) => e.id !== selectedEvent?.id);
-            });
-            queryClient.setQueryData(["campaign", campaignId], (oldData: Campaign.Campaign) => {
-                if (!oldData) return;
-                return {
-                    ...oldData,
-                    events: oldData.campaignTimelineEvents.filter(
-                        (e) => e.id !== selectedEvent?.id,
-                    ),
-                };
-            });
-            //switch on event single /multi
-            switch (true) {
-                case TimelineEvent.isSingleEvent(selectedEvent): {
-                    queryClient.setQueryData(
-                        ["assignmentEvents", selectedEvent.assignments[0].id],
-                        (oldData: TimelineEvent.SingleEvent[]) => {
-                            if (!oldData) return [];
-                            return oldData.filter((e) => e.id !== selectedEvent.id);
-                        },
-                    );
-                    queryClient.refetchQueries({
-                        queryKey: ["assignmentEvents", selectedEvent.assignments[0].id],
-                    });
-                    break;
-                }
-                case TimelineEvent.isMultiEvent(selectedEvent): {
-                    selectedEvent.assignments?.forEach((assignment) => {
-                        queryClient.setQueryData(
-                            ["assignmentEvents", assignment.id],
-                            (oldData: TimelineEvent.SingleEvent[]) => {
-                                if (!oldData) return [];
-                                return oldData.filter((e) => e.id !== selectedEvent.id);
-                            },
-                        );
-                        queryClient.refetchQueries({
-                            queryKey: ["assignmentEvents", assignment.id],
-                        });
-                    });
+//             queryClient.setQueryData(["event", selectedEvent.id], undefined);
+//             queryClient.setQueryData(["events", campaignId], (oldData: TimelineEvent.Event[]) => {
+//                 if (!oldData) return [];
+//                 return oldData.filter((e) => e.id !== selectedEvent?.id);
+//             });
+//             queryClient.setQueryData(["campaign", campaignId], (oldData: Campaign.Campaign) => {
+//                 if (!oldData) return;
+//                 return {
+//                     ...oldData,
+//                     events: oldData.campaignTimelineEvents.filter((e) => e.id !== selectedEvent?.id),
+//                 };
+//             });
+//             //switch on event single /multi
+//             switch (true) {
+//                 case TimelineEvent.isSingleEvent(selectedEvent): {
+//                     queryClient.setQueryData(
+//                         ["assignmentEvents", selectedEvent.assignments[0].id],
+//                         (oldData: TimelineEvent.SingleEvent[]) => {
+//                             if (!oldData) return [];
+//                             return oldData.filter((e) => e.id !== selectedEvent.id);
+//                         }
+//                     );
+//                     queryClient.refetchQueries({
+//                         queryKey: ["assignmentEvents", selectedEvent.assignments[0].id],
+//                     });
+//                     break;
+//                 }
+//                 case TimelineEvent.isMultiEvent(selectedEvent): {
+//                     selectedEvent.assignments?.forEach((assignment) => {
+//                         queryClient.setQueryData(
+//                             ["assignmentEvents", assignment.id],
+//                             (oldData: TimelineEvent.SingleEvent[]) => {
+//                                 if (!oldData) return [];
+//                                 return oldData.filter((e) => e.id !== selectedEvent.id);
+//                             }
+//                         );
+//                         queryClient.refetchQueries({
+//                             queryKey: ["assignmentEvents", assignment.id],
+//                         });
+//                     });
 
-                    break;
-                }
-            }
-            queryClient.refetchQueries({ queryKey: ["assignmentEvents"], exact: false });
-        }
-    }
-}
+//                     break;
+//                 }
+//             }
+//             queryClient.refetchQueries({ queryKey: ["assignmentEvents"], exact: false });
+//         }
+//     }
+// }

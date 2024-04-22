@@ -12,6 +12,8 @@ interface TypedEventGroupDisplayProps {
     editing: boolean;
     campaignId: string;
 }
+const hiddenEventTypes: TimelineEvent.eventType[] = ["WebinarSpeaker"];
+
 export default function TypedEventGroupDisplay(props: TypedEventGroupDisplayProps) {
     const { eventGroup, groupBy, editing, campaignId } = props;
     const queryClient = useQueryClient();
@@ -22,7 +24,7 @@ export default function TypedEventGroupDisplay(props: TypedEventGroupDisplayProp
         },
         placeholderData: [],
     });
-    if (eventGroup.type === "WebinarSpeaker") return <></>;
+    if (hiddenEventTypes.includes(eventGroup.type)) return <></>;
     return (
         <div className={stylesExporter.timeline.typedEventGroup}>
             <GroupTitle type={eventGroup.type} />

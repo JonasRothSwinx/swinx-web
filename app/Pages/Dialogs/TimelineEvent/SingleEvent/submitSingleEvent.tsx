@@ -12,13 +12,14 @@ import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
 interface createSingleEventProps {
     editing: boolean;
     event: TimelineEvent.SingleEvent;
-    campaign: Campaign.Campaign;
+    updatedData: Partial<TimelineEvent.SingleEvent>;
+    // campaign: Campaign.Campaign;
     // assignment: Assignment.AssignmentMin;
     dates: dates;
-    queryClient: ReturnType<typeof useQueryClient>;
+    // queryClient: ReturnType<typeof useQueryClient>;
 }
 export async function submitSingleEvent(props: createSingleEventProps) {
-    const { event, campaign, dates, editing, queryClient } = props;
+    const { editing } = props;
     try {
         if (editing) {
             updateEvent(props);
@@ -34,15 +35,13 @@ async function updateEvent(props: createSingleEventProps) {
     const {
         event,
         event: { relatedEvents },
-        campaign,
         dates,
-        editing,
-        queryClient,
+        updatedData,
     } = props;
     const assignment = event.assignments[0];
     if (!dates.dates[0]) throw new Error("No date provided for event update");
     event.date = dates.dates[0].toISOString();
-    dataClient.timelineEvent.update(event, event);
+    dataClient.timelineEvent.update(updatedData, event);
     // console.log(event);
     // timelineEvents.update(event).then((res) => console.log(res));
     // const newCampaign = {
@@ -70,9 +69,7 @@ async function createEvent(props: createSingleEventProps) {
     const {
         event,
         event: { relatedEvents },
-        campaign,
         dates,
-        queryClient,
     } = props;
     const assignment = event.assignments[0];
     const newEvent = applyDefaultValues(event, assignment);
@@ -85,9 +82,7 @@ async function createEvent(props: createSingleEventProps) {
         })
         .filter((x): x is TimelineEvent.SingleEvent => x !== undefined);
     const createdEvents = await Promise.all(
-        newEvents.map(
-            (x) => dataClient.timelineEvent.create(x) as Promise<TimelineEvent.SingleEventWithId>,
-        ),
+        newEvents.map((x) => dataClient.timelineEvent.create(x) as Promise<TimelineEvent.SingleEventWithId>)
     );
     createdEvents.map((x) => {
         x.emailTriggers = applyEmailTriggerDefaults(x);
@@ -127,10 +122,7 @@ async function createEvent(props: createSingleEventProps) {
     // invalidateData(tempEvents, queryClient);
 }
 
-function applyDefaultValues(
-    event: TimelineEvent.SingleEvent,
-    assignment: Assignment.AssignmentMin,
-) {
+function applyDefaultValues(event: TimelineEvent.SingleEvent, assignment: Assignment.AssignmentMin) {
     event.assignments = [assignment];
     event.eventAssignmentAmount = event.eventAssignmentAmount ?? 1;
     event.eventTaskAmount = event.eventTaskAmount ?? 1;
@@ -149,7 +141,7 @@ function appendEventsToTimeline(
     events: TimelineEvent.SingleEvent[],
     campaign: Campaign.Campaign,
     oldTimeline: TimelineEvent.Event[],
-    queryClient: ReturnType<typeof useQueryClient>,
+    queryClient: ReturnType<typeof useQueryClient>
 ) {
     events.map((x) => queryClient.setQueryData(["event", x.id], x));
     const newTimeline = [...oldTimeline, ...events];
@@ -175,7 +167,7 @@ function appendEventsToTimeline(
         (oldData: TimelineEvent.SingleEvent[]) => {
             if (!oldData) return [];
             return newTimeline;
-        },
+        }
     );
     queryClient.refetchQueries({ queryKey: ["assignmentEvents", events[0].assignments[0].id] });
 
@@ -185,10 +177,7 @@ function appendEventsToTimeline(
     // queryClient.refetchQueries({ queryKey: ["assignmentEvents"], exact: false });
 }
 
-function invalidateData(
-    events: TimelineEvent.SingleEvent[],
-    queryClient: ReturnType<typeof useQueryClient>,
-) {
+function invalidateData(events: TimelineEvent.SingleEvent[], queryClient: ReturnType<typeof useQueryClient>) {
     events.map((x) => {
         queryClient.invalidateQueries({ queryKey: ["event", x.id] });
         queryClient.invalidateQueries({ queryKey: ["assignmentEvents", x.assignments[0].id] });
@@ -202,7 +191,7 @@ function invalidateData(
 async function handleRelatedEvents(
     event: TimelineEvent.SingleEvent,
     relatedEvents: TimelineEvent.SingleEvent["relatedEvents"] | undefined,
-    assignment: Assignment.AssignmentMin,
+    assignment: Assignment.AssignmentMin
 ) {
     if (relatedEvents) {
         const { childEvents, parentEvent } = relatedEvents;
@@ -212,7 +201,7 @@ async function handleRelatedEvents(
             await Promise.all(
                 childEvents.map(async (x) => {
                     // dataClient.timelineEvent.
-                }),
+                })
             );
         }
         /** if new event has a parent, set the parent reference to the new event
@@ -242,7 +231,7 @@ async function createEmailTriggers(event: Prettify<TimelineEvent.SingleEvent & {
                     console.log("Telling dataClient to create email trigger", trigger);
                     const createdTrigger = await dataClient.emailTrigger.create(trigger);
                     console.log("Created email trigger", createdTrigger);
-                }),
+                })
             );
         }
     } catch (error) {

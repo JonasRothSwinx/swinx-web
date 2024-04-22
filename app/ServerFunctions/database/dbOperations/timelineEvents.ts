@@ -214,15 +214,7 @@ export async function listTimelineEvents(): Promise<TimelineEvent.Event[]> {
  */
 export async function createTimelineEvent(props: Omit<TimelineEvent.Event, "id">) {
     // console.log(props);
-    const {
-        type: timelineEventType,
-        date,
-        notes,
-        eventAssignmentAmount,
-        eventTitle,
-        eventTaskAmount,
-        info,
-    } = props;
+    const { type: timelineEventType, date, notes, eventAssignmentAmount, eventTitle, eventTaskAmount, info } = props;
     const { id: campaignId } = props.campaign;
     if (!(date && campaignId)) {
         throw new Error("Missing Data");
@@ -239,7 +231,7 @@ export async function createTimelineEvent(props: Omit<TimelineEvent.Event, "id">
             eventTaskAmount,
             info: info,
         },
-        {},
+        {}
     );
     //create join table entries
     const assignments = props.assignments ?? [];
@@ -247,7 +239,7 @@ export async function createTimelineEvent(props: Omit<TimelineEvent.Event, "id">
     const connectionResponse = await Promise.all(
         assignments.map(async (assignment) => {
             return await connectToAssignment(data.id, assignment.id);
-        }),
+        })
     );
     const connectionData = connectionResponse.map((x) => x.data);
     const connectionErrors = connectionResponse.map((x) => x.errors);
@@ -265,21 +257,46 @@ export async function createTimelineEvent(props: Omit<TimelineEvent.Event, "id">
  * @returns - Promise that resolves when the timeline event is updated successfully.
  * @throws - Error if any required data is missing or if there are any errors during the update.
  */
-export async function updateTimelineEvent(props: Partial<TimelineEvent.Event>) {
-    const { id, type: timelineEventType, date, notes, info } = props;
-    const { id: campaignId } = props.campaign ?? {};
-    if (!(id && timelineEventType && date && campaignId)) {
+export async function updateTimelineEvent(props: PartialWith<TimelineEvent.Event, "id">) {
+    const {
+        id,
+        type: timelineEventType,
+        campaign: { id: campaignId } = {},
+        date,
+        notes,
+        info,
+        eventAssignmentAmount,
+        eventTaskAmount,
+        eventTitle,
+        relatedEvents,
+    } = props;
+    if (!id) {
         throw new Error("Missing Data");
     }
+    const newEvent = {
+        id: id,
+        ...(date ? { date: date } : {}),
+        ...(notes ? { notes: notes } : {}),
+        ...(timelineEventType ? { timelineEventType: timelineEventType } : {}),
+        ...(campaignId ? { campaignId: campaignId } : {}),
+        ...(eventAssignmentAmount ? { eventAssignmentAmount: eventAssignmentAmount } : {}),
+        ...(eventTaskAmount ? { eventTaskAmount: eventTaskAmount } : {}),
+        ...(eventTitle ? { eventTitle: eventTitle } : {}),
+        ...(info ? { info: info } : {}),
+    } satisfies PartialWith<Schema["TimelineEvent"], "id">;
 
-    const { data, errors } = await client.models.TimelineEvent.update({
-        id,
-        timelineEventType,
-        date,
-        campaignId,
-        notes,
-        info: info,
-    });
+    // const { data, errors } = await client.models.TimelineEvent.update({
+    //     id: id,
+    //     ...(date ? { date: date } : {}),
+    //     ...(notes ? { notes: notes } : {}),
+    //     ...(timelineEventType ? { timelineEventType: timelineEventType } : {}),
+    //     ...(campaignId ? { campaignId: campaignId } : {}),
+    //     ...(eventAssignmentAmount ? { eventAssignmentAmount: eventAssignmentAmount } : {}),
+    //     ...(eventTaskAmount ? { eventTaskAmount: eventTaskAmount } : {}),
+    //     ...(eventTitle ? { eventTitle: eventTitle } : {}),
+    //     ...(info ? { info: info } : {}),
+    // });
+    const { data, errors } = await client.models.TimelineEvent.update(newEvent);
     if (errors) throw new Error(JSON.stringify(errors));
     // console.log({ data, errors });
 }
@@ -294,11 +311,10 @@ export async function deleteTimelineEvent(event: PartialWith<TimelineEvent.Event
     if (!event.id) throw new Error("Missing Data");
 
     //find and delete all connections
-    const { data: connectionData, errors: connectionErrors } =
-        await client.models.EventAssignment.list({
-            selectionSet: ["id"],
-            filter: { timelineEventId: { eq: event.id } },
-        });
+    const { data: connectionData, errors: connectionErrors } = await client.models.EventAssignment.list({
+        selectionSet: ["id"],
+        filter: { timelineEventId: { eq: event.id } },
+    });
     // console.log("connections", { connectionData, connectionErrors });
 
     const connectionDeleteResponse = await Promise.all(
@@ -306,7 +322,7 @@ export async function deleteTimelineEvent(event: PartialWith<TimelineEvent.Event
             console.log({ connection: x });
             const connection = x as { id: string };
             return client.models.EventAssignment.delete({ id: connection.id });
-        }),
+        })
     );
 
     const { errors } = await client.models.TimelineEvent.delete({ id: event.id });
@@ -325,7 +341,7 @@ export async function getTimelineEvent(id: string) {
         {
             id,
         },
-        { selectionSet: selectionSetFull },
+        { selectionSet: selectionSetFull }
     );
     if (data === null) return null;
     if (errors) throw new Error(JSON.stringify(errors));
@@ -375,7 +391,7 @@ export async function getAssignmentTimelineEvents(assignmentId: string) {
                 //email triggers
                 "timelineEvent.emailTriggers.*",
             ],
-        },
+        }
     );
     if (errors) throw new Error(JSON.stringify(errors));
     // console.log({ data });
@@ -412,7 +428,7 @@ export async function getCampaignTimelineEvents(campaignId: string, verbose = fa
         },
         {
             selectionSet: selectionSetFull,
-        },
+        }
     );
 
     if (verbose) console.log({ campaignId, data });
@@ -467,7 +483,7 @@ export async function disconnectFromAssignment(eventId: string, assignmentId: st
  */
 export async function connectEvents(
     parent: PartialWith<TimelineEvent.Event, "id">,
-    child: PartialWith<TimelineEvent.Event, "id">,
+    child: PartialWith<TimelineEvent.Event, "id">
 ): Promise<void> {
     if (!(parent.id && child.id)) throw new Error("No IDs provided");
     const { data, errors } = await client.models.TimelineEvent.update({

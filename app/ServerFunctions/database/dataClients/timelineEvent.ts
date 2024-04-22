@@ -10,7 +10,7 @@ import dayjs from "@/app/utils/configuredDayJs";
  * @returns The created timeline event object
  */
 export async function createTimelineEvent(
-    timelineEvent: Omit<TimelineEvent.Event, "id">,
+    timelineEvent: Omit<TimelineEvent.Event, "id">
 ): Promise<TimelineEvent.EventWithId> {
     const queryClient = config.getQueryClient();
     const id = await database.timelineEvent.create(simplify(timelineEvent));
@@ -35,16 +35,24 @@ export async function createTimelineEvent(
  */
 export async function updateTimelineEvent(
     updatedData: Partial<TimelineEvent.Event>,
-    previousTimelineEvent: TimelineEvent.Event,
+    previousTimelineEvent: TimelineEvent.Event
 ): Promise<TimelineEvent.Event> {
     const queryClient = config.getQueryClient();
     const id = previousTimelineEvent.id;
     const campaignId = previousTimelineEvent.campaign.id;
-    if (previousTimelineEvent.type !== updatedData.type) {
+    if (updatedData.type && previousTimelineEvent.type !== updatedData.type) {
         throw new Error("Cannot change the type of a timeline event");
     }
-    await database.timelineEvent.update(updatedData);
+    await database.timelineEvent.update({ ...updatedData, id });
     const updatedTimelineEvent = { ...previousTimelineEvent, ...updatedData };
+    queryClient.invalidateQueries({
+        queryKey: ["timelineEvent", id],
+        type: "all",
+    });
+    // queryClient.invalidateQueries({
+    //     queryKey: ["timelineEvents"],
+    //     type: "all",
+    // });
     queryClient.setQueryData(["timelineEvent", id], updatedTimelineEvent);
     queryClient.setQueryData(["timelineEvents", campaignId], (prev: TimelineEvent.Event[]) => {
         if (!prev) {
@@ -72,9 +80,7 @@ export async function updateTimelineEvent(
 export async function listAll(): Promise<TimelineEvent.Event[]> {
     const queryClient = config.getQueryClient();
     //return cache data if available
-    const cachedTimelineEvents = queryClient.getQueryData([
-        "timelineEvents",
-    ]) as TimelineEvent.Event[];
+    const cachedTimelineEvents = queryClient.getQueryData(["timelineEvents"]) as TimelineEvent.Event[];
     if (cachedTimelineEvents) {
         return cachedTimelineEvents;
     }
@@ -96,10 +102,7 @@ export async function listAll(): Promise<TimelineEvent.Event[]> {
 export async function listByCampaign(campaignId: string): Promise<TimelineEvent.Event[]> {
     const queryClient = config.getQueryClient();
     //return cache data if available
-    const cachedTimelineEvents = queryClient.getQueryData([
-        "timelineEvents",
-        campaignId,
-    ]) as TimelineEvent.Event[];
+    const cachedTimelineEvents = queryClient.getQueryData(["timelineEvents", campaignId]) as TimelineEvent.Event[];
     if (cachedTimelineEvents) {
         return cachedTimelineEvents;
     }
@@ -154,10 +157,7 @@ export async function deleteTimelineEvent(id: string): Promise<void> {
 export async function listByAssignment(assignmentId: string): Promise<TimelineEvent.Event[]> {
     const queryClient = config.getQueryClient();
     //return cache data if available
-    const cachedTimelineEvents = queryClient.getQueryData([
-        "timelineEvents",
-        assignmentId,
-    ]) as TimelineEvent.Event[];
+    const cachedTimelineEvents = queryClient.getQueryData(["timelineEvents", assignmentId]) as TimelineEvent.Event[];
     if (cachedTimelineEvents) {
         return cachedTimelineEvents;
     }

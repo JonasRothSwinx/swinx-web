@@ -21,20 +21,17 @@ interface DateSelectorProps {
 export function DateSelector(props: DateSelectorProps) {
     const { dates, setDates, isEditing, timelineEvent, setTimelineEvent } = props;
 
-    if (TimelineEvent.isEventReference(timelineEvent)) {
-        //TODO resolve EventReference
-        throw new Error("EventReference not implemented in DateSelector");
-    }
+    // if (TimelineEvent.isEventReference(timelineEvent)) {
+    //     //TODO resolve EventReference
+    //     throw new Error("EventReference not implemented in DateSelector");
+    // }
 
     const parentEvent = useQuery({
         queryKey: ["event", timelineEvent.relatedEvents?.parentEvent?.id],
-        queryFn: () =>
-            TimelineEvent.resolveEventReference(timelineEvent.relatedEvents?.parentEvent ?? null),
+        queryFn: () => TimelineEvent.resolveEventReference(timelineEvent.relatedEvents?.parentEvent ?? null),
     });
 
-    timelineEvent.relatedEvents
-        ? TimelineEvent.resolveEventReference(timelineEvent.relatedEvents.parentEvent)
-        : null;
+    timelineEvent.relatedEvents ? TimelineEvent.resolveEventReference(timelineEvent.relatedEvents.parentEvent) : null;
 
     const EventHandlers = {
         handleAddDateClick: () => {
@@ -108,9 +105,7 @@ export function DateSelector(props: DateSelectorProps) {
         WebinarSpeaker: parentEvent.data ? dayjs(parentEvent.data.date) : null,
     };
     const hasParentEvent: {
-        [key in TimelineEvent.singleEventType]:
-            | { parentEventType: TimelineEvent.multiEventType }
-            | false;
+        [key in TimelineEvent.singleEventType]: { parentEventType: TimelineEvent.multiEventType } | false;
     } = {
         Invites: false,
         Post: false,
@@ -123,48 +118,25 @@ export function DateSelector(props: DateSelectorProps) {
     return (
         <>
             {/*  */}
-            {/* <Button onClick={printVariables}>Print Variables</Button> */}
-            <DialogContent
-                dividers
-                sx={{ "& .MuiFormControl-root": { flexBasis: "100%", flex: 1 } }}
-            >
+            <Button onClick={printVariables}>Print Variables</Button>
+            <DialogContent dividers sx={{ "& .MuiFormControl-root": { flexBasis: "100%", flex: 1 } }}>
                 <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
                     <div style={{ flexBasis: "100%" }}>
                         {dates.dates.map((date, index) => {
                             return (
-                                <div key={`dumb${index}`} className={styles.cellActionSplit}>
-                                    <DatePicker
-                                        key={`date${index}`}
-                                        disabled={isFixedDate[props.eventType]}
-                                        // closeOnSelect={false}
-                                        label="Termin"
-                                        name="date"
-                                        value={isFixedDate ? fixedDate[props.eventType] : date}
-                                        onChange={(value) => {
-                                            console.log("onChange", value?.toString());
-                                            EventHandlers.handleDateChange(index, value);
-                                        }}
-                                        maxDate={dayjs().add(5000, "year")}
-                                        minDate={dayjs()}
-                                        onError={(error) => {
-                                            console.log({ error });
-                                        }}
-                                        slotProps={{
-                                            textField: {
-                                                required: true,
-                                                variant: "standard",
-                                            },
-                                        }}
-                                    />
-                                    {dates.number > 1 && (
-                                        <Button
-                                            key={`removeButton${index}`}
-                                            onClick={EventHandlers.handleRemoveDateClick(index)}
-                                        >
-                                            <DeleteIcon />
-                                        </Button>
-                                    )}
-                                </div>
+                                <Date
+                                    key={index}
+                                    {...({
+                                        date,
+                                        handleDateChange: EventHandlers.handleDateChange,
+                                        index,
+                                        isEditing,
+                                        isFixedDate: isFixedDate[props.eventType],
+                                        fixedDate: fixedDate[props.eventType],
+                                        showDeleteButton: !isEditing && dates.number > 1,
+                                        removeDate: EventHandlers.handleRemoveDateClick,
+                                    } satisfies DateProps)}
+                                />
                             );
                         })}
                     </div>
@@ -193,6 +165,55 @@ export function DateSelector(props: DateSelectorProps) {
         </>
     );
 }
+interface DateProps {
+    date: Dayjs | null;
+    index: number;
+    handleDateChange: (index: number, newDate: Dayjs | null) => void;
+    isEditing: boolean;
+    isFixedDate: boolean;
+    fixedDate: Dayjs | null;
+    showDeleteButton?: boolean;
+    removeDate: (index: number) => void;
+}
+function Date(props: DateProps) {
+    const { date, index, handleDateChange, isEditing, isFixedDate, fixedDate, showDeleteButton, removeDate } = props;
+    const value = useMemo(() => {
+        if (isEditing) return date;
+        if (isFixedDate) return fixedDate;
+        return date;
+    }, [date, fixedDate, isEditing, isFixedDate]);
+    return (
+        <div className={styles.cellActionSplit}>
+            <DatePicker
+                disabled={isFixedDate}
+                // closeOnSelect={false}
+                label="Termin"
+                name="date"
+                value={value}
+                onChange={(value) => {
+                    console.log("onChange", value?.toString());
+                    handleDateChange(index, value);
+                }}
+                maxDate={dayjs().add(5000, "year")}
+                minDate={dayjs()}
+                onError={(error) => {
+                    console.log({ error });
+                }}
+                slotProps={{
+                    textField: {
+                        required: true,
+                        variant: "standard",
+                    },
+                }}
+            />
+            {showDeleteButton && (
+                <Button key={`removeButton${index}`} onClick={() => removeDate(index)}>
+                    <DeleteIcon />
+                </Button>
+            )}
+        </div>
+    );
+}
 
 interface ParentEventSelectorProps {
     parentEventType: { parentEventType: TimelineEvent.multiEventType } | false;
@@ -216,9 +237,7 @@ function ParentEventSelector(props: ParentEventSelectorProps) {
     });
 
     const parentEventChoices = useMemo(() => {
-        return (
-            events.data?.filter((event) => parentEventType && event.type === parentEventType) ?? []
-        );
+        return events.data?.filter((event) => parentEventType && event.type === parentEventType) ?? [];
     }, [events.data, parentEventType]);
     //#endregion
     //########################################

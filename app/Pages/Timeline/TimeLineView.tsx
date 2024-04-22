@@ -11,11 +11,7 @@ import TimelineControls from "./Components/TimelineControls";
 import TimelineViewItem from "./Components/TimelineViewItem";
 import { useWhatChanged } from "@simbathesailor/use-what-changed";
 
-import {
-    groupBy,
-    EventGroup as EventGroup,
-    groupEvents as groupEvents,
-} from "./Functions/groupEvents";
+import { groupBy, EventGroup as EventGroup, groupEvents as groupEvents } from "./Functions/groupEvents";
 import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import QueryDebugDisplay from "../../Components/QueryDebugDisplay";
@@ -57,8 +53,7 @@ export default function TimelineView(props: TimelineViewProps) {
     // const [groups, setGroups] = useState<EventGroup[]>([]);
     const [groupBy, setGroupBy] = useState<groupBy>(props.groupBy ?? "week");
     const [editingEvent, setEditingEvent] = useState<TimelineEvent.Event>();
-    const [controlsPositionState, setControlsPosition] =
-        useState<controlsPosition>(controlsPosition);
+    const [controlsPositionState, setControlsPosition] = useState<controlsPosition>(controlsPosition);
     const [campaign, setCampaign] = useState<Campaign.Campaign>(props.campaign);
     const [openDialog, setOpenDialog] = useState<openDialog>("none");
     //#endregion States
@@ -418,13 +413,11 @@ function EditSingleEventDialog(props: EditSingleDialogProps): JSX.Element {
     return (
         <TimeLineEventSingleDialog
             parent={campaign}
-            setParent={setCampaign}
-            isOpen={true}
             onClose={onClose}
             editing={true}
             editingData={editingEvent}
-            influencers={influencers}
             targetAssignment={targetAssignment}
+            campaignId={campaign.id}
         />
     );
 }

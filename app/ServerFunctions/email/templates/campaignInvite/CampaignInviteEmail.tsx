@@ -42,7 +42,7 @@ function NewCampaignInvite() {
             {placeholders.assignments}
             <Text style={styles.text}>Das Honorar dafür ist {placeholders.honorar}</Text>
             <Container align="left" style={styles.buttonContainer}>
-                <Button style={styles.responseButton} href={`${placeholders.linkBase}q?${placeholders.linkData}`}>
+                <Button style={styles.responseButton} href={`${placeholders.linkBase}?q=${placeholders.linkData}`}>
                     Zur Kampagne
                 </Button>
             </Container>
@@ -61,7 +61,7 @@ function ReducedCampaignInvite() {
             {placeholders.assignments}
             <Text style={styles.text}>Das Honorar dafür ist {placeholders.honorar}</Text>
             <Container align="left" style={styles.buttonContainer}>
-                <Button style={styles.responseButton} href={`${placeholders.linkBase}q?${placeholders.linkData}`}>
+                <Button style={styles.responseButton} href={`${placeholders.linkBase}?q=${placeholders.linkData}`}>
                     Zur Kampagne
                 </Button>
             </Container>

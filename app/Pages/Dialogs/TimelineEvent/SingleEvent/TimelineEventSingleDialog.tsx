@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 
 import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import "dayjs/locale/de";
 import { useEffect, useState } from "react";
 import stylesExporter from "../../../styles/stylesExporter";
@@ -23,34 +23,27 @@ import { DateSelector } from "../DateSelector";
 import { submitSingleEvent } from "./submitSingleEvent";
 import assignment from "@/app/ServerFunctions/database/dataClients/assignments";
 import SingleEventDetails from "./SingleEventDetails/SingleEventDetails";
+import dataClient from "@/app/ServerFunctions/database";
 
 export const styles = stylesExporter.dialogs;
 type DialogType = TimelineEvent.SingleEvent;
-// const initEvent: Partial<DialogType> = {
-//     type: undefined,
-// };
 
-export type TimelineEventDialogProps = DialogProps<Campaign.Campaign, DialogType> & {
-    influencers: Influencer.Full[];
-    targetAssignment: Assignment.AssignmentMin;
-};
 export type dates = {
     number: number;
     dates: (Dayjs | null)[];
 };
+type TimelineEventDialogProps = {
+    onClose?: (hasChanged?: boolean) => void;
+    parent: Campaign.Campaign;
+    editing?: boolean;
+    editingData?: DialogType;
+    campaignId: string;
+    targetAssignment: Assignment.AssignmentMin;
+};
 export default function TimelineEventSingleDialog(props: TimelineEventDialogProps) {
     //######################
     //#region Props
-    const {
-        onClose,
-        parent: campaign,
-        setParent: setCampaign,
-        isOpen = true,
-        editing = false,
-        editingData,
-        campaignId,
-        targetAssignment,
-    } = props;
+    const { onClose, parent: campaign, editing = false, editingData, campaignId, targetAssignment } = props;
     //#endregion Props
     //######################
 
@@ -63,20 +56,25 @@ export default function TimelineEventSingleDialog(props: TimelineEventDialogProp
 
     //######################
     //#region States
-    const [timelineEvent, setTimelineEvent] = useState<
-        PartialWith<DialogType, "campaign" | "relatedEvents">
-    >(
+    const [timelineEvent, setTimelineEvent] = useState<PartialWith<DialogType, "campaign" | "relatedEvents">>(
         editingData ?? {
-            campaign: { id: campaign.id },
+            campaign: { id: campaignId },
             assignments: [targetAssignment],
             relatedEvents: { parentEvent: null, childEvents: [] },
-        },
+        }
     );
+    const [updatedData, setUpdatedData] = useState<Partial<DialogType>>({});
     const [dates, setDates] = useState<{ number: number; dates: (Dayjs | null)[] }>({
         number: 1,
         dates: [editingData ? dayjs(editingData.date) : dayjs()],
     });
-    const [influencers, setInfluencers] = useState(props.influencers);
+
+    const influencers = useQuery({
+        queryKey: ["influencers"],
+        queryFn: async () => {
+            return dataClient.influencer.list();
+        },
+    });
 
     //#endregion States
     //######################
@@ -84,13 +82,13 @@ export default function TimelineEventSingleDialog(props: TimelineEventDialogProp
     //######################
     //#region Effects
     useEffect(() => {
-        if (editingData && isOpen) {
+        if (editingData) {
             setTimelineEvent(editingData);
             setDates({ number: 1, dates: [dayjs(editingData.date)] });
         }
 
         return () => {};
-    }, [editingData, isOpen]);
+    }, [editingData]);
 
     useEffect(() => {
         setTimelineEvent((prev) => ({ ...prev, assignment: targetAssignment }));
@@ -118,14 +116,17 @@ export default function TimelineEventSingleDialog(props: TimelineEventDialogProp
         Post: {
             type: "Post",
             eventAssignmentAmount: 1,
+            eventTaskAmount: 0,
         },
         Video: {
             type: "Video",
             eventAssignmentAmount: 1,
+            eventTaskAmount: 0,
         },
         WebinarSpeaker: {
             type: "WebinarSpeaker",
             eventAssignmentAmount: 1,
+            eventTaskAmount: 0,
         },
     };
     //#endregion DefaultValues
@@ -143,15 +144,17 @@ export default function TimelineEventSingleDialog(props: TimelineEventDialogProp
         },
         onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
             event.preventDefault();
-            if (!campaign || !TimelineEvent.validate(timelineEvent) || !targetAssignment) return;
-            if (!TimelineEvent.isSingleEvent(timelineEvent)) throw new Error("Invalid event type");
+            const combinedEvent = { ...timelineEvent, ...updatedData };
+            if (!campaign || !TimelineEvent.validate(combinedEvent) || !targetAssignment) return;
+            if (!TimelineEvent.isSingleEvent(combinedEvent)) throw new Error("Invalid event type");
 
             submitSingleEvent({
                 editing,
-                event: timelineEvent,
-                campaign,
+                event: combinedEvent,
+                // campaign,
                 dates,
-                queryClient,
+                updatedData,
+                // queryClient,
                 // assignment: targetAssignment,
             });
             console.log("closing");
@@ -174,7 +177,7 @@ export default function TimelineEventSingleDialog(props: TimelineEventDialogProp
                     ({
                         ...prev,
                         ...typeDefault[value],
-                    } satisfies Partial<TimelineEvent.SingleEvent>),
+                    } satisfies Partial<TimelineEvent.SingleEvent>)
             );
         },
         assignment: (e: SelectChangeEvent<unknown>) => {
@@ -186,42 +189,10 @@ export default function TimelineEventSingleDialog(props: TimelineEventDialogProp
     //#endregion Event Handlers
     //######################
 
-    //######################
-    //#region Conditional Elements
-
-    // const eventDetailFields: { [key in TimelineEvent.singleEventType]: JSX.Element } = {
-    //     Invites: (
-    //         <InviteDetails
-    //             key="InviteDetails"
-    //             onChange={(data) => setTimelineEvent((prev) => ({ ...prev, ...data }))}
-    //             data={timelineEvent as Partial<TimelineEvent.Invites>}
-    //         />
-    //     ),
-    //     Post: (
-    //         <PostEventDetails
-    //             key={"PostDetails"}
-    //             onChange={setTimelineEvent}
-    //             data={timelineEvent as Partial<TimelineEvent.Post>}
-    //         />
-    //     ),
-    //     Video: <></>,
-    //     WebinarSpeaker: (
-    //         <WebinarSpeakerDetails
-    //             key="WebinarDetails"
-    //             onChange={(data) => setTimelineEvent((prev) => ({ ...prev, ...data }))}
-    //             data={timelineEvent as Partial<TimelineEvent.WebinarSpeaker>}
-    //             campaignId={campaignId}
-    //         />
-    //     ),
-    // };
-
-    //#endregion Conditional Elements
-    //######################
-
     return (
         <Dialog
             // ref={modalRef}
-            open={isOpen}
+            open
             className={styles.dialog}
             onClose={EventHandlers.handleClose(false)}
             PaperProps={{
@@ -281,6 +252,9 @@ export default function TimelineEventSingleDialog(props: TimelineEventDialogProp
                     setTimelineEvent((prev) => ({ ...prev, ...data }))
                 }
                 data={timelineEvent}
+                isEditing={editing}
+                updatedData={updatedData}
+                setUpdatedData={setUpdatedData}
             />
 
             <DialogActions
@@ -307,14 +281,7 @@ interface EventTypeSelectorProps {
     onTypeChange: (e: SelectChangeEvent<unknown>) => void;
 }
 function GeneralDetails(props: EventTypeSelectorProps) {
-    const {
-        event: timelineEvent,
-        onInfluencerChange,
-        onTypeChange,
-        editing,
-        targetAssignment,
-        campaign,
-    } = props;
+    const { event: timelineEvent, onInfluencerChange, onTypeChange, editing, targetAssignment, campaign } = props;
     return (
         <DialogContent dividers sx={{ "& .MuiFormControl-root": { flexBasis: "100%" } }}>
             <TextField
