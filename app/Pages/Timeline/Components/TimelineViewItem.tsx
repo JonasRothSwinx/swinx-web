@@ -3,7 +3,7 @@ import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import dayjs from "@/app/utils/configuredDayJs";
 import { Unstable_Grid2 as Grid, IconButton, SxProps } from "@mui/material";
 import { GridDeleteForeverIcon } from "@mui/x-data-grid";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import stylesExporter from "../../styles/stylesExporter";
 import { EventGroup, groupBy } from "../Functions/groupEvents";
 import EventGroupDisplay from "./TimelineViewItemTypedGroup";
@@ -21,9 +21,7 @@ interface TimelineViewItemProps {
     editEvent: (event: TimelineEvent.Event) => void;
 }
 export default function TimelineViewItem(props: TimelineViewItemProps) {
-    const { keyValue, group, groupedBy, editEvent } = props;
-    const [editing, setEditing] = useState(false);
-    const [editable, setEditable] = useState(props.editable);
+    const { keyValue, group, groupedBy, editEvent, editable } = props;
 
     const sxContent: SxProps = {
         display: "flex",
@@ -48,63 +46,59 @@ export default function TimelineViewItem(props: TimelineViewItemProps) {
             alignItems: "center",
         },
     };
+    const sxProps: SxProps = useMemo(() => {
+        return {
+            "&": {
+                "&": {
+                    display: "flex",
+                    flexDirection: "column",
+                    border: "1px solid black",
+                    borderRadius: "10px",
+                    height: "fit-content",
+                    maxWidth: "100%",
+                },
+                ".MuiGrid2-container": {
+                    alignItems: "center",
+                },
+            },
+        };
+    }, []);
 
     return (
         <Grid
             // xs={16}
             key={keyValue}
-            sx={{
-                ...sxContent,
-                ...(editing ? sxEditing : sxNotEditing),
-            }}
+            sx={sxProps}
         >
-            <TimelineViewGroupTitle
-                group={group}
-                groupedBy={groupedBy}
-                editable={editable}
-                editing={editing}
-                setEditing={setEditing}
-            />
-            <div
-                style={{
-                    paddingBlock: "5px",
-                }}
-            >
-                {group.events.map((event, i) => {
-                    return (
-                        <TypedEventGroupDisplay
-                            key={i}
-                            eventGroup={event}
-                            groupBy={groupedBy}
-                            editing={editing}
-                            campaignId={props.campaignId}
-                        />
-                    );
-                })}
-            </div>
+            <TimelineViewGroupTitle group={group} groupedBy={groupedBy} />
+            {group.events.map((event, i) => {
+                return (
+                    <TypedEventGroupDisplay
+                        key={i}
+                        eventGroup={event}
+                        groupBy={groupedBy}
+                        editable={editable}
+                        campaignId={props.campaignId}
+                    />
+                );
+            })}
         </Grid>
     );
 }
 interface TimelineViewGroupTitleProps {
     group: EventGroup;
     groupedBy: groupBy;
-    editable: boolean;
-    editing: boolean;
-    setEditing: (e: boolean) => void;
 }
-function TimelineViewGroupTitle(
-    props: TimelineViewGroupTitleProps,
-    // { group, groupedBy, editable, editing, setEditing }
-) {
-    const { group, groupedBy, editable, editing, setEditing } = props;
+function TimelineViewGroupTitle(props: TimelineViewGroupTitleProps) {
+    const { group, groupedBy } = props;
     const groupStartDate = dayjs(group.dateGroupStart);
-    const titleContentByGroupType: { [key in groupBy]: JSX.Element } = {
-        day: (
+    const titleContentByGroupType: { [key in groupBy]: () => JSX.Element } = {
+        day: () => (
             <>
                 {groupStartDate.format("ddd, DD.MM")} ({groupStartDate.fromNow()})
             </>
         ),
-        week: (
+        week: () => (
             <>
                 KW {groupStartDate.week()}
                 {groupStartDate.year() !== dayjs().year() && ` - ${groupStartDate.year()}`} (
@@ -123,12 +117,8 @@ function TimelineViewGroupTitle(
             }}
         >
             <div className={dialogStyles.cellActionSplit}>
-                <div>{titleContentByGroupType[groupedBy]}</div>
-                <TimelineViewEditButton
-                    editable={editable}
-                    editing={editing}
-                    setEditing={setEditing}
-                />
+                <div>{titleContentByGroupType[groupedBy]()}</div>
+                {/* <TimelineViewEditButton editable={editable} editing={editing} setEditing={setEditing} /> */}
             </div>
         </div>
     );

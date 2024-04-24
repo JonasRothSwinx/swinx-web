@@ -1,18 +1,13 @@
 import { MailTemplate, SendMailProps, Template } from "../types";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { sesHandlerSendEmailTemplateBulk } from "@/amplify/functions/sesHandler/types";
 import sesAPIClient from "../../sesAPI";
 import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
-import InvitesReminderMail from "./InvitesReminderMail";
+import InvitesReminderMail, { defaultParams, subjectLineBase, TemplateVariables } from "./InvitesReminderMail";
 import { renderAsync } from "@react-email/render";
-
-export type TemplateVariables = {
-    name: string;
-    inviteAmount: string;
-};
+import { Timeline } from "@mui/lab";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 
 const templateBaseName = "InvitesReminder";
-const subjectLineBase = "Erinnerung: Einladungen";
 
 const templates: { [key in Exclude<EmailTriggers.emailLevel, "none">]: MailTemplate } = {
     new: {
@@ -30,11 +25,6 @@ const templates: { [key in Exclude<EmailTriggers.emailLevel, "none">]: MailTempl
 } as const;
 export const templateNames = [...Object.values(templates).map((template) => template.name)] as const;
 
-const defaultParams: TemplateVariables = {
-    name: "testName",
-    inviteAmount: "0",
-};
-
 const inviteReminderTemplates: Template = {
     defaultParams,
     send,
@@ -43,13 +33,14 @@ const inviteReminderTemplates: Template = {
 };
 export default inviteReminderTemplates;
 
+type personalVariables = Pick<TemplateVariables, "name" | "inviteAmount" | "customerName" | "eventName" | "eventLink">;
 async function send(props: SendMailProps) {
     const {
         level,
         fromAdress,
-        context: { eventWithInfluencer },
+        context: { eventWithInfluencer, customer },
     } = props;
-    if (!eventWithInfluencer) {
+    if (!eventWithInfluencer || !customer) {
         throw new Error("Missing context");
     }
     if (level === "none") {
@@ -64,6 +55,18 @@ async function send(props: SendMailProps) {
             defaultTemplateData: JSON.stringify(defaultParams),
             emailData: eventWithInfluencer.reduce((acc, [event, influencer]) => {
                 if (!event.eventTaskAmount || event.eventTaskAmount === 0) return acc;
+                const webinar = event.relatedEvents.parentEvent;
+                if (!webinar) {
+                    throw new Error("No webinar found");
+                }
+                if (!TimelineEvent.isMultiEvent(webinar)) {
+                    throw new Error("Webinar is not a full Event");
+                }
+                const { eventTitle: eventName, info } = webinar;
+                if (!info || !info.eventLink || !eventName) {
+                    throw new Error("No info found");
+                }
+                const { eventLink } = info;
                 return [
                     ...acc,
                     {
@@ -71,7 +74,10 @@ async function send(props: SendMailProps) {
                         templateData: JSON.stringify({
                             name: `${influencer.firstName} ${influencer.lastName}`,
                             inviteAmount: event.eventTaskAmount.toString(),
-                        } satisfies Partial<TemplateVariables>),
+                            customerName: customer.company,
+                            eventName,
+                            eventLink,
+                        } satisfies personalVariables),
                     },
                 ];
             }, [] as { to: string; templateData: string }[]),

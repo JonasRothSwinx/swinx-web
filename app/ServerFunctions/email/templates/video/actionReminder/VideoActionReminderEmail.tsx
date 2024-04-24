@@ -1,5 +1,5 @@
 import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
-import { Html, Button, Text, Head, Preview, Container } from "@react-email/components";
+import { Html, Button, Text, Head, Preview, Container, Link } from "@react-email/components";
 import styles from "../../styles";
 import { Placeholder } from "../../_components";
 import { type TemplateVariables } from ".";
@@ -31,16 +31,37 @@ function NewVideoActionReminder() {
     return (
         <Html dir="ltr" lang="de">
             <Head />
-            <Preview>Erinnerung: Videoaktion</Preview>
-            <Text style={styles.text}>Hallo {placeholders.name}</Text>
+            <Preview>Erinnerung: Beitragsveröffentlichung</Preview>
+            <Text style={styles.text}>Hallo {placeholders.name}!</Text>
             <Text style={styles.text}>
-                Wir möchten dich daran erinnern, dass du heute deinen Videobeitrag veröffentlichen musst.
+                Wir möchten sie daran erinnern, dass sie heute um {"{{zeit}}"} einen Beitrag für {"{{customername}}"}
+                veröffentlichen sollen.
             </Text>
-            <Container align="left" style={styles.buttonContainer}>
+            <Text style={styles.text}>
+                Wichtig: <br />
+                <ul>
+                    <li>
+                        Vergiss bitte nicht <Link href="{{customerLink}}">{"customerName"}</Link> aktiv zu markieren (=
+                        anklickbar)
+                    </li>
+                    <li>
+                        Bitte keine Dritt-Marken /-Personen taggen und am selben Tag auch sonst keinen anderen Beitrag
+                        posten (für 24 h)
+                    </li>
+                    <li>Bitte verwende das freigegebene Video und den Beitragstext</li>
+                </ul>
+            </Text>
+            <Text style={styles.text}>
+                Der freigegebene Beitragstext ist:
+                <br />
+                {"{{PostContent}}"}
+            </Text>
+            <Text style={styles.text}>Bitte teilen sie uns danach mit, ob alles funktioniert hat.</Text>
+            {/* <Container align="left" style={styles.buttonContainer}>
                 <Button style={styles.responseButton} href="https://www.swinx.de">
                     Zu Swinx
                 </Button>
-            </Container>
+            </Container> */}
         </Html>
     );
 }

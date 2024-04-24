@@ -4,6 +4,7 @@ import Campaign from "@/app/ServerFunctions/types/campaign";
 import Influencer from "@/app/ServerFunctions/types/influencer";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import {
+    Box,
     Button,
     Dialog,
     DialogActions,
@@ -24,6 +25,8 @@ import { submitSingleEvent } from "./submitSingleEvent";
 import assignment from "@/app/ServerFunctions/database/dataClients/assignments";
 import SingleEventDetails from "./SingleEventDetails/SingleEventDetails";
 import dataClient from "@/app/ServerFunctions/database";
+import sxStyles from "../../sxStyles";
+import EmailTriggerMenu from "./EmailTriggerMenu";
 
 export const styles = stylesExporter.dialogs;
 type DialogType = TimelineEvent.SingleEvent;
@@ -199,76 +202,63 @@ export default function TimelineEventSingleDialog(props: TimelineEventDialogProp
                 component: "form",
                 onSubmit: EventHandlers.onSubmit,
             }}
-            sx={{
-                "& .MuiDialogContent-root": {
-                    maxWidth: "80vw",
-                    display: "flex",
-                    flexWrap: "wrap",
-                    justifyContent: "flex-start",
-                    // width: "520px",
-                },
-                "& .MuiFormControl-root": {
-                    // padding: "5px",
-                    minWidth: "20ch",
-                    margin: "5px",
-                    flex: 1,
-                },
-                "& .MuiDialogContentText-root": {
-                    flexBasis: "100%",
-                    flexShrink: 0,
-                },
-                "& .MuiDialogContent-dividers:nth-of-type(even)": {
-                    // display: "none",
-                    border: "none",
-                },
-            }}
+            sx={sxStyles.TimelineEventDialog}
         >
-            <DialogTitle>
-                {editing ? "Ereignis bearbeiten" : "Neues Ereignis"}
-                <Button onClick={EventHandlers.printEvent}>Print Event</Button>
-            </DialogTitle>
-            {/* <button onClick={handleCloseModal}>x</button> */}
-            <GeneralDetails
-                event={timelineEvent}
-                editing={editing}
-                targetAssignment={targetAssignment}
-                onInfluencerChange={DataChange.assignment}
-                onTypeChange={DataChange.type}
-                campaign={campaign}
-            />
-            <DateSelector
-                timelineEvent={timelineEvent}
-                isEditing={editing}
-                eventType={timelineEvent.type ?? "Invites"}
-                dates={dates}
-                setDates={setDates}
-                setTimelineEvent={setTimelineEvent}
-            />
+            <Box id="EventTriggerSplit">
+                <Box id="Event">
+                    <DialogTitle>
+                        {editing ? "Ereignis bearbeiten" : "Neues Ereignis"}
+                        <Button onClick={EventHandlers.printEvent}>Print Event</Button>
+                    </DialogTitle>
+                    {/* <button onClick={handleCloseModal}>x</button> */}
+                    <GeneralDetails
+                        event={timelineEvent}
+                        editing={editing}
+                        targetAssignment={targetAssignment}
+                        onInfluencerChange={DataChange.assignment}
+                        onTypeChange={DataChange.type}
+                        campaign={campaign}
+                    />
+                    <DateSelector
+                        timelineEvent={timelineEvent}
+                        isEditing={editing}
+                        eventType={timelineEvent.type ?? "Invites"}
+                        dates={dates}
+                        setDates={setDates}
+                        setTimelineEvent={setTimelineEvent}
+                    />
 
-            {/* Details */}
-            <SingleEventDetails
-                key="SingleEventDetails"
-                applyDetailsChange={(data: Partial<TimelineEvent.SingleEvent>) =>
-                    setTimelineEvent((prev) => ({ ...prev, ...data }))
-                }
-                data={timelineEvent}
-                isEditing={editing}
-                updatedData={updatedData}
-                setUpdatedData={setUpdatedData}
-            />
+                    {/* Details */}
+                    <SingleEventDetails
+                        key="SingleEventDetails"
+                        applyDetailsChange={(data: Partial<TimelineEvent.SingleEvent>) =>
+                            setTimelineEvent((prev) => ({ ...prev, ...data }))
+                        }
+                        data={timelineEvent}
+                        isEditing={editing}
+                        updatedData={updatedData}
+                        setUpdatedData={setUpdatedData}
+                    />
 
-            <DialogActions
-                sx={{
-                    justifyContent: "space-between",
-                }}
-            >
-                <Button onClick={EventHandlers.handleClose(false)} color="secondary">
-                    Abbrechen
-                </Button>
-                <Button variant="contained" type="submit">
-                    Speichern
-                </Button>
-            </DialogActions>
+                    <DialogActions
+                        sx={{
+                            justifyContent: "space-between",
+                        }}
+                    >
+                        <Button onClick={EventHandlers.handleClose(false)} color="secondary">
+                            Abbrechen
+                        </Button>
+                        <Button variant="contained" type="submit">
+                            Speichern
+                        </Button>
+                    </DialogActions>
+                </Box>
+                {editing && timelineEvent.id && (
+                    <Box id="Trigger" width="500px">
+                        <EmailTriggerMenu eventId={timelineEvent.id} />
+                    </Box>
+                )}
+            </Box>
         </Dialog>
     );
 }

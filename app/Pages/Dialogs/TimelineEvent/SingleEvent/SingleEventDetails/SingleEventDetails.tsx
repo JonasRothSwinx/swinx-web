@@ -55,7 +55,17 @@ const EventTypeConfig: { [key in TimelineEvent.singleEventType]: DetailsConfig }
         eventTitle: {
             enabled: false,
         },
-        eventTaskAmount: { enabled: true, label: "Invites", type: "number" },
+        eventTaskAmount: {
+            enabled: true,
+            label: "Invites",
+            type: "number",
+        },
+        eventLink: {
+            enabled: false,
+        },
+        eventPostContent: {
+            enabled: false,
+        },
     },
     Post: {
         topic: {
@@ -85,6 +95,12 @@ const EventTypeConfig: { [key in TimelineEvent.singleEventType]: DetailsConfig }
             enabled: false,
         },
         eventTaskAmount: { enabled: false },
+        eventLink: {
+            enabled: false,
+        },
+        eventPostContent: {
+            enabled: false,
+        },
     },
     Video: {
         topic: {
@@ -113,6 +129,12 @@ const EventTypeConfig: { [key in TimelineEvent.singleEventType]: DetailsConfig }
             enabled: true,
             label: "Anweisungen",
             type: "textarea",
+        },
+        eventLink: {
+            enabled: false,
+        },
+        eventPostContent: {
+            enabled: false,
         },
     },
     WebinarSpeaker: {
@@ -144,6 +166,12 @@ const EventTypeConfig: { [key in TimelineEvent.singleEventType]: DetailsConfig }
             enabled: true,
             label: "Anweisungen",
             type: "textarea",
+        },
+        eventLink: {
+            enabled: false,
+        },
+        eventPostContent: {
+            enabled: false,
         },
     },
 };

@@ -7,6 +7,8 @@ import WelcomePage from "./Pages/WelcomePage/WelcomePage";
 import { createTheme } from "@mui/material";
 import { blue } from "@mui/material/colors";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+import { ConfirmProvider } from "material-ui-confirm";
 import dataClient from "./ServerFunctions/database";
 
 const theme = createTheme({
@@ -27,9 +29,11 @@ function Home() {
         <ThemeProvider theme={theme}>
             {/* <CssBaseline /> */}
             <Authenticator.Provider>
-                <QueryClientProvider client={queryClient}>
-                    {authStatus === "authenticated" && <WelcomePage />}
-                </QueryClientProvider>
+                <ConfirmProvider defaultOptions={{ confirmationText: "Ok", cancellationText: "Abbrechen" }}>
+                    <QueryClientProvider client={queryClient}>
+                        {authStatus === "authenticated" && <WelcomePage />}
+                    </QueryClientProvider>
+                </ConfirmProvider>
             </Authenticator.Provider>
         </ThemeProvider>
     );

@@ -1,15 +1,11 @@
 import { sesHandlerSendEmailTemplateBulk } from "@/amplify/functions/sesHandler/types";
 import sesAPIClient from "../../../sesAPI";
 import { EmailLevelDefinition, SendMailProps, Template } from "../../types";
-import PostActionReminderMail from "./PostActionReminderMail";
+import PostActionReminderMail, { subjectLineBase, TemplateVariables, defaultParams } from "./PostActionReminderMail";
 import { renderAsync } from "@react-email/render";
+import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 
-export type TemplateVariables = {
-    name: string;
-};
 const templateBaseName = "PostReminder";
-const subjectLineBase = "Erinnerung: Beitragsveröffentlichung";
-
 const templates: EmailLevelDefinition = {
     new: {
         name: `${templateBaseName}New`,
@@ -27,10 +23,6 @@ const templates: EmailLevelDefinition = {
 
 export const templateNames = [...Object.values(templates).map((template) => template.name)] as const;
 
-const defaultParams: TemplateVariables = {
-    name: "testName",
-};
-
 const PostReminder = {
     defaultParams,
     send,
@@ -40,13 +32,17 @@ const PostReminder = {
 
 export default PostReminder;
 
+type personalVariables = Pick<
+    TemplateVariables,
+    "name" | "postTime" | "customerName" | "customerProfileLink" | "postContent"
+>;
 async function send(props: SendMailProps) {
     const {
         level,
         fromAdress,
-        context: { eventWithInfluencer },
+        context: { eventWithInfluencer, customer },
     } = props;
-    if (!eventWithInfluencer) {
+    if (!eventWithInfluencer || !customer) {
         throw new Error("Missing context");
     }
     if (level === "none") {
@@ -61,13 +57,21 @@ async function send(props: SendMailProps) {
             defaultTemplateData: JSON.stringify(defaultParams),
             emailData: eventWithInfluencer.reduce((acc, [event, influencer]) => {
                 if (!event.eventTaskAmount || event.eventTaskAmount === 0) return acc;
+                const postTimeObject = dayjs(event.date);
+                const postTime = postTimeObject.format("H:MM");
+                const { company: customerName, profileLink: customerProfileLink } = customer;
+                const postContent = event.info?.eventPostContent ?? "Kein Postinhalt gefunden";
                 return [
                     ...acc,
                     {
                         to: influencer.email,
                         templateData: JSON.stringify({
                             name: `${influencer.firstName} ${influencer.lastName}`,
-                        } satisfies Partial<TemplateVariables>),
+                            postTime,
+                            customerName,
+                            customerProfileLink: customerProfileLink ?? "Invalid",
+                            postContent,
+                        } satisfies personalVariables),
                     },
                 ];
             }, [] as { to: string; templateData: string }[]),

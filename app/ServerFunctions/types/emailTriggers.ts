@@ -2,19 +2,34 @@ import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 import { Nullable, Prettify } from "@/app/Definitions/types";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import Influencer from "./influencer";
+import influencer from "../database/dataClients/influencer";
 
 export namespace EmailTriggers {
-    export type EmailTrigger = Prettify<
-        Omit<EmailTriggerEventRef, "event"> & {
-            event: TimelineEvent.Event;
-        }
-    >;
-    export type EmailTriggerEventRef = {
+    export type EmailTrigger = Prettify<GeneralInfo & EventInfo & ContactInfo & EmailOverrides & State>;
+    export type EmailTriggerEventRef = Prettify<GeneralInfo & EventReference & ContactInfo & EmailOverrides & State>;
+
+    type GeneralInfo = {
         id?: string;
         date: string;
         type: emailTriggerType;
+    };
+    type State = {
+        active: boolean;
+        sent: boolean;
+    };
+    type EventInfo = {
+        event: TimelineEvent.Event;
+    };
+    type EventReference = {
         event: { id: string };
+    };
+    type ContactInfo = {
         influencer?: Prettify<Influencer.WithContactInfo>;
+    };
+    type EmailOverrides = {
+        emailLevelOverride?: Nullable<emailLevel>;
+        subjectLineOverride?: Nullable<string>;
+        emailBodyOverride?: Nullable<string>;
     };
 
     export const emailLevels = ["new", "reduced", "none"] as const;
@@ -83,11 +98,7 @@ export namespace EmailTriggers {
     } as const;
     type EmailConfigKey = keyof typeof EmailConfig;
 
-    export function getTemplateName(
-        key: EmailConfigKey,
-        type: emailTriggerType,
-        level: emailLevel,
-    ) {
+    export function getTemplateName(key: EmailConfigKey, type: emailTriggerType, level: emailLevel) {
         if (level === "none") return null;
         const template = EmailConfig?.[key]?.[type]?.[level]?.templateName ?? null;
         return template;

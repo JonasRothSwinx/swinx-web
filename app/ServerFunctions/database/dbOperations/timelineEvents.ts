@@ -155,14 +155,23 @@ function validateEvent(rawEvent: RawEvent): TimelineEvent.Event {
     };
 
     const { date, notes, eventAssignmentAmount, eventTitle, eventTaskAmount } = rawEvent;
-    const validatedAssignments: Assignment.AssignmentMin[] = assignments.map(({ assignment }) => ({
-        id: assignment.id,
-        isPlaceholder: assignment.isPlaceholder,
-        placeholderName: assignment.placeholderName,
-        campaign: { id: campaign.id },
-        influencer: null,
-        timelineEvents: [],
-    }));
+    const validatedAssignments: Assignment.AssignmentMin[] = assignments.map(({ assignment }) => {
+        const assignmentOut: Assignment.AssignmentMin = {
+            id: assignment.id,
+            isPlaceholder: assignment.isPlaceholder,
+            placeholderName: assignment.placeholderName,
+            influencer: assignment.influencer
+                ? {
+                      id: assignment.influencer.id,
+                      firstName: assignment.influencer.firstName,
+                      lastName: assignment.influencer.lastName,
+                  }
+                : null,
+            timelineEvents: [],
+            campaign: { id: campaign.id },
+        };
+        return assignmentOut;
+    });
     const info: Partial<TimelineEvent.Event["info"]> = {
         topic: rawEvent.info?.topic ?? undefined,
         charLimit: rawEvent.info?.charLimit ?? undefined,
@@ -188,6 +197,8 @@ function validateEvent(rawEvent: RawEvent): TimelineEvent.Event {
             type: x.type as EmailTriggers.emailTriggerType,
             event: { id },
             date: x.date,
+            active: x.active,
+            sent: x.sent,
         })),
     };
     return eventOut;
@@ -395,9 +406,6 @@ export async function getAssignmentTimelineEvents(assignmentId: string) {
     );
     if (errors) throw new Error(JSON.stringify(errors));
     // console.log({ data });
-    type infoorig = RawEvent["info"];
-    const infovalue = data[0].timelineEvent.info;
-    type info = typeof infovalue;
     const events: TimelineEvent.Event[] = data.map((x) => {
         try {
             return validateEvent(x.timelineEvent as RawEvent);
@@ -422,7 +430,7 @@ export async function getCampaignTimelineEvents(campaignId: string, verbose = fa
     //     selectionSet,
     // });
     if (verbose) console.log("getCampaignTimelineEvents", { campaignId });
-    const { data, errors } = await client.models.TimelineEvent.listByCampaignId(
+    const { data, errors } = await client.models.TimelineEvent.listByCampaign(
         {
             campaignId,
         },

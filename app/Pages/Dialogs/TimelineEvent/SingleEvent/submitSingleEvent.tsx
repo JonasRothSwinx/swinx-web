@@ -252,6 +252,8 @@ function applyEmailTriggerDefaults(event: TimelineEvent.SingleEventWithId) {
             date: dayjs(event.date).add(offset).toISOString(),
             type: key as EmailTriggers.emailTriggerType,
             event: { id: event.id },
+            active: true,
+            sent: false,
         };
         triggers.push(newTrigger);
     });

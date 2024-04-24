@@ -1,12 +1,4 @@
-import {
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    IconButton,
-    TextField,
-} from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField } from "@mui/material";
 import { DialogProps } from "@/app/Definitions/types";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import Customer from "@/app/ServerFunctions/types/customer";
@@ -16,6 +8,7 @@ import dataClient from "@/app/ServerFunctions/database";
 import { Tab } from "@mui/material";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { AddIcon } from "@/app/Definitions/Icons";
+import sxStyles from "./sxStyles";
 
 const styles = stylesExporter.dialogs;
 interface InfoProps {
@@ -42,11 +35,8 @@ function CustomerDialog(props: CustomerDialogProps) {
 
     //##################
     //#region State
-    const [changedData, setChangedData] = useState<Partial<Customer.Customer>[]>(
-        editingData ?? customers,
-    );
+    const [changedData, setChangedData] = useState<Partial<Customer.Customer>[]>(editingData ?? customers);
 
-    const [tab, setTab] = useState("0");
     //#endregion
     //##################
 
@@ -73,29 +63,8 @@ function CustomerDialog(props: CustomerDialogProps) {
             }
             EventHandlers.handleClose(true)();
         },
-        handleTabChange: () => (event: React.SyntheticEvent, newValue: string) => {
-            setTab(newValue);
-        },
     };
-    const StateChanges = {
-        handleCustomerChange: (changedData: Partial<Customer.Customer>, index = 0) => {
-            setCustomers((prevState) => {
-                const newCustomers = [...prevState];
-                const prevcustomer = newCustomers[index];
-                newCustomers[index] = { ...prevcustomer, ...changedData };
-                return newCustomers;
-            });
-        },
-        deleteCustomer: (index: number) => {
-            if (customers.length <= 1) return;
-            setTab("0");
-            setCustomers((prevState) => {
-                const newCustomers = [...prevState];
-                newCustomers.splice(index, 1);
-                return newCustomers;
-            });
-        },
-    };
+
     //#endregion Event Handlers
     //##################
     return (
@@ -107,55 +76,18 @@ function CustomerDialog(props: CustomerDialogProps) {
                 component: "form",
                 onSubmit: EventHandlers.onSubmit,
             }}
-            sx={{
-                "& .MuiDialogContent-root": {
-                    maxWidth: "80vw",
-                    display: "flex",
-                    flexWrap: "wrap",
-                    // width: "520px",
-                },
-                "& .MuiFormControl-root": {
-                    // padding: "5px",
-                    minWidth: "20ch",
-                    margin: "5px",
-                    flex: 1,
-                },
-                "& .MuiDialogContentText-root": {
-                    flexBasis: "100%",
-                    flexShrink: 0,
-                },
-            }}
+            sx={sxStyles.DialogDefault}
         >
             <DialogTitle textAlign={"center"}>{"Kunde"}</DialogTitle>
             {/* <button onClick={handleCloseModal}>x</button> */}
-            <TabContext value={tab}>
-                <TabList onChange={EventHandlers.handleTabChange()}>
-                    {changedData.map((customer, index) => (
-                        <Tab
-                            key={index}
-                            value={index.toString()}
-                            label={index === 0 ? "Hauptkontakt" : `Vertretung ${index}`}
-                        />
-                    ))}
-                </TabList>
-                {/* <IconButton onClick={EventHandler.addSubstitute}>
-                <AddIcon />
-            </IconButton> */}
-                {changedData.map((customer, index) => {
-                    return (
-                        <TabPanel key={index} value={index.toString()}>
-                            <CustomerDialogContent
-                                customer={customer}
-                                setCustomer={(changedData) =>
-                                    StateChanges.handleCustomerChange(changedData, index)
-                                }
-                                deleteCustomer={() => StateChanges.deleteCustomer(index)}
-                                index={index}
-                            />
-                        </TabPanel>
-                    );
-                })}
-            </TabContext>
+            <FormContent
+                customers={changedData}
+                setCustomers={setChangedData}
+                editing={editing}
+                editingData={editingData}
+                changedData={changedData}
+                setChangedData={setChangedData}
+            />
             <DialogActions
                 sx={{
                     justifyContent: "space-between",
@@ -180,6 +112,72 @@ const initialSubstitute: Customer.Customer = {
     email: "",
     company: "",
 };
+interface FormContentProps {
+    customers: Partial<Customer.Customer>[];
+    setCustomers: React.Dispatch<React.SetStateAction<Partial<Customer.Customer>[]>>;
+    editing: boolean;
+    editingData?: Partial<Customer.Customer>[];
+    changedData: Partial<Customer.Customer>[];
+    setChangedData: React.Dispatch<React.SetStateAction<Partial<Customer.Customer>[]>>;
+}
+function FormContent(props: FormContentProps) {
+    const { customers, setCustomers, editing, editingData, changedData, setChangedData } = props;
+    const [tab, setTab] = useState("0");
+    const EventHandlers = {
+        handleTabChange: () => (event: React.SyntheticEvent, newValue: string) => {
+            setTab(newValue);
+        },
+    };
+    const StateChanges = {
+        handleCustomerChange: (changedData: Partial<Customer.Customer>, index = 0) => {
+            setCustomers((prevState) => {
+                const newCustomers = [...prevState];
+                const prevcustomer = newCustomers[index];
+                newCustomers[index] = { ...prevcustomer, ...changedData };
+                return newCustomers;
+            });
+        },
+        deleteCustomer: (index: number) => {
+            if (customers.length <= 1) return;
+            setTab("0");
+            setCustomers((prevState) => {
+                const newCustomers = [...prevState];
+                newCustomers.splice(index, 1);
+                return newCustomers;
+            });
+        },
+    };
+    return (
+        <Box>
+            <TabContext value={tab}>
+                <TabList onChange={EventHandlers.handleTabChange()}>
+                    {changedData.map((customer, index) => (
+                        <Tab
+                            key={index}
+                            value={index.toString()}
+                            label={index === 0 ? "Hauptkontakt" : `Vertretung ${index}`}
+                        />
+                    ))}
+                </TabList>
+                {/* <IconButton onClick={EventHandler.addSubstitute}>
+                <AddIcon />
+            </IconButton> */}
+                {changedData.map((customer, index) => {
+                    return (
+                        <TabPanel key={index} value={index.toString()}>
+                            <CustomerDialogContent
+                                customer={customer}
+                                setCustomer={(changedData) => StateChanges.handleCustomerChange(changedData, index)}
+                                deleteCustomer={() => StateChanges.deleteCustomer(index)}
+                                index={index}
+                            />
+                        </TabPanel>
+                    );
+                })}
+            </TabContext>
+        </Box>
+    );
+}
 
 export function CustomerDialogContent(props: InfoProps) {
     //##################

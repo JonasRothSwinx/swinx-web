@@ -37,6 +37,7 @@
         "html-loader": "^5.0.0",
         "html-react-parser": "^5.1.8",
         "html-to-text": "^9.0.5",
+        "material-ui-confirm": "^3.0.12",
         "next": "^14.0.4",
         "npm": "^10.3.0",
         "react": "^18",

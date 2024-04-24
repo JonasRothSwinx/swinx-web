@@ -8,6 +8,18 @@ const allowSESLambda = a.allow.resource(sesHandler);
 
 const schema = a.schema({
     //##############################################
+    //################# Custom Types ###############
+    //##############################################
+    EventInfo: a.customType({
+        topic: a.string(),
+        charLimit: a.integer(),
+        draftDeadline: a.datetime(),
+        instructions: a.string(),
+        maxDuration: a.integer(),
+        eventLink: a.string(),
+        eventPostContent: a.string(),
+    }),
+    //##############################################
     //################### Models ###################
     //##############################################
     //#region Influencer
@@ -29,32 +41,40 @@ const schema = a.schema({
      */
     Influencer: a
         .model({
-            //#region Contact Information
+            //##########################
+            //### Contact Information ##
             firstName: a.string().required().authorization([adminsAndManagers, publicRead]),
             lastName: a.string().required().authorization([adminsAndManagers, publicRead]),
-            email: a.email().authorization([adminsAndManagers]),
             phoneNumber: a.string().authorization([adminsAndManagers]),
-            //#endregion
-            //#region Job information
+            email: a.email().authorization([adminsAndManagers]),
+            emailType: a.string().default("new"),
+            //##########################
+
+            //##########################
+            //#### Job information #####
             company: a.string(),
             position: a.string(),
             industry: a.string(),
-            //#endregion
-            //#region Social Media
+            //##########################
+
+            //##########################
+            //#### Social Media ########
             topic: a.string().array(),
             followers: a.integer(),
             linkedinProfile: a.string(),
-            //#endregion
-            //#region Notes
-            notes: a.string(),
-            emailType: a.string().default("new"),
-            //#endregion
-            //#region Relations
+            //##########################
 
+            //##########################
+            //# Additional Information #
+            notes: a.string(),
+            //##########################
+
+            //##########################
+            //##### Relations ##########
             assignments: a.hasMany("InfluencerAssignment", "influencerId"),
 
             candidatures: a.hasMany("InfluencerCandidate", "influencerId"),
-            //#endregion
+            //##########################
         })
         .authorization([
             //
@@ -81,21 +101,18 @@ const schema = a.schema({
             isPlaceholder: a.boolean().required(),
             placeholderName: a.string().authorization([adminsAndManagers]),
 
-            //#region Relations
+            //##########################
+            //### Relations ############
             influencerId: a.id().authorization([adminsAndManagers]),
-            influencer: a
-                .belongsTo("Influencer", "influencerId")
-                .authorization([adminsAndManagers]),
+            influencer: a.belongsTo("Influencer", "influencerId").authorization([adminsAndManagers]),
 
             timelineEvents: a.hasMany("EventAssignment", "assignmentId"),
 
             campaignId: a.id().required(),
             campaign: a.belongsTo("Campaign", "campaignId"),
 
-            candidates: a
-                .hasMany("InfluencerCandidate", "candidateAssignmentId")
-                .authorization([adminsAndManagers]),
-            //#endregion
+            candidates: a.hasMany("InfluencerCandidate", "candidateAssignmentId").authorization([adminsAndManagers]),
+            //##########################
         })
         .authorization([
             a.allow.public().to(["read"]),
@@ -117,9 +134,7 @@ const schema = a.schema({
             assignment: a.belongsTo("InfluencerAssignment", "candidateAssignmentId"),
             influencerId: a.id().required(),
             influencer: a.belongsTo("Influencer", "influencerId"),
-            response: a
-                .string()
-                .authorization([adminsAndManagers, a.allow.public().to(["read", "update"])]),
+            response: a.string().authorization([adminsAndManagers, a.allow.public().to(["read", "update"])]),
         })
         .authorization([
             a.allow.public().to(["read"]),
@@ -179,12 +194,15 @@ const schema = a.schema({
     /**
      * Customer model - Represents a contact person for a campaign
      * @property {Campaign} campaign      - Campaign the customer is assigned to
+     * @property {string} campaignId      - ID of the campaign the customer is assigned to
      * @property {string} company         - Company of the customer
      * @property {string} firstName       - First name of the customer
      * @property {string} lastName        - Last name of the customer
      * @property {string} companyPosition - Position in the company
      * @property {string} email           - Email of the customer
      * @property {string} phoneNumber     - Phone number of the customer
+     * @property {string} notes           - Notes about the customer
+     * @property {string} profileLink     - Link to the customer's LinkedIn profile
      */
     Customer: a
         .model({
@@ -195,11 +213,12 @@ const schema = a.schema({
             email: a.email().required(),
             phoneNumber: a.string(),
             notes: a.string(),
+            linkedinProfile: a.string(),
 
-            //#region Relations
+            //##### Relations #####
             campaignId: a.id().required(),
             campaign: a.belongsTo("Campaign", "campaignId"),
-            //#endregion Relations
+            //#####################
         })
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
     //#endregion Customer
@@ -225,6 +244,7 @@ const schema = a.schema({
      * @property {Date} details.draftDeadline                 - Deadline for drafts
      * @property {string} details.instructions                - Instructions for the event
      * @property {number} details.maxDuration                 - Maximum duration of content involved in the event
+     * @property {string} details.eventLink                   - Link to the event
      */
     TimelineEvent: a
         .model({
@@ -234,13 +254,7 @@ const schema = a.schema({
             eventTaskAmount: a.integer(),
             date: a.datetime().required(),
             notes: a.string(),
-            info: a.customType({
-                topic: a.string(),
-                charLimit: a.integer(),
-                draftDeadline: a.datetime(),
-                instructions: a.string(),
-                maxDuration: a.integer(),
-            }),
+            info: a.ref("EventInfo"),
 
             //###  Relations  ####
             //####################
@@ -262,7 +276,7 @@ const schema = a.schema({
 
             emailTriggers: a.hasMany("EmailTrigger", "eventId"),
         })
-        .secondaryIndexes((index) => [index("campaignId")])
+        .secondaryIndexes((index) => [index("campaignId").queryField("listByCampaign")])
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
     //#endregion TimelineEvent
 
@@ -271,17 +285,49 @@ const schema = a.schema({
      * EmailTrigger model - Represents a trigger for sending an email
      *
      * @property {Date} date           - Date when the email is triggered
-     * @property {TimelineEvent} event - Event the email is triggered for
+     * @property {string} type         - Type of the email
+     *
+     * State
+     * @property {boolean} active      - Whether the email trigger is active
+     * @property {boolean} sent        - Whether the email has been sent
+     *
+     * Overrides
+     * @property {string} emailLevelOverride    - Override for the email level
+     * @property {string} subjectLineOverride   - Override for the email subject line
+     * @property {string} emailBodyOverride     - Override for the email body
+     *
+     * Relations
+     * @property {string} eventId       - ID of the event the email is triggered for
+     * @property {TimelineEvent} event  - Event the email is triggered for
      */
     EmailTrigger: a
         .model({
             date: a.datetime().required(),
             type: a.string().required(),
 
-            //Relations
+            //####################
+            //##### State ########
+            //####################
+            active: a.boolean().required(),
+            sent: a.boolean().required(),
+            //####################
+
+            //####################
+            //##### Overrides ####
+            //####################
+            emailLevelOverride: a.string(),
+            subjectLineOverride: a.string(),
+            emailBodyOverride: a.string(),
+            //####################
+
+            //####################
+            //##### Relations ####
+            //####################
             eventId: a.id().required(),
             event: a.belongsTo("TimelineEvent", "eventId"),
+            //####################
         })
+        .secondaryIndexes((index) => [index("eventId").queryField("listByEvent")])
         .authorization([adminsAndManagers]),
     //#endregion EmailTrigger
 });

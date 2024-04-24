@@ -1,10 +1,12 @@
 import { DialogProps } from "@/app/Definitions/types";
 import Influencer from "@/app/ServerFunctions/types/influencer";
 import {
+    Box,
     Button,
     Dialog,
     DialogActions,
     DialogContent,
+    DialogContentText,
     DialogTitle,
     MenuItem,
     SelectChangeEvent,
@@ -15,6 +17,8 @@ import stylesExporter from "../styles/stylesExporter";
 import dataClient from "@/app/ServerFunctions/database";
 import { useQueryClient } from "@tanstack/react-query";
 import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
+import sxStyles from "./sxStyles";
+import { Unstable_Grid2 as Grid } from "@mui/material";
 
 const styles = stylesExporter.dialogs;
 type DialogType = Influencer.Full;
@@ -22,14 +26,7 @@ type DialogType = Influencer.Full;
 type InfluencerDialogProps = DialogProps<Influencer.Full[], DialogType>;
 function InfluencerDialog(props: InfluencerDialogProps) {
     // debugger;
-    const {
-        onClose,
-        parent: rows,
-        setParent: setRows,
-        isOpen = true,
-        editing,
-        editingData,
-    } = props;
+    const { onClose, parent: rows, setParent: setRows, isOpen = true, editing, editingData } = props;
     // const [isModalOpen, setIsModalOpen] = useState(open);
     const [changedData, setChangedData] = useState<Partial<Influencer.Full>>({});
 
@@ -67,52 +64,28 @@ function InfluencerDialog(props: InfluencerDialogProps) {
         <Dialog
             // ref={modalRef}
             open={isOpen}
-            className={styles.dialog}
+            // className={styles.dialog}
             onClose={EventHandlers.handleClose}
             PaperProps={{
                 component: "form",
                 onSubmit: EventHandlers.submitData,
             }}
-            sx={{
-                "& .MuiDialogContent-root": {
-                    maxWidth: "80vw",
-                    display: "flex",
-                    flexWrap: "wrap",
-                    // width: "520px",
-                },
-                "& .MuiFormControl-root": {
-                    // padding: "5px",
-                    minWidth: "20ch",
-                    margin: "5px",
-                    flex: 1,
-                },
-                "& .MuiDialogContentText-root": {
-                    flexBasis: "100%",
-                    flexShrink: 0,
-                },
-            }}
+            sx={sxStyles.DialogDefault}
         >
-            <DialogTitle>{editing ? "Influencer bearbeiten" : "Neuer Influencer"}</DialogTitle>
-            {/* <button onClick={handleCloseModal}>x</button> */}
+            <Box>
+                <DialogTitle>{editing ? "Influencer bearbeiten" : "Neuer Influencer"}</DialogTitle>
+                {/* <button onClick={handleCloseModal}>x</button> */}
+                <FormInputGrid {...infoProps} />
 
-            <ContactInfo {...infoProps} />
-            <IndustryInfo {...infoProps} />
-            <SocialMediaInfo {...infoProps} />
-            <Notes {...infoProps} />
-
-            <DialogActions
-                sx={{
-                    width: "100%",
-                    justifyContent: "space-between",
-                }}
-            >
-                <Button onClick={EventHandlers.handleClose} color="secondary">
-                    Abbrechen
-                </Button>
-                <Button variant="contained" type="submit">
-                    Speichern
-                </Button>
-            </DialogActions>
+                <DialogActions>
+                    <Button onClick={EventHandlers.handleClose} color="secondary">
+                        Abbrechen
+                    </Button>
+                    <Button variant="contained" type="submit">
+                        Speichern
+                    </Button>
+                </DialogActions>
+            </Box>
         </Dialog>
     );
 }
@@ -123,6 +96,34 @@ interface InfoProps {
     setChangedData: React.Dispatch<React.SetStateAction<Partial<Influencer.Full>>>;
 }
 
+function FormInputGrid(props: InfoProps) {
+    return (
+        <Box>
+            <ContactInfo {...props} />
+            <IndustryInfo {...props} />
+            <SocialMediaInfo {...props} />
+            <Notes {...props} />
+        </Box>
+    );
+    return (
+        <Box>
+            <Grid container direction={"column"}>
+                <Grid>
+                    <ContactInfo {...props} />
+                </Grid>
+                <Grid>
+                    <IndustryInfo {...props} />
+                </Grid>
+                <Grid>
+                    <SocialMediaInfo {...props} />
+                </Grid>
+                <Grid>
+                    <Notes {...props} />
+                </Grid>
+            </Grid>
+        </Box>
+    );
+}
 /**
  * ContactInfo
  * Fields:
@@ -154,7 +155,7 @@ function ContactInfo(props: InfoProps) {
 
     return (
         <DialogContent
-            dividers
+            // dividers
             sx={{
                 "& .MuiFormControl-root": {
                     // padding: "5px",
@@ -164,6 +165,9 @@ function ContactInfo(props: InfoProps) {
                 "& .MuiFormControl-root:has(#email)": { flexBasis: "100%" },
             }}
         >
+            <DialogContentText margin={"10"} textAlign={"center"}>
+                Kontakt
+            </DialogContentText>
             <TextField
                 autoFocus
                 id="firstName"
@@ -240,7 +244,8 @@ function IndustryInfo(props: InfoProps) {
     };
 
     return (
-        <DialogContent dividers>
+        <DialogContent>
+            <DialogContentText textAlign={"center"}>Arbeit</DialogContentText>
             <TextField
                 id="industry"
                 name="industry"
@@ -295,7 +300,8 @@ function SocialMediaInfo(props: InfoProps) {
     };
 
     return (
-        <DialogContent dividers>
+        <DialogContent>
+            <DialogContentText textAlign={"center"}>LinkedIn</DialogContentText>
             <TextField
                 id="linkedin"
                 name="linkedin"
@@ -341,7 +347,8 @@ function Notes(props: InfoProps) {
     };
 
     return (
-        <DialogContent dividers>
+        <DialogContent>
+            {/* <DialogContentText textAlign={"center"}>Notizen</DialogContentText> */}
             <TextField
                 multiline
                 minRows={3}

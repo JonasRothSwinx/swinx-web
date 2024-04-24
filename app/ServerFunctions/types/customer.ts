@@ -1,3 +1,4 @@
+import { Schema } from "@/amplify/data/resource";
 import { Nullable } from "@/app/Definitions/types";
 
 export default Customer;
@@ -12,7 +13,9 @@ namespace Customer {
         phoneNumber?: Nullable<string>;
         companyPosition?: string | null;
         notes?: Nullable<string>;
+        profileLink?: Nullable<string>;
     };
+    type SchemaCustomer = Omit<Schema["Customer"], "CampaignId" | "createdAt" | "updatedAt" | "campaign">;
 
     export function satisfies(arg: unknown): arg is Customer {
         const customer = arg as Customer;

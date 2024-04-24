@@ -1,5 +1,6 @@
 import Assignment from "../../types/assignment.js";
 import { Candidates } from "../../types/candidates.js";
+import Customer from "../../types/customer.js";
 import { EmailTriggers } from "../../types/emailTriggers.js";
 import Influencer from "../../types/influencer.js";
 import TimelineEvent from "../../types/timelineEvents.js";
@@ -29,6 +30,7 @@ type EmailContextProps = {
     candidates: Candidates.Candidate[];
     assignment: Assignment.AssignmentFull;
     influencer: Influencer.WithContactInfo;
+    customer: Customer.Customer;
     eventWithInfluencer: [event: TimelineEvent.Event, influencer: Influencer.WithContactInfo][];
     taskDescriptions: string[];
 };
@@ -38,4 +40,9 @@ export type Template = {
     send: SendMailFunction;
     levels: EmailLevelDefinition;
     templateNames: readonly string[];
+};
+
+export type EmailProps = {
+    emailLevel: Exclude<EmailTriggers.emailLevel, "none">;
+    debug?: boolean;
 };

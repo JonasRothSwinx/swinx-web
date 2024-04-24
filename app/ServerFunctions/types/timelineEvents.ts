@@ -2,6 +2,7 @@ import { Nullable, Prettify } from "@/app/Definitions/types";
 import Assignment from "./assignment";
 import database from "../database/dbOperations";
 import { EmailTriggers } from "./emailTriggers";
+import { Schema } from "@/amplify/data/resource";
 
 namespace TimelineEvent {
     export type Event = Prettify<SingleEvent | MultiEvent>;
@@ -29,9 +30,7 @@ namespace TimelineEvent {
         );
     }
 
-    export async function resolveEventReference(
-        event: Nullable<EventOrReference>,
-    ): Promise<Nullable<Event>> {
+    export async function resolveEventReference(event: Nullable<EventOrReference>): Promise<Nullable<Event>> {
         if (event === null) return null;
         else if (!isEventReference(event)) return event;
         else {
@@ -79,15 +78,16 @@ namespace TimelineEvent {
             parentEvent: Nullable<EventOrReference>;
         };
         emailTriggers: EmailTriggers.EmailTriggerEventRef[];
-        info: Partial<EventInfo>;
+        info: EventInfo;
     };
-    export type EventInfo = {
-        topic: string;
-        charLimit: number;
-        draftDeadline: string;
-        instructions: string;
-        maxDuration: number;
-    };
+    export type EventInfo = Schema["TimelineEvent"]["info"];
+    // export type EventInfo = {
+    //     topic: string;
+    //     charLimit: number;
+    //     draftDeadline: string;
+    //     instructions: string;
+    //     maxDuration: number;
+    // };
     //#endregion Common
     //#region Single Event Types
     //#region Types

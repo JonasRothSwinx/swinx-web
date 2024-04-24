@@ -3,6 +3,7 @@ import Campaign from "@/app/ServerFunctions/types/campaign";
 import Customer from "@/app/ServerFunctions/types/customer";
 import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 import {
+    Box,
     Button,
     Dialog,
     DialogActions,
@@ -21,6 +22,7 @@ import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { AddIcon } from "@/app/Definitions/Icons";
 import { deleteCustomer } from "@/app/ServerFunctions/database/dbOperations/customers";
 import dataClient from "@/app/ServerFunctions/database";
+import sxStyles from "./sxStyles";
 
 const styles = stylesExporter.dialogs;
 
@@ -49,14 +51,7 @@ type CampaignDialogProps = DialogProps<Campaign.Campaign[], Campaign.Campaign>;
 function CampaignDialog(props: CampaignDialogProps) {
     //##################
     //#region Prop Destructuring
-    const {
-        isOpen = false,
-        onClose,
-        editing,
-        editingData,
-        parent: rows,
-        setParent: setRows,
-    } = props;
+    const { isOpen = false, onClose, editing, editingData, parent: rows, setParent: setRows } = props;
     //#endregion Prop Destructuring
     //##################
 
@@ -64,16 +59,13 @@ function CampaignDialog(props: CampaignDialogProps) {
     //#region States
     const [campaign, setCampaign] = useState<Campaign.Campaign>(initialData);
     const [changedData, setChangedData] = useState<Partial<Campaign.Campaign>>(editingData ?? {});
-    const [customers, setCustomers] = useState<Partial<Customer.Customer>[]>(
-        editingData?.customers ?? [{}],
-    );
+    const [customers, setCustomers] = useState<Partial<Customer.Customer>[]>(editingData?.customers ?? [{}]);
     const [billingAdress, setBillingAdress] = useState<Campaign.BillingAdress>({
         name: "",
         street: "",
         city: "",
         zip: "",
     });
-    const [tab, setTab] = useState("0");
     //#endregion States
     //##################
 
@@ -119,10 +111,7 @@ function CampaignDialog(props: CampaignDialogProps) {
             EventHandlers.handleClose(true);
         },
 
-        handleDateChange: (
-            newValue: Dayjs | null,
-            context: PickerChangeHandlerContext<DateTimeValidationError>,
-        ) => {
+        handleDateChange: (newValue: Dayjs | null, context: PickerChangeHandlerContext<DateTimeValidationError>) => {
             // console.log("value", newValue);
             try {
                 const newDate = dayjs(newValue);
@@ -138,6 +127,66 @@ function CampaignDialog(props: CampaignDialogProps) {
                 console.log(newValue, context);
             }
         },
+    };
+
+    //#endregion Functions
+    //##################
+
+    //##################
+    //#region Query States
+
+    //#endregion
+    //##################
+    return (
+        <Dialog
+            // ref={modalRef}
+            open={isOpen}
+            // className={styles.dialog}
+            onClose={() => EventHandlers.handleClose(false)}
+            PaperProps={{
+                component: "form",
+                onSubmit: EventHandlers.onSubmit,
+            }}
+            sx={sxStyles.DialogDefault}
+        >
+            <Box>
+                <DialogTitle>{"Neue Kampagne"}</DialogTitle>
+                <FormContent
+                    customers={customers}
+                    setCustomers={setCustomers}
+                    campaign={campaign}
+                    setCampaign={setCampaign}
+                    billingAdress={billingAdress}
+                    setBillingAdress={setBillingAdress}
+                />
+                <DialogActions>
+                    <Button onClick={() => EventHandlers.handleClose(false)} color="secondary">
+                        Abbrechen
+                    </Button>
+                    <Button variant="contained" type="submit">
+                        Speichern
+                    </Button>
+                </DialogActions>
+            </Box>
+        </Dialog>
+    );
+}
+export default CampaignDialog;
+
+interface FormContentProps {
+    customers: Partial<Customer.Customer>[];
+    setCustomers: React.Dispatch<React.SetStateAction<Partial<Customer.Customer>[]>>;
+    campaign: Campaign.Campaign;
+    setCampaign: React.Dispatch<React.SetStateAction<Campaign.Campaign>>;
+    billingAdress: Campaign.BillingAdress;
+    setBillingAdress: React.Dispatch<React.SetStateAction<Campaign.BillingAdress>>;
+}
+
+function FormContent(props: FormContentProps) {
+    const { customers, setCustomers, campaign, setCampaign, billingAdress, setBillingAdress } = props;
+
+    const [tab, setTab] = useState("0");
+    const EventHandlers = {
         handleTabChange: () => (event: React.SyntheticEvent, newValue: string) => {
             setTab(newValue);
         },
@@ -148,7 +197,6 @@ function CampaignDialog(props: CampaignDialogProps) {
             setTab((prevState) => (customers.length - 1).toString());
         },
     };
-
     const StateChanges = {
         handleCustomerChange: (changedData: Partial<Customer.Customer>, index = 0) => {
             setCustomers((prevState) => {
@@ -168,44 +216,8 @@ function CampaignDialog(props: CampaignDialogProps) {
             });
         },
     };
-    //#endregion Functions
-    //##################
-
-    //##################
-    //#region Query States
-
-    //#endregion
-    //##################
     return (
-        <Dialog
-            // ref={modalRef}
-            open={isOpen}
-            // className={styles.dialog}
-            onClose={() => EventHandlers.handleClose(false)}
-            PaperProps={{
-                component: "form",
-                onSubmit: EventHandlers.onSubmit,
-            }}
-            sx={{
-                "& .MuiDialogContent-root": {
-                    maxWidth: "min(80vw,800px)",
-                    display: "flex",
-                    flexWrap: "wrap",
-                    // width: "520px",
-                },
-                "& .MuiFormControl-root": {
-                    // padding: "5px",
-                    minWidth: "20ch",
-                    margin: "5px",
-                    flex: 1,
-                },
-                "& .MuiDialogContentText-root": {
-                    flexBasis: "100%",
-                    flexShrink: 0,
-                },
-            }}
-        >
-            <DialogTitle>{"Neue Kampagne"}</DialogTitle>
+        <Box>
             <DialogContent
             // sx={{ "& .MuiFormControl-root:has(#customerEmail)": { flexBasis: "100%" } }}
             >
@@ -231,9 +243,7 @@ function CampaignDialog(props: CampaignDialogProps) {
                             <TabPanel key={index} value={index.toString()}>
                                 <CustomerDialogContent
                                     customer={customer}
-                                    setCustomer={(changedData) =>
-                                        StateChanges.handleCustomerChange(changedData, index)
-                                    }
+                                    setCustomer={(changedData) => StateChanges.handleCustomerChange(changedData, index)}
                                     deleteCustomer={() => StateChanges.deleteCustomer(index)}
                                     index={index}
                                 />
@@ -242,34 +252,17 @@ function CampaignDialog(props: CampaignDialogProps) {
                     })}
                 </TabContext>
             </DialogContent>
-            <DialogContent sx={{ "& .MuiFormControl-root": { margin: "5px" } }}>
+            <DialogContent>
                 <DialogContentText>Budget</DialogContentText>
                 <BudgetInfo campaign={campaign} setCampaign={setCampaign} />
             </DialogContent>
-            <DialogContent sx={{ "& .MuiFormControl-root": { margin: "5px" } }}>
+            <DialogContent>
                 <DialogContentText>Rechnungsadresse</DialogContentText>
-                <BillingAdressInfo
-                    billingAdress={billingAdress}
-                    setBillingAdress={setBillingAdress}
-                />
+                <BillingAdressInfo billingAdress={billingAdress} setBillingAdress={setBillingAdress} />
             </DialogContent>
-            <DialogActions
-                sx={{
-                    justifyContent: "space-between",
-                }}
-            >
-                <Button onClick={() => EventHandlers.handleClose(false)} color="secondary">
-                    Abbrechen
-                </Button>
-                <Button variant="contained" type="submit">
-                    Speichern
-                </Button>
-            </DialogActions>
-        </Dialog>
+        </Box>
     );
 }
-export default CampaignDialog;
-
 interface InfoProps {
     billingAdress: Campaign.BillingAdress;
     setBillingAdress: React.Dispatch<React.SetStateAction<Campaign.BillingAdress>>;
@@ -286,13 +279,13 @@ function BillingAdressInfo(props: InfoProps) {
         });
     };
     return (
-        <DialogContent dividers sx={{ "& .MuiFormControl-root": { margin: "5px" } }}>
+        <DialogContent>
             <TextField
                 name="name"
                 label="Name"
                 value={billingAdress.name}
                 onChange={handleChange}
-                fullWidth
+                // fullWidth
                 className={styles.TextField}
                 variant="standard"
             />
@@ -301,7 +294,7 @@ function BillingAdressInfo(props: InfoProps) {
                 label="Straße"
                 value={billingAdress.street}
                 onChange={handleChange}
-                fullWidth
+                // fullWidth
                 className={styles.TextField}
                 variant="standard"
             />
@@ -310,7 +303,7 @@ function BillingAdressInfo(props: InfoProps) {
                 label="Stadt"
                 value={billingAdress.city}
                 onChange={handleChange}
-                fullWidth
+                // fullWidth
                 className={styles.TextField}
                 variant="standard"
             />
@@ -319,7 +312,7 @@ function BillingAdressInfo(props: InfoProps) {
                 label="PLZ"
                 value={billingAdress.zip}
                 onChange={handleChange}
-                fullWidth
+                // fullWidth
                 className={styles.TextField}
                 variant="standard"
             />
@@ -344,14 +337,14 @@ function BudgetInfo(props: BudgetinfoProps) {
         });
     };
     return (
-        <DialogContent dividers sx={{ "& .MuiFormControl-root": { margin: "5px" } }}>
+        <DialogContent>
             <TextField
                 name="budget"
                 label="Budget"
                 type="number"
                 value={campaign.budget ?? null}
                 onChange={handleChange}
-                fullWidth
+                // fullWidth
                 className={styles.TextField}
                 variant="standard"
             />

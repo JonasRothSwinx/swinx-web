@@ -6,7 +6,7 @@ import stylesExporter from "../styles/stylesExporter";
 import { Button } from "@mui/material";
 import emailClient from "@/app/ServerFunctions/email";
 import { createTestData, listCampaignsTest, wipeTestData } from "@/app/ServerFunctions/database/dbOperations/test";
-import { useQueries, useQueryClient } from "@tanstack/react-query";
+import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import dataClient from "@/app/ServerFunctions/database";
 import dayjs from "@/app/utils/configuredDayJs";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
@@ -44,13 +44,11 @@ interface ISideBar {
 }
 
 function SideBar(props: ISideBar) {
-    const queryClient = useQueryClient();
     const { setMenuCallback } = props;
-    const [groups, setGroups] = useState<string[]>([]);
-    useEffect(() => {
-        getUserGroups().then((result) => setGroups(result));
-        return () => {};
-    }, []);
+    const groups = useQuery({ queryKey: ["userGroups"], queryFn: getUserGroups });
+    if (groups.isLoading) return <div>Loading...</div>;
+    if (groups.isError) return <div>Error: {JSON.stringify(groups.error)}</div>;
+    if (groups.data === undefined) return <div>Groups not found</div>;
 
     return (
         <div className={styles.sideBar}>
@@ -59,11 +57,11 @@ function SideBar(props: ISideBar) {
                 <SideBarButton
                     key={sb.id.toString()}
                     buttonProps={sb}
-                    groups={groups}
+                    groups={groups.data}
                     callback={setMenuCallback ?? (() => {})}
                 />
             ))}
-            {groups.includes("admin") && <DebugButtons />}
+            {groups.data.includes("admin") && <DebugButtons />}
         </div>
     );
 }

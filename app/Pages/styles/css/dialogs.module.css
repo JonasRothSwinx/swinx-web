@@ -53,7 +53,7 @@
 .dialog {
     margin: auto;
     width: fit-content;
-    max-width: 60vw;
+    max-width: 80vw;
     height: fit-content;
     padding: 10px;
 }

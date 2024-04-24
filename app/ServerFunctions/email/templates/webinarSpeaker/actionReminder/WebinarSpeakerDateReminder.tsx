@@ -34,13 +34,11 @@ function NewWebinarSpeakerDateReminder() {
             <Preview>Erinnerung: Webinar</Preview>
             <Text style={styles.text}>Hallo {placeholders.name}!</Text>
             <Text style={styles.text}>
-                Wir möchten dich daran erinnern, dass du heute als Speaker in einem Webinar auftreten wirst.
+                Wir möchten sie daran erinnern, dass sie heute um {"{{time}}"} als Speaker im {"{{Webinar}}"} auftreten
+                werden.
+                <br />
+                Sie werden dabei über {"{{topic}}"} sprechen.
             </Text>
-            <Container align="left" style={styles.buttonContainer}>
-                <Button style={styles.responseButton} href="https://www.swinx.de">
-                    Zu Swinx
-                </Button>
-            </Container>
         </Html>
     );
 }

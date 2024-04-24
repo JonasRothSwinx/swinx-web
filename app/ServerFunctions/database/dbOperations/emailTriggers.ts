@@ -4,16 +4,25 @@ import { Nullable, PartialWith } from "@/app/Definitions/types";
 import { EmailTriggers } from "../../types/emailTriggers";
 import TimelineEvent from "../../types/timelineEvents";
 import client from "./.dbclient";
-import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
-import { RawData } from "./types";
 import { SelectionSet } from "aws-amplify/api";
 import { Schema } from "@/amplify/data/resource";
+import Influencer from "../../types/influencer";
 
 const selectionSet = [
+    //General Info
     "id",
     "date",
     "type",
+    //State
+    "active",
+    "sent",
+    //Overrides
+    "emailLevelOverride",
+    "subjectLineOverride",
+    "emailBodyOverride",
+    //Event Info
     "event.id",
+    "event.assignments.assignment.isPlaceholder",
     "event.assignments.assignment.influencer.id",
     "event.assignments.assignment.influencer.firstName",
     "event.assignments.assignment.influencer.lastName",
@@ -53,9 +62,7 @@ export async function listEmailTriggers(): Promise<EmailTriggers.EmailTriggerEve
         }
     });
 
-    return validated.filter(
-        (trigger): trigger is EmailTriggers.EmailTriggerEventRef => trigger !== null,
-    );
+    return validated.filter((trigger): trigger is EmailTriggers.EmailTriggerEventRef => trigger !== null);
 }
 
 /**
@@ -64,14 +71,19 @@ export async function listEmailTriggers(): Promise<EmailTriggers.EmailTriggerEve
  * @returns The ID of the created email trigger
  */
 export async function createEmailTrigger(
-    trigger: Omit<EmailTriggers.EmailTriggerEventRef, "id" | "influencer">,
+    trigger: Omit<EmailTriggers.EmailTriggerEventRef, "id" | "influencer">
 ): Promise<string> {
     console.log("Creating email trigger", trigger);
-    const { date, event, type } = trigger;
+    const { date, event, type, emailLevelOverride, emailBodyOverride, subjectLineOverride } = trigger;
     const { data, errors } = await client.models.EmailTrigger.create({
         date,
         type,
         eventId: event.id,
+        emailLevelOverride,
+        emailBodyOverride,
+        subjectLineOverride,
+        active: true,
+        sent: false,
     });
     if (errors) {
         throw new Error(errors.map((error) => error.message).join("\n"));
@@ -86,13 +98,19 @@ export async function createEmailTrigger(
  * @returns The ID of the updated email trigger
  */
 export async function updateEmailTrigger(
-    trigger: Partial<EmailTriggers.EmailTriggerEventRef> & { id: string },
+    trigger: Partial<EmailTriggers.EmailTriggerEventRef> & { id: string }
 ): Promise<string> {
-    const { id, date, event } = trigger;
+    const { id, date, event, active, emailBodyOverride, emailLevelOverride, type, sent, subjectLineOverride } = trigger;
     const { data, errors } = await client.models.EmailTrigger.update({
         id,
         date: date,
         event: event ? { id: event.id } : undefined,
+        active,
+        emailBodyOverride,
+        emailLevelOverride,
+        type,
+        sent,
+        subjectLineOverride,
     });
     if (errors) {
         throw new Error(JSON.stringify(errors));
@@ -115,12 +133,16 @@ export async function deleteEmailTrigger(trigger: { id: string }): Promise<void>
  * @returns The list of email triggers
  */
 export async function getEmailTriggersForEvent(
-    event: Pick<TimelineEvent.Event, "id">,
+    event: Pick<TimelineEvent.Event, "id">
 ): Promise<EmailTriggers.EmailTriggerEventRef[]> {
-    const { data, errors } = await client.models.EmailTrigger.list({
-        filter: { eventId: { eq: event.id } },
-        selectionSet,
-    });
+    const { id: eventId } = event;
+    if (!eventId) throw new Error("Event ID is required");
+    const { data, errors } = await client.models.EmailTrigger.listByEvent(
+        { eventId },
+        {
+            selectionSet,
+        }
+    );
     if (errors) {
         throw new Error(JSON.stringify(errors));
     }
@@ -132,9 +154,7 @@ export async function getEmailTriggersForEvent(
             return null;
         }
     });
-    return validated.filter(
-        (trigger): trigger is EmailTriggers.EmailTriggerEventRef => trigger !== null,
-    );
+    return validated.filter((trigger): trigger is EmailTriggers.EmailTriggerEventRef => trigger !== null);
 }
 
 /**
@@ -144,7 +164,7 @@ export async function getEmailTriggersForEvent(
  */
 export async function getEmailTriggersForDateRange(
     start: string,
-    end: string,
+    end: string
 ): Promise<EmailTriggers.EmailTriggerEventRef[]> {
     const { data, errors } = await client.models.EmailTrigger.list({
         filter: { date: { between: [start, end] } },
@@ -161,9 +181,7 @@ export async function getEmailTriggersForDateRange(
             return null;
         }
     });
-    return validated.filter(
-        (trigger): trigger is EmailTriggers.EmailTriggerEventRef => trigger !== null,
-    );
+    return validated.filter((trigger): trigger is EmailTriggers.EmailTriggerEventRef => trigger !== null);
 }
 
 /**
@@ -172,24 +190,37 @@ export async function getEmailTriggersForDateRange(
  * @returns The email trigger object
  */
 function validateEmailTrigger(raw: RawEmailTrigger): EmailTriggers.EmailTriggerEventRef {
-    const { id, date, event, type } = raw;
+    const { id, date, event, type, emailLevelOverride, emailBodyOverride, subjectLineOverride, active, sent } = raw;
     if (!id || !date || !event) {
         throw new Error("Invalid Email Trigger");
     }
-    const influencer = event.assignments[0].assignment.influencer;
-    if (!influencer || !influencer.email) {
-        throw new Error("Invalid Email Trigger");
+    const assignment = event.assignments[0].assignment;
+    const influencer = assignment.influencer;
+    let influencerWithContactInfo: Influencer.WithContactInfo | undefined = undefined;
+    if (!assignment.isPlaceholder) {
+        if (!influencer || !influencer.email || !influencer.emailType) {
+            throw new Error("Invalid Email Trigger");
+        } else {
+            const { email } = influencer ?? {};
+            const emailLevel = influencer.emailType as EmailTriggers.emailLevel;
+            influencerWithContactInfo = {
+                ...influencer,
+                email: email ?? "",
+                emailLevel,
+            };
+        }
     }
-    const { email } = influencer;
-    const emailLevel = influencer.emailType as EmailTriggers.emailLevel;
     const trigger: EmailTriggers.EmailTriggerEventRef = {
         id,
         type: type as EmailTriggers.emailTriggerType,
-        ...(influencer && influencer.email
-            ? { influencer: { ...influencer, emailLevel, email } }
-            : {}),
+        ...(influencerWithContactInfo ? { influencer: influencerWithContactInfo } : {}),
         date,
+        active,
+        sent,
         event,
+        emailLevelOverride: emailLevelOverride as EmailTriggers.emailLevel,
+        emailBodyOverride,
+        subjectLineOverride,
     };
     return trigger;
 }

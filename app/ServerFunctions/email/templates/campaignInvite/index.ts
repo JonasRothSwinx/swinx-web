@@ -1,21 +1,10 @@
-import htmlReduced from "./reduced.html";
-import { MailTemplate, Template, SendMailProps, EmailLevelDefinition } from "../types";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import dotenv from "dotenv";
-import sendBulkCampaignInvite from "./send";
-import { render, renderAsync } from "@react-email/render";
-import CampaignInviteEmail from "./CampaignInviteEmail";
-
-export type TemplateVariables = {
-    name: string;
-    assignments: { assignmentDescription: string }[];
-    honorar: string;
-    linkBase: string;
-    linkData: string;
-};
+import { sesHandlerSendEmailTemplateBulk } from "@/amplify/functions/sesHandler/types";
+import { renderAsync } from "@react-email/render";
+import sesAPIClient from "../../sesAPI";
+import { EmailLevelDefinition, SendMailProps, Template } from "../types";
+import CampaignInviteEmail, { TemplateVariables, defaultParams, subjectLineBase } from "./CampaignInviteEmail";
 
 const templateNameBase = "CampaignInvite";
-const subjectLineBase = "Einladung zur Kampagne";
 const templates: EmailLevelDefinition = {
     new: {
         name: `${templateNameBase}New`,
@@ -32,14 +21,6 @@ const templates: EmailLevelDefinition = {
 } as const;
 
 export const templateNames = [...Object.values(templates).map((template) => template.name)] as const;
-
-const defaultParams: TemplateVariables = {
-    name: "testName",
-    assignments: [{ assignmentDescription: "Fliege zum Mars" }],
-    honorar: "0€",
-    linkBase: "http://localhost:3000/Response?",
-    linkData: "testData",
-};
 
 const inviteEmails: Template = {
     defaultParams,
@@ -58,25 +39,60 @@ export default inviteEmails;
  * @param props.props.taskDescriptions The descriptions of the tasks in the assignment
  * @returns
  */
+type commonVariables = Pick<TemplateVariables, "assignments" | "honorar" | "customerCompany">;
+type personalVariables = Pick<TemplateVariables, "name" | "linkBase" | "linkData">;
 async function send(props: SendMailProps) {
     const {
         level,
-        context: { candidates, assignment, taskDescriptions },
+        context: { candidates, assignment, taskDescriptions, customer },
     } = props;
     console.log("Sending invites for level", level, props);
-    // debugger;
+
     if (level === "none" || !candidates || !assignment) return;
     if (!taskDescriptions) throw new Error("Task descriptions are missing");
 
     const templateName = templates[level].name;
-    return sendBulkCampaignInvite({
-        templateName: templateName as (typeof templateNames)[number],
-        candidates,
-        variables: {
-            assignments: taskDescriptions.map((assignmentDescription) => ({
-                assignmentDescription,
-            })),
-            honorar: assignment.budget?.toString() ?? "<Honorar nicht definiert>",
+
+    const commonVariables: commonVariables = {
+        assignments: taskDescriptions.map((assignmentDescription) => ({
+            assignmentDescription,
+        })),
+        honorar: assignment.budget?.toString() ?? "<Honorar nicht definiert>",
+        customerCompany: customer?.company ?? "TestCustomer",
+    };
+    const baseUrl = process.env.BASE_URL;
+    const requestBody: sesHandlerSendEmailTemplateBulk = {
+        operation: "sendEmailTemplateBulk",
+        bulkEmailData: {
+            from: "swinx GmbH <noreply@swinx.de>",
+            templateName: templateName,
+            defaultTemplateData: JSON.stringify({
+                name: "Error 418: Teapot",
+                assignments: commonVariables.assignments,
+                honorar: commonVariables.honorar,
+                linkBase: baseUrl + "/Response?",
+                linkData: "testData",
+                customerCompany: commonVariables.customerCompany,
+            } satisfies TemplateVariables),
+            emailData: candidates.map((candidate) => {
+                const baseParams = {
+                    firstName: candidate.influencer.firstName,
+                    lastName: candidate.influencer.lastName,
+                    id: candidate.id,
+                };
+                const encodedData = encodeURIComponent(btoa(JSON.stringify(baseParams)));
+                return {
+                    to: candidate.influencer.email,
+                    templateData: JSON.stringify({
+                        name: `${candidate.influencer.firstName} ${candidate.influencer.lastName}`,
+                        linkBase: baseUrl + "/Response?",
+                        linkData: encodedData,
+                    } satisfies personalVariables),
+                };
+            }),
         },
-    });
+    };
+
+    const response = await sesAPIClient.sendBulk(requestBody);
+    return response;
 }

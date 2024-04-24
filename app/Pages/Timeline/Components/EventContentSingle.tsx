@@ -22,7 +22,7 @@ export default function EventContentSingle(props: EventContentProps) {
     };
 
     return (
-        <Grid sx={{ paddingLeft: "10px" }} xs={columnSize}>
+        <Grid id="EventContentSingle" xs={columnSize}>
             {EventElement[event.type as eventType] ?? <></>}
         </Grid>
     );
@@ -55,7 +55,7 @@ function PostEventContent(props: EventContentProps) {
 function VideoEventContent(props: EventContentProps) {
     const { event } = props;
     return (
-        <Grid xs>
+        <Grid id="EventContent" xs>
             <ItemName event={event} />
         </Grid>
     );
@@ -68,7 +68,7 @@ function ItemName(props: ItemNameProps) {
     const { event } = props;
     const assignment = event.assignments[0];
     return (
-        <Grid xs>
+        <Grid id="AssignmentName" xs>
             {assignment.isPlaceholder
                 ? `Influencer ${assignment.placeholderName}`
                 : `${assignment.influencer?.firstName} ${assignment.influencer?.lastName}`}

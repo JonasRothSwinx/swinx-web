@@ -34,13 +34,14 @@ function NewPostDraftDeadlineReminder() {
             <Preview>Erinnerung: Deadline für Beitragsentwurf</Preview>
             <Text style={styles.text}>Hallo {placeholders.name}!</Text>
             <Text style={styles.text}>
-                Wir möchten dich daran erinnern, dass du noch einen Beitragsentwurf einreichen musst.
+                Wir möchten dich daran erinnern, dass du noch einen Beitragsentwurf für den Kunden {"{{customername}}"}
+                zum Thema {"{{topic}}"} bei uns einreichen musst.
             </Text>
-            <Container align="left" style={styles.buttonContainer}>
+            {/* <Container align="left" style={styles.buttonContainer}>
                 <Button style={styles.responseButton} href="https://www.swinx.de">
                     Zu Swinx
                 </Button>
-            </Container>
+            </Container> */}
         </Html>
     );
 }

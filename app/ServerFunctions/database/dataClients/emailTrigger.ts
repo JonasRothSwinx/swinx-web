@@ -31,7 +31,7 @@ export default emailTriggerClient;
  * @returns The created email trigger object
  */
 async function createEmailTrigger(
-    trigger: Omit<EmailTriggers.EmailTrigger, "id"> & { event: { id: string } },
+    trigger: Omit<EmailTriggers.EmailTrigger, "id"> & { event: { id: string } }
 ): Promise<EmailTriggers.EmailTrigger> {
     try {
         console.log("In datacclient emailTrigger createEmailTrigger", trigger);
@@ -80,7 +80,7 @@ export async function listEmailTriggers(): Promise<EmailTriggers.EmailTrigger[]>
  */
 export async function updateEmailTrigger(
     updatedData: Partial<EmailTriggers.EmailTriggerEventRef>,
-    previousTrigger: EmailTriggers.EmailTrigger & { id: string },
+    previousTrigger: EmailTriggers.EmailTrigger & { id: string }
 ): Promise<EmailTriggers.EmailTrigger> {
     const queryClient = config.getQueryClient();
 
@@ -111,7 +111,7 @@ export async function updateEmailTrigger(
  * @param trigger The email trigger object to delete
  */
 export async function deleteEmailTrigger(
-    trigger: Pick<EmailTriggers.EmailTrigger, "id"> & { id: string },
+    trigger: Pick<EmailTriggers.EmailTrigger, "id"> & { id: string }
 ): Promise<void> {
     const queryClient = config.getQueryClient();
     await dbOperations.emailTrigger.delete(trigger);
@@ -132,7 +132,7 @@ export async function deleteEmailTrigger(
  * @returns The list of email triggers
  */
 export async function getEmailTriggersForEvent(
-    event: Pick<TimelineEvent.Event, "id">,
+    event: Pick<TimelineEvent.Event, "id">
 ): Promise<EmailTriggers.EmailTrigger[]> {
     const queryClient = config.getQueryClient();
     const triggers = queryClient.getQueryData<EmailTriggers.EmailTrigger[]>(["emailTriggers"]);
@@ -141,7 +141,7 @@ export async function getEmailTriggersForEvent(
     }
     const eventTriggers = await dbOperations.emailTrigger.byEvent(event);
     const validatedTriggers = await Promise.all(eventTriggers.map(validateEmailTrigger));
-    queryClient.setQueryData(["emailTriggers"], validatedTriggers);
+    queryClient.setQueryData(["emailTriggers", event.id], validatedTriggers);
     return validatedTriggers;
 }
 
@@ -163,13 +163,10 @@ export async function getEmailTriggersForDateRange(props: {
     const triggers = queryClient.getQueryData<EmailTriggers.EmailTrigger[]>(["emailTriggers"]);
     if (triggers && useCache) {
         return triggers.filter((trigger) =>
-            dayjs(trigger.date).isBetween(dayjs(startDate), dayjs(endDate), null, "[]"),
+            dayjs(trigger.date).isBetween(dayjs(startDate), dayjs(endDate), null, "[]")
         );
     }
-    const dateTriggers = await dbOperations.emailTrigger.byDateRange(
-        startDate.toISOString(),
-        endDate.toISOString(),
-    );
+    const dateTriggers = await dbOperations.emailTrigger.byDateRange(startDate.toISOString(), endDate.toISOString());
     const validatedTriggers = await Promise.all(dateTriggers.map(validateEmailTrigger));
     queryClient.setQueryData(["emailTriggers"], validatedTriggers);
     return validatedTriggers;
@@ -185,10 +182,19 @@ export async function getEmailTriggersForDateRange(props: {
  * @param trigger The email trigger object to validate
  * @returns The validated email trigger object
  */
-async function validateEmailTrigger(
-    trigger: EmailTriggers.EmailTriggerEventRef,
-): Promise<EmailTriggers.EmailTrigger> {
-    const { id, date, event, type, influencer } = trigger;
+async function validateEmailTrigger(trigger: EmailTriggers.EmailTriggerEventRef): Promise<EmailTriggers.EmailTrigger> {
+    const {
+        id,
+        date,
+        event,
+        type,
+        influencer,
+        emailBodyOverride,
+        emailLevelOverride,
+        subjectLineOverride,
+        active,
+        sent,
+    } = trigger;
     if (!event?.id) {
         throw new Error(`Event ID is required for email trigger with ID ${id}`);
     }
@@ -197,11 +203,18 @@ async function validateEmailTrigger(
         throw new Error(`Event with ID ${event.id} not found`);
     }
 
-    return {
+    const fullTrigger: EmailTriggers.EmailTrigger = {
         id,
         date,
         type,
         event: fullEvent,
         influencer,
+        emailBodyOverride,
+        emailLevelOverride,
+        subjectLineOverride,
+        active,
+        sent,
     };
+
+    return fullTrigger;
 }
