@@ -69,7 +69,7 @@ export default function TimelineView(props: TimelineViewProps) {
         placeholderData: [],
     });
     const events = useQuery({
-        queryKey: ["events", campaign.id],
+        queryKey: ["timelineEvents", campaign.id],
         queryFn: async () => {
             const events = await database.timelineEvent.listByCampaign(campaign.id);
             events.map((event) => {
@@ -167,9 +167,9 @@ export default function TimelineView(props: TimelineViewProps) {
         },
     };
 
-    const Dialogs: { [key in openDialog]: JSX.Element } = {
-        none: <></>,
-        editor: (
+    const Dialogs: { [key in openDialog]: () => JSX.Element } = {
+        none: () => <></>,
+        editor: () => (
             <EditEventDialog
                 {...{
                     onClose: EventHandlers.onDialogClose,
@@ -189,7 +189,29 @@ export default function TimelineView(props: TimelineViewProps) {
         return <div className={styles.centered}>Keine Daten</div>;
     }
     if (events.data.length === 0 || groups.data.length === 0)
-        return <div className={styles.centered}>Keine Events</div>;
+        return (
+            <>
+                {controlsPositionState === "before" && (
+                    <TimelineControls
+                        {...{ groupBy, setGroupBy }}
+                        setCampaign={setCampaign}
+                        influencers={influencers.data ?? []}
+                        campaign={campaign}
+                        onDataChange={EventHandlers.onDataChange}
+                    />
+                )}
+                <div className={styles.centered}>Keine Events</div>;
+                {controlsPositionState === "after" && (
+                    <TimelineControls
+                        {...{ groupBy, setGroupBy }}
+                        setCampaign={setParent}
+                        influencers={influencers.data}
+                        campaign={campaign}
+                        onDataChange={EventHandlers.onDataChange}
+                    />
+                )}
+            </>
+        );
     if (events.isError || groups.isError || influencers.isError) {
         return <div className={styles.centered}>Error</div>;
     }
@@ -200,7 +222,7 @@ export default function TimelineView(props: TimelineViewProps) {
     return (
         <>
             {/* Dialogs */}
-            {Dialogs[openDialog]}
+            {Dialogs[openDialog]()}
             {controlsPositionState === "before" && (
                 <TimelineControls
                     {...{ groupBy, setGroupBy }}

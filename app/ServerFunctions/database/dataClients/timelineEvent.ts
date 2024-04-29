@@ -155,21 +155,6 @@ export async function deleteTimelineEvent(id: string): Promise<void> {
     const queryClient = config.getQueryClient();
     const timelineEvent = await getTimelineEvent(id);
     const campaignId = timelineEvent.campaign.id;
-    await database.timelineEvent.delete({ id });
-
-    // queryClient.invalidateQueries({
-    //     queryKey: ["timelineEvent", id],
-    //     type: "all",
-    // });
-    // queryClient.invalidateQueries({
-    //     queryKey: ["timelineEvents", campaignId],
-    //     type: "all",
-    // });
-    // queryClient.invalidateQueries({
-    //     queryKey: ["timelineEvents"],
-    //     type: "all",
-    // });
-
     queryClient.setQueryData(["timelineEvent", id], undefined);
     queryClient.setQueryData(["timelineEvents", campaignId], (prev: TimelineEvent.Event[]) => {
         if (!prev) {
@@ -183,10 +168,10 @@ export async function deleteTimelineEvent(id: string): Promise<void> {
         }
         return prev.filter((event) => event.id !== id);
     });
-
     queryClient.refetchQueries({ queryKey: ["timelineEvents"] });
     queryClient.refetchQueries({ queryKey: ["timelineEvents", campaignId] });
     queryClient.refetchQueries({ queryKey: ["timelineEvent", id] });
+    await database.timelineEvent.delete({ id });
 }
 
 /**

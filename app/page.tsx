@@ -29,7 +29,9 @@ function Home() {
         <ThemeProvider theme={theme}>
             {/* <CssBaseline /> */}
             <Authenticator.Provider>
-                <ConfirmProvider defaultOptions={{ confirmationText: "Ok", cancellationText: "Abbrechen" }}>
+                <ConfirmProvider
+                    defaultOptions={{ confirmationText: "Ok", cancellationText: "Abbrechen", title: "Bestätigung" }}
+                >
                     <QueryClientProvider client={queryClient}>
                         {authStatus === "authenticated" && <WelcomePage />}
                     </QueryClientProvider>

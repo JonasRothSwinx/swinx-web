@@ -1,5 +1,5 @@
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import { Button, DialogContent, SelectChangeEvent, TextField, Typography } from "@mui/material";
+import { Button, DialogContent, MenuItem, SelectChangeEvent, TextField, Typography } from "@mui/material";
 import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 import { Add as AddIcon, DeleteOutlined as DeleteIcon } from "@mui/icons-material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
@@ -14,12 +14,12 @@ interface DateSelectorProps {
     timelineEvent: PartialWith<TimelineEvent.SingleEvent, "relatedEvents" | "campaign">;
     setTimelineEvent: Dispatch<SetStateAction<DateSelectorProps["timelineEvent"]>>;
     isEditing: boolean;
-    eventType: TimelineEvent.singleEventType;
+    eventType?: TimelineEvent.singleEventType;
     dates: dates;
     setDates: Dispatch<SetStateAction<dates>>;
 }
 export function DateSelector(props: DateSelectorProps) {
-    const { dates, setDates, isEditing, timelineEvent, setTimelineEvent } = props;
+    const { dates, setDates, isEditing, timelineEvent, setTimelineEvent, eventType = "none" } = props;
 
     // if (TimelineEvent.isEventReference(timelineEvent)) {
     //     //TODO resolve EventReference
@@ -63,54 +63,59 @@ export function DateSelector(props: DateSelectorProps) {
         },
     };
     // trigger update date on parentEvent Change
-    useEffect(() => {
-        if (parentEvent.data) {
-            EventHandlers.handleDateChange(0, dayjs(parentEvent.data.date));
-        }
-    }, [parentEvent]); //eslint-disable-line react-hooks/exhaustive-deps
+    // useEffect(() => {
+    //     console.log("parentEvent.data", parentEvent.data);
+    //     if (parentEvent.data) {
+    //         EventHandlers.handleDateChange(0, dayjs(parentEvent.data.date));
+    //     }
+    // }, [parentEvent.data]); //eslint-disable-line react-hooks/exhaustive-deps
 
     function printVariables() {
         console.log({ dates });
         console.log({ parentEvent });
         console.log({
-            isRepeatable: isRepeatable[props.eventType],
-            isFixedDate: isFixedDate[props.eventType],
-            fixedDate: fixedDate[props.eventType],
+            isRepeatable: isRepeatable[eventType],
+            isFixedDate: isFixedDate[eventType],
+            fixedDate: fixedDate[eventType],
         });
     }
     //########################################
     //#region Configuration
     const isRepeatable: {
-        [key in TimelineEvent.singleEventType]: boolean;
+        [key in TimelineEvent.singleEventType | "none"]: boolean;
     } = {
         Invites: true,
         Post: true,
         Video: true,
         WebinarSpeaker: false,
+        none: false,
     };
     const isFixedDate: {
-        [key in TimelineEvent.singleEventType]: boolean;
+        [key in TimelineEvent.singleEventType | "none"]: boolean;
     } = {
         Invites: false,
         Post: false,
         Video: false,
         WebinarSpeaker: true,
+        none: false,
     };
     const fixedDate: {
-        [key in TimelineEvent.singleEventType]: Dayjs | null;
+        [key in TimelineEvent.singleEventType | "none"]: () => Dayjs | null;
     } = {
-        Invites: null,
-        Post: null,
-        Video: null,
-        WebinarSpeaker: parentEvent.data ? dayjs(parentEvent.data.date) : null,
+        Invites: () => null,
+        Post: () => null,
+        Video: () => null,
+        WebinarSpeaker: () => (parentEvent.data ? dayjs(parentEvent.data.date) : null),
+        none: () => null,
     };
     const hasParentEvent: {
-        [key in TimelineEvent.singleEventType]: { parentEventType: TimelineEvent.multiEventType } | false;
+        [key in TimelineEvent.singleEventType | "none"]: { parentEventType: TimelineEvent.multiEventType } | false;
     } = {
-        Invites: false,
-        Post: false,
-        Video: false,
+        Invites: { parentEventType: "Webinar" },
+        Post: { parentEventType: "Webinar" },
+        Video: { parentEventType: "Webinar" },
         WebinarSpeaker: { parentEventType: "Webinar" },
+        none: false,
     };
     //#endregion
     //########################################
@@ -131,8 +136,8 @@ export function DateSelector(props: DateSelectorProps) {
                                         handleDateChange: EventHandlers.handleDateChange,
                                         index,
                                         isEditing,
-                                        isFixedDate: isFixedDate[props.eventType],
-                                        fixedDate: fixedDate[props.eventType],
+                                        isFixedDate: isFixedDate[eventType],
+                                        fixedDate: fixedDate[eventType](),
                                         showDeleteButton: !isEditing && dates.number > 1,
                                         removeDate: EventHandlers.handleRemoveDateClick,
                                     } satisfies DateProps)}
@@ -140,7 +145,7 @@ export function DateSelector(props: DateSelectorProps) {
                             );
                         })}
                     </div>
-                    {isRepeatable[props.eventType] && !isEditing && (
+                    {isRepeatable[eventType] && !isEditing && (
                         <Button
                             key={"Add"}
                             aria-label="Add"
@@ -157,7 +162,7 @@ export function DateSelector(props: DateSelectorProps) {
                     {/* <TimePicker name="time" /> */}
                 </LocalizationProvider>
                 <ParentEventSelector
-                    parentEventType={hasParentEvent[props.eventType]}
+                    parentEventType={hasParentEvent[eventType]}
                     timelineEvent={timelineEvent}
                     setTimelineEvent={setTimelineEvent}
                 />
@@ -245,7 +250,7 @@ function ParentEventSelector(props: ParentEventSelectorProps) {
     const EntryName: { [key in TimelineEvent.multiEventType]: (id: string) => string } = {
         Webinar: (id) => {
             const event = parentEventChoices.find((x) => x.id === id);
-            return event?.info?.topic ?? "Webinar";
+            return event?.eventTitle ?? "Webinar";
         },
     };
 
@@ -257,7 +262,12 @@ function ParentEventSelector(props: ParentEventSelectorProps) {
         onParentEventChange: (e: SelectChangeEvent<unknown>) => {
             const value = e.target.value;
             const selectedEvent = parentEventChoices.find((event) => event.id === value);
-            if (!selectedEvent) return;
+            if (!selectedEvent) {
+                console.log(`Event not found: ${value}`);
+                console.log({ parentEventChoices });
+                return;
+            }
+            console.log("selectedEvent", selectedEvent);
             setTimelineEvent((prev) => ({
                 ...prev,
                 relatedEvents: {
@@ -289,8 +299,17 @@ function ParentEventSelector(props: ParentEventSelectorProps) {
             required
             SelectProps={{
                 onChange: Handler.onParentEventChange,
-                value: timelineEvent.relatedEvents.parentEvent ?? null,
+                value: timelineEvent.relatedEvents.parentEvent?.id ?? "",
             }}
-        ></TextField>
+        >
+            {parentEventChoices.map((parentEvent) => {
+                if (!parentEvent.id) return null;
+                return (
+                    <MenuItem key={parentEvent.id} value={parentEvent.id}>
+                        {EntryName[parentEventType](parentEvent.id)}
+                    </MenuItem>
+                );
+            })}
+        </TextField>
     );
 }

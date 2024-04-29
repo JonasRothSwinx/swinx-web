@@ -222,7 +222,7 @@ export default function TimelineEventSingleDialog(props: TimelineEventDialogProp
                     <DateSelector
                         timelineEvent={timelineEvent}
                         isEditing={editing}
-                        eventType={timelineEvent.type ?? "Invites"}
+                        eventType={timelineEvent.type}
                         dates={dates}
                         setDates={setDates}
                         setTimelineEvent={setTimelineEvent}

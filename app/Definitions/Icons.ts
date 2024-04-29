@@ -14,4 +14,5 @@ export {
     Person as PersonIcon,
     PersonSearch as PersonSearchIcon,
     Refresh as RefreshIcon,
+    Save as SaveIcon,
 } from "@mui/icons-material";

@@ -65,7 +65,10 @@ export function Event(props: EventProps) {
     const EventHandlers = {
         deleteFunction: async () => {
             if (!event.data || !event.data.id) return;
-            await dataClient.timelineEvent.delete(event.data.id);
+            await dataClient.timelineEvent
+                .delete(event.data.id)
+                .then(() => console.log(`Deleted event ${event.data.id}`))
+                .catch((e) => console.error(e));
         },
         setEvent: async (updatedData: Partial<TimelineEvent.Event>) => {
             if (!event.data) return;
@@ -323,8 +326,8 @@ function DeleteButton(props: DeleteButtonProps) {
             title: "Wirklich löschen?",
             content: "Diese Aktion kann nicht rückgängig gemacht werden",
         }).then(() => {
-            // deleteFunction();
-            console.log("Deleting event");
+            deleteFunction();
+            // console.log("Deleting event");
         });
     };
     return (

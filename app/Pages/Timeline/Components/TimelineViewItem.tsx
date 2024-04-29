@@ -23,29 +23,6 @@ interface TimelineViewItemProps {
 export default function TimelineViewItem(props: TimelineViewItemProps) {
     const { keyValue, group, groupedBy, editEvent, editable } = props;
 
-    const sxContent: SxProps = {
-        display: "flex",
-        flexDirection: "column",
-        border: "1px solid black",
-        borderRadius: "10px",
-        height: "fit-content",
-        maxWidth: "100%",
-    };
-    const sxEditing: SxProps = {
-        "& .MuiGrid2-container:hover": {
-            border: "1px solid black",
-            borderRadius: "5px",
-            backgroundColor: "lightgray",
-        },
-        "& .MuiGrid2-container": {
-            alignItems: "center",
-        },
-    };
-    const sxNotEditing: SxProps = {
-        "& .MuiGrid2-container": {
-            alignItems: "center",
-        },
-    };
     const sxProps: SxProps = useMemo(() => {
         return {
             "&": {

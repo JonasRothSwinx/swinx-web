@@ -168,11 +168,21 @@ export async function listTimelineEvents(): Promise<TimelineEvent.Event[]> {
  */
 export async function createTimelineEvent(props: Omit<TimelineEvent.Event, "id">) {
     // console.log(props);
-    const { type: timelineEventType, date, notes, eventAssignmentAmount, eventTitle, eventTaskAmount, info } = props;
+    const {
+        type: timelineEventType,
+        date,
+        notes,
+        eventAssignmentAmount,
+        eventTitle,
+        eventTaskAmount,
+        info,
+        relatedEvents: { parentEvent },
+    } = props;
     const { id: campaignId } = props.campaign;
     if (!(date && campaignId)) {
         throw new Error("Missing Data");
     }
+    const parentEventId = parentEvent?.id;
     // console.log("creating multiEvent", { props });
     const { data, errors } = await client.models.TimelineEvent.create(
         {
@@ -184,6 +194,7 @@ export async function createTimelineEvent(props: Omit<TimelineEvent.Event, "id">
             eventTitle,
             eventTaskAmount,
             info: info,
+            parentEventId,
         },
         {}
     );
