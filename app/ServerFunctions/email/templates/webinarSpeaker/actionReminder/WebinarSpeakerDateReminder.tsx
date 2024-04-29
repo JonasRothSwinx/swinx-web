@@ -2,32 +2,47 @@ import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
 import { Html, Button, Text, Head, Preview, Container } from "@react-email/components";
 import styles from "../../styles";
 import { Placeholder } from "../../_components";
-import { type TemplateVariables } from ".";
+import { DebugToggle, EmailProps } from "../../types";
+import DebugTemplates from "../../../DebugTemplates";
+
+export type TemplateVariables = {
+    name: string;
+    time: string;
+    webinarTitle: string;
+    topic: string;
+};
+
+export const subjectLineBase = "Erinnerung: Webinar";
+
+export const defaultParams: TemplateVariables = {
+    name: "testName",
+    time: "00:00",
+    webinarTitle: "TestWebinar",
+    topic: "TestTopic",
+};
 
 const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
     name: Placeholder({ name: "name" }),
+    time: Placeholder({ name: "time" }),
+    webinarTitle: Placeholder({ name: "webinarTitle" }),
+    topic: Placeholder({ name: "topic" }),
+};
+const EmailTemplates: { [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element } = {
+    new: (debug?) => <NewWebinarSpeakerDateReminder debug={debug} />,
+    reduced: (debug?) => <ReducedWebinarSpeakerDateReminder debug={debug} />,
 };
 
-interface WebinarSpeakerDateReminderProps {
-    emailLevel: EmailTriggers.emailLevel;
-}
-
-export default function WebinarSpeakerDateReminder(props: WebinarSpeakerDateReminderProps) {
-    switch (props.emailLevel) {
-        case "new":
-            return <NewWebinarSpeakerDateReminder />;
-        case "reduced":
-            return <ReducedWebinarSpeakerDateReminder />;
-        default:
-            throw new Error("Invalid email level");
-    }
+export default function WebinarSpeakerDateReminder(props: EmailProps) {
+    if (props.debug) return <DebugTemplates templates={EmailTemplates} />;
+    return EmailTemplates[props.emailLevel]();
 }
 
 WebinarSpeakerDateReminder.PreviewProps = {
     emailLevel: "new",
-} satisfies WebinarSpeakerDateReminderProps;
+    debug: true,
+} satisfies EmailProps;
 
-function NewWebinarSpeakerDateReminder() {
+function NewWebinarSpeakerDateReminder(props: DebugToggle) {
     return (
         <Html dir="ltr" lang="de">
             <Head />
@@ -43,7 +58,7 @@ function NewWebinarSpeakerDateReminder() {
     );
 }
 
-function ReducedWebinarSpeakerDateReminder() {
+function ReducedWebinarSpeakerDateReminder(props: DebugToggle) {
     return (
         <Html dir="ltr" lang="de">
             <Head />

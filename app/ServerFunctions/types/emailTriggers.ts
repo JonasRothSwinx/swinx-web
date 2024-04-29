@@ -3,9 +3,13 @@ import { Nullable, Prettify } from "@/app/Definitions/types";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import Influencer from "./influencer";
 import influencer from "../database/dataClients/influencer";
+import database from "../database/dbOperations";
+import Customer from "./customer";
 
 export namespace EmailTriggers {
-    export type EmailTrigger = Prettify<GeneralInfo & EventInfo & ContactInfo & EmailOverrides & State>;
+    export type EmailTrigger = Prettify<
+        GeneralInfo & EventInfo & ContactInfo & EmailOverrides & State & CustomerContext
+    >;
     export type EmailTriggerEventRef = Prettify<GeneralInfo & EventReference & ContactInfo & EmailOverrides & State>;
 
     type GeneralInfo = {
@@ -30,6 +34,10 @@ export namespace EmailTriggers {
         emailLevelOverride?: Nullable<emailLevel>;
         subjectLineOverride?: Nullable<string>;
         emailBodyOverride?: Nullable<string>;
+    };
+
+    type CustomerContext = {
+        customer?: Customer.Customer;
     };
 
     export const emailLevels = ["new", "reduced", "none"] as const;

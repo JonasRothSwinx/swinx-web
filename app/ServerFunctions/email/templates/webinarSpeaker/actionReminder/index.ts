@@ -3,14 +3,15 @@ import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { sesHandlerSendEmailTemplateBulk } from "@/amplify/functions/sesHandler/types";
 import sesAPIClient from "../../../sesAPI";
 import { renderAsync } from "@react-email/render";
-import WebinarSpeakerActionReminderMail from "./WebinarSpeakerDateReminder";
-
-export type TemplateVariables = {
-    name: string;
-};
+import WebinarSpeakerActionReminderMail, {
+    subjectLineBase,
+    defaultParams,
+    TemplateVariables,
+} from "./WebinarSpeakerDateReminder";
+import ErrorLogger from "@/app/ServerFunctions/errorLog";
+import dayjs from "@/app/utils/configuredDayJs";
 
 const templateBaseName = "WebinarSpeakerActionReminder";
-const subjectLineBase = "Erinnerung: Webinar";
 
 const templates: EmailLevelDefinition = {
     new: {
@@ -29,10 +30,6 @@ const templates: EmailLevelDefinition = {
 
 export const templateNames = [...Object.values(templates).map((template) => template.name)] as const;
 
-const defaultParams: TemplateVariables = {
-    name: "testName",
-};
-
 const WebinarSpeakerActionReminder = {
     defaultParams,
     send,
@@ -43,14 +40,7 @@ const WebinarSpeakerActionReminder = {
 export default WebinarSpeakerActionReminder;
 
 async function send(props: SendMailProps) {
-    const {
-        level,
-        fromAdress,
-        context: { eventWithInfluencer },
-    } = props;
-    if (!eventWithInfluencer) {
-        throw new Error("Missing context");
-    }
+    const { level, fromAdress, individualContext } = props;
     if (level === "none") {
         return;
     }
@@ -61,15 +51,32 @@ async function send(props: SendMailProps) {
             from: fromAdress ?? "swinx GmbH <noreply@swinx.de>",
             templateName: templateName,
             defaultTemplateData: JSON.stringify(defaultParams),
-            emailData: eventWithInfluencer.reduce((acc, [event, influencer]) => {
-                if (!event.eventTaskAmount || event.eventTaskAmount === 0) return acc;
+            emailData: individualContext.reduce((acc, { event, customer, influencer }) => {
+                if (!event || !customer || !influencer) {
+                    ErrorLogger.log("Missing context");
+                    return acc;
+                }
+                const webinar = event.relatedEvents.parentEvent as TimelineEvent.Event;
+                if (!webinar || !webinar.date) {
+                    ErrorLogger.log("Missing webinar context");
+                    return acc;
+                }
+                const webinarTitle = webinar.eventTitle ?? "<Kein Webinartitel angegeben>";
+                const topic = event.info?.topic ?? "<Kein Thema angegeben>";
+                const time = dayjs(event.date).format("H:MM");
+
+                const recipientName = `${influencer.firstName} ${influencer.lastName}`;
+
                 return [
                     ...acc,
                     {
                         to: influencer.email,
                         templateData: JSON.stringify({
                             name: `${influencer.firstName} ${influencer.lastName}`,
-                        } satisfies Partial<TemplateVariables>),
+                            webinarTitle,
+                            topic,
+                            time,
+                        } satisfies TemplateVariables),
                     },
                 ];
             }, [] as { to: string; templateData: string }[]),

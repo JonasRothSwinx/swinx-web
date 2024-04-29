@@ -9,6 +9,7 @@ import dayjs from "@/app/utils/configuredDayJs";
 import { EmailTriggers } from "../../types/emailTriggers";
 import { SelectionSet } from "aws-amplify/api";
 import { Schema } from "@/amplify/data/resource";
+import Customer from "../../types/customer";
 
 export async function dummy() {
     const { data, errors } = await client.models.TimelineEvent.list({
@@ -80,64 +81,6 @@ const selectionSetFull = [
 type RawEvent = SelectionSet<Schema["TimelineEvent"], typeof selectionSetFull>;
 
 const selectionSetMin = ["id", "timelineEventType", "campaign.id"] as const;
-
-// function isRawData(data: unknown): data is RawData.RawTimeLineEventFull {
-//     const testData = data as RawData.RawTimeLineEventFull;
-//     // check with debug outputs
-//     // console.log("checking", { testData });
-
-//     if (!testData) {
-//         console.log("testData is falsy");
-//         return false;
-//     }
-//     //check required data types
-//     if (
-//         !(
-//             typeof testData.id === "string" &&
-//             typeof testData.timelineEventType === "string" &&
-//             typeof testData.campaign.id === "string" &&
-//             Array.isArray(testData.assignments)
-//         )
-//     ) {
-//         console.log("invalid data types");
-//         return false;
-//     }
-//     //check nullable data types
-//     if (
-//         !(
-//             (typeof testData.eventAssignmentAmount === "number" ||
-//                 testData.eventAssignmentAmount === null) &&
-//             (typeof testData.eventTitle === "string" || testData.eventTitle === null) &&
-//             (typeof testData.eventTaskAmount === "number" || testData.eventTaskAmount === null) &&
-//             (typeof testData.date === "string" || testData.date === null) &&
-//             (typeof testData.notes === "string" || testData.notes === null)
-//         )
-//     ) {
-//         console.log("invalid nullable data types");
-//         return false;
-//     }
-//     if (
-//         !testData.assignments.every(
-//             (x) =>
-//                 (x.influencerAssignment &&
-//                     x.influencerAssignment.id &&
-//                     typeof x.influencerAssignment.id === "string" &&
-//                     typeof x.influencerAssignment.isPlaceholder === "boolean" &&
-//                     typeof x.influencerAssignment.placeholderName === "string" &&
-//                     x.influencerAssignment.influencer === null) ||
-//                 (x.influencerAssignment.influencer &&
-//                     x.influencerAssignment.influencer.id &&
-//                     typeof x.influencerAssignment.influencer.id === "string" &&
-//                     typeof x.influencerAssignment.influencer.firstName === "string" &&
-//                     typeof x.influencerAssignment.influencer.lastName === "string"),
-//         )
-//     ) {
-//         console.log("invalid assignment data");
-//         return false;
-//     }
-
-//     return true;
-// }
 
 // function validateEvent(rawData: SelectionSet<Schema["TimelineEvent"], typeof selectionSet>): TimelineEvent.Event { //
 function validateEvent(rawEvent: RawEvent): TimelineEvent.Event {
@@ -502,4 +445,36 @@ export async function connectEvents(
         throw new Error("Failed to update timeline event");
     }
     return;
+}
+
+/**
+ * Get Event for Email Trigger Routine
+ * Includes additional data
+ */
+
+export async function getEventForEmailTrigger(eventId: string): Promise<
+    Nullable<{
+        event: TimelineEvent.Event | null;
+        customer: Customer.Customer;
+    }>
+> {
+    const { data, errors } = await client.models.TimelineEvent.get(
+        {
+            id: eventId,
+        },
+        {
+            selectionSet: [
+                ...selectionSetFull,
+                //Campaign info
+                "campaign.customers.*",
+            ],
+        }
+    );
+    if (errors) throw new Error(JSON.stringify(errors));
+    if (data === null) return null;
+    const event = validateEvent(data);
+    const campaign = data.campaign;
+    const customer = campaign.customers[0];
+
+    return { event, customer };
 }

@@ -1,18 +1,6 @@
-import {
-    createNewCampaign,
-    deleteCampaign,
-    dummyListCampaigns,
-    getCampaign,
-    listCampaigns,
-} from "./campaigns";
+import { createNewCampaign, deleteCampaign, dummyListCampaigns, getCampaign, listCampaigns } from "./campaigns";
 import { createCustomer, deleteCustomer, updateCustomer } from "./customers";
-import {
-    createNewInfluencer,
-    deleteInfluencer,
-    getInfluencer,
-    listInfluencers,
-    updateInfluencer,
-} from "./influencers";
+import { createNewInfluencer, deleteInfluencer, getInfluencer, listInfluencers, updateInfluencer } from "./influencers";
 import {
     createAssignment,
     deletePlaceholder,
@@ -33,6 +21,7 @@ import {
     listTimelineEvents,
     updateTimelineEvent,
     getAssignmentTimelineEvents,
+    getEventForEmailTrigger,
 } from "./timelineEvents";
 import { createCandidate, deleteCandidate, publicProcessResponse } from "./candidate";
 import {
@@ -75,6 +64,7 @@ export const timelineEvents = {
     listByCampaign: getCampaignTimelineEvents,
     connectToAssignment: connectToAssignment,
     connectEvents: connectEvents,
+    getForEmailTrigger: getEventForEmailTrigger,
 };
 
 export const assignments = {

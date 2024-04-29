@@ -224,3 +224,7 @@ function validateEmailTrigger(raw: RawEmailTrigger): EmailTriggers.EmailTriggerE
     };
     return trigger;
 }
+
+/**
+ * Get 
+ */

@@ -1,5 +1,5 @@
 import { CSSProperties } from "react";
-const styleKeys = ["text", "buttonContainer", "responseButton", "largeDivider", "postContent"] as const;
+const styleKeys = ["text", "buttonContainer", "responseButton", "largeDivider", "postContent", "debugBox"] as const;
 
 const swinxBlue = "#1e88e5";
 const styles: { [key in (typeof styleKeys)[number]]: CSSProperties } = {
@@ -8,7 +8,7 @@ const styles: { [key in (typeof styleKeys)[number]]: CSSProperties } = {
     },
     buttonContainer: {
         textAlign: "center",
-        paddingTop: "10px",
+        // paddingTop: "10px",
         display: "flex",
         justifyContent: "flex-start",
         alignItems: "left",
@@ -35,6 +35,12 @@ const styles: { [key in (typeof styleKeys)[number]]: CSSProperties } = {
         whiteSpace: "pre-line",
         padding: "10px",
         maxWidth: "300px",
+    },
+    debugBox: {
+        padding: "10px",
+        border: "1px solid black",
+        borderRadius: "5px",
+        margin: "10px",
     },
 } as const;
 export default styles;

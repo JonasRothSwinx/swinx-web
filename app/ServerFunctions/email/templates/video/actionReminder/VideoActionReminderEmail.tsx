@@ -1,33 +1,50 @@
 import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
-import { Html, Button, Text, Head, Preview, Container, Link } from "@react-email/components";
+import { Html, Button, Text, Head, Preview, Container, Link, Hr } from "@react-email/components";
 import styles from "../../styles";
 import { Placeholder } from "../../_components";
-import { type TemplateVariables } from ".";
+import { DebugToggle, EmailProps } from "../../types";
+import React from "react";
+import DebugTemplates from "../../../DebugTemplates";
 
+export type TemplateVariables = {
+    name: string;
+    customerName: string;
+    customerLink: string;
+    postContent: string;
+    postTime: string;
+};
 const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
     name: Placeholder({ name: "name" }),
+    customerName: Placeholder({ name: "customerName" }),
+    customerLink: Placeholder({ name: "customerLink" }),
+    postContent: Placeholder({ name: "postContent" }),
+    postTime: Placeholder({ name: "postTime" }),
+};
+export const defaultParams: TemplateVariables = {
+    name: "testName",
+    customerName: "TestCustomer",
+    customerLink: "https://www.swinx.de",
+    postContent: "TestContent",
+    postTime: "09:00",
+};
+export const subjectLineBase = "Erinnerung: Beitragsveröffentlichung";
+
+const EmailTemplates: { [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element } = {
+    new: (debug?) => <NewVideoActionReminder debug={debug} />,
+    reduced: (debug?) => <ReducedVideoActionReminder debug={debug} />,
 };
 
-interface VideoPublishReminderEmailProps {
-    emailLevel: EmailTriggers.emailLevel;
-}
-
-export default function VideoPublishReminderEmail(props: VideoPublishReminderEmailProps) {
-    switch (props.emailLevel) {
-        case "new":
-            return <NewVideoActionReminder />;
-        case "reduced":
-            return <ReducedVideoActionReminder />;
-        default:
-            throw new Error("Invalid email level");
-    }
+export default function VideoPublishReminderEmail(props: EmailProps) {
+    if (props.debug) return DebugTemplates({ templates: EmailTemplates });
+    return EmailTemplates[props.emailLevel]();
 }
 
 VideoPublishReminderEmail.PreviewProps = {
     emailLevel: "new",
-} satisfies VideoPublishReminderEmailProps;
+    debug: true,
+} satisfies EmailProps;
 
-function NewVideoActionReminder() {
+function NewVideoActionReminder(props: DebugToggle) {
     return (
         <Html dir="ltr" lang="de">
             <Head />
@@ -66,7 +83,7 @@ function NewVideoActionReminder() {
     );
 }
 
-function ReducedVideoActionReminder() {
+function ReducedVideoActionReminder(props: DebugToggle) {
     return (
         <Html dir="ltr" lang="de">
             <Head />

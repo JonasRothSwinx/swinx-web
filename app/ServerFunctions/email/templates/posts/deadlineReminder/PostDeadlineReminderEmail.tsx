@@ -1,65 +1,68 @@
 import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
-import { Html, Button, Text, Head, Preview, Container } from "@react-email/components";
+import { Html, Button, Text, Head, Preview, Container, Hr } from "@react-email/components";
 import styles from "../../styles";
 import { Placeholder } from "../../_components";
-import { type TemplateVariables } from ".";
+import { DebugToggle, EmailProps } from "../../types";
+import React from "react";
+import DebugTemplates from "../../../DebugTemplates";
+
+export type TemplateVariables = {
+    name: string;
+    customerName: string;
+    topic: string;
+};
+export const subjectLineBase = "Erinnerung: Entwurf für Beitrag";
+export const defaultParams: TemplateVariables = {
+    name: "testName",
+    customerName: "TestCustomer",
+    topic: "TestTopic",
+};
 
 const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
     name: Placeholder({ name: "name" }),
+    customerName: Placeholder({ name: "customerName" }),
+    topic: Placeholder({ name: "topic" }),
+};
+const EmailTemplates: { [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element } = {
+    new: (debug?) => <NewPostDraftDeadlineReminder debug={debug} />,
+    reduced: (debug?) => <ReducedDraftPostDeadlineReminder debug={debug} />,
 };
 
-interface PostDraftDeadlineReminderEmailProps {
-    emailLevel: EmailTriggers.emailLevel;
-}
-
-export default function PostDraftDeadlineReminderEmail(props: PostDraftDeadlineReminderEmailProps) {
-    switch (props.emailLevel) {
-        case "new":
-            return <NewPostDraftDeadlineReminder />;
-        case "reduced":
-            return <ReducedDraftPostDeadlineReminder />;
-        default:
-            throw new Error("Invalid email level");
-    }
+export default function PostDraftDeadlineReminderEmail(props: EmailProps) {
+    if (props.debug) return DebugTemplates({ templates: EmailTemplates });
+    return EmailTemplates[props.emailLevel]();
 }
 
 PostDraftDeadlineReminderEmail.PreviewProps = {
     emailLevel: "new",
-} satisfies PostDraftDeadlineReminderEmailProps;
+} satisfies EmailProps;
 
-function NewPostDraftDeadlineReminder() {
+function NewPostDraftDeadlineReminder(props: DebugToggle) {
+    const { name, customerName, topic } = props.debug ? defaultParams : placeholders;
     return (
         <Html dir="ltr" lang="de">
             <Head />
             <Preview>Erinnerung: Deadline für Beitragsentwurf</Preview>
-            <Text style={styles.text}>Hallo {placeholders.name}!</Text>
+            <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
-                Wir möchten dich daran erinnern, dass du noch einen Beitragsentwurf für den Kunden {"{{customername}}"}
-                zum Thema {"{{topic}}"} bei uns einreichen musst.
+                Wir möchten Sie daran erinnern, dass Sie noch einen Beitragsentwurf für den Kunden {customerName}
+                zum Thema {topic} bei uns einreichen müssen.
             </Text>
-            {/* <Container align="left" style={styles.buttonContainer}>
-                <Button style={styles.responseButton} href="https://www.swinx.de">
-                    Zu Swinx
-                </Button>
-            </Container> */}
         </Html>
     );
 }
 
-function ReducedDraftPostDeadlineReminder() {
+function ReducedDraftPostDeadlineReminder(props: DebugToggle) {
+    const { name, customerName, topic } = props.debug ? defaultParams : placeholders;
     return (
         <Html dir="ltr" lang="de">
             <Head />
             <Preview>Erinnerung: Deadline für Beitragsentwurf</Preview>
-            <Text style={styles.text}>Hallo {placeholders.name}!</Text>
+            <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
-                Wir möchten dich daran erinnern, dass du noch einen Beitragsentwurf einreichen musst.
+                Wir möchten dich daran erinnern, dass du noch einen Beitragsentwurf für den Kunden {customerName}
+                zum Thema {topic} bei uns einreichen musst.
             </Text>
-            <Container align="left" style={styles.buttonContainer}>
-                <Button style={styles.responseButton} href="https://www.swinx.de">
-                    Zu Swinx
-                </Button>
-            </Container>
         </Html>
     );
 }

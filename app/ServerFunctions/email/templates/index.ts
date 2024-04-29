@@ -23,7 +23,7 @@ const mailTypes = {
         CampaignInvite: CampaignInvite.default,
     },
     invites: {
-        InviteEvents: InviteEvents.default,
+        InviteReminder: InviteEvents.default,
     },
     post: {
         PostActionReminder: PostReminder.default,

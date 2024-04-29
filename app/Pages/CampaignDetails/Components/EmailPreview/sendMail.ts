@@ -22,7 +22,7 @@ export default async function sendInvites(props: SendInvitesProps) {
             new: [],
             reduced: [],
             none: [],
-        } as { [key in EmailTriggers.emailLevel]: Candidates.Candidate[] },
+        } as { [key in EmailTriggers.emailLevel]: Candidates.Candidate[] }
     );
     const responses = await Promise.all(
         Object.entries(groupedCandidates).map(async ([level, candidates]) => {
@@ -31,15 +31,16 @@ export default async function sendInvites(props: SendInvitesProps) {
             console.log("Sending invites for level", level, candidates);
             const response = await emailClient.email.campaignInvites.send({
                 level: level as EmailTriggers.emailLevel,
-                context: {
+                commonContext: {
                     candidates,
                     taskDescriptions: ["Make Tea"],
                     assignment,
                 },
+                individualContext: [],
             });
 
             return { level, data: response };
-        }),
+        })
     );
     if (groupedCandidates.none.length > 0) {
         alert(
@@ -48,7 +49,7 @@ export default async function sendInvites(props: SendInvitesProps) {
                     .map(({ influencer: x }) => {
                         return `${x.firstName} ${x.lastName}: ${x.email}`;
                     })
-                    .join(",\n"),
+                    .join(",\n")
         );
     }
     return responses.filter((x) => x?.data !== undefined);

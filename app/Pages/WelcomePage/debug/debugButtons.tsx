@@ -39,7 +39,7 @@ export default function DebugButtons() {
                 onClick={async () => {
                     const response = await emailClient.email.campaignInvites.send({
                         level: "new",
-                        context: {
+                        commonContext: {
                             candidates: [
                                 {
                                     influencer: {
@@ -54,6 +54,7 @@ export default function DebugButtons() {
                             ],
                             taskDescriptions: ["Test Task"],
                         },
+                        individualContext: [],
                     });
 
                     console.log(response);

@@ -4,6 +4,7 @@ import { EmailLevelDefinition, SendMailProps, Template } from "../../types";
 import PostActionReminderMail, { subjectLineBase, TemplateVariables, defaultParams } from "./PostActionReminderMail";
 import { renderAsync } from "@react-email/render";
 import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
+import ErrorLogger from "@/app/ServerFunctions/errorLog";
 
 const templateBaseName = "PostReminder";
 const templates: EmailLevelDefinition = {
@@ -37,14 +38,8 @@ type personalVariables = Pick<
     "name" | "postTime" | "customerName" | "customerProfileLink" | "postContent"
 >;
 async function send(props: SendMailProps) {
-    const {
-        level,
-        fromAdress,
-        context: { eventWithInfluencer, customer },
-    } = props;
-    if (!eventWithInfluencer || !customer) {
-        throw new Error("Missing context");
-    }
+    const { level, fromAdress, individualContext } = props;
+
     if (level === "none") {
         return;
     }
@@ -55,10 +50,12 @@ async function send(props: SendMailProps) {
             from: fromAdress ?? "swinx GmbH <noreply@swinx.de>",
             templateName: templateName,
             defaultTemplateData: JSON.stringify(defaultParams),
-            emailData: eventWithInfluencer.reduce((acc, [event, influencer]) => {
-                if (!event.eventTaskAmount || event.eventTaskAmount === 0) return acc;
-                const postTimeObject = dayjs(event.date);
-                const postTime = postTimeObject.format("H:MM");
+            emailData: individualContext.reduce((acc, { event, influencer, customer }) => {
+                if (!event || !influencer || !customer) {
+                    ErrorLogger.log("Missing context");
+                    return acc;
+                }
+                const postTime = dayjs(event.date).format("H:MM");
                 const { company: customerName, profileLink: customerProfileLink } = customer;
                 const postContent = event.info?.eventPostContent ?? "Kein Postinhalt gefunden";
                 return [

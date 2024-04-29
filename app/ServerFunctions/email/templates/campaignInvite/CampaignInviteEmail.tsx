@@ -3,8 +3,9 @@ import { Html, Button, Text, Head, Preview, Container, Hr } from "@react-email/c
 import { Placeholder } from "../_components";
 import styles from "../styles";
 import PlaceholderList from "../_components/placeholderList";
-import { EmailProps } from "../types";
+import { DebugToggle, EmailProps } from "../types";
 import React from "react";
+import DebugTemplates from "../../DebugTemplates";
 
 export type TemplateVariables = {
     name: string;
@@ -32,32 +33,32 @@ const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } =
     linkData: Placeholder({ name: "linkData" }),
     customerCompany: Placeholder({ name: "customerName" }),
 };
-const EmailTemplates: { [key in Exclude<EmailTriggers.emailLevel, "none">]: JSX.Element } = {
-    new: <NewCampaignInvite />,
-    reduced: <ReducedCampaignInvite />,
+const EmailTemplates: { [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element } = {
+    new: (debug?) => <NewCampaignInvite debug={debug} />,
+    reduced: (debug?) => <ReducedCampaignInvite debug={debug} />,
 };
 
 export default function CampaignInviteEmail(props: EmailProps) {
-    if (props.debug)
-        return (
-            <Html dir="ltr" lang="de">
-                {Object.values(EmailTemplates).map((template, index) => (
-                    <React.Fragment key={index}>
-                        {template}
-                        <Hr style={styles.largeDivider} />
-                    </React.Fragment>
-                ))}
-            </Html>
-        );
-    return EmailTemplates[props.emailLevel];
+    if (props.debug) return DebugTemplates({ templates: EmailTemplates });
+    return EmailTemplates[props.emailLevel]();
 }
 CampaignInviteEmail.PreviewProps = {
     emailLevel: "new",
     debug: true,
 } satisfies EmailProps;
 
-function NewCampaignInvite() {
-    const { name, assignments, honorar, linkBase, linkData, customerCompany: customerName } = placeholders;
+function NewCampaignInvite(props: DebugToggle) {
+    const {
+        name,
+        honorar,
+        linkBase,
+        linkData,
+        customerCompany: customerName,
+    } = props.debug ? defaultParams : placeholders;
+    const assignments = props.debug
+        ? defaultParams.assignments.map((a) => a.assignmentDescription).join("\n")
+        : placeholders.assignments;
+
     return (
         <Html dir="ltr" lang="de">
             <Head />
@@ -73,7 +74,7 @@ function NewCampaignInvite() {
                 Bitte teilen sie uns unter folgendem Link mit, ob sie Interesse haben.
             </Text>
             <Container align="left" style={styles.buttonContainer}>
-                <Button style={styles.responseButton} href={`${linkBase}?q=${linkData}`}>
+                <Button style={styles.responseButton} href={`${linkBase}${linkData}`}>
                     Zur Kampagne
                 </Button>
             </Container>
@@ -81,8 +82,17 @@ function NewCampaignInvite() {
     );
 }
 
-function ReducedCampaignInvite() {
-    const { name, assignments, honorar, linkBase, linkData, customerCompany: customerName } = placeholders;
+function ReducedCampaignInvite(props: DebugToggle) {
+    const {
+        name,
+        honorar,
+        linkBase,
+        linkData,
+        customerCompany: customerName,
+    } = props.debug ? defaultParams : placeholders;
+    const assignments = props.debug
+        ? defaultParams.assignments.map((a) => a.assignmentDescription).join("\n")
+        : placeholders.assignments;
     return (
         <Html dir="ltr" lang="de">
             <Head />
@@ -98,7 +108,7 @@ function ReducedCampaignInvite() {
                 Bitte teile uns unter folgendem Link mit, ob du Interesse hast.
             </Text>
             <Container align="left" style={styles.buttonContainer}>
-                <Button style={styles.responseButton} href={`${linkBase}?q=${linkData}`}>
+                <Button style={styles.responseButton} href={`${linkBase}${linkData}`}>
                     Zur Kampagne
                 </Button>
             </Container>

@@ -2,14 +2,15 @@ import { EmailLevelDefinition, MailTemplate, SendMailProps, Template } from "../
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { sesHandlerSendEmailTemplateBulk } from "@/amplify/functions/sesHandler/types";
 import sesAPIClient from "../../../sesAPI";
-import PostDraftDeadlineReminderEmail from "./PostDeadlineReminderEmail";
+import PostDraftDeadlineReminderEmail, {
+    subjectLineBase,
+    defaultParams,
+    TemplateVariables,
+} from "./PostDeadlineReminderEmail";
 import { renderAsync } from "@react-email/render";
+import ErrorLogger from "@/app/ServerFunctions/errorLog";
 
-export type TemplateVariables = {
-    name: string;
-};
 const templateBaseName = "PostDraftDeadlineReminder";
-const subjectLineBase = "Erinnerung: Entwurf für Beitrag";
 
 const templates: EmailLevelDefinition = {
     new: {
@@ -28,10 +29,6 @@ const templates: EmailLevelDefinition = {
 
 export const templateNames = [...Object.values(templates).map((template) => template.name)] as const;
 
-const defaultParams: TemplateVariables = {
-    name: "testName",
-} as const;
-
 const PostReminder = {
     defaultParams,
     send,
@@ -41,15 +38,9 @@ const PostReminder = {
 
 export default PostReminder;
 
+type personalVariables = Pick<TemplateVariables, "name" | "customerName" | "topic">;
 async function send(props: SendMailProps) {
-    const {
-        level,
-        fromAdress,
-        context: { eventWithInfluencer },
-    } = props;
-    if (!eventWithInfluencer) {
-        throw new Error("Missing context");
-    }
+    const { level, fromAdress, individualContext } = props;
     if (level === "none") {
         return;
     }
@@ -60,15 +51,23 @@ async function send(props: SendMailProps) {
             from: fromAdress ?? "swinx GmbH <noreply@swinx.de>",
             templateName: templateName,
             defaultTemplateData: JSON.stringify(defaultParams),
-            emailData: eventWithInfluencer.reduce((acc, [event, influencer]) => {
-                if (!event.eventTaskAmount || event.eventTaskAmount === 0) return acc;
+            emailData: individualContext.reduce((acc, { event, customer, influencer }) => {
+                if (!event || !customer || !influencer) {
+                    ErrorLogger.log("Missing context");
+                    return acc;
+                }
+                const recipientName = `${influencer.firstName} ${influencer.lastName}`;
+                const customerName = `${customer.firstName} ${customer.lastName}`;
+                const topic = event.info?.topic ?? "<Kein Thema angegeben>";
                 return [
                     ...acc,
                     {
                         to: influencer.email,
                         templateData: JSON.stringify({
-                            name: `${influencer.firstName} ${influencer.lastName}`,
-                        } satisfies Partial<TemplateVariables>),
+                            name: recipientName,
+                            customerName,
+                            topic,
+                        } satisfies personalVariables),
                     },
                 ];
             }, [] as { to: string; templateData: string }[]),

@@ -22,16 +22,17 @@ export type EmailLevelDefinition = {
 export type SendMailProps = {
     level: EmailTriggers.emailLevel;
     fromAdress?: string;
-    context: Partial<EmailContextProps>;
+    commonContext: Partial<EmailContextProps>;
+    individualContext: Partial<EmailContextProps>[];
 };
 export type SendMailFunction = (props: SendMailProps) => Promise<unknown>;
-type EmailContextProps = {
+
+export type EmailContextProps = {
     event: TimelineEvent.Event;
     candidates: Candidates.Candidate[];
     assignment: Assignment.AssignmentFull;
     influencer: Influencer.WithContactInfo;
     customer: Customer.Customer;
-    eventWithInfluencer: [event: TimelineEvent.Event, influencer: Influencer.WithContactInfo][];
     taskDescriptions: string[];
 };
 
@@ -44,5 +45,8 @@ export type Template = {
 
 export type EmailProps = {
     emailLevel: Exclude<EmailTriggers.emailLevel, "none">;
+    debug?: boolean;
+};
+export type DebugToggle = {
     debug?: boolean;
 };

@@ -6,6 +6,7 @@ import InvitesReminderMail, { defaultParams, subjectLineBase, TemplateVariables 
 import { renderAsync } from "@react-email/render";
 import { Timeline } from "@mui/lab";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import ErrorLogger from "@/app/ServerFunctions/errorLog";
 
 const templateBaseName = "InvitesReminder";
 
@@ -35,14 +36,7 @@ export default inviteReminderTemplates;
 
 type personalVariables = Pick<TemplateVariables, "name" | "inviteAmount" | "customerName" | "eventName" | "eventLink">;
 async function send(props: SendMailProps) {
-    const {
-        level,
-        fromAdress,
-        context: { eventWithInfluencer, customer },
-    } = props;
-    if (!eventWithInfluencer || !customer) {
-        throw new Error("Missing context");
-    }
+    const { level, fromAdress, individualContext } = props;
     if (level === "none") {
         return;
     }
@@ -53,8 +47,15 @@ async function send(props: SendMailProps) {
             from: fromAdress ?? "swinx GmbH <noreply@swinx.de>",
             templateName: templateName,
             defaultTemplateData: JSON.stringify(defaultParams),
-            emailData: eventWithInfluencer.reduce((acc, [event, influencer]) => {
-                if (!event.eventTaskAmount || event.eventTaskAmount === 0) return acc;
+            emailData: individualContext.reduce((acc, { event, influencer, customer }) => {
+                if (!event || !influencer || !customer) {
+                    ErrorLogger.log("Missing context");
+                    return acc;
+                }
+                if (!event.eventTaskAmount || event.eventTaskAmount === 0) {
+                    ErrorLogger.log("No event task amount found");
+                    return acc;
+                }
                 const webinar = event.relatedEvents.parentEvent;
                 if (!webinar) {
                     throw new Error("No webinar found");

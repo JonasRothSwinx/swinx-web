@@ -2,8 +2,10 @@ import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
 import { Html, Hr, Button, Text, Head, Preview, Container, Link } from "@react-email/components";
 import styles from "../../styles";
 import { Placeholder } from "../../_components";
-import { EmailProps } from "../../types";
+import { DebugToggle, EmailProps } from "../../types";
 import { json } from "stream/consumers";
+import React from "react";
+import DebugTemplates from "../../../DebugTemplates";
 
 export type TemplateVariables = {
     name: string;
@@ -28,25 +30,13 @@ const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } =
     customerProfileLink: Placeholder({ name: "customerProfileLink" }),
     postContent: Placeholder({ name: "postContent" }),
 };
+const EmailTemplates: { [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element } = {
+    new: (debug?) => <NewPostActionReminder />,
+    reduced: (debug?) => <ReducedPostActionReminder />,
+};
 export default function PostActionReminderMail(props: EmailProps) {
-    if (props.debug)
-        return (
-            <Html dir="ltr" lang="de">
-                <NewPostActionReminder {...props} />
-                <Hr />
-                <Hr style={{ backgroundColor: "black", height: "20px" }} />
-                <Hr />
-                <ReducedPostActionReminder {...props} />
-            </Html>
-        );
-    switch (props.emailLevel) {
-        case "new":
-            return <NewPostActionReminder {...props} />;
-        case "reduced":
-            return <ReducedPostActionReminder {...props} />;
-        default:
-            throw new Error("Invalid email level");
-    }
+    if (props.debug) return DebugTemplates({ templates: EmailTemplates });
+    return EmailTemplates[props.emailLevel]();
 }
 
 PostActionReminderMail.PreviewProps = {
@@ -54,7 +44,7 @@ PostActionReminderMail.PreviewProps = {
     debug: true,
 } satisfies EmailProps;
 
-function NewPostActionReminder(props: EmailProps) {
+function NewPostActionReminder(props: DebugToggle) {
     const { name, postTime, customerName, customerProfileLink, postContent } = props.debug
         ? defaultParams
         : placeholders;
@@ -96,7 +86,7 @@ function NewPostActionReminder(props: EmailProps) {
     );
 }
 
-function ReducedPostActionReminder(props: EmailProps) {
+function ReducedPostActionReminder(props: DebugToggle) {
     const { name, postTime, customerName, customerProfileLink, postContent } = props.debug
         ? defaultParams
         : placeholders;

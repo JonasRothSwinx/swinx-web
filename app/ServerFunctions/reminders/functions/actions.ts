@@ -8,6 +8,11 @@ import TimelineEvent from "../../types/timelineEvents";
 import templateDefinitions from "../../email/templates";
 import Influencer from "../../types/influencer";
 import emailClient from "../../email";
+import { EmailContextProps, SendMailProps } from "../../email/templates/types";
+import { EmailContextPropsByLevel } from "../types";
+import Campaign from "../../types/campaign";
+import Customer from "../../types/customer";
+import ErrorLogger from "../../errorLog";
 // import dayjs from "@/app/utils/configuredDayJs";
 const triggerHandlers: {
     [key in TimelineEvent.eventType]: (triggers: GroupedTrigger) => Promise<unknown>;
@@ -20,8 +25,8 @@ const triggerHandlers: {
 };
 export async function startReminderRoutine(): Promise<boolean> {
     console.log("Starting reminder routine");
-    const startTime = dayjs().startOf("day").subtract(7, "day");
-    const endTime = dayjs().endOf("day").add(7, "day");
+    const startTime = dayjs().startOf("day").subtract(7, "week");
+    const endTime = dayjs().endOf("day").add(7, "week");
     const emailTriggers = await getEmailTriggers({ startDate: startTime, endDate: endTime });
     console.log(`Found ${emailTriggers.length} triggers for today`);
     if (emailTriggers.length === 0) {
@@ -60,6 +65,16 @@ interface GetEmailTriggerProps {
     startDate: Dayjs;
     endDate: Dayjs;
 }
+type DataCache = {
+    campaign: { [id: string]: Campaign.Campaign };
+    customer: { [id: string]: Customer.Customer };
+    influencer: { [id: string]: Influencer.Influencer };
+};
+const DataCache: DataCache = {
+    campaign: {},
+    customer: {},
+    influencer: {},
+};
 
 async function getEmailTriggers(props: GetEmailTriggerProps) {
     const { startDate, endDate } = props;
@@ -79,9 +94,11 @@ async function getEventsByEmailTrigger(
     trigger: EmailTriggers.EmailTriggerEventRef
 ): Promise<EmailTriggers.EmailTrigger | null> {
     console.log("Getting events by trigger", trigger);
-    const event = await database.timelineEvent.get(trigger.event.id);
-    if (event === null) return null;
-    const triggerWithEvent = { ...trigger, event };
+    const response = await database.timelineEvent.getForEmailTrigger(trigger.event.id);
+    if (response === null) return null;
+    const { event, customer } = response;
+    if (!event || !customer) return null;
+    const triggerWithEvent = { ...trigger, event, customer };
     return triggerWithEvent;
 }
 
@@ -127,22 +144,24 @@ function groupTriggers(triggers: EmailTriggers.EmailTrigger[]): TriggerGroup {
     }, grouped);
     return grouped;
 }
-function makeEventInfluencerTuple(
-    trigger: EmailTriggers.EmailTrigger
-): [event: TimelineEvent.Event, influencer: Influencer.WithContactInfo] | null {
-    const { event, influencer } = trigger;
-    if (!event || !influencer) return null;
-    return [event, influencer];
+
+function getContext(triggers: EmailTriggers.EmailTrigger[]): Partial<EmailContextProps>[] {
+    const context: Partial<EmailContextProps>[] = triggers.reduce((context, trigger) => {
+        const { event, influencer, customer } = trigger;
+        if (!event || !influencer || !customer) {
+            ErrorLogger.log("Missing context");
+            return context;
+        }
+        context.push({
+            event,
+            influencer,
+            customer,
+        });
+        return context;
+    }, [] as Partial<EmailContextProps>[]);
+    return context;
 }
-function makeEventInfluencerTuples(
-    triggers: EmailTriggers.EmailTrigger[]
-): [event: TimelineEvent.Event, influencer: Influencer.WithContactInfo][] {
-    return triggers.reduce((acc, trigger) => {
-        const tuple = makeEventInfluencerTuple(trigger);
-        if (!tuple) return acc;
-        return [...acc, tuple];
-    }, [] as [event: TimelineEvent.Event, influencer: Influencer.WithContactInfo][]);
-}
+
 async function handleInviteMails(triggers: GroupedTrigger) {
     console.log("Handling invite mails", triggers);
     const promises: Promise<unknown>[] = [];
@@ -151,14 +170,13 @@ async function handleInviteMails(triggers: GroupedTrigger) {
         switch (emailType) {
             case "actionReminder": {
                 Object.entries(eventTriggers).forEach(([level, levelTriggers]) => {
-                    const context = {
-                        eventWithInfluencer: makeEventInfluencerTuples(levelTriggers),
-                    };
-                    const sendProps = {
+                    const contextProps = getContext(levelTriggers);
+                    const sendProps: SendMailProps = {
                         level: level as EmailTriggers.emailLevel,
-                        context,
+                        commonContext: {},
+                        individualContext: contextProps,
                     };
-                    promises.push(templateDefinitions.mailTypes.invites.InviteEvents.send(sendProps));
+                    promises.push(templateDefinitions.mailTypes.invites.InviteReminder.send(sendProps));
                 });
                 break;
             }
@@ -178,12 +196,11 @@ async function handlePostMails(triggers: GroupedTrigger) {
         switch (emailType) {
             case "actionReminder": {
                 Object.entries(eventTriggers).forEach(([level, levelTriggers]) => {
-                    const context = {
-                        eventWithInfluencer: makeEventInfluencerTuples(levelTriggers),
-                    };
-                    const sendProps = {
+                    const contextProps = getContext(levelTriggers);
+                    const sendProps: SendMailProps = {
                         level: level as EmailTriggers.emailLevel,
-                        context,
+                        commonContext: {},
+                        individualContext: contextProps,
                     };
                     promises.push(templateDefinitions.mailTypes.post.PostActionReminder.send(sendProps));
                 });
@@ -191,12 +208,11 @@ async function handlePostMails(triggers: GroupedTrigger) {
             }
             case "deadlineReminder": {
                 Object.entries(eventTriggers).forEach(([level, levelTriggers]) => {
-                    const context = {
-                        eventWithInfluencer: makeEventInfluencerTuples(levelTriggers),
-                    };
-                    const sendProps = {
+                    const contextProps = getContext(levelTriggers);
+                    const sendProps: SendMailProps = {
                         level: level as EmailTriggers.emailLevel,
-                        context,
+                        commonContext: {},
+                        individualContext: contextProps,
                     };
                     promises.push(templateDefinitions.mailTypes.post.PostDeadlineReminder.send(sendProps));
                 });
@@ -215,12 +231,11 @@ async function handleVideoMails(triggers: GroupedTrigger) {
         switch (emailType) {
             case "actionReminder": {
                 Object.entries(eventTriggers).forEach(([level, levelTriggers]) => {
-                    const context = {
-                        eventWithInfluencer: makeEventInfluencerTuples(levelTriggers),
-                    };
-                    const sendProps = {
+                    const contextProps = getContext(levelTriggers);
+                    const sendProps: SendMailProps = {
                         level: level as EmailTriggers.emailLevel,
-                        context,
+                        commonContext: {},
+                        individualContext: contextProps,
                     };
                     promises.push(templateDefinitions.mailTypes.video.VideoActionReminder.send(sendProps));
                 });
@@ -228,12 +243,11 @@ async function handleVideoMails(triggers: GroupedTrigger) {
             }
             case "deadlineReminder": {
                 Object.entries(eventTriggers).forEach(([level, levelTriggers]) => {
-                    const context = {
-                        eventWithInfluencer: makeEventInfluencerTuples(levelTriggers),
-                    };
-                    const sendProps = {
+                    const contextProps = getContext(levelTriggers);
+                    const sendProps: SendMailProps = {
                         level: level as EmailTriggers.emailLevel,
-                        context,
+                        commonContext: {},
+                        individualContext: contextProps,
                     };
                     promises.push(templateDefinitions.mailTypes.video.VideoDeadlineReminder.send(sendProps));
                 });
@@ -252,12 +266,11 @@ async function handleWebinarSpeakerMails(triggers: GroupedTrigger) {
         switch (emailType) {
             case "actionReminder": {
                 Object.entries(eventTriggers).forEach(([level, levelTriggers]) => {
-                    const context = {
-                        eventWithInfluencer: makeEventInfluencerTuples(levelTriggers),
-                    };
-                    const sendProps = {
+                    const contextProps = getContext(levelTriggers);
+                    const sendProps: SendMailProps = {
                         level: level as EmailTriggers.emailLevel,
-                        context,
+                        commonContext: {},
+                        individualContext: contextProps,
                     };
                     promises.push(
                         templateDefinitions.mailTypes.webinarSpeaker.WebinarSpeakerActionReminder.send(sendProps)

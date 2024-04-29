@@ -3,7 +3,8 @@ import { Head, Hr, Html, Link, Preview, Text } from "@react-email/components";
 import React from "react";
 import { Placeholder } from "../_components";
 import styles from "../styles";
-import { EmailProps } from "../types";
+import { DebugToggle, EmailProps } from "../types";
+import DebugTemplates from "../../DebugTemplates";
 
 export const subjectLineBase = "Erinnerung: Einladungen";
 export type TemplateVariables = {
@@ -15,7 +16,7 @@ export type TemplateVariables = {
 };
 export const defaultParams: TemplateVariables = {
     name: "testName",
-    inviteAmount: "0",
+    inviteAmount: "5 Millionen",
     customerName: "TestCustomer",
     eventName: "TestEvent",
     eventLink: "https://www.swinx.de",
@@ -28,33 +29,23 @@ const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } =
     eventName: Placeholder({ name: "eventName" }),
     eventLink: Placeholder({ name: "eventLink" }),
 };
-const EmailTemplates: { [key in Exclude<EmailTriggers.emailLevel, "none">]: JSX.Element } = {
-    new: <NewInvitesReminder />,
-    reduced: <ReducedInvitesReminder />,
+const EmailTemplates: { [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element } = {
+    new: (debug?) => <NewInvitesReminder debug={debug} />,
+    reduced: (debug?) => <ReducedInvitesReminder debug={debug} />,
 };
 
 export default function InvitesReminderMail(props: EmailProps) {
-    if (props.debug) {
-        return (
-            <Html dir="ltr" lang="de">
-                {Object.values(EmailTemplates).map((template, index) => (
-                    <React.Fragment key={index}>
-                        {template}
-                        <Hr style={styles.largeDivider} />
-                    </React.Fragment>
-                ))}
-            </Html>
-        );
-    }
-    return EmailTemplates[props.emailLevel];
+    if (props.debug) return DebugTemplates({ templates: EmailTemplates });
+
+    return EmailTemplates[props.emailLevel]();
 }
 InvitesReminderMail.PreviewProps = {
     emailLevel: "new",
     debug: true,
 } satisfies EmailProps;
 
-function NewInvitesReminder() {
-    const { name, inviteAmount, customerName, eventName, eventLink } = placeholders;
+function NewInvitesReminder(props: DebugToggle) {
+    const { name, inviteAmount, customerName, eventName, eventLink } = props.debug ? defaultParams : placeholders;
     return (
         <Html dir="ltr" lang="de">
             <Head />
@@ -75,8 +66,8 @@ function NewInvitesReminder() {
     );
 }
 
-function ReducedInvitesReminder() {
-    const { name, inviteAmount, customerName, eventName, eventLink } = placeholders;
+function ReducedInvitesReminder(props: DebugToggle) {
+    const { name, inviteAmount, customerName, eventName, eventLink } = props.debug ? defaultParams : placeholders;
     return (
         <Html dir="ltr" lang="de">
             <Head />
