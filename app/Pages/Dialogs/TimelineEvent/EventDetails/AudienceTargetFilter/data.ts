@@ -245,3 +245,5 @@ export const industries: { [key in (typeof mainCategories)[number]]: readonly st
         "Öffentlicher Dienst",
     ],
 } as const;
+
+export const countries = ["Deutschland", "Österreich", "Schweiz"] as const;

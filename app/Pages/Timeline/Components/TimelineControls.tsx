@@ -5,8 +5,8 @@ import { DialogConfig, DialogOptions } from "@/app/Definitions/types";
 import { Button, MenuItem, TextField, Typography } from "@mui/material";
 import { groupBy } from "../Functions/groupEvents";
 import { AddIcon } from "@/app/Definitions/Icons";
-import TimelineEventMultiDialog from "../../Dialogs/TimelineEvent/MultiEvent/TimelineEventMultiDialog";
 import { useQueryClient } from "@tanstack/react-query";
+import TimelineEventDialog from "../../Dialogs/TimelineEvent/TimelineEventDialog";
 
 interface TimelineControlsProps {
     campaign: Campaign.Campaign;
@@ -58,7 +58,7 @@ export default function TimelineControls(props: TimelineControlsProps) {
     }
     const Dialogs: { [key in openDialog]: JSX.Element | null } = {
         None: null,
-        Timeline: <TimelineEventMultiDialog onClose={onDialogClose} campaignId={campaign.id} editing={false} />,
+        Timeline: <TimelineEventDialog onClose={onDialogClose} campaignId={campaign.id} editing={false} />,
     };
     return (
         <>

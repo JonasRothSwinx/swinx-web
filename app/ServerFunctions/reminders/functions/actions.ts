@@ -116,8 +116,9 @@ function groupTriggers(triggers: EmailTriggers.EmailTrigger[]): TriggerGroup {
             type: mailType,
             influencer,
         } = trigger;
+        if (trigger.sent || !trigger.active) return grouped;
         if (!influencer) return grouped;
-        const level = trigger.influencer?.emailLevel ?? "new";
+        const level = trigger.emailLevelOverride ?? trigger.influencer?.emailLevel ?? "new";
         if (!level || level === "none") return grouped;
         const eventTypeGroup = grouped[eventType];
         if (!eventTypeGroup) {

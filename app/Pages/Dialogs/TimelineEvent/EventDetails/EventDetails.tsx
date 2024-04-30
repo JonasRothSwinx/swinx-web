@@ -5,18 +5,18 @@ import React, { Dispatch, SetStateAction, useMemo, useState } from "react";
 import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import AudienceTargetFilter from "./AudienceTargetFilter";
 
 interface DetailsProps {
     applyDetailsChange: (data: Partial<TimelineEvent.Event>) => void;
-    data: Prettify<
-        //optional properties
-        Partial<Pick<TimelineEvent.Event, "eventTitle" | "info" | "eventTaskAmount" | "type" | "relatedEvents">>
-    >;
+    data: Partial<TimelineEvent.Event>;
     isEditing?: boolean;
     updatedData: Prettify<Partial<TimelineEvent.Event>>;
     setUpdatedData: Dispatch<SetStateAction<Partial<TimelineEvent.Event>>>;
 }
-type relevantDetails = Prettify<Pick<TimelineEvent.Event, "eventTitle" | "eventTaskAmount"> & TimelineEvent.EventInfo>;
+type relevantDetails = Prettify<
+    Pick<TimelineEvent.Event, "eventTitle" | "eventTaskAmount" | "eventAssignmentAmount"> & TimelineEvent.EventInfo
+>;
 type relevantDetailsKey = Prettify<keyof relevantDetails>;
 type DetailsConfigEntry =
     | {
@@ -30,7 +30,7 @@ type DetailsConfigEntry =
           enabled: false;
       };
 type DetailsConfig = {
-    [key in relevantDetailsKey]: DetailsConfigEntry;
+    [key in relevantDetailsKey]?: DetailsConfigEntry;
 };
 
 const EventTypeConfig: { [key in TimelineEvent.eventType]: DetailsConfig } = {
@@ -173,16 +173,17 @@ const EventTypeConfig: { [key in TimelineEvent.eventType]: DetailsConfig } = {
         },
     },
     Webinar: {
-        eventTitle: { enabled: false },
-        topic: { enabled: false },
-        charLimit: { enabled: false },
-        draftDeadline: { enabled: false },
-        maxDuration: { enabled: false },
-        eventTaskAmount: { enabled: false },
-        instructions: { enabled: false },
+        eventTitle: { enabled: true, label: "Titel", type: "text" },
+        eventAssignmentAmount: { enabled: true, type: "number", label: "Anzahl Speaker" },
         eventLink: { enabled: true, type: "text", label: "Link" },
-        eventPostContent: { enabled: false },
     },
+};
+interface AdditionalFieldsProps {
+    event: Partial<TimelineEvent.Event>;
+    onChange: (data: Partial<TimelineEvent.Event>) => void;
+}
+const AdditionalFields: { [key in TimelineEvent.eventType]?: (props: AdditionalFieldsProps) => JSX.Element } = {
+    Webinar: (props) => <AudienceTargetFilter {...props} />,
 };
 
 function getDataKey(
@@ -191,20 +192,21 @@ function getDataKey(
     updatedData: Partial<TimelineEvent.Event>
 ): string | number | null | undefined {
     switch (key) {
+        //in info
         case "topic":
-            return updatedData.info?.topic ?? data.info?.topic;
         case "charLimit":
-            return updatedData.info?.charLimit ?? data.info?.charLimit;
         case "maxDuration":
-            return updatedData.info?.maxDuration ?? data.info?.maxDuration;
-        case "eventTitle":
-            return updatedData.eventTitle ?? data.eventTitle;
-        case "eventTaskAmount":
-            return updatedData.eventTaskAmount ?? data.eventTaskAmount;
         case "draftDeadline":
-            return updatedData.info?.draftDeadline ?? data.info?.draftDeadline;
-        case "instructions":
-            return updatedData.info?.instructions ?? data.info?.instructions;
+        case "instructions": {
+            return updatedData.info?.[key] ?? data.info?.[key];
+        }
+
+        //in flat data
+        case "eventTitle":
+        case "eventTaskAmount":
+        case "eventAssignmentAmount": {
+            return updatedData[key] ?? data[key];
+        }
     }
 }
 
@@ -232,6 +234,11 @@ export default function EventDetails(props: DetailsProps): JSX.Element {
             }
         }
     }
+    const ChangeHandler = {
+        handleEventChange: (newData: Partial<TimelineEvent.Event>) => {
+            setUpdatedData(newData);
+        },
+    };
     const fullWidthFields: (keyof relevantDetails)[] = ["topic", "instructions"];
     const sxTest: Record<string, Record<string, string> | string> = { test: "test" };
     fullWidthFields.map((field) => {
@@ -240,7 +247,18 @@ export default function EventDetails(props: DetailsProps): JSX.Element {
             flexBasis: "100%",
         };
     });
-    const sxProps = sxTest as SxProps;
+    const sxProps: SxProps = {
+        "&": {
+            ".MuiTextField-root:has(#eventTitle)": {
+                width: "100%",
+                flexBasis: "100%",
+            },
+            ".MuiTextField-root:has(#eventLink)": {
+                width: "100%",
+                flexBasis: "100%",
+            },
+        },
+    };
     function printData() {
         console.log({ data, updatedData });
         Object.keys(data).map((key) => {
@@ -252,7 +270,7 @@ export default function EventDetails(props: DetailsProps): JSX.Element {
     if (!data.type) return <></>;
     return (
         <DialogContent dividers sx={sxProps}>
-            <Button onClick={printData}>Print Data</Button>
+            {/* <Button onClick={printData}>Print Data</Button> */}
             {Object.entries(EventTypeConfig[data.type]).map(([key, config]) => {
                 const keyName = key as relevantDetailsKey;
                 const value = getDataKey(keyName, data, updatedData);
@@ -260,6 +278,7 @@ export default function EventDetails(props: DetailsProps): JSX.Element {
                 return (
                     <EventDetailField
                         key={key}
+                        id={key}
                         name={keyName}
                         event={data}
                         value={value}
@@ -268,10 +287,15 @@ export default function EventDetails(props: DetailsProps): JSX.Element {
                     />
                 );
             })}
+            {AdditionalFields[data.type]?.({
+                event: { ...data, ...updatedData },
+                onChange: ChangeHandler.handleEventChange,
+            }) ?? <></>}
         </DialogContent>
     );
 }
 interface EventDetailFieldProps {
+    id: string;
     event: Partial<TimelineEvent.Event>;
     name: keyof relevantDetails;
     value: string | number | null | undefined;
@@ -279,13 +303,14 @@ interface EventDetailFieldProps {
     changeHandler: (value: string | number) => void;
 }
 function EventDetailField(props: EventDetailFieldProps): JSX.Element {
-    const { event, name, value, config, changeHandler } = props;
+    const { id, event, name, value, config, changeHandler } = props;
     if (!config.enabled) return <></>;
     const { label, type } = config;
     switch (type) {
         case "text":
             return (
                 <TextField
+                    id={id}
                     name={name}
                     label={label}
                     value={(value as string) ?? ""}
@@ -296,6 +321,7 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
         case "number":
             return (
                 <TextField
+                    id={id}
                     name={name}
                     type="number"
                     label={label}
@@ -323,6 +349,7 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
                         }}
                         slotProps={{
                             textField: {
+                                id,
                                 required: true,
                                 variant: "standard",
                             },
@@ -333,6 +360,7 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
         case "textarea":
             return (
                 <TextField
+                    id={id}
                     name={name}
                     label={label}
                     value={(value as string) ?? ""}

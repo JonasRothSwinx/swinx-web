@@ -20,9 +20,8 @@ import Campaign from "@/app/ServerFunctions/types/campaign";
 import { Nullable, highlightData } from "@/app/Definitions/types";
 import dataClient from "@/app/ServerFunctions/database";
 import { useMemo, useState } from "react";
-import TimelineEventSingleDialog from "../../Dialogs/TimelineEvent/SingleEvent/TimelineEventSingleDialog";
-import TimelineEventMultiDialog from "../../Dialogs/TimelineEvent/MultiEvent/TimelineEventMultiDialog";
 import { useConfirm } from "material-ui-confirm";
+import TimelineEventDialog from "../../Dialogs/TimelineEvent/TimelineEventDialog";
 const config = {
     lineheight: 20,
 };
@@ -261,45 +260,18 @@ function EditButton(props: EditButtonProps) {
             setIsOpen(false);
         },
     };
-    const Dialog = () => {
-        switch (true) {
-            case TimelineEvent.isSingleEvent(event): {
-                return (
-                    <TimelineEventSingleDialog
-                        {...{
-                            onClose: EventHandler.closeDialog,
-                            parent: campaign,
-                            editing: true,
-                            editingData: event as TimelineEvent.SingleEvent,
-                            campaignId: event.campaign.id,
-                            targetAssignment: event.assignments[0],
-                        }}
-                    />
-                );
-            }
-            case TimelineEvent.isMultiEvent(event): {
-                return (
-                    <TimelineEventMultiDialog
-                        {...{
-                            onClose: EventHandler.closeDialog,
-                            parent: campaign,
-                            editing: true,
-                            editingData: event as TimelineEvent.MultiEvent,
-                            campaignId: event.campaign.id,
-                            targetAssignments: event.assignments,
-                        }}
-                    />
-                );
-            }
-            default: {
-                return <></>;
-            }
-        }
-    };
 
     return (
         <>
-            {isOpen && Dialog()}
+            {isOpen && (
+                <TimelineEventDialog
+                    onClose={EventHandler.closeDialog}
+                    editingData={event}
+                    campaignId={campaign.id}
+                    editing={true}
+                    targetAssignment={event.assignments ? event.assignments[0] : undefined}
+                />
+            )}
             <IconButton
                 id="editButton"
                 onClick={() => {

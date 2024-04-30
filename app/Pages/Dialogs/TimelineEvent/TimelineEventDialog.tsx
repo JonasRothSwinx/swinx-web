@@ -9,7 +9,7 @@ import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import "dayjs/locale/de";
 import { useEffect, useState } from "react";
-import stylesExporter from "../../styles/stylesExporter";
+import stylesExporter, { timeline } from "../../styles/stylesExporter";
 import { DateSelector } from "./EventDetails/DateSelector";
 import { submitEvent } from "./actions/submitEvent";
 import assignment from "@/app/ServerFunctions/database/dataClients/assignments";
@@ -18,6 +18,7 @@ import dataClient from "@/app/ServerFunctions/database";
 import sxStyles from "../sxStyles";
 import EmailTriggerMenu from "./EmailTriggerMenu";
 import { GeneralDetails } from "./EventDetails/GeneralDetails";
+import validateFields from "./actions/validateFields";
 
 export const styles = stylesExporter.dialogs;
 type DialogType = TimelineEvent.Event;
@@ -33,6 +34,52 @@ type TimelineEventDialogProps = {
     campaignId: string;
     targetAssignment?: Assignment.AssignmentMin;
 };
+//######################
+//#region DefaultValues
+const typeDefault: {
+    [key in TimelineEvent.eventType]: Partial<TimelineEvent.Event>;
+} = {
+    Invites: {
+        type: "Invites",
+        eventAssignmentAmount: 1,
+        eventTaskAmount: 1000,
+    },
+    Post: {
+        type: "Post",
+        eventAssignmentAmount: 1,
+        eventTaskAmount: 0,
+    },
+    Video: {
+        type: "Video",
+        eventAssignmentAmount: 1,
+        eventTaskAmount: 0,
+    },
+    WebinarSpeaker: {
+        type: "WebinarSpeaker",
+        eventAssignmentAmount: 1,
+        eventTaskAmount: 0,
+    },
+    Webinar: {
+        type: "Webinar",
+        eventAssignmentAmount: 1,
+        eventTaskAmount: 0,
+        targetAudience: { industry: [], cities: [], country: ["Deutschland"] },
+        relatedEvents: { parentEvent: null, childEvents: [] },
+    },
+};
+const EventHasEmailTriggers: { [key in TimelineEvent.eventType | "none"]: boolean } = {
+    none: false,
+
+    Invites: true,
+    Post: true,
+    Video: true,
+    WebinarSpeaker: true,
+
+    Webinar: false,
+};
+//#endregion DefaultValues
+//######################
+
 export default function TimelineEventDialog(props: TimelineEventDialogProps) {
     //######################
     //#region Props
@@ -97,41 +144,6 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
     //######################
 
     //######################
-    //#region DefaultValues
-    const typeDefault: {
-        [key in TimelineEvent.eventType]: Partial<TimelineEvent.Event>;
-    } = {
-        Invites: {
-            type: "Invites",
-            eventAssignmentAmount: 1,
-            eventTaskAmount: 1000,
-        },
-        Post: {
-            type: "Post",
-            eventAssignmentAmount: 1,
-            eventTaskAmount: 0,
-        },
-        Video: {
-            type: "Video",
-            eventAssignmentAmount: 1,
-            eventTaskAmount: 0,
-        },
-        WebinarSpeaker: {
-            type: "WebinarSpeaker",
-            eventAssignmentAmount: 1,
-            eventTaskAmount: 0,
-        },
-        Webinar: {
-            type: "Webinar",
-            eventAssignmentAmount: 1,
-            eventTaskAmount: 0,
-            relatedEvents: { parentEvent: null, childEvents: [] },
-        },
-    };
-    //#endregion DefaultValues
-    //######################
-
-    //######################
     //#region Event Handlers
     const EventHandlers = {
         handleClose: (hasChanged?: boolean) => {
@@ -144,8 +156,12 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
         onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
             event.preventDefault();
             const combinedEvent = { ...timelineEvent, ...updatedData };
-            if (!campaignId || !TimelineEvent.validate(combinedEvent) || !targetAssignment) return;
-            if (!TimelineEvent.isSingleEvent(combinedEvent)) throw new Error("Invalid event type");
+            const type = combinedEvent.type;
+            if (!type || !TimelineEvent.isTimelineEventType(type)) throw new Error("No event type selected");
+
+            if (!validateFields(combinedEvent, type)) return;
+            // if (!campaignId || !TimelineEvent.validate(combinedEvent) || !targetAssignment) return;
+            // if (!TimelineEvent.isTimelineEvent(combinedEvent)) throw new Error("Invalid event type");
 
             submitEvent({
                 editing,
@@ -162,7 +178,14 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
 
         printEvent: () => {
             //print all properties of the event on separate lines
+            console.log("####################");
+            console.log("data");
             Object.entries(timelineEvent).forEach(([key, value]) => {
+                console.log(`${key}:`, value);
+            });
+            console.log("####################");
+            console.log("updatedData");
+            Object.entries(updatedData).forEach(([key, value]) => {
                 console.log(`${key}:`, value);
             });
         },
@@ -249,7 +272,7 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                         </Button>
                     </DialogActions>
                 </Box>
-                {editing && timelineEvent.id && (
+                {EventHasEmailTriggers[timelineEvent.type ?? "none"] && editing && timelineEvent.id && (
                     <Box id="Trigger" width="500px">
                         <EmailTriggerMenu eventId={timelineEvent.id} />
                     </Box>
