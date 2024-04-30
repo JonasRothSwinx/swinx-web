@@ -19,6 +19,12 @@ const schema = a.schema({
         eventLink: a.string(),
         eventPostContent: a.string(),
     }),
+    FilterOptions: a.customType({
+        industry: a.string().array(),
+        country: a.string().array(),
+        cities: a.string().array(),
+    }),
+
     //##############################################
     //################### Models ###################
     //##############################################
@@ -255,6 +261,8 @@ const schema = a.schema({
             date: a.datetime().required(),
             notes: a.string(),
             info: a.ref("EventInfo"),
+
+            targetAudience: a.ref("FilterOptions"),
 
             //###  Relations  ####
             //####################

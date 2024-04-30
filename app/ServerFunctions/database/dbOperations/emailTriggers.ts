@@ -104,7 +104,7 @@ export async function updateEmailTrigger(
     const { data, errors } = await client.models.EmailTrigger.update({
         id,
         date: date,
-        event: event ? { id: event.id } : undefined,
+        // eventID: event.id, //Event ID is not updatable, reassigning trigger to another event makes no sense
         active,
         emailBodyOverride,
         emailLevelOverride,
@@ -226,5 +226,5 @@ function validateEmailTrigger(raw: RawEmailTrigger): EmailTriggers.EmailTriggerE
 }
 
 /**
- * Get 
+ * Get
  */

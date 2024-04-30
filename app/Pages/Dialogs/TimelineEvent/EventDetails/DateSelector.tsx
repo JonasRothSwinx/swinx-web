@@ -5,16 +5,16 @@ import { Add as AddIcon, DeleteOutlined as DeleteIcon } from "@mui/icons-materia
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import React, { Dispatch, MouseEvent, SetStateAction, useEffect, useMemo } from "react";
-import { dates, styles } from "./SingleEvent/TimelineEventSingleDialog";
+import { dates, styles } from "../TimelineEventDialog";
 import { PartialWith } from "@/app/Definitions/types";
 import { useQuery } from "@tanstack/react-query";
 import dataClient from "@/app/ServerFunctions/database";
 
 interface DateSelectorProps {
-    timelineEvent: PartialWith<TimelineEvent.SingleEvent, "relatedEvents" | "campaign">;
+    timelineEvent: PartialWith<TimelineEvent.Event, "relatedEvents" | "campaign">;
     setTimelineEvent: Dispatch<SetStateAction<DateSelectorProps["timelineEvent"]>>;
     isEditing: boolean;
-    eventType?: TimelineEvent.singleEventType;
+    eventType?: TimelineEvent.eventType;
     dates: dates;
     setDates: Dispatch<SetStateAction<dates>>;
 }
@@ -62,6 +62,7 @@ export function DateSelector(props: DateSelectorProps) {
             };
         },
     };
+
     // trigger update date on parentEvent Change
     // useEffect(() => {
     //     console.log("parentEvent.data", parentEvent.data);
@@ -82,40 +83,52 @@ export function DateSelector(props: DateSelectorProps) {
     //########################################
     //#region Configuration
     const isRepeatable: {
-        [key in TimelineEvent.singleEventType | "none"]: boolean;
+        [key in TimelineEvent.eventType | "none"]: boolean;
     } = {
+        none: false,
+
         Invites: true,
         Post: true,
         Video: true,
         WebinarSpeaker: false,
-        none: false,
+
+        Webinar: false,
     };
     const isFixedDate: {
-        [key in TimelineEvent.singleEventType | "none"]: boolean;
+        [key in TimelineEvent.eventType | "none"]: boolean;
     } = {
+        none: false,
+
         Invites: false,
         Post: false,
         Video: false,
         WebinarSpeaker: true,
-        none: false,
+
+        Webinar: false,
     };
     const fixedDate: {
-        [key in TimelineEvent.singleEventType | "none"]: () => Dayjs | null;
+        [key in TimelineEvent.eventType | "none"]: () => Dayjs | null;
     } = {
+        none: () => null,
+
         Invites: () => null,
         Post: () => null,
         Video: () => null,
         WebinarSpeaker: () => (parentEvent.data ? dayjs(parentEvent.data.date) : null),
-        none: () => null,
+
+        Webinar: () => null,
     };
     const hasParentEvent: {
-        [key in TimelineEvent.singleEventType | "none"]: { parentEventType: TimelineEvent.multiEventType } | false;
+        [key in TimelineEvent.eventType | "none"]: { parentEventType: TimelineEvent.multiEventType } | false;
     } = {
+        none: false,
+
         Invites: { parentEventType: "Webinar" },
         Post: { parentEventType: "Webinar" },
         Video: { parentEventType: "Webinar" },
         WebinarSpeaker: { parentEventType: "Webinar" },
-        none: false,
+
+        Webinar: false,
     };
     //#endregion
     //########################################

@@ -1,5 +1,6 @@
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { DialogContent, TextField } from "@mui/material";
+import AudienceTargetFilter from "../AudienceTargetFilter";
 
 interface WebinarDetailsProps {
     onChange: (data: Partial<TimelineEvent.Webinar>) => void;
@@ -9,7 +10,13 @@ interface WebinarDetailsProps {
 export default function WebinarDetails(props: WebinarDetailsProps): JSX.Element {
     const { onChange, data } = props;
 
-    const EventHandlers = {};
+    const EventHandlers = {
+        targetAudienceChange: (newData: Partial<TimelineEvent.Event["targetAudience"]>) => {
+            onChange({
+                targetAudience: { ...{ industry: [], cities: [], country: [] }, ...data.targetAudience, ...newData },
+            });
+        },
+    };
 
     return (
         <DialogContent>
@@ -26,6 +33,7 @@ export default function WebinarDetails(props: WebinarDetailsProps): JSX.Element 
                 value={data.eventAssignmentAmount ?? 1}
                 onChange={(e) => onChange({ eventAssignmentAmount: Number(e.target.value) })}
             />
+            <AudienceTargetFilter targetAudience={data.targetAudience} onChange={EventHandlers.targetAudienceChange} />
         </DialogContent>
     );
 }

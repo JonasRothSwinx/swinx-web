@@ -77,6 +77,9 @@ const selectionSetFull = [
 
     //email triggers
     "emailTriggers.*",
+
+    //target audience
+    "targetAudience.*",
 ] as const;
 type RawEvent = SelectionSet<Schema["TimelineEvent"], typeof selectionSetFull>;
 
@@ -122,6 +125,11 @@ function validateEvent(rawEvent: RawEvent): TimelineEvent.Event {
         instructions: rawEvent.info?.instructions ?? undefined,
         maxDuration: rawEvent.info?.maxDuration ?? undefined,
     };
+    const targetAudience: TimelineEvent.Event["targetAudience"] = {
+        industry: rawEvent.targetAudience?.industry?.filter((x): x is string => x !== null) ?? [],
+        country: rawEvent.targetAudience?.country?.filter((x): x is string => x !== null) ?? [],
+        cities: rawEvent.targetAudience?.cities?.filter((x): x is string => x !== null) ?? [],
+    };
 
     const eventOut: TimelineEvent.Event = {
         id,
@@ -143,6 +151,7 @@ function validateEvent(rawEvent: RawEvent): TimelineEvent.Event {
             active: x.active,
             sent: x.sent,
         })),
+        targetAudience,
     };
     return eventOut;
 }
@@ -177,6 +186,7 @@ export async function createTimelineEvent(props: Omit<TimelineEvent.Event, "id">
         eventTaskAmount,
         info,
         relatedEvents: { parentEvent },
+        targetAudience,
     } = props;
     const { id: campaignId } = props.campaign;
     if (!(date && campaignId)) {
@@ -195,6 +205,7 @@ export async function createTimelineEvent(props: Omit<TimelineEvent.Event, "id">
             eventTaskAmount,
             info: info,
             parentEventId,
+            targetAudience,
         },
         {}
     );
@@ -234,6 +245,7 @@ export async function updateTimelineEvent(props: PartialWith<TimelineEvent.Event
         eventTaskAmount,
         eventTitle,
         relatedEvents,
+        targetAudience,
     } = props;
     if (!id) {
         throw new Error("Missing Data");
@@ -248,6 +260,7 @@ export async function updateTimelineEvent(props: PartialWith<TimelineEvent.Event
         ...(eventTaskAmount ? { eventTaskAmount: eventTaskAmount } : {}),
         ...(eventTitle ? { eventTitle: eventTitle } : {}),
         ...(info ? { info: info } : {}),
+        ...(targetAudience ? { targetAudience: targetAudience } : {}),
     } satisfies PartialWith<Schema["TimelineEvent"], "id">;
 
     // const { data, errors } = await client.models.TimelineEvent.update({

@@ -79,8 +79,8 @@ export async function listEmailTriggers(): Promise<EmailTriggers.EmailTrigger[]>
  * @returns The updated email trigger object
  */
 export async function updateEmailTrigger(
-    updatedData: Partial<EmailTriggers.EmailTriggerEventRef>,
-    previousTrigger: EmailTriggers.EmailTrigger & { id: string }
+    updatedData: Partial<Omit<EmailTriggers.EmailTriggerEventRef, "event">>,
+    previousTrigger: Omit<EmailTriggers.EmailTrigger, "id"> & { id: string }
 ): Promise<EmailTriggers.EmailTrigger> {
     const queryClient = config.getQueryClient();
 

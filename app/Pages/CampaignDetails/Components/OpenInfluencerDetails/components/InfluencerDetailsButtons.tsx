@@ -5,7 +5,7 @@ import Influencer from "@/app/ServerFunctions/types/influencer";
 import { Tooltip, IconButton } from "@mui/material";
 import { MouseEvent, useState } from "react";
 import database from "@/app/ServerFunctions/database/dbOperations";
-import TimelineEventSingleDialog from "@/app/Pages/Dialogs/TimelineEvent/SingleEvent/TimelineEventSingleDialog";
+import TimelineEventDialog from "@/app/Pages/Dialogs/TimelineEvent/TimelineEventDialog";
 import AssignmentDialog from "@/app/Pages/Dialogs/AssignmentDialog";
 import CandidatePicker from "../CandidatePicker";
 import BudgetDialog from "@/app/Pages/Dialogs/BudgetDialog";
@@ -14,7 +14,6 @@ import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import { Confirm } from "@/app/Components/Popups";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import dataClient from "@/app/ServerFunctions/database";
-import EmailPreview from "../../EmailPreview/EmailPreview";
 
 type openDialog =
     | "none"
@@ -100,10 +99,9 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
     } = {
         none: null,
         timelineEvent: (
-            <TimelineEventSingleDialog
+            <TimelineEventDialog
                 // isOpen={openDialog === "timelineEvent"}
                 onClose={EventHandlers.onDialogClose}
-                parent={campaign}
                 targetAssignment={assignment}
                 campaignId={campaign.id}
             />

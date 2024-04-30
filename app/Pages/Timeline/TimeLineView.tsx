@@ -1,24 +1,19 @@
-import { timelineEventTypesType } from "@/amplify/data/types";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import Influencer from "@/app/ServerFunctions/types/influencer";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import dayjs from "@/app/utils/configuredDayJs";
 import { CircularProgress, Unstable_Grid2 as Grid } from "@mui/material";
 import { useEffect, useState } from "react";
-import TimeLineEventSingleDialog from "../Dialogs/TimelineEvent/SingleEvent/TimelineEventSingleDialog";
 import stylesExporter from "../styles/stylesExporter";
 import TimelineControls from "./Components/TimelineControls";
 import TimelineViewItem from "./Components/TimelineViewItem";
-import { useWhatChanged } from "@simbathesailor/use-what-changed";
 
-import { groupBy, EventGroup as EventGroup, groupEvents as groupEvents } from "./Functions/groupEvents";
-import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { getUserGroups } from "@/app/ServerFunctions/serverActions";
-import QueryDebugDisplay from "../../Components/QueryDebugDisplay";
 import database from "@/app/ServerFunctions/database/dbOperations";
-import CustomErrorBoundary from "@/app/Components/CustomErrorBoundary";
-import TimelineEventMultiDialog from "../Dialogs/TimelineEvent/MultiEvent/TimelineEventMultiDialog";
+import { getUserGroups } from "@/app/ServerFunctions/serverActions";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import QueryDebugDisplay from "../../Components/QueryDebugDisplay";
 import { general as styles } from "../styles/stylesExporter";
+import { EventGroup, groupBy, groupEvents } from "./Functions/groupEvents";
+import TimelineEventDialog from "../Dialogs/TimelineEvent/TimelineEventDialog";
 
 const dialogStyles = stylesExporter.dialogs;
 const timelineStyles = stylesExporter.timeline;
@@ -170,14 +165,12 @@ export default function TimelineView(props: TimelineViewProps) {
     const Dialogs: { [key in openDialog]: () => JSX.Element } = {
         none: () => <></>,
         editor: () => (
-            <EditEventDialog
-                {...{
-                    onClose: EventHandlers.onDialogClose,
-                    editingEvent,
-                    campaign,
-                    setCampaign,
-                    influencers: influencers.data ?? [],
-                }}
+            <TimelineEventDialog
+                onClose={EventHandlers.onDialogClose}
+                editing={true}
+                editingData={editingEvent}
+                campaignId={campaign.id}
+                targetAssignment={editingEvent?.assignments[0] ?? undefined}
             />
         ),
     };
@@ -404,49 +397,48 @@ function Placeholder(): JSX.Element {
     );
 }
 
-interface EditDialogProps {
-    onClose: (hasChanged?: boolean) => void;
-    editingEvent: TimelineEvent.Event | undefined;
-    campaign: Campaign.Campaign;
-    setCampaign: (data: Campaign.Campaign) => void;
-    influencers: Influencer.Full[];
-    editable?: boolean;
-}
+// interface EditDialogProps {
+//     onClose: (hasChanged?: boolean) => void;
+//     editingEvent: TimelineEvent.Event | undefined;
+//     campaignId: string;
+//     setCampaign: (data: Campaign.Campaign) => void;
+//     influencers: Influencer.Full[];
+//     editable?: boolean;
+// }
 
-function EditEventDialog(props: EditDialogProps): JSX.Element {
-    const { editingEvent, editable = false } = props;
-    if (!(editable && editingEvent)) return <></>;
-    if (TimelineEvent.isSingleEvent(editingEvent)) {
-        return <EditSingleEventDialog {...props} editingEvent={editingEvent} />;
-    } else if (TimelineEvent.isMultiEvent(editingEvent)) {
-        return <EditMultiEventDialog {...props} editingEvent={editingEvent} />;
-    } else {
-        throw new Error("Editing event type not recognized");
-    }
-}
+// function EditEventDialog(props: EditDialogProps): JSX.Element {
+//     const { editingEvent, editable = false } = props;
+//     if (!(editable && editingEvent)) return <></>;
+//     if (TimelineEvent.isSingleEvent(editingEvent)) {
+//         return <EditSingleEventDialog {...props} editingEvent={editingEvent} />;
+//     } else if (TimelineEvent.isMultiEvent(editingEvent)) {
+//         return <EditMultiEventDialog {...props} editingEvent={editingEvent} />;
+//     } else {
+//         throw new Error("Editing event type not recognized");
+//     }
+// }
 
-interface EditSingleDialogProps extends EditDialogProps {
-    editingEvent: TimelineEvent.SingleEvent;
-}
-function EditSingleEventDialog(props: EditSingleDialogProps): JSX.Element {
-    const { campaign, setCampaign, onClose, influencers, editingEvent } = props;
-    const targetAssignment = editingEvent.assignments[0] ?? undefined;
-    if (!targetAssignment) throw new Error("Editing event does not have an assignment");
-    return (
-        <TimeLineEventSingleDialog
-            parent={campaign}
-            onClose={onClose}
-            editing={true}
-            editingData={editingEvent}
-            targetAssignment={targetAssignment}
-            campaignId={campaign.id}
-        />
-    );
-}
+// interface EditSingleDialogProps extends EditDialogProps {
+//     editingEvent: TimelineEvent.SingleEvent;
+// }
+// function EditSingleEventDialog(props: EditSingleDialogProps): JSX.Element {
+//     const { campaignId, setCampaign, onClose, influencers, editingEvent } = props;
+//     const targetAssignment = editingEvent.assignments[0] ?? undefined;
+//     if (!targetAssignment) throw new Error("Editing event does not have an assignment");
+//     return (
+//         <TimelineEventDialog
+//             onClose={onClose}
+//             editing={true}
+//             editingData={editingEvent}
+//             targetAssignment={targetAssignment}
+//             campaignId={campaignId}
+//         />
+//     );
+// }
 
-interface EditMultiDialogProps extends EditDialogProps {
-    editingEvent: TimelineEvent.MultiEvent;
-}
-function EditMultiEventDialog(props: EditMultiDialogProps): JSX.Element {
-    return <TimelineEventMultiDialog {...props} />;
-}
+// interface EditMultiDialogProps extends EditDialogProps {
+//     editingEvent: TimelineEvent.MultiEvent;
+// }
+// function EditMultiEventDialog(props: EditMultiDialogProps): JSX.Element {
+//     return <TimelineEventMultiDialog {...props} />;
+// }

@@ -278,19 +278,18 @@ function EditButton(props: EditButtonProps) {
                 );
             }
             case TimelineEvent.isMultiEvent(event): {
-                return null;
-                // return (
-                //     <TimelineEventMultiDialog
-                //         {...{
-                //             onClose: EventHandler.closeDialog,
-                //             parent: campaign,
-                //             editing: true,
-                //             editingData: event as TimelineEvent.MultiEvent,
-                //             campaignId: event.campaign.id,
-                //             targetAssignments: event.assignments,
-                //         }}
-                //     />
-                // );
+                return (
+                    <TimelineEventMultiDialog
+                        {...{
+                            onClose: EventHandler.closeDialog,
+                            parent: campaign,
+                            editing: true,
+                            editingData: event as TimelineEvent.MultiEvent,
+                            campaignId: event.campaign.id,
+                            targetAssignments: event.assignments,
+                        }}
+                    />
+                );
             }
             default: {
                 return <></>;

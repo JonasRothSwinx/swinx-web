@@ -39,26 +39,26 @@ export default function TimelineControls(props: TimelineControlsProps) {
     function onDialogClose(hasChanged?: boolean) {
         if (hasChanged) {
             console.log("dialog closed with changes");
-            queryClient.invalidateQueries({
-                queryKey: ["campaign", campaign.id],
-                refetchType: "all",
-            });
-            queryClient.invalidateQueries({
-                queryKey: ["events", campaign.id],
-                refetchType: "all",
-            });
-            queryClient.invalidateQueries({
-                queryKey: ["groups", campaign.id],
-                refetchType: "all",
-            });
-            queryClient.refetchQueries();
+            // queryClient.invalidateQueries({
+            //     queryKey: ["campaign", campaign.id],
+            //     refetchType: "all",
+            // });
+            // queryClient.invalidateQueries({
+            //     queryKey: ["events", campaign.id],
+            //     refetchType: "all",
+            // });
+            // queryClient.invalidateQueries({
+            //     queryKey: ["groups", campaign.id],
+            //     refetchType: "all",
+            // });
+            // queryClient.refetchQueries();
             onDataChange();
         }
         setOpenDialog("None");
     }
     const Dialogs: { [key in openDialog]: JSX.Element | null } = {
         None: null,
-        Timeline: <TimelineEventMultiDialog onClose={onDialogClose} campaign={campaign} editing={false} />,
+        Timeline: <TimelineEventMultiDialog onClose={onDialogClose} campaignId={campaign.id} editing={false} />,
     };
     return (
         <>

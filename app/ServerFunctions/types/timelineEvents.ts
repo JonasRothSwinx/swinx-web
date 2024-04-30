@@ -79,6 +79,13 @@ namespace TimelineEvent {
         };
         emailTriggers: EmailTriggers.EmailTriggerEventRef[];
         info: EventInfo;
+        targetAudience?: TargetAudience;
+    };
+
+    type TargetAudience = {
+        industry: string[];
+        country: string[];
+        cities: string[];
     };
     export type EventInfo = Schema["TimelineEvent"]["info"];
     // export type EventInfo = {
