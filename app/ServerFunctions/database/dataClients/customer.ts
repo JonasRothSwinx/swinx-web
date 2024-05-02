@@ -1,6 +1,7 @@
 import database from "../dbOperations";
 import Customer from "../../types/customer";
 import config from "./config";
+import { Nullable } from "@/app/Definitions/types";
 
 /**
  * Create a new customer and update cache
@@ -19,7 +20,57 @@ export async function create(
     queryClient.setQueryData(["customer", id], newCustomer);
     return newCustomer;
 }
+interface UpdateCustomer {
+    id: string;
+    updatedData: Partial<Customer.Customer>;
+    previousData: Customer.Customer;
+}
+export async function updateCustomer({
+    id,
+    updatedData,
+    previousData,
+}: UpdateCustomer): Promise<Customer.Customer> {
+    const queryClient = config.getQueryClient();
+    // await database.customer.update(updatedData)
+    const updatedCustomer: Customer.Customer = {
+        ...previousData,
+        ...updatedData,
+    };
+    queryClient.setQueryData(["customer", id], updatedCustomer);
+    return updatedCustomer;
+}
+interface GetCustomer {
+    id: string;
+}
 
-const customer = {};
+async function getCustomer({ id }: GetCustomer): Promise<Nullable<Customer.Customer>> {
+    const queryClient = config.getQueryClient();
+    const customer = await queryClient.fetchQuery({
+        queryKey: ["customer", id],
+        queryFn: () => database.customer.get(id),
+    });
+    return customer;
+}
+
+async function listCustomersByCampaign(campaignId: string): Promise<Customer.Customer[]> {
+    const queryClient = config.getQueryClient();
+    try {
+        const customers = await queryClient.fetchQuery({
+            queryKey: ["customers", campaignId],
+            queryFn: () => database.customer.listByCampaign(campaignId),
+        });
+        return customers;
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+}
+
+const customer = {
+    create,
+    update: updateCustomer,
+    get: getCustomer,
+    byCampaign: listCustomersByCampaign,
+};
 
 export default customer;

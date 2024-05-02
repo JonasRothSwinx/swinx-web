@@ -1,6 +1,24 @@
-import { createNewCampaign, deleteCampaign, dummyListCampaigns, getCampaign, listCampaigns } from "./campaigns";
-import { createCustomer, deleteCustomer, updateCustomer } from "./customers";
-import { createNewInfluencer, deleteInfluencer, getInfluencer, listInfluencers, updateInfluencer } from "./influencers";
+import {
+    createNewCampaign,
+    deleteCampaign,
+    dummyListCampaigns,
+    getCampaign,
+    listCampaigns,
+} from "./campaigns";
+import {
+    createCustomer,
+    deleteCustomer,
+    getCustomer,
+    listCustomersByCampaign,
+    updateCustomer,
+} from "./customers";
+import {
+    createNewInfluencer,
+    deleteInfluencer,
+    getInfluencer,
+    listInfluencers,
+    updateInfluencer,
+} from "./influencers";
 import {
     createAssignment,
     deletePlaceholder,
@@ -44,6 +62,8 @@ export const customers = {
     create: createCustomer,
     update: updateCustomer,
     delete: deleteCustomer,
+    get: getCustomer,
+    listByCampaign: listCustomersByCampaign,
 };
 
 export const influencers = {

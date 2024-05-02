@@ -110,7 +110,7 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
             queryClient.setQueryData(["campaign", campaignId], updatedCampaign);
             campaign.refetch();
             const newAssignmentEvents = campaign.data?.assignedInfluencers.find(
-                (x) => x.id === assignedInfluencer.data.id,
+                (influencer) => influencer.id === assignedInfluencer.data.id,
             )?.timelineEvents;
             queryClient.setQueryData(
                 ["assignmentEvents", assignedInfluencer.data.id],

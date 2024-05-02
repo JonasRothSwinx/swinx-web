@@ -22,6 +22,8 @@ import { useEffect, useState } from "react";
 import sendInvites from "./sendMail";
 import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
 import { Nullable } from "@/app/Definitions/types";
+import Customer from "@/app/ServerFunctions/types/customer";
+import dataClient from "@/app/ServerFunctions/database";
 
 interface GetTemplateProps {
     setIsLoading: (value: boolean) => void;
@@ -46,7 +48,8 @@ interface EmailPreviewProps {
     assignment: Assignment.AssignmentFull;
 }
 
-type inviteTemplateVariables = typeof templateDefinitions.mailTypes.campaignInvite.CampaignInvite.defaultParams;
+type inviteTemplateVariables =
+    typeof templateDefinitions.mailTypes.campaignInvite.CampaignInvite.defaultParams;
 /**
  * Renders the email preview component.
  *
@@ -54,7 +57,8 @@ type inviteTemplateVariables = typeof templateDefinitions.mailTypes.campaignInvi
  * @returns The rendered email preview component.
  */
 export default function EmailPreview(props: EmailPreviewProps) {
-    const { assignment } = props;
+    const { assignment, candidates, onClose } = props;
+    const campaignId = assignment.campaign.id;
     // const [emailPreview, setEmailPreview] = useState<string>();
     const [isLoading, setIsLoading] = useState(false);
     const [variables, setVariables] = useState<Partial<inviteTemplateVariables>>({
@@ -66,12 +70,14 @@ export default function EmailPreview(props: EmailPreviewProps) {
     });
     const [templateName, setTemplateName] = useState<templateName>("CampaignInviteNew");
     const templates = useQueries({
-        queries: templateDefinitions.mailTypes.campaignInvite.CampaignInvite.templateNames.map((templateName) => {
-            return {
-                queryKey: ["template", templateName],
-                queryFn: () => emailClient.templates.get(templateName),
-            };
-        }),
+        queries: templateDefinitions.mailTypes.campaignInvite.CampaignInvite.templateNames.map(
+            (templateName) => {
+                return {
+                    queryKey: ["template", templateName],
+                    queryFn: () => emailClient.templates.get(templateName),
+                };
+            },
+        ),
         combine(result) {
             const out: {
                 [key in EmailTriggers.emailLevel]: Nullable<string>;
@@ -86,8 +92,12 @@ export default function EmailPreview(props: EmailPreviewProps) {
             return out;
         },
     });
-    const [selectedCandidate, setSelectedCandidate] = useState(props.candidates[0]);
+    const [selectedCandidate, setSelectedCandidate] = useState(candidates[0]);
     const [groups, setGroups] = useState<string[]>([]);
+    const customer = useQuery({
+        queryKey: ["mainCustomer", campaignId],
+        queryFn: async () => (await dataClient.customer.byCampaign(campaignId))[0],
+    });
 
     useEffect(() => {
         getUserGroups().then((result) => setGroups(result));
@@ -110,15 +120,18 @@ export default function EmailPreview(props: EmailPreviewProps) {
 
     const EventHandlers = {
         sendEmail: async () => {
+            debugger;
+            if (!customer.data) return;
             const responses = await sendInvites({
-                candidates: props.candidates,
+                candidates,
                 assignment,
+                customer: customer.data,
             });
             console.log(responses);
-            props.onClose();
+            onClose();
         },
         cancel: () => {
-            props.onClose();
+            onClose();
         },
     };
     //Loading placeholder
@@ -127,7 +140,7 @@ export default function EmailPreview(props: EmailPreviewProps) {
     return (
         <Dialog
             open
-            onClose={props.onClose}
+            onClose={onClose}
             fullWidth
             sx={{
                 margin: "0",
@@ -145,7 +158,9 @@ export default function EmailPreview(props: EmailPreviewProps) {
                                 animationPlayState: "running",
                                 animationName: "spin",
                                 animationDuration: "500ms",
-                                animationIterationCount: `${templates.isFetching ? "infinite" : "0"}`,
+                                animationIterationCount: `${
+                                    templates.isFetching ? "infinite" : "0"
+                                }`,
                                 animationTimingFunction: "linear",
                                 "@keyframes spin": {
                                     "100%": { transform: `rotate(360deg)` },
@@ -169,7 +184,10 @@ export default function EmailPreview(props: EmailPreviewProps) {
                     ) : (
                         <>
                             <EmailFrame
-                                emailPreview={templates[selectedCandidate.influencer.emailLevel ?? "new"] ?? null}
+                                emailPreview={
+                                    templates[selectedCandidate.influencer.emailLevel ?? "new"] ??
+                                    null
+                                }
                                 isLoading={templates.isLoading}
                                 variables={{
                                     ...variables,
@@ -181,7 +199,7 @@ export default function EmailPreview(props: EmailPreviewProps) {
                 </Grid>
                 <Grid xs={8} display={"flex"} flexDirection={"column"}>
                     <Editor
-                        candidates={props.candidates}
+                        candidates={candidates}
                         selectedCandidate={selectedCandidate}
                         setSelectedCandidate={setSelectedCandidate}
                     />
@@ -197,7 +215,9 @@ export default function EmailPreview(props: EmailPreviewProps) {
                         <Button onClick={EventHandlers.cancel} color="error">
                             Abbrechen
                         </Button>
-                        <Button onClick={EventHandlers.sendEmail}>Emails verschicken</Button>
+                        <Button onClick={EventHandlers.sendEmail} disabled={!customer.isFetched}>
+                            Emails verschicken
+                        </Button>
                     </ButtonGroup>
                 </Grid>
             </Grid>

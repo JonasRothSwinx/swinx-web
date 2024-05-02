@@ -1,5 +1,5 @@
 import influencer from "./dataClients/influencer";
-import campaign from "./dataClients/campaignClient";
+import campaign from "./dataClients/campaign";
 import assignment from "./dataClients/assignments";
 import timelineEvent from "./dataClients/timelineEvent";
 import candidate from "./dataClients/candidate";

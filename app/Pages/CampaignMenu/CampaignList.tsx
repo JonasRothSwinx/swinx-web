@@ -370,9 +370,9 @@ function CampaignList() {
         }
     }
 
-    const Dialogs: { [key in DialogState]: JSX.Element } = {
-        none: <></>,
-        campaign: (
+    const Dialogs: { [key in DialogState]: () => JSX.Element } = {
+        none: () => <></>,
+        campaign: () => (
             <CampaignDialog
                 {...dialogConfig}
                 {...dialogOptions}
@@ -380,10 +380,10 @@ function CampaignList() {
                 editingData={editingData as Campaign.Campaign}
             />
         ),
-        customer: <></>,
-        webinar: <></>,
-        timelineEvent: <></>,
-        details: (
+        customer: () => <></>,
+        webinar: () => <></>,
+        timelineEvent: () => <></>,
+        details: () => (
             <CampaignDetails
                 onClose={onDialogClose}
                 campaignId={editingData?.id ?? ""}
@@ -444,7 +444,7 @@ function CampaignList() {
         >
             {/* Dialogs */}
 
-            <>{Dialogs[isOpen]}</>
+            <>{Dialogs[isOpen]()}</>
             <DataGrid
                 localeText={deDE.components.MuiDataGrid.defaultProps.localeText}
                 onRowClick={({ id }) => {

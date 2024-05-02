@@ -2,15 +2,16 @@ import emailClient from "@/app/ServerFunctions/email";
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import { Candidates } from "@/app/ServerFunctions/types/candidates";
 import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
-import * as SesHandlerType from "@/amplify/functions/sesHandler/types";
+import Customer from "@/app/ServerFunctions/types/customer";
 
 interface SendInvitesProps {
+    customer: Customer.Customer;
     candidates: Candidates.Candidate[];
     assignment: Assignment.Assignment;
 }
 export default async function sendInvites(props: SendInvitesProps) {
     console.log("Sending invites", props);
-    const { assignment, candidates } = props;
+    const { assignment, candidates, customer } = props;
     const groupedCandidates = candidates.reduce(
         (acc, candidate) => {
             const level = candidate.influencer.emailLevel;
@@ -22,7 +23,7 @@ export default async function sendInvites(props: SendInvitesProps) {
             new: [],
             reduced: [],
             none: [],
-        } as { [key in EmailTriggers.emailLevel]: Candidates.Candidate[] }
+        } as { [key in EmailTriggers.emailLevel]: Candidates.Candidate[] },
     );
     const responses = await Promise.all(
         Object.entries(groupedCandidates).map(async ([level, candidates]) => {
@@ -35,12 +36,13 @@ export default async function sendInvites(props: SendInvitesProps) {
                     candidates,
                     taskDescriptions: ["Make Tea"],
                     assignment,
+                    customer,
                 },
                 individualContext: [],
             });
 
             return { level, data: response };
-        })
+        }),
     );
     if (groupedCandidates.none.length > 0) {
         alert(
@@ -49,7 +51,7 @@ export default async function sendInvites(props: SendInvitesProps) {
                     .map(({ influencer: x }) => {
                         return `${x.firstName} ${x.lastName}: ${x.email}`;
                     })
-                    .join(",\n")
+                    .join(",\n"),
         );
     }
     return responses.filter((x) => x?.data !== undefined);

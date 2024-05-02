@@ -25,7 +25,15 @@ export default async function send(props: SendMailProps) {
 
     if (level === "none") return;
     // Check if all required data is present
-    if (!taskDescriptions || !candidates || !assignment || !customer) throw new Error("Missing context");
+    if (!taskDescriptions || !candidates || !assignment || !customer) {
+        const missingContext = {
+            taskDescriptions: !!taskDescriptions,
+            candidates: !!candidates,
+            assignment: !!assignment,
+            customer: !!customer,
+        };
+        throw new Error("Missing context" + JSON.stringify(missingContext));
+    }
 
     const templateName = templates[level].name;
 
@@ -36,7 +44,7 @@ export default async function send(props: SendMailProps) {
         honorar: assignment.budget?.toString() ?? "<Honorar nicht definiert>",
         customerCompany: customer?.company ?? "TestCustomer",
     };
-    const baseUrl = process.env.BASE_URL + "/Response?q=";
+    const baseUrl = process.env.BASE_URL + "/Response?data=";
     const requestBody: sesHandlerSendEmailTemplateBulk = {
         operation: "sendEmailTemplateBulk",
         bulkEmailData: {
@@ -48,28 +56,49 @@ export default async function send(props: SendMailProps) {
                 assignments: commonVariables.assignments,
                 honorar: commonVariables.honorar,
                 linkBase: baseUrl,
-                linkData: "testData",
+                linkData: encodeURIComponent(
+                    btoa(
+                        JSON.stringify({
+                            assignmentId: assignment.id,
+                            candidateFullName: "Teapot",
+                            candidateId: "1234-5678",
+                        } satisfies CampaignInviteEncodedData),
+                    ),
+                ),
                 customerCompany: commonVariables.customerCompany,
             } satisfies TemplateVariables),
 
             //personalized Part
-            emailData: candidates.map((candidate) => {
-                const baseParams = {
-                    firstName: candidate.influencer.firstName,
-                    lastName: candidate.influencer.lastName,
-                    id: candidate.id,
-                };
-                const encodedData = encodeURIComponent(btoa(JSON.stringify(baseParams)));
-                const recipientName = `${candidate.influencer.firstName} ${candidate.influencer.lastName}`;
-                return {
-                    to: candidate.influencer.email,
-                    templateData: JSON.stringify({
-                        name: recipientName,
-                        linkBase: baseUrl,
-                        linkData: encodedData,
-                    } satisfies personalVariables),
-                };
-            }),
+            emailData: candidates
+                .map((candidate) => {
+                    const { id: candidateId, influencer, ...candidateData } = candidate;
+                    if (!candidateId || !influencer) {
+                        console.error("Error: Candidate data is invalid", { candidate });
+                        return null;
+                    }
+                    const candidateFullName = `${influencer.firstName} ${influencer.lastName}`;
+                    const baseParams: CampaignInviteEncodedData = {
+                        assignmentId: assignment.id,
+                        candidateId,
+                        candidateFullName,
+                    };
+                    const encodedData = encodeURIComponent(btoa(JSON.stringify(baseParams)));
+                    return {
+                        to: candidate.influencer.email,
+                        templateData: JSON.stringify({
+                            name: candidateFullName,
+                            linkBase: baseUrl,
+                            linkData: encodedData,
+                        } satisfies personalVariables),
+                    };
+                })
+                .filter((data): data is { to: string; templateData: string } => {
+                    if (data === null) {
+                        console.error("Error: Email data is invalid");
+                        return false;
+                    }
+                    return true;
+                }),
         },
     };
 

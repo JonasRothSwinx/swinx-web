@@ -110,14 +110,18 @@ const schema = a.schema({
             //##########################
             //### Relations ############
             influencerId: a.id().authorization([adminsAndManagers]),
-            influencer: a.belongsTo("Influencer", "influencerId").authorization([adminsAndManagers]),
+            influencer: a
+                .belongsTo("Influencer", "influencerId")
+                .authorization([adminsAndManagers]),
 
             timelineEvents: a.hasMany("EventAssignment", "assignmentId"),
 
             campaignId: a.id().required(),
             campaign: a.belongsTo("Campaign", "campaignId"),
 
-            candidates: a.hasMany("InfluencerCandidate", "candidateAssignmentId").authorization([adminsAndManagers]),
+            candidates: a
+                .hasMany("InfluencerCandidate", "candidateAssignmentId")
+                .authorization([adminsAndManagers]),
             //##########################
         })
         .authorization([
@@ -140,7 +144,9 @@ const schema = a.schema({
             assignment: a.belongsTo("InfluencerAssignment", "candidateAssignmentId"),
             influencerId: a.id().required(),
             influencer: a.belongsTo("Influencer", "influencerId"),
-            response: a.string().authorization([adminsAndManagers, a.allow.public().to(["read", "update"])]),
+            response: a
+                .string()
+                .authorization([adminsAndManagers, a.allow.public().to(["read", "update"])]),
         })
         .authorization([
             a.allow.public().to(["read"]),
@@ -226,6 +232,7 @@ const schema = a.schema({
             campaign: a.belongsTo("Campaign", "campaignId"),
             //#####################
         })
+        .secondaryIndexes((index) => [index("campaignId").queryField("listCustomersByCampaign")])
         .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
     //#endregion Customer
 
