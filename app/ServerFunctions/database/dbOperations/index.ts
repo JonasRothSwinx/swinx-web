@@ -51,6 +51,14 @@ import {
     getEmailTriggersForEvent,
 } from "./emailTriggers";
 
+import {
+    createProjectManager,
+    deleteProjectManager,
+    getProjectManager,
+    listProjectManagers,
+    updateProjectManager,
+} from "./projectManagers";
+
 export const campaigns = {
     create: createNewCampaign,
     get: getCampaign,
@@ -111,6 +119,14 @@ export const emailTriggers = {
     byDateRange: getEmailTriggersForDateRange,
 };
 
+export const projectManagers = {
+    create: createProjectManager,
+    get: getProjectManager,
+    list: listProjectManagers,
+    update: updateProjectManager,
+    delete: deleteProjectManager,
+};
+
 export const debug = {
     debugEventList: dummy,
     debugCampaignList: dummyListCampaigns,
@@ -125,6 +141,7 @@ const database = {
     candidate: candidates,
     // staticEvent: staticEvents,
     emailTrigger: emailTriggers,
+    projectManager: projectManagers,
 };
 
 export default database;

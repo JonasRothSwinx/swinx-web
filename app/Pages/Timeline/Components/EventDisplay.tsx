@@ -79,7 +79,10 @@ export function Event(props: EventProps) {
     //######################################################################################################################
     //#region Styles
     const dateColumns = useMemo(() => (groupBy === "day" ? 2 : 1), [groupBy]);
-    const contentColumns = useMemo(() => totalColumns - dateColumns /* - modifyColumns */, [totalColumns, dateColumns]);
+    const contentColumns = useMemo(
+        () => totalColumns - dateColumns /* - modifyColumns */,
+        [totalColumns, dateColumns],
+    );
 
     const sxProps: SxProps = useMemo(() => {
         const sx: SxProps = {
@@ -172,14 +175,27 @@ export function Event(props: EventProps) {
     //#region Data State
     if (!event.data || !campaign.data) return <></>;
     if (event.isLoading || campaign.isLoading) return <Skeleton width={"100%"} />;
-    if (event.isError || campaign.isError) return <Typography>Error</Typography>;
+    if (event.isError || campaign.isError)
+        return (
+            <Typography>
+                Error
+                <br />
+                Event: {JSON.stringify(event.error)}
+                <br />
+                Campaign: {JSON.stringify(campaign.error)}
+            </Typography>
+        );
     //#endregion Data State
     //######################################################################################################################
     return (
         <Box id="EventContainer" sx={sxProps}>
             <Grid id="Event" container columns={totalColumns}>
                 {dateColumns > 0 && (
-                    <EventDate date={event.data.date ?? ""} groupBy={groupBy} columnSize={dateColumns} />
+                    <EventDate
+                        date={event.data.date ?? ""}
+                        groupBy={groupBy}
+                        columnSize={dateColumns}
+                    />
                 )}
                 <EventContent event={event.data} columnSize={contentColumns} />
             </Grid>

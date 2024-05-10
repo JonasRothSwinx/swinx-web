@@ -15,7 +15,10 @@ namespace Customer {
         notes?: Nullable<string>;
         profileLink?: Nullable<string>;
     };
-    type SchemaCustomer = Omit<Schema["Customer"], "CampaignId" | "createdAt" | "updatedAt" | "campaign">;
+    type SchemaCustomer = Omit<
+        Schema["Customer"],
+        "CampaignId" | "createdAt" | "updatedAt" | "campaign"
+    >;
 
     export function satisfies(arg: unknown): arg is Customer {
         const customer = arg as Customer;

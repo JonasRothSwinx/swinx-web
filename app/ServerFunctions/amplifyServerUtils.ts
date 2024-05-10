@@ -1,5 +1,5 @@
 import { createServerRunner } from "@aws-amplify/adapter-nextjs";
-import config from "@/amplifyconfiguration.json";
+import config from "@/amplify_outputs.json";
 
 export const { runWithAmplifyServerContext } = createServerRunner({
     config,

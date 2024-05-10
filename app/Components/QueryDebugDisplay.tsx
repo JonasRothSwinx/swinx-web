@@ -11,6 +11,7 @@ type queryData = UseQueryResult & {
     name: string;
     queryKey?: QueryKey;
 };
+
 export default function QueryDebugDisplay(props: TimelineDebugDisplayProps) {
     const { data } = props;
     const queryClient = useQueryClient();
@@ -22,6 +23,7 @@ export default function QueryDebugDisplay(props: TimelineDebugDisplayProps) {
         placeholderData: [],
     });
     if (!userGroups.data?.includes("admin")) return <></>;
+    return <></>;
     return (
         <div
             style={{
@@ -51,7 +53,9 @@ export default function QueryDebugDisplay(props: TimelineDebugDisplayProps) {
                         <IconButton
                             onClick={() => {
                                 console.log(query);
-                                queryClient.invalidateQueries({ queryKey: query.queryKey ?? [query.name] });
+                                queryClient.invalidateQueries({
+                                    queryKey: query.queryKey ?? [query.name],
+                                });
                                 query.refetch();
                                 console.log("Refetching", query.name);
                             }}
@@ -81,13 +85,15 @@ function StatusDisplay(query: queryData) {
         case isLoading:
             return (
                 <Typography color={"darkgoldenrod"}>
-                    Loading... {query.failureCount > 0 ? `Failed ${query.failureCount} times` : null}
+                    Loading...{" "}
+                    {query.failureCount > 0 ? `Failed ${query.failureCount} times` : null}
                 </Typography>
             );
         case isFetching:
             return (
                 <Typography color={"darkgoldenrod"}>
-                    Fetching... {query.failureCount > 0 ? `Failed ${query.failureCount} times` : null}
+                    Fetching...{" "}
+                    {query.failureCount > 0 ? `Failed ${query.failureCount} times` : null}
                 </Typography>
             );
         case isError:

@@ -10,6 +10,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { ConfirmProvider } from "material-ui-confirm";
 import dataClient from "./ServerFunctions/database";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 const theme = createTheme({
     palette: {
@@ -20,7 +21,15 @@ const theme = createTheme({
     },
     shape: { borderRadius: 20 },
 });
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            refetchOnWindowFocus: false,
+            staleTime: Infinity,
+            retry: true,
+        },
+    },
+});
 dataClient.config.setQueryClient(queryClient);
 
 function Home() {
@@ -30,10 +39,15 @@ function Home() {
             {/* <CssBaseline /> */}
             <Authenticator.Provider>
                 <ConfirmProvider
-                    defaultOptions={{ confirmationText: "Ok", cancellationText: "Abbrechen", title: "Bestätigung" }}
+                    defaultOptions={{
+                        confirmationText: "Ok",
+                        cancellationText: "Abbrechen",
+                        title: "Bestätigung",
+                    }}
                 >
                     <QueryClientProvider client={queryClient}>
                         {authStatus === "authenticated" && <WelcomePage />}
+                        <ReactQueryDevtools initialIsOpen={false} />
                     </QueryClientProvider>
                 </ConfirmProvider>
             </Authenticator.Provider>

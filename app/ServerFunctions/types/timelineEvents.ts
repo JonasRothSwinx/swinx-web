@@ -89,7 +89,7 @@ namespace TimelineEvent {
         country: string[];
         cities: string[];
     };
-    export type EventInfo = Schema["TimelineEvent"]["info"];
+    export type EventInfo = Schema["TimelineEvent"]["type"]["info"];
     // export type EventInfo = {
     //     topic: string;
     //     charLimit: number;

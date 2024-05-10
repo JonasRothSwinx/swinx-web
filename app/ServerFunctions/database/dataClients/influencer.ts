@@ -33,7 +33,7 @@ async function listInfluencers(): Promise<Influencer.Full[]> {
     const influencers = await database.influencer.list();
     influencers.forEach((influencer) => {
         queryClient.setQueryData(["influencer", influencer.id], influencer);
-        queryClient.refetchQueries({ queryKey: ["influencer", influencer.id] });
+        // queryClient.refetchQueries({ queryKey: ["influencer", influencer.id] });
     });
     return influencers;
 }
@@ -46,7 +46,7 @@ async function listInfluencers(): Promise<Influencer.Full[]> {
  */
 async function updateInfluencer(
     updatedData: PartialWith<Influencer.Full, "id">,
-    previousInfluencer: Influencer.Full
+    previousInfluencer: Influencer.Full,
 ): Promise<Influencer.Full> {
     const queryClient = config.getQueryClient();
     await database.influencer.update(updatedData);
@@ -56,7 +56,9 @@ async function updateInfluencer(
         if (!prev) {
             return [updatedInfluencer];
         }
-        return prev.map((influencer) => (influencer.id === updatedInfluencer.id ? updatedInfluencer : influencer));
+        return prev.map((influencer) =>
+            influencer.id === updatedInfluencer.id ? updatedInfluencer : influencer,
+        );
     });
     queryClient.refetchQueries({ queryKey: ["influencers"] });
     queryClient.refetchQueries({ queryKey: ["influencer", updatedData.id] });
@@ -106,7 +108,9 @@ async function getInfluencer(id: string): Promise<Influencer.Full> {
  * @param influencer The influencer reference
  * @returns The full influencer object
  */
-export async function resolveInfluencerReference(influencer: Influencer.Reference): Promise<Influencer.Full> {
+export async function resolveInfluencerReference(
+    influencer: Influencer.Reference,
+): Promise<Influencer.Full> {
     const queryClient = config.getQueryClient();
     const { id } = influencer;
     if (!id) {

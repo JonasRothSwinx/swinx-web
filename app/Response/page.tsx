@@ -4,7 +4,9 @@ import { Box, ThemeProvider, createTheme } from "@mui/material";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { blue } from "@mui/material/colors";
 import dataClient from "../ServerFunctions/database";
-import ResponseLanding from "./Pages/ResponseLanding";
+import ResponseLanding from "./Components/ResponseLanding";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import styles from "./styles";
 
 const queryClient = new QueryClient();
 dataClient.config.setQueryClient(queryClient);
@@ -22,7 +24,10 @@ export default function Page() {
     return (
         <ThemeProvider theme={theme}>
             <QueryClientProvider client={queryClient}>
-                <ResponseLanding />
+                <Box id="ResponseLandingPage" sx={styles}>
+                    <ResponseLanding />
+                    <ReactQueryDevtools initialIsOpen={false} />
+                </Box>
             </QueryClientProvider>
         </ThemeProvider>
     );

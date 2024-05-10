@@ -75,6 +75,10 @@ type EditableDataTypes = Campaign.Campaign | Customer.Customer | TimelineEvent.E
 
 function CampaignList() {
     const queryClient = useQueryClient();
+    const [editingData, setEditingData] = useState<EditableDataTypes>();
+    const [groupBy, setGroupBy] = useState<groupBy>("day");
+    const [dialogOpen, setIsOpen] = useState<DialogState>("none");
+    const [dialogOptions, setDialogOptions] = useState<DialogOptions>({});
     const influencers = useQuery({
         queryKey: ["influencers"],
         queryFn: () => dataClient.influencer.list(),
@@ -83,13 +87,11 @@ function CampaignList() {
         queryKey: ["campaigns"],
         queryFn: async () => dataClient.campaign.list(),
         retry: 2,
+        enabled: dialogOpen === "none",
     });
     // const [influencerData, setInfluencerData] = useState<Influencer.InfluencerFull[]>([]);
     // const [campaignData, setCampaignData] = useState<Campaign.Campaign[]>();
-    const [editingData, setEditingData] = useState<EditableDataTypes>();
-    const [groupBy, setGroupBy] = useState<groupBy>("day");
-    const [isOpen, setIsOpen] = useState<DialogState>("none");
-    const [dialogOptions, setDialogOptions] = useState<DialogOptions>({});
+
     const [dialogConfig, setDialogConfig] = useState<DialogConfig<DialogType>>({
         parent: campaigns.data ?? [],
         setParent: (campaigns: Campaign.Campaign[]) => {
@@ -444,7 +446,7 @@ function CampaignList() {
         >
             {/* Dialogs */}
 
-            <>{Dialogs[isOpen]()}</>
+            <>{Dialogs[dialogOpen]()}</>
             <DataGrid
                 localeText={deDE.components.MuiDataGrid.defaultProps.localeText}
                 onRowClick={({ id }) => {

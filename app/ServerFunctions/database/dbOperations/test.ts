@@ -7,7 +7,7 @@ import dataClient from "..";
 export async function createTestData() {
     // create Campaign
     const { data: campaignData, errors: campaignErrors } = await client.models.Campaign.create({
-        campaignManagerId: "123",
+        // campaignManagerId: "123",
         notes: "notes",
     });
     // create Customer
@@ -90,7 +90,7 @@ export async function wipeTestData() {
     //find Test Campaigns
     client.models.Campaign.list({
         selectionSet: ["id"],
-        filter: { campaignManagerId: { eq: "123" } },
+        // filter: { campaignManagerId: { eq: "123" } },
     }).then((campaigns) => {
         for (const campaign of campaigns.data) {
             promises.push(client.models.Campaign.delete({ id: campaign.id }));

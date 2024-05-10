@@ -117,7 +117,7 @@ interface updateInfluencerProps {
     setInfluencers: (influencers: Influencer.Full[]) => void;
 }
 
-function InfluencerList(props: {}) {
+function InfluencerList() {
     // const [details, setDetails] = useState<Schema["InfluencerPrivate"][]>([]);
     const queryClient = useQueryClient();
     const [rows, setRows] = useState<Influencer.Full[] | undefined>([]);

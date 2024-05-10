@@ -5,7 +5,6 @@ const nextConfig = {
             test: /\.html$/i,
             loader: "html-loader",
         });
-
         return config;
     },
     // webpack: {

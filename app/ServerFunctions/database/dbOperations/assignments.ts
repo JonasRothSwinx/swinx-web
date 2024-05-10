@@ -25,6 +25,7 @@ export async function createAssignment(
         campaignId,
         isPlaceholder,
     });
+    if (data === null) return null;
     return data.id;
 }
 async function dummy() {
@@ -59,7 +60,7 @@ const selectionSet = [
     // "timelineEvents.timelineEvent.type
     // "timelineEvents.timelineEvent.id",
 ] as const;
-type RawAssignment = SelectionSet<Schema["InfluencerAssignment"], typeof selectionSet>;
+type RawAssignment = SelectionSet<Schema["InfluencerAssignment"]["type"], typeof selectionSet>;
 
 export async function listAssignments() {
     const { data, errors } = await client.models.InfluencerAssignment.list({ selectionSet });
@@ -79,6 +80,7 @@ export async function getAllCandidates(assignmentId: string) {
         { id: assignmentId },
         { selectionSet: ["candidates.id"] },
     );
+    if (data === null) return [];
     return data.candidates;
 }
 
@@ -122,6 +124,7 @@ export async function updateAssignment(assignment: PartialWith<Assignment.Assign
         isPlaceholder,
         influencerId: assignment.influencer?.id ?? undefined,
     });
+    if (data === null) throw new Error("No Data");
     return data.id;
 }
 
@@ -144,6 +147,7 @@ export async function getAssignment(assignmentId: string) {
         { id: assignmentId },
         { selectionSet },
     );
+    if (data === null) throw new Error(`No data for assignment ${assignmentId}`);
     const dataOut = validateAssignment(data);
     return dataOut;
 }
@@ -193,6 +197,7 @@ function validateAssignment(rawData: RawAssignment): Assignment.AssignmentMin {
     };
     return dataOut;
 }
+
 const eventSelectionSet = [
     "timelineEvents.timelineEvent.*",
     "timelineEvents.timelineEvent.campaign.id",
@@ -207,6 +212,7 @@ export async function getAssignmentTimelineEvents(assignment: Assignment.Assignm
     );
     const fetchEnd = performance.now();
     console.log("Fetch Time", fetchEnd - fetchStart);
+    if (data === null) return [];
     const validateStart = performance.now();
     const dataOut: TimelineEvent.Event[] = await Promise.all(
         data.timelineEvents.map((x) => {
@@ -239,7 +245,7 @@ export async function listAssignmentsByCampaign(campaignId: string) {
 
 function validateTimelineEvent(
     rawData: SelectionSet<
-        Schema["InfluencerAssignment"],
+        Schema["InfluencerAssignment"]["type"],
         typeof eventSelectionSet
     >["timelineEvents"][number],
     assignment: Assignment.AssignmentMin,

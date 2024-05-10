@@ -44,6 +44,7 @@ export default async function send(props: SendMailProps) {
         honorar: assignment.budget?.toString() ?? "<Honorar nicht definiert>",
         customerCompany: customer?.company ?? "TestCustomer",
     };
+    const campaignId = assignment.campaign.id;
     const baseUrl = process.env.BASE_URL + "/Response?data=";
     const requestBody: sesHandlerSendEmailTemplateBulk = {
         operation: "sendEmailTemplateBulk",
@@ -60,6 +61,7 @@ export default async function send(props: SendMailProps) {
                     btoa(
                         JSON.stringify({
                             assignmentId: assignment.id,
+                            campaignId,
                             candidateFullName: "Teapot",
                             candidateId: "1234-5678",
                         } satisfies CampaignInviteEncodedData),
@@ -81,6 +83,7 @@ export default async function send(props: SendMailProps) {
                         assignmentId: assignment.id,
                         candidateId,
                         candidateFullName,
+                        campaignId,
                     };
                     const encodedData = encodeURIComponent(btoa(JSON.stringify(baseParams)));
                     return {

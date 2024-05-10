@@ -23,6 +23,7 @@ import { AddIcon } from "@/app/Definitions/Icons";
 import { deleteCustomer } from "@/app/ServerFunctions/database/dbOperations/customers";
 import dataClient from "@/app/ServerFunctions/database";
 import sxStyles from "./sxStyles";
+import { useQuery } from "@tanstack/react-query";
 
 const styles = stylesExporter.dialogs;
 
@@ -35,7 +36,6 @@ const initialCustomer: Customer.Customer = {
 
 const initialData: Campaign.Campaign = {
     id: "",
-    campaignManagerId: "",
     campaignTimelineEvents: [],
     assignedInfluencers: [],
     customers: [initialCustomer],
@@ -45,13 +45,21 @@ const initialData: Campaign.Campaign = {
         city: "",
         zip: "",
     },
+    projectManagers: [],
 } as const;
 type CampaignDialogProps = DialogProps<Campaign.Campaign[], Campaign.Campaign>;
 
 function CampaignDialog(props: CampaignDialogProps) {
     //##################
     //#region Prop Destructuring
-    const { isOpen = false, onClose, editing, editingData, parent: rows, setParent: setRows } = props;
+    const {
+        isOpen = false,
+        onClose,
+        editing,
+        editingData,
+        parent: rows,
+        setParent: setRows,
+    } = props;
     //#endregion Prop Destructuring
     //##################
 
@@ -59,7 +67,9 @@ function CampaignDialog(props: CampaignDialogProps) {
     //#region States
     const [campaign, setCampaign] = useState<Campaign.Campaign>(initialData);
     const [changedData, setChangedData] = useState<Partial<Campaign.Campaign>>(editingData ?? {});
-    const [customers, setCustomers] = useState<Partial<Customer.Customer>[]>(editingData?.customers ?? [{}]);
+    const [customers, setCustomers] = useState<Partial<Customer.Customer>[]>(
+        editingData?.customers ?? [{}],
+    );
     const [billingAdress, setBillingAdress] = useState<Campaign.BillingAdress>({
         name: "",
         street: "",
@@ -107,11 +117,14 @@ function CampaignDialog(props: CampaignDialogProps) {
             } satisfies Campaign.Campaign;
             console.log(assembledCampaign);
 
-            dataClient.campaign.create(assembledCampaign);
+            dataClient.campaign.create({ campaign: assembledCampaign, projectManagerId: "TODO" });
             EventHandlers.handleClose(true);
         },
 
-        handleDateChange: (newValue: Dayjs | null, context: PickerChangeHandlerContext<DateTimeValidationError>) => {
+        handleDateChange: (
+            newValue: Dayjs | null,
+            context: PickerChangeHandlerContext<DateTimeValidationError>,
+        ) => {
             // console.log("value", newValue);
             try {
                 const newDate = dayjs(newValue);
@@ -183,7 +196,8 @@ interface FormContentProps {
 }
 
 function FormContent(props: FormContentProps) {
-    const { customers, setCustomers, campaign, setCampaign, billingAdress, setBillingAdress } = props;
+    const { customers, setCustomers, campaign, setCampaign, billingAdress, setBillingAdress } =
+        props;
 
     const [tab, setTab] = useState("0");
     const EventHandlers = {
@@ -243,7 +257,9 @@ function FormContent(props: FormContentProps) {
                             <TabPanel key={index} value={index.toString()}>
                                 <CustomerDialogContent
                                     customer={customer}
-                                    setCustomer={(changedData) => StateChanges.handleCustomerChange(changedData, index)}
+                                    setCustomer={(changedData) =>
+                                        StateChanges.handleCustomerChange(changedData, index)
+                                    }
                                     deleteCustomer={() => StateChanges.deleteCustomer(index)}
                                     index={index}
                                 />
@@ -258,7 +274,10 @@ function FormContent(props: FormContentProps) {
             </DialogContent>
             <DialogContent>
                 <DialogContentText>Rechnungsadresse</DialogContentText>
-                <BillingAdressInfo billingAdress={billingAdress} setBillingAdress={setBillingAdress} />
+                <BillingAdressInfo
+                    billingAdress={billingAdress}
+                    setBillingAdress={setBillingAdress}
+                />
             </DialogContent>
         </Box>
     );

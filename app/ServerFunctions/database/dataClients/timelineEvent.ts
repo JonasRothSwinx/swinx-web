@@ -10,7 +10,7 @@ import dayjs from "@/app/utils/configuredDayJs";
  * @returns The created timeline event object
  */
 export async function createTimelineEvent(
-    timelineEvent: Omit<TimelineEvent.Event, "id">
+    timelineEvent: Omit<TimelineEvent.Event, "id">,
 ): Promise<TimelineEvent.EventWithId> {
     const campaignId = timelineEvent.campaign.id;
     const queryClient = config.getQueryClient();
@@ -56,7 +56,7 @@ export async function createTimelineEvent(
  */
 export async function updateTimelineEvent(
     updatedData: Partial<TimelineEvent.Event>,
-    previousTimelineEvent: TimelineEvent.Event
+    previousTimelineEvent: TimelineEvent.Event,
 ): Promise<TimelineEvent.Event> {
     const queryClient = config.getQueryClient();
     const id = previousTimelineEvent.id;
@@ -114,7 +114,7 @@ export async function listAll(): Promise<TimelineEvent.Event[]> {
 
     timelineEvents.forEach((event) => {
         queryClient.setQueryData(["timelineEvent", event.id], event);
-        queryClient.refetchQueries({ queryKey: ["timelineEvent", event.id] });
+        // queryClient.refetchQueries({ queryKey: ["timelineEvent", event.id] });
     });
     queryClient.setQueryData(["timelineEvents"], timelineEvents);
     return timelineEvents;
@@ -133,14 +133,11 @@ export async function listByCampaign(campaignId: string): Promise<TimelineEvent.
     //     return cachedTimelineEvents;
     // }
     const timelineEvents = await database.timelineEvent.listByCampaign(campaignId);
-    timelineEvents.forEach((event) => {
-        queryClient.setQueryData(["timelineEvent", event.id], event);
-        queryClient.refetchQueries({ queryKey: ["timelineEvent", event.id] });
-    });
+
     queryClient.setQueryData(["timelineEvents", campaignId], timelineEvents);
     timelineEvents.forEach((event) => {
         queryClient.setQueryData(["timelineEvent", event.id], event);
-        queryClient.refetchQueries({ queryKey: ["timelineEvent", event.id] });
+        // queryClient.refetchQueries({ queryKey: ["timelineEvent", event.id] });
     });
     return timelineEvents;
 }

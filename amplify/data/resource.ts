@@ -1,10 +1,5 @@
-import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
-import { campaignTypes, campaignSteps, timelineEventTypes } from "./types.js";
-import { sesHandler } from "../functions/sesHandler/resource.js";
-
-const adminsAndManagers = a.allow.specificGroups(["admin", "projektmanager"], "userPools");
-const publicRead = a.allow.public().to(["read"]);
-const allowSESLambda = a.allow.resource(sesHandler);
+import { type ClientSchema } from "@aws-amplify/backend";
+import { a, defineData } from "@aws-amplify/backend";
 
 const schema = a.schema({
     //##############################################
@@ -49,10 +44,24 @@ const schema = a.schema({
         .model({
             //##########################
             //### Contact Information ##
-            firstName: a.string().required().authorization([adminsAndManagers, publicRead]),
-            lastName: a.string().required().authorization([adminsAndManagers, publicRead]),
-            phoneNumber: a.string().authorization([adminsAndManagers]),
-            email: a.email().authorization([adminsAndManagers]),
+            firstName: a
+                .string()
+                .required()
+                .authorization((allow) => [
+                    allow.publicApiKey().to(["read"]),
+                    allow.groups(["admin", "projektmanager"]),
+                ]),
+            lastName: a
+                .string()
+                .required()
+                .authorization((allow) => [
+                    allow.publicApiKey().to(["read"]),
+                    allow.groups(["admin", "projektmanager"]),
+                ]),
+            phoneNumber: a
+                .string()
+                .authorization((allow) => [allow.groups(["admin", "projektmanager"])]),
+            email: a.email().authorization((allow) => [allow.groups(["admin", "projektmanager"])]),
             emailType: a.string().default("new"),
             //##########################
 
@@ -82,11 +91,7 @@ const schema = a.schema({
             candidatures: a.hasMany("InfluencerCandidate", "influencerId"),
             //##########################
         })
-        .authorization([
-            //
-            adminsAndManagers,
-            a.allow.public().to(["read"]),
-        ]),
+        .authorization((allow) => [allow.publicApiKey().to(["read"])]),
 
     /**
      * InfluencerAssignment model - Represents the assignment of an influencer to a campaign
@@ -105,14 +110,18 @@ const schema = a.schema({
         .model({
             budget: a.integer(),
             isPlaceholder: a.boolean().required(),
-            placeholderName: a.string().authorization([adminsAndManagers]),
+            placeholderName: a
+                .string()
+                .authorization((allow) => [allow.groups(["admin", "projektmanager"])]),
 
             //##########################
             //### Relations ############
-            influencerId: a.id().authorization([adminsAndManagers]),
+            influencerId: a
+                .id()
+                .authorization((allow) => [allow.groups(["admin", "projektmanager"])]),
             influencer: a
                 .belongsTo("Influencer", "influencerId")
-                .authorization([adminsAndManagers]),
+                .authorization((allow) => [allow.groups(["admin", "projektmanager"])]),
 
             timelineEvents: a.hasMany("EventAssignment", "assignmentId"),
 
@@ -121,12 +130,12 @@ const schema = a.schema({
 
             candidates: a
                 .hasMany("InfluencerCandidate", "candidateAssignmentId")
-                .authorization([adminsAndManagers]),
+                .authorization((allow) => [allow.groups(["admin", "projektmanager"])]),
             //##########################
         })
-        .authorization([
-            a.allow.public().to(["read"]),
-            a.allow.specificGroups(["admin", "projektmanager"], "userPools"),
+        .authorization((allow) => [
+            allow.publicApiKey().to(["read"]),
+            allow.groups(["admin", "projektmanager"]),
         ]),
     //#endregion InfluencerAssignment
 
@@ -146,11 +155,14 @@ const schema = a.schema({
             influencer: a.belongsTo("Influencer", "influencerId"),
             response: a
                 .string()
-                .authorization([adminsAndManagers, a.allow.public().to(["read", "update"])]),
+                .authorization((allow) => [
+                    allow.publicApiKey().to(["read"]),
+                    allow.groups(["admin", "projektmanager"]),
+                ]),
         })
-        .authorization([
-            a.allow.public().to(["read"]),
-            a.allow.specificGroups(["admin", "projektmanager"], "userPools"),
+        .authorization((allow) => [
+            allow.publicApiKey().to(["read"]),
+            allow.groups(["admin", "projektmanager"]),
         ]),
     //#endregion InfluencerCandidate
 
@@ -166,7 +178,10 @@ const schema = a.schema({
             timelineEvent: a.belongsTo("TimelineEvent", "timelineEventId"),
         })
         .secondaryIndexes((index) => [index("assignmentId"), index("timelineEventId")])
-        .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
+        .authorization((allow) => [
+            allow.publicApiKey().to(["read"]),
+            allow.groups(["admin", "projektmanager"]),
+        ]),
     //#endregion EventAssignment
     //#endregion Influencer
     //##############################################
@@ -199,7 +214,7 @@ const schema = a.schema({
             timelineEvents: a.hasMany("TimelineEvent", "campaignId"),
             assignedInfluencers: a.hasMany("InfluencerAssignment", "campaignId"),
         })
-        .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
+        .authorization((allow) => [allow.groups(["admin", "projektmanager"])]),
     //#endregion Campaign
 
     //#region Customer
@@ -232,8 +247,8 @@ const schema = a.schema({
             campaign: a.belongsTo("Campaign", "campaignId"),
             //#####################
         })
-        .secondaryIndexes((index) => [index("campaignId").queryField("listCustomersByCampaign")])
-        .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
+        .secondaryIndexes((index) => [index("campaignId").name("listCustomersByCampaign")])
+        .authorization((allow) => [allow.groups(["admin", "projektmanager"])]),
     //#endregion Customer
 
     //#region TimelineEvent
@@ -271,6 +286,7 @@ const schema = a.schema({
 
             targetAudience: a.ref("FilterOptions"),
 
+            //####################
             //###  Relations  ####
             //####################
 
@@ -283,16 +299,22 @@ const schema = a.schema({
 
             //####################
 
-            parentEventId: a.id(),
-            parentEvent: a.belongsTo("TimelineEvent", "parentEventId"),
-            relatedEvents: a.hasMany("TimelineEvent", "parentEventId"),
+            //TODO: Implement related events, when fixed in npm package
+            // parentEventId: a.id(),
+
+            // parentEvent: a.belongsTo("TimelineEvent", "parentEventId"),
+
+            // childEvents: a.hasMany("TimelineEvent", "parentEventId"),
 
             //####################
 
             emailTriggers: a.hasMany("EmailTrigger", "eventId"),
         })
-        .secondaryIndexes((index) => [index("campaignId").queryField("listByCampaign")])
-        .authorization([a.allow.specificGroups(["admin", "projektmanager"], "userPools")]),
+        .secondaryIndexes((index) => [index("campaignId").name("listByCampaign")])
+        .authorization((allow) => [
+            allow.publicApiKey().to(["read"]),
+            allow.groups(["admin", "projektmanager"]),
+        ]),
     //#endregion TimelineEvent
 
     //#region EmailTrigger
@@ -342,8 +364,8 @@ const schema = a.schema({
             event: a.belongsTo("TimelineEvent", "eventId"),
             //####################
         })
-        .secondaryIndexes((index) => [index("eventId").queryField("listByEvent")])
-        .authorization([adminsAndManagers]),
+        .secondaryIndexes((index) => [index("eventId").name("listByEvent")])
+        .authorization((allow) => [allow.groups(["admin", "projektmanager"])]),
     //#endregion EmailTrigger
 });
 

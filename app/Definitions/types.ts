@@ -40,7 +40,7 @@ export interface DialogConfig<RowDataType> {
 export type Nullable<T> = T | null;
 export type Prettify<T> = {
     [K in keyof T]: T[K];
-} & {};
+} & unknown;
 
 export type PartialWith<T, K extends keyof T> = Partial<T> & Pick<T, K>;
 

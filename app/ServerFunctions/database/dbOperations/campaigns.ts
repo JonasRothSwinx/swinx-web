@@ -11,28 +11,36 @@ import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import { Nullable, PartialWith } from "@/app/Definitions/types";
 import { Candidates } from "@/app/ServerFunctions/types/candidates";
 import AssignedInfluencer from "@/app/Pages/CampaignDetails/Components/OpenInfluencerDetails/AssignedInfluencer";
+import Customer from "../../types/customer";
+import ProjectManagers from "../../types/projectManagers";
 
 const selectionSet = [
     //
     "id",
-    "campaignManagerId",
+    // "campaignManagerId",
     "notes",
     "budget",
     "customers.*",
     "billingAdress.*",
+    // "projectManagers.*",
+    // "projectManagers.projectManager.*",
 ] as const;
 
-type RawCampaign = SelectionSet<Schema["Campaign"], typeof selectionSet>;
+type RawCampaign = SelectionSet<Schema["Campaign"]["type"], typeof selectionSet>;
 export async function dummyListCampaigns() {
     const { data, errors } = await client.models.Campaign.list({
         selectionSet: [
             "id",
-            "campaignManagerId",
+            // "campaignManagerId",
             "notes",
 
             "customers.*",
 
             "billingAdress.*",
+
+            // "projectManagers.*",
+
+            // "projectManagers.projectManager.*",
 
             // "timelineEvents.*",
             // "timelineEvents.campaign.id",
@@ -64,18 +72,21 @@ export async function dummyListCampaigns() {
  * @param campaign The campaign data without an id
  * @returns The id of the created campaign
  */
-export async function createNewCampaign(campaign: Omit<Campaign.Campaign, "id">) {
-    const { campaignManagerId, notes, budget } = campaign;
+interface CreateNewCampaignParams {
+    campaign: Omit<Campaign.Campaign, "id">;
+    projectManagerId: string;
+}
+export async function createNewCampaign({ campaign, projectManagerId }: CreateNewCampaignParams) {
+    const { notes, budget } = campaign;
     // if (!customer) throw new Error("Missing Data");
 
     // const customerResponse = customers.create(campaign.customers);
     const { data: createdCampaign, errors } = await client.models.Campaign.create({
-        campaignManagerId,
         notes,
         budget,
         billingAdress: campaign.billingAdress ?? undefined,
     });
-    if (errors) {
+    if (errors || createdCampaign === null) {
         throw new Error(JSON.stringify(errors));
     }
     //Create Customers
@@ -96,12 +107,38 @@ const GetCampaignOptionsDefault: GetCampaignOptions = {
 };
 
 function validateCampaign(rawCampaign: RawCampaign): Campaign.CampaignMin {
+    const customers: Customer.Customer[] = rawCampaign.customers.map((raw) => {
+        return {
+            id: raw.id,
+            company: raw.company ?? "",
+            email: raw.email ?? "",
+            firstName: raw.firstName ?? "",
+            lastName: raw.lastName ?? "",
+            phoneNumber: raw.phoneNumber ?? "",
+            companyPosition: raw.companyPosition ?? "",
+            profileLink: raw.linkedinProfile ?? "",
+            notes: raw.notes ?? "",
+        } satisfies Customer.Customer;
+    });
+    const projectManagers: ProjectManagers.ProjectManager[] = rawCampaign.projectManagers.map(
+        (raw) => {
+            return {
+                id: raw.projectManager.id,
+                email: raw.projectManager.email,
+                firstName: raw.projectManager.firstName,
+                lastName: raw.projectManager.lastName,
+                phoneNumber: raw.projectManager.phoneNumber ?? undefined,
+                notes: raw.projectManager.notes ?? undefined,
+            } satisfies ProjectManagers.ProjectManager;
+        },
+    );
     const dataOut: Campaign.CampaignMin = {
         id: rawCampaign.id,
-        campaignManagerId: rawCampaign.campaignManagerId,
         notes: rawCampaign.notes,
-        customers: rawCampaign.customers,
+        customers,
         billingAdress: rawCampaign.billingAdress ?? null,
+        budget: rawCampaign.budget ?? null,
+        projectManagers,
     };
     return dataOut;
 }
@@ -162,3 +199,17 @@ export async function deleteCampaign(
     await Promise.all(tasks);
 }
 //#endregion
+
+interface ConnectToManagerParams {
+    campaignId: string;
+    projectManagerId: string;
+}
+export async function connectToManager({ campaignId, projectManagerId }: ConnectToManagerParams) {
+    const { data, errors } = await client.models.ProjectManagerCampaignAssignment.create({
+        projectManagerId,
+        campaignId,
+    });
+    if (errors) {
+        throw new Error(JSON.stringify(errors));
+    }
+}

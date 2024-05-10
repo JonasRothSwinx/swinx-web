@@ -160,7 +160,7 @@ async function byCampaign(campaignId: string): Promise<Assignment.AssignmentFull
         assignments.map(async (assignment) => {
             const resolvedAssignment = await resolveAssignmentReferences(assignment);
             queryClient.setQueryData(["assignment", assignment.id], resolvedAssignment);
-            queryClient.refetchQueries({ queryKey: ["assignment", assignment.id] });
+            // queryClient.refetchQueries({ queryKey: ["assignment", assignment.id] });
             return resolvedAssignment;
         }),
     );

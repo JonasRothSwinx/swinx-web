@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import ConfigureAmplifyClientSide from "./ConfigureAmplifyClientSide";
-import SideBar from "./Pages/WelcomePage/SideBar";
-import { Authenticator } from "@aws-amplify/ui-react";
+import { Typography } from "@mui/material";
 
 const inter = Inter({ subsets: ["latin"] });
 

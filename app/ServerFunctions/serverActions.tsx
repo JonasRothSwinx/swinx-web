@@ -2,7 +2,7 @@
 import { fetchAuthSession, fetchUserAttributes } from "aws-amplify/auth/server";
 import { runWithAmplifyServerContext } from "./amplifyServerUtils";
 import { cookies } from "next/headers";
-import config from "@/amplifyconfiguration.json";
+import config from "@/amplify_outputs.json";
 import { Schema } from "@/amplify/data/resource";
 import { generateServerClientUsingCookies } from "@aws-amplify/adapter-nextjs/api";
 import dayjs from "dayjs";

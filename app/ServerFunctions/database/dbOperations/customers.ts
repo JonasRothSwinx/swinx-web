@@ -135,10 +135,10 @@ function validateRawCustomer(rawCustomer: RawCustomer): Nullable<Customer.Custom
     try {
         const validatedCustomer: Customer.Customer = {
             id: rawCustomer.id,
-            company: rawCustomer.company,
-            firstName: rawCustomer.firstName,
-            lastName: rawCustomer.lastName,
-            email: rawCustomer.email,
+            company: rawCustomer.company ?? "",
+            firstName: rawCustomer.firstName ?? "",
+            lastName: rawCustomer.lastName ?? "",
+            email: rawCustomer.email ?? "",
             companyPosition: rawCustomer.companyPosition,
             phoneNumber: rawCustomer.phoneNumber,
             notes: rawCustomer.notes,

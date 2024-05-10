@@ -534,7 +534,16 @@ export async function getEventForEmailTrigger(eventId: string): Promise<
     if (data === null) return null;
     const event = validateEvent(data);
     const campaign = data.campaign;
-    const customer = campaign.customers[0];
+    const rawCustomer = campaign.customers[0];
+    const customer: Customer.Customer = {
+        id: rawCustomer.id,
+        company: rawCustomer.company ?? "<Error>",
+        firstName: rawCustomer.firstName ?? "<Error>",
+        lastName: rawCustomer.lastName ?? "<Error>",
+        email: rawCustomer.email ?? "<Error>",
+        companyPosition: rawCustomer.companyPosition,
+        notes: rawCustomer.notes,
+    };
 
     return { event, customer };
 }

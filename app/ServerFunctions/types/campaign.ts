@@ -3,6 +3,7 @@ import Customer from "./customer";
 import Influencer from "./influencer";
 import TimelineEvent from "./timelineEvents";
 import Assignment from "./assignment";
+import ProjectManagers from "./projectManagers";
 
 export default Campaign;
 namespace Campaign {
@@ -19,12 +20,12 @@ namespace Campaign {
     export type CampaignMin = {
         id: string;
         // campaignType: string;
-        campaignManagerId?: Nullable<string>;
         customers: Customer.Customer[];
         billingAdress: Nullable<BillingAdress>;
         // campaignStep: string;
         notes?: Nullable<string>;
         budget?: Nullable<number>;
+        projectManagers: ProjectManagers.ProjectManager[];
     };
 
     export type CampaignWithReferences = CampaignMin & {

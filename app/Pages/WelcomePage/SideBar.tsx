@@ -1,11 +1,15 @@
 "use client";
 import UserView from "@/app/Pages/WelcomePage/User";
 import { useEffect, useState } from "react";
-import { getUserGroups } from "@/app/ServerFunctions/serverActions";
+import { getUserAttributes, getUserGroups } from "@/app/ServerFunctions/serverActions";
 import stylesExporter from "../styles/stylesExporter";
 import { Button } from "@mui/material";
 import emailClient from "@/app/ServerFunctions/email";
-import { createTestData, listCampaignsTest, wipeTestData } from "@/app/ServerFunctions/database/dbOperations/test";
+import {
+    createTestData,
+    listCampaignsTest,
+    wipeTestData,
+} from "@/app/ServerFunctions/database/dbOperations/test";
 import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import dataClient from "@/app/ServerFunctions/database";
 import dayjs from "@/app/utils/configuredDayJs";
@@ -46,6 +50,7 @@ interface ISideBar {
 function SideBar(props: ISideBar) {
     const { setMenuCallback } = props;
     const groups = useQuery({ queryKey: ["userGroups"], queryFn: getUserGroups });
+    const userAttributes = useQuery({ queryKey: ["userAttributes"], queryFn: getUserAttributes });
     if (groups.isLoading) return <div>Loading...</div>;
     if (groups.isError) return <div>Error: {JSON.stringify(groups.error)}</div>;
     if (groups.data === undefined) return <div>Groups not found</div>;

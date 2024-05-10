@@ -13,12 +13,13 @@ import {
     Dialog,
     IconButton,
     MenuItem,
+    SxProps,
     TextField,
     Typography,
 } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
 import { UseQueryResult, useQueries, useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import sendInvites from "./sendMail";
 import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
 import { Nullable } from "@/app/Definitions/types";
@@ -120,7 +121,6 @@ export default function EmailPreview(props: EmailPreviewProps) {
 
     const EventHandlers = {
         sendEmail: async () => {
-            debugger;
             if (!customer.data) return;
             const responses = await sendInvites({
                 candidates,
@@ -259,35 +259,38 @@ interface EmailFrameProps {
 }
 function EmailFrame(props: EmailFrameProps) {
     const { emailPreview } = props;
-    if (props.isLoading) return <CircularProgress />;
+    const sxProps: SxProps = useMemo(
+        () =>
+            ({
+                "&": {
+                    display: "flex",
+                    width: "100%",
+                    height: "100%",
+                    padding: "10px",
+                    alignContent: "center",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    textAlign: "center",
+                },
+            } satisfies SxProps),
+        [],
+    );
+    if (props.isLoading)
+        return (
+            <Box sx={sxProps}>
+                <CircularProgress />
+            </Box>
+        );
     if (emailPreview === null) {
         return (
-            <Box
-                display={"flex"}
-                width={"100%"}
-                height={"100%"}
-                padding={"10px"}
-                alignContent={"center"}
-                alignItems={"center"}
-                justifyContent={"center"}
-                textAlign={"center"}
-            >
+            <Box sx={sxProps}>
                 <Typography>Dieser Influenzer erhält keine automatischen Emails</Typography>
             </Box>
         );
     }
     if (emailPreview === "")
         return (
-            <Box
-                display={"flex"}
-                width={"100%"}
-                height={"100%"}
-                padding={"10px"}
-                alignContent={"center"}
-                alignItems={"center"}
-                justifyContent={"center"}
-                textAlign={"center"}
-            >
+            <Box sx={sxProps}>
                 <Typography>Kein Email-Template gefunden</Typography>;
             </Box>
         );

@@ -15,7 +15,8 @@ interface DetailsProps {
     setUpdatedData: Dispatch<SetStateAction<Partial<TimelineEvent.Event>>>;
 }
 type relevantDetails = Prettify<
-    Pick<TimelineEvent.Event, "eventTitle" | "eventTaskAmount" | "eventAssignmentAmount"> & TimelineEvent.EventInfo
+    Pick<TimelineEvent.Event, "eventTitle" | "eventTaskAmount" | "eventAssignmentAmount"> &
+        TimelineEvent.EventInfo
 >;
 type relevantDetailsKey = Prettify<keyof relevantDetails>;
 type DetailsConfigEntry =
@@ -182,14 +183,16 @@ interface AdditionalFieldsProps {
     event: Partial<TimelineEvent.Event>;
     onChange: (data: Partial<TimelineEvent.Event>) => void;
 }
-const AdditionalFields: { [key in TimelineEvent.eventType]?: (props: AdditionalFieldsProps) => JSX.Element } = {
+const AdditionalFields: {
+    [key in TimelineEvent.eventType]?: (props: AdditionalFieldsProps) => JSX.Element;
+} = {
     Webinar: (props) => <AudienceTargetFilter {...props} />,
 };
 
 function getDataKey(
     key: relevantDetailsKey,
     data: Partial<TimelineEvent.Event>,
-    updatedData: Partial<TimelineEvent.Event>
+    updatedData: Partial<TimelineEvent.Event>,
 ): string | number | null | undefined {
     switch (key) {
         //in info
@@ -242,7 +245,7 @@ export default function EventDetails(props: DetailsProps): JSX.Element {
     const fullWidthFields: (keyof relevantDetails)[] = ["topic", "instructions"];
     const sxTest: Record<string, Record<string, string> | string> = { test: "test" };
     fullWidthFields.map((field) => {
-        const selector = `& .MuiTextField-root:has(*[name=${field}])`;
+        const selector = `& .MuiTextField-root:has(*[name=${field.toString()}])`;
         sxTest[selector] = {
             flexBasis: "100%",
         };
@@ -275,6 +278,7 @@ export default function EventDetails(props: DetailsProps): JSX.Element {
                 const keyName = key as relevantDetailsKey;
                 const value = getDataKey(keyName, data, updatedData);
                 // console.log({ keyName, value });
+                if (!config) return <></>;
                 return (
                     <EventDetailField
                         key={key}
@@ -311,7 +315,7 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
             return (
                 <TextField
                     id={id}
-                    name={name}
+                    name={name.toString()}
                     label={label}
                     value={(value as string) ?? ""}
                     onChange={(e) => changeHandler(e.target.value)}
@@ -322,7 +326,7 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
             return (
                 <TextField
                     id={id}
-                    name={name}
+                    name={name.toString()}
                     type="number"
                     label={label}
                     value={(value as number) ?? 0}
@@ -337,7 +341,7 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
                     <DatePicker
                         // closeOnSelect={false}
                         label={label}
-                        name={name}
+                        name={name.toString()}
                         value={value ? dayjs(value as string) : null}
                         onChange={(value) => {
                             changeHandler(value?.toISOString() ?? "");
@@ -361,7 +365,7 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
             return (
                 <TextField
                     id={id}
-                    name={name}
+                    name={name.toString()}
                     label={label}
                     value={(value as string) ?? ""}
                     onChange={(e) => changeHandler(e.target.value)}

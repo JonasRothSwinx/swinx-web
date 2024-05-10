@@ -28,11 +28,13 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
     const campaign = useQuery({
         queryKey: ["campaign", campaignId],
         queryFn: () => dataClient.campaign.get(campaignId),
+        refetchOnWindowFocus: false,
     });
     const influencers = useQuery({
         queryKey: ["influencers"],
         queryFn: () => dataClient.influencer.list(),
         placeholderData: [],
+        refetchOnWindowFocus: false,
     });
     const [assignmentData, setAssignmentData] = useState<Assignment.Assignment[]>([]);
     const highlightQuery = useQuery<highlightData[]>({
