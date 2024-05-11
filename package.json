@@ -12,7 +12,7 @@
         "sandbox debug once": "npx ampx sandbox --debug --identifier sharedSandBox --once",
         "sandbox": "npx ampx sandbox --identifier sharedSandBox",
         "sandbox debug": "npx ampx sandbox --debug --identifier sharedSandBox",
-        "update amplify beta": "npm i --save-dev @aws-amplify/backend-cli @aws-amplify/backend",
+        "update amplify packages": "npm i --save-dev @aws-amplify/backend-cli@latest @aws-amplify/backend@latest",
         "delete sandbox": "npx ampx sandbox delete --identifier sharedSandBox",
         "react email": " email dev --dir ./app/ServerFunctions/email/templates --port 4000"
     },
@@ -52,8 +52,8 @@
         "unique-names-generator": "^4.7.1"
     },
     "devDependencies": {
-        "@aws-amplify/backend": "^1.0.0",
-        "@aws-amplify/backend-cli": "^1.0.1",
+        "@aws-amplify/backend": "^1.0.1",
+        "@aws-amplify/backend-cli": "^1.0.2",
         "@simbathesailor/use-what-changed": "^2.0.0",
         "@tanstack/eslint-plugin-query": "^5.27.3",
         "@types/aws-lambda": "^8.10.136",

@@ -300,11 +300,11 @@ const schema = a.schema({
             //####################
 
             //TODO: Implement related events, when fixed in npm package
-            // parentEventId: a.id(),
+            parentEventId: a.id(),
 
-            // parentEvent: a.belongsTo("TimelineEvent", "parentEventId"),
+            parentEvent: a.belongsTo("TimelineEvent", "parentEventId"),
 
-            // childEvents: a.hasMany("TimelineEvent", "parentEventId"),
+            childEvents: a.hasMany("TimelineEvent", "parentEventId"),
 
             //####################
 
