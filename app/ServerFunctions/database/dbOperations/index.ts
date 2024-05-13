@@ -1,24 +1,6 @@
-import {
-    createNewCampaign,
-    deleteCampaign,
-    dummyListCampaigns,
-    getCampaign,
-    listCampaigns,
-} from "./campaigns";
-import {
-    createCustomer,
-    deleteCustomer,
-    getCustomer,
-    listCustomersByCampaign,
-    updateCustomer,
-} from "./customers";
-import {
-    createNewInfluencer,
-    deleteInfluencer,
-    getInfluencer,
-    listInfluencers,
-    updateInfluencer,
-} from "./influencers";
+import { createNewCampaign, deleteCampaign, dummyListCampaigns, getCampaign, listCampaigns } from "./campaigns";
+import { createCustomer, deleteCustomer, getCustomer, listCustomersByCampaign, updateCustomer } from "./customers";
+import { createNewInfluencer, deleteInfluencer, getInfluencer, listInfluencers, updateInfluencer } from "./influencers";
 import {
     createAssignment,
     deletePlaceholder,
@@ -55,6 +37,7 @@ import {
     createProjectManager,
     deleteProjectManager,
     getProjectManager,
+    getProjectManagerByCognitoId,
     listProjectManagers,
     updateProjectManager,
 } from "./projectManagers";
@@ -125,6 +108,7 @@ export const projectManagers = {
     list: listProjectManagers,
     update: updateProjectManager,
     delete: deleteProjectManager,
+    getByCognitoId: getProjectManagerByCognitoId,
 };
 
 export const debug = {

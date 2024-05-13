@@ -18,7 +18,7 @@ import {
     Typography,
 } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
-import { UseQueryResult, useQueries, useQuery } from "@tanstack/react-query";
+import { UseQueryResult, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import sendInvites from "./sendMail";
 import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
@@ -49,8 +49,7 @@ interface EmailPreviewProps {
     assignment: Assignment.AssignmentFull;
 }
 
-type inviteTemplateVariables =
-    typeof templateDefinitions.mailTypes.campaignInvite.CampaignInvite.defaultParams;
+type inviteTemplateVariables = typeof templateDefinitions.mailTypes.campaignInvite.CampaignInvite.defaultParams;
 /**
  * Renders the email preview component.
  *
@@ -59,6 +58,7 @@ type inviteTemplateVariables =
  */
 export default function EmailPreview(props: EmailPreviewProps) {
     const { assignment, candidates, onClose } = props;
+    const queryClient = useQueryClient();
     const campaignId = assignment.campaign.id;
     // const [emailPreview, setEmailPreview] = useState<string>();
     const [isLoading, setIsLoading] = useState(false);
@@ -71,14 +71,12 @@ export default function EmailPreview(props: EmailPreviewProps) {
     });
     const [templateName, setTemplateName] = useState<templateName>("CampaignInviteNew");
     const templates = useQueries({
-        queries: templateDefinitions.mailTypes.campaignInvite.CampaignInvite.templateNames.map(
-            (templateName) => {
-                return {
-                    queryKey: ["template", templateName],
-                    queryFn: () => emailClient.templates.get(templateName),
-                };
-            },
-        ),
+        queries: templateDefinitions.mailTypes.campaignInvite.CampaignInvite.templateNames.map((templateName) => {
+            return {
+                queryKey: ["template", templateName],
+                queryFn: () => emailClient.templates.get(templateName),
+            };
+        }),
         combine(result) {
             const out: {
                 [key in EmailTriggers.emailLevel]: Nullable<string>;
@@ -126,6 +124,9 @@ export default function EmailPreview(props: EmailPreviewProps) {
                 candidates,
                 assignment,
                 customer: customer.data,
+                queryClient,
+
+                campaignId,
             });
             console.log(responses);
             onClose();
@@ -158,9 +159,7 @@ export default function EmailPreview(props: EmailPreviewProps) {
                                 animationPlayState: "running",
                                 animationName: "spin",
                                 animationDuration: "500ms",
-                                animationIterationCount: `${
-                                    templates.isFetching ? "infinite" : "0"
-                                }`,
+                                animationIterationCount: `${templates.isFetching ? "infinite" : "0"}`,
                                 animationTimingFunction: "linear",
                                 "@keyframes spin": {
                                     "100%": { transform: `rotate(360deg)` },
@@ -184,10 +183,7 @@ export default function EmailPreview(props: EmailPreviewProps) {
                     ) : (
                         <>
                             <EmailFrame
-                                emailPreview={
-                                    templates[selectedCandidate.influencer.emailLevel ?? "new"] ??
-                                    null
-                                }
+                                emailPreview={templates[selectedCandidate.influencer.emailLevel ?? "new"] ?? null}
                                 isLoading={templates.isLoading}
                                 variables={{
                                     ...variables,
@@ -273,7 +269,7 @@ function EmailFrame(props: EmailFrameProps) {
                     textAlign: "center",
                 },
             } satisfies SxProps),
-        [],
+        []
     );
     if (props.isLoading)
         return (

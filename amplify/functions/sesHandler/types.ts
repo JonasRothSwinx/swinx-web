@@ -2,7 +2,7 @@
 import { EmailTemplateContent, GetEmailTemplateCommandOutput, SendBulkEmailCommandOutput } from "@aws-sdk/client-sesv2";
 export type Prettify<T> = {
     [K in keyof T]: Prettify<T[K]>;
-} & {};
+} & unknown;
 
 export type sesHandlerEventBody =
     | sesHandlerGetTemplate
@@ -37,7 +37,7 @@ export function isSesHandlerGetTemplate(body: sesHandlerEventBody): body is sesH
 
 export type sesHandlerUpdateTemplate = sesHandlerMinimal & {
     operation: "update";
-    updateData: { name: string; subjectLine: string; html: string; text: string }[];
+    updateData: { name: string; subjectLine: string; html: string /* text: string */ }[];
 };
 export function isSesHandlerUpdateTemplate(body: sesHandlerEventBody): body is sesHandlerUpdateTemplate {
     return body.operation === "update";
@@ -52,7 +52,7 @@ export function isseshandlerListTemplate(body: sesHandlerEventBody): body is ses
 
 export type sesHandlerDeleteTemplate = sesHandlerMinimal & {
     operation: "delete";
-    deleteData: { name: string }[];
+    deleteData: { name: string };
 };
 
 export function issseshandlerDeleteTemplate(body: sesHandlerEventBody): body is sesHandlerDeleteTemplate {

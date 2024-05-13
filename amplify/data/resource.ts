@@ -89,7 +89,7 @@ const schema = a.schema({
             candidatures: a.hasMany("InfluencerCandidate", "influencerId"),
             //##########################
         })
-        .authorization((allow) => [allow.publicApiKey().to(["read"])]),
+        .authorization((allow) => [allow.publicApiKey().to(["read"]), allow.groups(["admin", "projektmanager"])]),
 
     /**
      * InfluencerAssignment model - Represents the assignment of an influencer to a campaign
@@ -190,9 +190,11 @@ const schema = a.schema({
             email: a.email().required(),
             phoneNumber: a.string(),
             notes: a.string(),
+            cognitoId: a.string().required(),
 
             campaigns: a.hasMany("ProjectManagerCampaignAssignment", "projectManagerId"),
         })
+        .secondaryIndexes((index) => [index("cognitoId").queryField("listByCognitoId").name("listByCognitoId")])
         .authorization((allow) => [allow.publicApiKey().to(["read"]), allow.groups(["admin", "projektmanager"])]),
     //#endregion ProjectManager
 

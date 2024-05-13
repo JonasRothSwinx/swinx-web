@@ -4,6 +4,7 @@ import sesAPIClient from "../../sesAPI";
 import { SendMailProps } from "../types";
 import { TemplateVariables } from "./CampaignInviteEmail";
 import { templates } from ".";
+import ProjectManagers from "@/app/ServerFunctions/types/projectManagers";
 
 /**
  * Send campaign invites to candidates
@@ -19,13 +20,13 @@ type personalVariables = Pick<TemplateVariables, "name" | "linkBase" | "linkData
 export default async function send(props: SendMailProps) {
     const {
         level,
-        commonContext: { candidates, assignment, taskDescriptions, customer },
+        commonContext: { candidates, assignment, taskDescriptions, customer, campaign },
     } = props;
     console.log("Sending invites for level", level, props);
 
     if (level === "none") return;
     // Check if all required data is present
-    if (!taskDescriptions || !candidates || !assignment || !customer) {
+    if (!taskDescriptions || !candidates || !assignment || !customer || !campaign) {
         const missingContext = {
             taskDescriptions: !!taskDescriptions,
             candidates: !!candidates,
@@ -44,13 +45,18 @@ export default async function send(props: SendMailProps) {
         honorar: assignment.budget?.toString() ?? "<Honorar nicht definiert>",
         customerCompany: customer?.company ?? "TestCustomer",
     };
+    const campaignManager = campaign.projectManagers[0];
+    if (!campaignManager) throw new Error("No campaign manager found");
+
+    const senderName = ProjectManagers.getFullName(campaignManager);
+    const senderEmail = campaignManager.email;
     const campaignId = assignment.campaign.id;
     const baseUrl = process.env.BASE_URL + "/Response?data=";
     const requestBody: sesHandlerSendEmailTemplateBulk = {
         operation: "sendEmailTemplateBulk",
         bulkEmailData: {
             //common Part
-            from: "swinx GmbH <noreply@swinx.de>",
+            from: `${senderName} <${senderEmail}>` ?? "swinx GmbH <noreply@swinx.de>",
             templateName: templateName,
             defaultTemplateData: JSON.stringify({
                 name: "Error 418: Teapot",
@@ -64,8 +70,8 @@ export default async function send(props: SendMailProps) {
                             campaignId,
                             candidateFullName: "Teapot",
                             candidateId: "1234-5678",
-                        } satisfies CampaignInviteEncodedData),
-                    ),
+                        } satisfies CampaignInviteEncodedData)
+                    )
                 ),
                 customerCompany: commonVariables.customerCompany,
             } satisfies TemplateVariables),

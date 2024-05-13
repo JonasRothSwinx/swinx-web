@@ -95,6 +95,8 @@ export async function createNewCampaign({ campaign, projectManagerId }: CreateNe
     const customersResponses = await Promise.all(
         campaign.customers.map((customer) => customers.create(customer, createdCampaign.id))
     );
+    //Connect projectManager
+    const managerRespone = await connectToManager({ campaignId: createdCampaign.id, projectManagerId });
 
     return createdCampaign.id;
 }
@@ -198,6 +200,7 @@ function validateCampaign(rawCampaign: Nullable<RawCampaign>): Nullable<Campaign
                 lastName: raw.projectManager.lastName,
                 phoneNumber: raw.projectManager.phoneNumber ?? undefined,
                 notes: raw.projectManager.notes ?? undefined,
+                cognitoId: raw.projectManager.cognitoId,
             } satisfies ProjectManagers.ProjectManager;
         });
         const dataOut: Campaign.CampaignMin = {

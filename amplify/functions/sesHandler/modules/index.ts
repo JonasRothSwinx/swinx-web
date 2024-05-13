@@ -1,4 +1,5 @@
 import SESclient from "./clients/SESclient.js";
+import deleteTemplate from "./deleteTemplate.js";
 import getTemplate from "./getTemplate.js";
 import listTemplates from "./listTemplates.js";
 import sendEmailTemplate from "./sendEmailTemplate.js";
@@ -14,5 +15,6 @@ export default {
     sendEmailTemplateBulk,
     sendReminders,
     updateTemplates,
+    deleteTemplate,
 };
 // Path: amplify/functions/sesHandler/modules/client.ts

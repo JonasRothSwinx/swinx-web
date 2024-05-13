@@ -5,6 +5,7 @@ import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 import {
     Box,
     Button,
+    CircularProgress,
     Dialog,
     DialogActions,
     DialogContent,
@@ -71,6 +72,15 @@ function CampaignDialog(props: CampaignDialogProps) {
     //##################
 
     //##################
+    //#region Queries
+    const projectManager = useQuery({
+        queryKey: ["projectManager"],
+        queryFn: async () => {
+            return await dataClient.projectManager.list();
+        },
+    });
+
+    //##################
     //#region Effects
     useEffect(() => {
         return () => setCampaign(initialData);
@@ -97,6 +107,11 @@ function CampaignDialog(props: CampaignDialogProps) {
 
         onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
             event.preventDefault();
+            const projectManagerId = projectManager.data?.[0].id;
+            if (!projectManagerId) {
+                alert("Projektmanager nicht gefunden, bitte versuchen Sie es erneut");
+                return;
+            }
             //TODO Check if all customers are valid
             const checkedCustomers = customers as Customer.Customer[];
 
@@ -108,7 +123,7 @@ function CampaignDialog(props: CampaignDialogProps) {
             } satisfies Campaign.Campaign;
             console.log(assembledCampaign);
 
-            dataClient.campaign.create({ campaign: assembledCampaign, projectManagerId: "TODO" });
+            dataClient.campaign.create({ campaign: assembledCampaign, projectManagerId });
             EventHandlers.handleClose(true);
         },
 
@@ -138,6 +153,12 @@ function CampaignDialog(props: CampaignDialogProps) {
 
     //#endregion
     //##################
+    if (!projectManager.data)
+        return (
+            <Dialog open>
+                <CircularProgress />
+            </Dialog>
+        );
     return (
         <Dialog
             // ref={modalRef}

@@ -31,7 +31,7 @@ const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } =
     honorar: Placeholder({ name: "honorar" }),
     linkBase: Placeholder({ name: "linkBase" }),
     linkData: Placeholder({ name: "linkData" }),
-    customerCompany: Placeholder({ name: "customerName" }),
+    customerCompany: Placeholder({ name: "customerCompany" }),
 };
 const EmailTemplates: { [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element } = {
     new: (debug?) => <NewCampaignInvite debug={debug} />,

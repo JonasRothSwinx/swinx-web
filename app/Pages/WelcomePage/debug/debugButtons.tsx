@@ -14,7 +14,7 @@ export default function DebugButtons() {
                 onClick={async () => {
                     console.log("Update Templates");
                     try {
-                        await emailClient.templates.update();
+                        await emailClient.templates.update(["CampaignInviteNew"]);
                         console.log("Templates Updated");
                     } catch (error) {
                         console.error("Error updating templates", error);
@@ -61,29 +61,26 @@ export default function DebugButtons() {
             >
                 Send Template
             </Button>
-            {/* <Button
+            <Button
                 variant="outlined"
                 onClick={async () => {
-                    const response = await createTestData();
+                    const response = await emailClient.templates.list();
                     console.log(response);
-                    queryClient.invalidateQueries({ queryKey: ["campaigns"] });
-                    queryClient.refetchQueries({ queryKey: ["campaigns"] });
                 }}
             >
-                Create Test Data
-            </Button>{" "} */}
-            {/* <Button
+                List Templates
+            </Button>
+            <Button
                 variant="outlined"
                 onClick={async () => {
-                    queryClient.setQueryData(["campaigns"], []);
-                    const response = await wipeTestData();
+                    const templateName = prompt("TemplateName");
+                    if (!templateName) return;
+                    const response = await emailClient.templates.delete({ name: templateName });
                     console.log(response);
-                    queryClient.invalidateQueries({ queryKey: ["campaigns"] });
-                    queryClient.refetchQueries({ queryKey: ["campaigns"] });
                 }}
             >
-                Wipe Test Data
-            </Button> */}
+                Delete Template
+            </Button>
             <Button
                 variant="outlined"
                 onClick={async () => {

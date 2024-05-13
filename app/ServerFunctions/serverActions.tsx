@@ -8,6 +8,7 @@ import { generateServerClientUsingCookies } from "@aws-amplify/adapter-nextjs/ap
 import dayjs from "dayjs";
 import "dayjs/locale/de";
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import sanitize from "../utils/sanitize";
 dayjs.extend(customParseFormat);
 
 // export default { getUserGroups, getUserAttributes };
@@ -22,8 +23,7 @@ export async function getUserGroups() {
             // console.log(client);
             // console.log(cookies(), "---\n", session);
             // console.log("-------------------------------");
-            const payloadGroups =
-                (session.tokens?.accessToken.payload["cognito:groups"] as string[]) ?? [];
+            const payloadGroups = (session.tokens?.accessToken.payload["cognito:groups"] as string[]) ?? [];
             // console.log(typeof payloadGroups);
             // if (!payloadGroups || typeof payloadGroups !== Json[]) return [];
             // console.log(payloadGroups);
@@ -36,13 +36,13 @@ export async function getUserAttributes() {
     const result = await runWithAmplifyServerContext({
         nextServerContext: { cookies },
         operation: async (contextSpec) => {
-            const session = await fetchAuthSession(contextSpec, { forceRefresh: true });
-            // console.log(session);
+            // const session = await fetchAuthSession(contextSpec, { forceRefresh: true });
             const attributes = await fetchUserAttributes(contextSpec);
             return attributes;
         },
     });
-    return result;
+    console.log(result);
+    return sanitize(result);
 }
 
 //#region Webinar

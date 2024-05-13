@@ -17,7 +17,8 @@ export default async function sendEmailTemplate(props: sesHandlerSendEmailTempla
                     TemplateData: templateData,
                 },
             },
-        }),
+            ConfigurationSetName: "Default",
+        })
     );
     return response;
 }

@@ -39,7 +39,7 @@ interface ISideBar {
 function SideBar(props: ISideBar) {
     const { setMenuCallback } = props;
     const groups = useQuery({ queryKey: ["userGroups"], queryFn: getUserGroups });
-    const userAttributes = useQuery({ queryKey: ["userAttributes"], queryFn: getUserAttributes });
+    // const userAttributes = useQuery({ queryKey: ["userAttributes"], queryFn: getUserAttributes });
     if (groups.isLoading) return <div>Loading...</div>;
     if (groups.isError) return <div>Error: {JSON.stringify(groups.error)}</div>;
     if (groups.data === undefined) return <div>Groups not found</div>;
@@ -79,3 +79,5 @@ function SideBarButton(props: {
         </button>
     );
 }
+
+function getProjecManagerObject() {}

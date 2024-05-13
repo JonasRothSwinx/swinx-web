@@ -15,8 +15,7 @@ interface DetailsProps {
     setUpdatedData: Dispatch<SetStateAction<Partial<TimelineEvent.Event>>>;
 }
 type relevantDetails = Prettify<
-    Pick<TimelineEvent.Event, "eventTitle" | "eventTaskAmount" | "eventAssignmentAmount"> &
-        TimelineEvent.EventInfo
+    Pick<TimelineEvent.Event, "eventTitle" | "eventTaskAmount" | "eventAssignmentAmount"> & TimelineEvent.EventInfo
 >;
 type relevantDetailsKey = Prettify<keyof relevantDetails>;
 type DetailsConfigEntry =
@@ -26,6 +25,9 @@ type DetailsConfigEntry =
           type: "text" | "number" | "date" | "textarea";
           startAdornment?: string;
           endAdornment?: string;
+          maxValue?: number;
+          minValue?: number;
+          defaultValue?: string | number;
       }
     | {
           enabled: false;
@@ -58,6 +60,9 @@ const EventTypeConfig: { [key in TimelineEvent.eventType]: DetailsConfig } = {
             enabled: true,
             label: "Invites",
             type: "number",
+            defaultValue: 1000,
+            maxValue: 1000,
+            minValue: 0,
         },
         eventLink: {
             enabled: false,
@@ -174,9 +179,23 @@ const EventTypeConfig: { [key in TimelineEvent.eventType]: DetailsConfig } = {
         },
     },
     Webinar: {
-        eventTitle: { enabled: true, label: "Titel", type: "text" },
-        eventAssignmentAmount: { enabled: true, type: "number", label: "Anzahl Speaker" },
-        eventLink: { enabled: true, type: "text", label: "Link" },
+        eventTitle: {
+            enabled: true,
+            label: "Titel",
+            type: "text",
+        },
+        eventAssignmentAmount: {
+            enabled: true,
+            type: "number",
+            label: "Anzahl Speaker",
+            minValue: 0,
+            defaultValue: 0,
+        },
+        eventLink: {
+            enabled: true,
+            type: "text",
+            label: "Link",
+        },
     },
 };
 interface AdditionalFieldsProps {
@@ -192,7 +211,7 @@ const AdditionalFields: {
 function getDataKey(
     key: relevantDetailsKey,
     data: Partial<TimelineEvent.Event>,
-    updatedData: Partial<TimelineEvent.Event>,
+    updatedData: Partial<TimelineEvent.Event>
 ): string | number | null | undefined {
     switch (key) {
         //in info
@@ -220,6 +239,7 @@ export default function EventDetails(props: DetailsProps): JSX.Element {
         const oldData = isEditing ? updatedData : data;
         const handler = isEditing ? setUpdatedData : applyDetailsChange;
         switch (key) {
+            case "eventAssignmentAmount":
             case "eventTitle":
             case "eventTaskAmount": {
                 const newData = { ...oldData, [key]: value };
@@ -329,8 +349,8 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
                     name={name.toString()}
                     type="number"
                     label={label}
-                    value={(value as number) ?? 0}
-                    InputProps={{ inputProps: { min: 0 } }}
+                    value={(value as number) ?? config.defaultValue ?? 0}
+                    InputProps={{ inputProps: { min: config.minValue ?? 0, max: config.maxValue ?? undefined } }}
                     onChange={(e) => changeHandler(Number(e.target.value))}
                     variant="standard"
                 />

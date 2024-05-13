@@ -6,4 +6,6 @@ export const sesHandler = defineFunction({
     environment: {
         REGION: "eu-west-1",
     },
+    memoryMB: 512,
+    timeoutSeconds: 30,
 });

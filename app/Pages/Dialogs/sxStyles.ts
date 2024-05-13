@@ -10,6 +10,9 @@ const DialogButtonContainer: SxProps = {
 } as const;
 
 const DialogDefault: SxProps = {
+    "& *": {
+        textColor: "unset",
+    },
     "&, & .MuiDialog-root": {
         display: "flex",
         justifyContent: "center",

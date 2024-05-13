@@ -1,4 +1,5 @@
 import Assignment from "../../types/assignment.js";
+import Campaign from "../../types/campaign.js";
 import { Candidates } from "../../types/candidates.js";
 import Customer from "../../types/customer.js";
 import { EmailTriggers } from "../../types/emailTriggers.js";
@@ -9,7 +10,7 @@ export interface MailTemplate {
     name: string;
     subjectLine: string;
     html: string | Promise<string>;
-    text: string | Promise<string>;
+    text?: string | Promise<string>;
 }
 
 export interface MailTemplateVariables {
@@ -28,6 +29,7 @@ export type SendMailProps = {
 export type SendMailFunction = (props: SendMailProps) => Promise<unknown>;
 
 export type EmailContextProps = {
+    campaign: Campaign.Campaign;
     event: TimelineEvent.Event;
     candidates: Candidates.Candidate[];
     assignment: Assignment.AssignmentFull;

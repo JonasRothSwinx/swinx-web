@@ -9,7 +9,7 @@ import {
 import client from "./clients/SESclient.js";
 
 export default async function updateTemplates(
-    updateData: { name: string; subjectLine: string; html: string; text: string }[]
+    updateData: { name: string; subjectLine: string; html: string /* text: string  */ }[]
 ) {
     const messages: { error: unknown; template: (typeof updateData)[number] }[] = [];
     const templates: EmailTemplateMetadata[] = [];
@@ -24,20 +24,22 @@ export default async function updateTemplates(
 
     console.log(`Found ${templates.length} templates`);
 
-    await Promise.all(
+    const responses = await Promise.all(
         updateData.map((template) => {
             const content: UpdateEmailTemplateCommandInput = {
                 TemplateName: template.name,
                 TemplateContent: {
                     Subject: template.subjectLine,
                     Html: template.html,
-                    Text: template.text,
+                    // Text: template.text,
                 },
             };
             try {
                 if (templates?.find((x) => x.TemplateName === template.name)) {
+                    console.log(`Updating template ${template.name} with content`, content);
                     return client.send(new UpdateEmailTemplateCommand(content));
                 }
+                console.log(`Creating template ${template.name} with content`, content);
                 return client.send(new CreateEmailTemplateCommand(content));
             } catch (error) {
                 console.error(error);
@@ -45,8 +47,10 @@ export default async function updateTemplates(
             }
         })
     );
+    console.log(`Updated ${responses.length} templates`);
+    console.log(responses);
 
-    const { TemplatesMetadata: newTemplates } = await client.send(new ListEmailTemplatesCommand({}));
+    // const { TemplatesMetadata: newTemplates } = await client.send(new ListEmailTemplatesCommand({}));
 
     // messages.push(...(newTemplates ?? []));
     return messages;

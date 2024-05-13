@@ -5,18 +5,25 @@ import { Schema } from "@/amplify/data/resource";
 import ProjectManagers from "../../types/projectManagers";
 import { Nullable } from "@/app/Definitions/types";
 
-const selectionSet = ["id", "firstName", "lastName", "email", "phoneNumber", "notes"] as const;
+const selectionSet = [
+    //
+    "id",
+    "firstName",
+    "lastName",
+    "email",
+    "phoneNumber",
+    "notes",
+    "cognitoId",
+] as const;
 
 type RawProjectManager = SelectionSet<Schema["ProjectManager"]["type"], typeof selectionSet>;
 
+//#region Get
 interface GetProjectManagerParams {
     id: string;
 }
 export async function getProjectManager({ id }: GetProjectManagerParams) {
-    const { data, errors } = await client.models.ProjectManager.get(
-        { id },
-        { selectionSet: ["id", "firstName", "lastName", "email", "phoneNumber", "notes"] }
-    );
+    const { data, errors } = await client.models.ProjectManager.get({ id }, { selectionSet });
     console.log({
         data: data,
         error: JSON.stringify(errors),
@@ -24,9 +31,28 @@ export async function getProjectManager({ id }: GetProjectManagerParams) {
     return validateProjectManager(data);
 }
 
+interface GetProjectManagerByCognitoIdParams {
+    cognitoId: string;
+}
+export async function getProjectManagerByCognitoId({
+    cognitoId,
+}: GetProjectManagerByCognitoIdParams): Promise<Nullable<ProjectManagers.ProjectManager>> {
+    const { data, errors } = await client.models.ProjectManager.listByCognitoId({ cognitoId }, { selectionSet });
+    // console.log({
+    //     data: data,
+    //     error: JSON.stringify(errors),
+    // });
+    const entries = validateProjectManagers(data);
+    if (entries.length === 0) return null;
+    if (entries.length > 1) throw new Error("Multiple project managers with the same cognito id");
+    return entries[0];
+}
+//#endregion
+
+//#region List
 export async function listProjectManagers() {
     const { data, errors } = await client.models.ProjectManager.list({
-        selectionSet: ["id", "firstName", "lastName", "email", "phoneNumber", "notes"],
+        selectionSet,
     });
     console.log({
         data: data,
@@ -34,7 +60,9 @@ export async function listProjectManagers() {
     });
     return validateProjectManagers(data);
 }
+//#endregion
 
+//#region Create
 interface CreateProjectManagerParams {
     projectManager: {
         firstName: string;
@@ -42,6 +70,7 @@ interface CreateProjectManagerParams {
         email: string;
         phoneNumber?: string;
         notes?: string;
+        cognitoId: string;
     };
 }
 export async function createProjectManager({ projectManager }: CreateProjectManagerParams) {
@@ -52,7 +81,9 @@ export async function createProjectManager({ projectManager }: CreateProjectMana
     });
     return data?.id ?? null;
 }
+//#endregion
 
+//#region Update
 interface UpdateProjectManagerParams {
     id: string;
     updatedData: {
@@ -73,7 +104,9 @@ export async function updateProjectManager({ id, updatedData }: UpdateProjectMan
         error: JSON.stringify(projectManagerResponse.errors),
     });
 }
+//#endregion
 
+//#region Delete
 interface DeleteProjectManagerParams {
     id: string;
 }
@@ -84,6 +117,24 @@ export async function deleteProjectManager({ id }: DeleteProjectManagerParams) {
         error: JSON.stringify(projectManagerResponse.errors),
     });
 }
+//#endregion
+
+//#region Connect
+interface ConnectToManagerParams {
+    campaignId: string;
+    projectManagerId: string;
+}
+export async function connectToManager({ campaignId, projectManagerId }: ConnectToManagerParams) {
+    const { data, errors } = await client.models.ProjectManagerCampaignAssignment.create({
+        projectManagerId,
+        campaignId,
+    });
+    console.log({
+        data: data,
+        error: JSON.stringify(errors),
+    });
+}
+//#endregion
 
 //#region validation
 
@@ -96,6 +147,7 @@ function validateProjectManager(rawData: Nullable<RawProjectManager>): Nullable<
         email: rawData.email,
         phoneNumber: rawData.phoneNumber ?? undefined,
         notes: rawData.notes ?? undefined,
+        cognitoId: rawData.cognitoId,
     };
     return validatedProjectManager;
 }

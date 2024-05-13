@@ -3,15 +3,26 @@ import Assignment from "@/app/ServerFunctions/types/assignment";
 import { Candidates } from "@/app/ServerFunctions/types/candidates";
 import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
 import Customer from "@/app/ServerFunctions/types/customer";
+import { QueryClient, useQueryClient } from "@tanstack/react-query";
+import Campaign from "@/app/ServerFunctions/types/campaign";
 
 interface SendInvitesProps {
     customer: Customer.Customer;
     candidates: Candidates.Candidate[];
     assignment: Assignment.Assignment;
+    campaignId: string;
+    queryClient: QueryClient;
 }
 export default async function sendInvites(props: SendInvitesProps) {
     console.log("Sending invites", props);
-    const { assignment, candidates, customer } = props;
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+
+    const { assignment, candidates, customer, campaignId, queryClient } = props;
+    const campaign = queryClient.getQueryData<Campaign.Campaign>(["campaign", campaignId]);
+    if (!campaign) {
+        alert("Kampagnendaten nicht gefunden");
+        return;
+    }
     const groupedCandidates = candidates.reduce(
         (acc, candidate) => {
             const level = candidate.influencer.emailLevel;
@@ -23,7 +34,7 @@ export default async function sendInvites(props: SendInvitesProps) {
             new: [],
             reduced: [],
             none: [],
-        } as { [key in EmailTriggers.emailLevel]: Candidates.Candidate[] },
+        } as { [key in EmailTriggers.emailLevel]: Candidates.Candidate[] }
     );
     const responses = await Promise.all(
         Object.entries(groupedCandidates).map(async ([level, candidates]) => {
@@ -37,12 +48,13 @@ export default async function sendInvites(props: SendInvitesProps) {
                     taskDescriptions: ["Make Tea"],
                     assignment,
                     customer,
+                    campaign,
                 },
                 individualContext: [],
             });
 
             return { level, data: response };
-        }),
+        })
     );
     if (groupedCandidates.none.length > 0) {
         alert(
@@ -51,7 +63,7 @@ export default async function sendInvites(props: SendInvitesProps) {
                     .map(({ influencer: x }) => {
                         return `${x.firstName} ${x.lastName}: ${x.email}`;
                     })
-                    .join(",\n"),
+                    .join(",\n")
         );
     }
     return responses.filter((x) => x?.data !== undefined);
