@@ -2,18 +2,34 @@
 
 import client from "./.dbclient";
 import Influencer from "@/app/ServerFunctions/types/influencer";
-import { PartialWith } from "@/app/Definitions/types";
+import { Nullable, PartialWith } from "@/app/Definitions/types";
 import { Schema } from "@/amplify/data/resource";
 import { EmailTriggers } from "../../types/emailTriggers";
+import { SelectionSet } from "aws-amplify/api";
 
+const selectionSet = [
+    "id",
+    "firstName",
+    "lastName",
+    "email",
+    "phoneNumber",
+    "company",
+    "position",
+    "industry",
+    "topic",
+    "followers",
+    "linkedinProfile",
+    "emailType",
+] as const;
+
+type RawData = SelectionSet<Schema["Influencer"]["type"], typeof selectionSet>;
+//#region create
 /**
  * Create a new influencer
  * @param influencer The influencer object to create
  * @returns The ID of the created influencer
  */
-export async function createNewInfluencer(
-    influencer: Omit<Influencer.Full, "id">,
-): Promise<string> {
+export async function createNewInfluencer(influencer: Omit<Influencer.Full, "id">): Promise<Nullable<string>> {
     //unpacked all properties from influencer
     const {
         firstName,
@@ -50,21 +66,25 @@ export async function createNewInfluencer(
     if (errors) {
         throw new Error(errors.map((error) => error.message).join("\n"));
     }
-    return data.id;
+    return data?.id ?? null;
 }
+//#endregion
 
+//#region get
 export async function getInfluencer(id: string) {
-    const { data, errors } = await client.models.Influencer.get({ id });
+    const { data, errors } = await client.models.Influencer.get({ id }, { selectionSet });
     if (errors) {
         throw new Error(errors.map((error) => error.message).join("\n"));
     }
     if (!data) {
         throw new Error("Influencer not found");
     }
-    const influencer = await validateInfluencer(data);
+    const influencer = validate(data);
     return influencer;
 }
+//#endregion
 
+//#region update
 export async function updateInfluencer(updatedData: PartialWith<Influencer.Full, "id">) {
     const {
         id,
@@ -106,10 +126,10 @@ export async function updateInfluencer(updatedData: PartialWith<Influencer.Full,
     // const updatedInfluencer = validateInfluencer(data);
     // return updatedInfluencer;
 }
+//#endregion
 
-export async function deleteInfluencer(
-    influencer: PartialWith<Influencer.Influencer, "id">,
-): Promise<void> {
+//#region delete
+export async function deleteInfluencer(influencer: PartialWith<Influencer.Influencer, "id">): Promise<void> {
     const { id } = influencer;
 
     if (!id) {
@@ -123,12 +143,14 @@ export async function deleteInfluencer(
 }
 
 export async function listInfluencers() {
-    const { data } = await client.models.Influencer.list({});
-    const dataOut = await Promise.all(data.map((influencer) => validateInfluencer(influencer)));
+    const { data } = await client.models.Influencer.list({ selectionSet });
+    const dataOut = validateArray(data);
     return dataOut;
 }
+//#endregion
 
-async function validateInfluencer(influencerRaw: Schema["Influencer"]) {
+function validate(influencerRaw: Nullable<RawData>): Nullable<Influencer.Full> {
+    if (!influencerRaw) return null;
     if (!influencerRaw) {
         throw new Error("Influencer not found");
     }
@@ -155,4 +177,8 @@ async function validateInfluencer(influencerRaw: Schema["Influencer"]) {
     };
 
     return influencerOut;
+}
+
+function validateArray(rawData: RawData[]): Influencer.Full[] {
+    return rawData.map((data) => validate(data)).filter((data): data is Influencer.Full => !!data);
 }

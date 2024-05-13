@@ -12,10 +12,7 @@ import { EmailTriggers } from "../../types/emailTriggers";
 import { SelectionSet } from "aws-amplify/api";
 import { Schema } from "@/amplify/data/resource";
 
-export async function createAssignment(
-    assignment: Omit<Assignment.AssignmentFull, "id">,
-    campaignId: string,
-) {
+export async function createAssignment(assignment: Omit<Assignment.AssignmentFull, "id">, campaignId: string) {
     const { placeholderName: name, budget, isPlaceholder = true } = assignment;
     if (!name) throw new Error("Missing Data");
 
@@ -78,7 +75,7 @@ export async function listAssignments() {
 export async function getAllCandidates(assignmentId: string) {
     const { data, errors } = await client.models.InfluencerAssignment.get(
         { id: assignmentId },
-        { selectionSet: ["candidates.id"] },
+        { selectionSet: ["candidates.id"] }
     );
     if (data === null) return [];
     return data.candidates;
@@ -108,7 +105,7 @@ export async function updateAssignment(assignment: PartialWith<Assignment.Assign
         for (const candidate of assignment.candidates) {
             if (!candidates.find((x) => x.id === candidate.id)) {
                 console.log("creating", candidate);
-                promises.push(createCandidate(candidate, assignment.id));
+                promises.push(createCandidate({ candidate, candidateAssignmentId: assignment.id }));
             }
         }
     }
@@ -136,17 +133,14 @@ export async function deletePlaceholder(assignment: PartialWith<Assignment.Assig
     await Promise.all(
         events.map(async (x) => {
             timelineEvents.delete(x);
-        }),
+        })
     );
 
     await client.models.InfluencerAssignment.delete({ id });
 }
 
 export async function getAssignment(assignmentId: string) {
-    const { data, errors } = await client.models.InfluencerAssignment.get(
-        { id: assignmentId },
-        { selectionSet },
-    );
+    const { data, errors } = await client.models.InfluencerAssignment.get({ id: assignmentId }, { selectionSet });
     if (data === null) throw new Error(`No data for assignment ${assignmentId}`);
     const dataOut = validateAssignment(data);
     return dataOut;
@@ -198,17 +192,14 @@ function validateAssignment(rawData: RawAssignment): Assignment.AssignmentMin {
     return dataOut;
 }
 
-const eventSelectionSet = [
-    "timelineEvents.timelineEvent.*",
-    "timelineEvents.timelineEvent.campaign.id",
-] as const;
+const eventSelectionSet = ["timelineEvents.timelineEvent.*", "timelineEvents.timelineEvent.campaign.id"] as const;
 export async function getAssignmentTimelineEvents(assignment: Assignment.AssignmentMin) {
     const fetchStart = performance.now();
     const { data, errors } = await client.models.InfluencerAssignment.get(
         { id: assignment.id },
         {
             selectionSet: eventSelectionSet,
-        },
+        }
     );
     const fetchEnd = performance.now();
     console.log("Fetch Time", fetchEnd - fetchStart);
@@ -217,7 +208,7 @@ export async function getAssignmentTimelineEvents(assignment: Assignment.Assignm
     const dataOut: TimelineEvent.Event[] = await Promise.all(
         data.timelineEvents.map((x) => {
             return validateTimelineEvent(x, assignment);
-        }),
+        })
     );
     const validateEnd = performance.now();
     console.log("Validate Time", validateEnd - validateStart);
@@ -244,11 +235,8 @@ export async function listAssignmentsByCampaign(campaignId: string) {
 }
 
 function validateTimelineEvent(
-    rawData: SelectionSet<
-        Schema["InfluencerAssignment"]["type"],
-        typeof eventSelectionSet
-    >["timelineEvents"][number],
-    assignment: Assignment.AssignmentMin,
+    rawData: SelectionSet<Schema["InfluencerAssignment"]["type"], typeof eventSelectionSet>["timelineEvents"][number],
+    assignment: Assignment.AssignmentMin
 ): TimelineEvent.Event {
     const {
         timelineEvent: {
@@ -271,10 +259,8 @@ function validateTimelineEvent(
         campaign,
         assignments: [assignment],
         emailTriggers: [],
-        relatedEvents: {
-            parentEvent: null,
-            childEvents: [],
-        },
+        parentEvent: null,
+        childEvents: [],
         info: {},
     };
     return validatedEvent;

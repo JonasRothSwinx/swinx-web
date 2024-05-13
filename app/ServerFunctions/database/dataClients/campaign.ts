@@ -13,12 +13,10 @@ interface CreateCampaignParams {
     campaign: Omit<Campaign.CampaignFull, "id">;
     projectManagerId: string;
 }
-async function createCampaign({
-    campaign,
-    projectManagerId,
-}: CreateCampaignParams): Promise<Campaign.CampaignFull> {
+async function createCampaign({ campaign, projectManagerId }: CreateCampaignParams): Promise<Campaign.CampaignFull> {
     const queryClient = config.getQueryClient();
     const id = await database.campaign.create({ campaign, projectManagerId });
+    if (!id) throw new Error("Failed to create campaign");
     const createdCampaign = { ...campaign, id };
     queryClient.setQueryData(["campaign", id], { ...campaign, id });
     queryClient.setQueryData(["campaigns"], (prev: Campaign.CampaignFull[]) => {
@@ -49,7 +47,7 @@ async function listCampaigns(): Promise<Campaign.CampaignFull[]> {
             queryClient.setQueryData(["campaign", campaign.id], resolvedCampaign);
             // queryClient.refetchQueries({ queryKey: ["campaign", campaign.id] });
             return resolvedCampaign;
-        }),
+        })
     );
 
     return resolvedCampaigns;
@@ -63,6 +61,7 @@ async function listCampaigns(): Promise<Campaign.CampaignFull[]> {
 async function getCampaign(id: string): Promise<Campaign.CampaignFull> {
     const queryClient = config.getQueryClient();
     const campaign = await database.campaign.get(id);
+    if (!campaign) throw new Error("Campaign not found");
     const resolvedCampaign = await resolveCampaignReferences(campaign);
     return resolvedCampaign;
 }
@@ -72,7 +71,7 @@ async function getCampaign(id: string): Promise<Campaign.CampaignFull> {
  * @param campaign The campaign object. needs to contain id, customer and timelineEvents
  */
 async function deleteCampaign(
-    campaign: PartialWith<Campaign.CampaignFull, "id" | "customers" | "campaignTimelineEvents">,
+    campaign: PartialWith<Campaign.CampaignFull, "id" | "customers" | "campaignTimelineEvents">
 ): Promise<void> {
     const queryClient = config.getQueryClient();
     const { id } = campaign;
@@ -90,9 +89,7 @@ async function deleteCampaign(
  * @returns The resolved campaign object
  */
 
-async function resolveCampaignReferences(
-    campaign: Campaign.CampaignMin,
-): Promise<Campaign.CampaignFull> {
+async function resolveCampaignReferences(campaign: Campaign.CampaignMin): Promise<Campaign.CampaignFull> {
     const queryClient = config.getQueryClient();
     const timelineEvents = dataClient.timelineEvent.byCampaign(campaign.id);
     const assignments = dataClient.assignment.byCampaign(campaign.id);

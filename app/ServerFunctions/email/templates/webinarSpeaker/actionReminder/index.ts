@@ -56,7 +56,7 @@ async function send(props: SendMailProps) {
                     ErrorLogger.log("Missing context");
                     return acc;
                 }
-                const webinar = event.relatedEvents.parentEvent as TimelineEvent.Event;
+                const webinar = event.parentEvent as TimelineEvent.Event;
                 if (!webinar || !webinar.date) {
                     ErrorLogger.log("Missing webinar context");
                     return acc;

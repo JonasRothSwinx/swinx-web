@@ -10,12 +10,10 @@ import { Nullable } from "@/app/Definitions/types";
  * @returns The created customer
  */
 
-export async function create(
-    customer: Omit<Customer.Customer, "id">,
-    campaignId: string,
-): Promise<Customer.Customer> {
+export async function create(customer: Omit<Customer.Customer, "id">, campaignId: string): Promise<Customer.Customer> {
     const queryClient = config.getQueryClient();
     const id = await database.customer.create(customer, campaignId);
+    if (!id) throw new Error("Failed to create customer");
     const newCustomer = { ...customer, id };
     queryClient.setQueryData(["customer", id], newCustomer);
     return newCustomer;
@@ -25,11 +23,7 @@ interface UpdateCustomer {
     updatedData: Partial<Customer.Customer>;
     previousData: Customer.Customer;
 }
-export async function updateCustomer({
-    id,
-    updatedData,
-    previousData,
-}: UpdateCustomer): Promise<Customer.Customer> {
+export async function updateCustomer({ id, updatedData, previousData }: UpdateCustomer): Promise<Customer.Customer> {
     const queryClient = config.getQueryClient();
     // await database.customer.update(updatedData)
     const updatedCustomer: Customer.Customer = {

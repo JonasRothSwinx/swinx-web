@@ -3,14 +3,12 @@ type necesaryKeyInfo = {
     flat?: (keyof TimelineEvent.Event)[];
     info?: (keyof TimelineEvent.Event["info"])[];
     targetAudience?: (keyof TimelineEvent.Event["targetAudience"])[];
-    relatedEvents?: (keyof TimelineEvent.Event["relatedEvents"])[];
     campaign?: (keyof TimelineEvent.Event["campaign"])[];
 };
 const necessaryKeys: { [key in TimelineEvent.eventType]?: necesaryKeyInfo } = {
     Invites: {
-        flat: ["type", "eventTaskAmount", "assignments"],
+        flat: ["type", "eventTaskAmount", "assignments", "parentEvent"],
         campaign: ["id"],
-        relatedEvents: ["parentEvent"],
     },
 };
 export default function validateFields(
@@ -29,10 +27,6 @@ export default function validateFields(
     if (keys.targetAudience) {
         const targetAudience = event.targetAudience;
         if (!targetAudience || !keys.targetAudience.every((key) => validateKey(targetAudience[key]))) return false;
-    }
-    if (keys.relatedEvents) {
-        const relatedEvents = event.relatedEvents;
-        if (!relatedEvents || !keys.relatedEvents.every((key) => validateKey(relatedEvents[key]))) return false;
     }
     if (keys.campaign) {
         const campaign = event.campaign;

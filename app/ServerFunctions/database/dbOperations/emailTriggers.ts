@@ -29,7 +29,7 @@ const selectionSet = [
     "event.assignments.assignment.influencer.email",
     "event.assignments.assignment.influencer.emailType",
 ] as const;
-type RawEmailTrigger = SelectionSet<Schema["EmailTrigger"], typeof selectionSet>;
+type RawEmailTrigger = SelectionSet<Schema["EmailTrigger"]["type"], typeof selectionSet>;
 async function testDummy() {
     const { data } = await client.models.EmailTrigger.list({
         selectionSet: [
@@ -62,9 +62,7 @@ export async function listEmailTriggers(): Promise<EmailTriggers.EmailTriggerEve
         }
     });
 
-    return validated.filter(
-        (trigger): trigger is EmailTriggers.EmailTriggerEventRef => trigger !== null,
-    );
+    return validated.filter((trigger): trigger is EmailTriggers.EmailTriggerEventRef => trigger !== null);
 }
 
 /**
@@ -73,11 +71,10 @@ export async function listEmailTriggers(): Promise<EmailTriggers.EmailTriggerEve
  * @returns The ID of the created email trigger
  */
 export async function createEmailTrigger(
-    trigger: Omit<EmailTriggers.EmailTriggerEventRef, "id" | "influencer">,
-): Promise<string> {
+    trigger: Omit<EmailTriggers.EmailTriggerEventRef, "id" | "influencer">
+): Promise<Nullable<string>> {
     console.log("Creating email trigger", trigger);
-    const { date, event, type, emailLevelOverride, emailBodyOverride, subjectLineOverride } =
-        trigger;
+    const { date, event, type, emailLevelOverride, emailBodyOverride, subjectLineOverride } = trigger;
     const { data, errors } = await client.models.EmailTrigger.create({
         date,
         type,
@@ -91,7 +88,7 @@ export async function createEmailTrigger(
     if (errors) {
         throw new Error(errors.map((error) => error.message).join("\n"));
     }
-    return data.id;
+    return data?.id ?? null;
 }
 
 /**
@@ -101,19 +98,9 @@ export async function createEmailTrigger(
  * @returns The ID of the updated email trigger
  */
 export async function updateEmailTrigger(
-    trigger: Partial<EmailTriggers.EmailTriggerEventRef> & { id: string },
-): Promise<string> {
-    const {
-        id,
-        date,
-        event,
-        active,
-        emailBodyOverride,
-        emailLevelOverride,
-        type,
-        sent,
-        subjectLineOverride,
-    } = trigger;
+    trigger: Partial<EmailTriggers.EmailTriggerEventRef> & { id: string }
+): Promise<Nullable<string>> {
+    const { id, date, event, active, emailBodyOverride, emailLevelOverride, type, sent, subjectLineOverride } = trigger;
     const { data, errors } = await client.models.EmailTrigger.update({
         id,
         date: date,
@@ -128,7 +115,7 @@ export async function updateEmailTrigger(
     if (errors) {
         throw new Error(JSON.stringify(errors));
     }
-    return data.id;
+    return data?.id ?? null;
 }
 
 /**
@@ -146,7 +133,7 @@ export async function deleteEmailTrigger(trigger: { id: string }): Promise<void>
  * @returns The list of email triggers
  */
 export async function getEmailTriggersForEvent(
-    event: Pick<TimelineEvent.Event, "id">,
+    event: Pick<TimelineEvent.Event, "id">
 ): Promise<EmailTriggers.EmailTriggerEventRef[]> {
     const { id: eventId } = event;
     if (!eventId) throw new Error("Event ID is required");
@@ -154,22 +141,13 @@ export async function getEmailTriggersForEvent(
         { eventId },
         {
             selectionSet,
-        },
+        }
     );
     if (errors) {
         throw new Error(JSON.stringify(errors));
     }
-    const validated: Nullable<ReturnType<typeof validateEmailTrigger>>[] = data.map((trigger) => {
-        try {
-            return validateEmailTrigger(trigger);
-        } catch (error) {
-            console.log(error);
-            return null;
-        }
-    });
-    return validated.filter(
-        (trigger): trigger is EmailTriggers.EmailTriggerEventRef => trigger !== null,
-    );
+    const validated = validateArray(data);
+    return validated;
 }
 
 /**
@@ -179,7 +157,7 @@ export async function getEmailTriggersForEvent(
  */
 export async function getEmailTriggersForDateRange(
     start: string,
-    end: string,
+    end: string
 ): Promise<EmailTriggers.EmailTriggerEventRef[]> {
     const { data, errors } = await client.models.EmailTrigger.list({
         filter: { date: { between: [start, end] } },
@@ -188,36 +166,19 @@ export async function getEmailTriggersForDateRange(
     if (errors) {
         throw new Error(JSON.stringify(errors));
     }
-    const validated: Nullable<ReturnType<typeof validateEmailTrigger>>[] = data.map((trigger) => {
-        try {
-            return validateEmailTrigger(trigger);
-        } catch (error) {
-            // console.log(error);
-            return null;
-        }
-    });
-    return validated.filter(
-        (trigger): trigger is EmailTriggers.EmailTriggerEventRef => trigger !== null,
-    );
+    const validated = validateArray(data);
+    return validated;
 }
 
+//#region validation
 /**
  * Convert raw data from the database to a valid email trigger object
  * @param raw The raw data from the database
  * @returns The email trigger object
  */
-function validateEmailTrigger(raw: RawEmailTrigger): EmailTriggers.EmailTriggerEventRef {
-    const {
-        id,
-        date,
-        event,
-        type,
-        emailLevelOverride,
-        emailBodyOverride,
-        subjectLineOverride,
-        active,
-        sent,
-    } = raw;
+function validateEmailTrigger(raw: Nullable<RawEmailTrigger>): Nullable<EmailTriggers.EmailTriggerEventRef> {
+    if (!raw) return null;
+    const { id, date, event, type, emailLevelOverride, emailBodyOverride, subjectLineOverride, active, sent } = raw;
     if (!id || !date || !event) {
         throw new Error("Invalid Email Trigger");
     }
@@ -252,6 +213,10 @@ function validateEmailTrigger(raw: RawEmailTrigger): EmailTriggers.EmailTriggerE
     return trigger;
 }
 
-/**
- * Get
- */
+function validateArray(rawArray: Nullable<RawEmailTrigger>[]): EmailTriggers.EmailTriggerEventRef[] {
+    return rawArray
+        .map(validateEmailTrigger)
+        .filter((trigger): trigger is EmailTriggers.EmailTriggerEventRef => trigger !== null);
+}
+
+//#endregion

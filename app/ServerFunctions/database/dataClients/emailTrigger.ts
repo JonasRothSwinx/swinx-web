@@ -38,6 +38,7 @@ async function createEmailTrigger(
         const queryClient = config.getQueryClient();
 
         const id = await dbOperations.emailTrigger.create({ ...trigger });
+        if (!id) throw new Error("Failed to create email trigger");
         const createdTrigger = { ...trigger, id };
         queryClient.setQueryData(["emailTrigger", id], { ...trigger, id });
         queryClient.setQueryData(["emailTriggers"], (prev: EmailTriggers.EmailTrigger[]) => {

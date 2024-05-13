@@ -3,10 +3,11 @@ import { SelectionSet } from "aws-amplify/api";
 import client from "./.dbclient";
 import { Schema } from "@/amplify/data/resource";
 import ProjectManagers from "../../types/projectManagers";
+import { Nullable } from "@/app/Definitions/types";
 
 const selectionSet = ["id", "firstName", "lastName", "email", "phoneNumber", "notes"] as const;
 
-type RawProjectManager = SelectionSet<Schema["ProjectManager"], typeof selectionSet>;
+type RawProjectManager = SelectionSet<Schema["ProjectManager"]["type"], typeof selectionSet>;
 
 interface GetProjectManagerParams {
     id: string;
@@ -14,7 +15,7 @@ interface GetProjectManagerParams {
 export async function getProjectManager({ id }: GetProjectManagerParams) {
     const { data, errors } = await client.models.ProjectManager.get(
         { id },
-        { selectionSet: ["id", "firstName", "lastName", "email", "phoneNumber", "notes"] },
+        { selectionSet: ["id", "firstName", "lastName", "email", "phoneNumber", "notes"] }
     );
     console.log({
         data: data,
@@ -49,7 +50,7 @@ export async function createProjectManager({ projectManager }: CreateProjectMana
         data: data,
         error: JSON.stringify(errors),
     });
-    return data.id;
+    return data?.id ?? null;
 }
 
 interface UpdateProjectManagerParams {
@@ -86,7 +87,8 @@ export async function deleteProjectManager({ id }: DeleteProjectManagerParams) {
 
 //#region validation
 
-function validateProjectManager(rawData: RawProjectManager): ProjectManagers.ProjectManager {
+function validateProjectManager(rawData: Nullable<RawProjectManager>): Nullable<ProjectManagers.ProjectManager> {
+    if (!rawData) return null;
     const validatedProjectManager: ProjectManagers.ProjectManager = {
         id: rawData.id,
         firstName: rawData.firstName,
@@ -99,7 +101,9 @@ function validateProjectManager(rawData: RawProjectManager): ProjectManagers.Pro
 }
 
 function validateProjectManagers(rawData: RawProjectManager[]): ProjectManagers.ProjectManager[] {
-    const validatedProjectManagers = rawData.map((raw) => validateProjectManager(raw));
+    const validatedProjectManagers = rawData
+        .map((raw) => validateProjectManager(raw))
+        .filter((x): x is ProjectManagers.ProjectManager => x !== null);
     return validatedProjectManagers;
 }
 

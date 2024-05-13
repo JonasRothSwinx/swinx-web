@@ -10,22 +10,18 @@ import dataClient from "..";
  * @param assignment The assignment object to create
  * @returns The created assignment object
  */
-async function createAssignment(
-    assignment: Omit<Assignment.AssignmentFull, "id">,
-): Promise<Assignment.AssignmentFull> {
+async function createAssignment(assignment: Omit<Assignment.AssignmentFull, "id">): Promise<Assignment.AssignmentFull> {
     const queryClient = config.getQueryClient();
     const tempId = randomId();
-    queryClient.setQueryData(
-        ["assignments", assignment.campaign.id],
-        (prev: Assignment.AssignmentFull[]) => {
-            if (!prev) {
-                return [{ ...assignment, id: tempId }];
-            }
-            return [...prev, { ...assignment, id: tempId }];
-        },
-    );
+    queryClient.setQueryData(["assignments", assignment.campaign.id], (prev: Assignment.AssignmentFull[]) => {
+        if (!prev) {
+            return [{ ...assignment, id: tempId }];
+        }
+        return [...prev, { ...assignment, id: tempId }];
+    });
     queryClient.refetchQueries({ queryKey: ["assignments", assignment.campaign.id] });
     const id = await database.assignment.create(assignment, assignment.campaign.id);
+    if (!id) throw new Error("Failed to create assignment");
     const createdAssignment = { ...assignment, id };
     queryClient.setQueryData(["assignment", id], { ...assignment, id });
     queryClient.setQueryData(["assignments"], (prev: Assignment.AssignmentFull[]) => {
@@ -35,17 +31,12 @@ async function createAssignment(
         return [...prev, createdAssignment];
     });
     //replace temp entry with real entry
-    queryClient.setQueryData(
-        ["assignments", assignment.campaign.id],
-        (prev: Assignment.AssignmentFull[]) => {
-            if (!prev) {
-                return [createdAssignment];
-            }
-            return prev.map((assignment) =>
-                assignment.id === tempId ? createdAssignment : assignment,
-            );
-        },
-    );
+    queryClient.setQueryData(["assignments", assignment.campaign.id], (prev: Assignment.AssignmentFull[]) => {
+        if (!prev) {
+            return [createdAssignment];
+        }
+        return prev.map((assignment) => (assignment.id === tempId ? createdAssignment : assignment));
+    });
     queryClient.refetchQueries({ queryKey: ["assignments", assignment.campaign.id] });
     queryClient.refetchQueries({ queryKey: ["assignments"] });
     queryClient.refetchQueries({ queryKey: ["assignment", id] });
@@ -59,9 +50,7 @@ async function createAssignment(
 async function listAssignments(): Promise<Assignment.AssignmentFull[]> {
     const queryClient = config.getQueryClient();
     //Return cached data if available
-    const cachedAssignments = queryClient.getQueryData([
-        "assignments",
-    ]) as Assignment.AssignmentFull[];
+    const cachedAssignments = queryClient.getQueryData(["assignments"]) as Assignment.AssignmentFull[];
     if (cachedAssignments) {
         return cachedAssignments;
     }
@@ -72,7 +61,7 @@ async function listAssignments(): Promise<Assignment.AssignmentFull[]> {
             queryClient.setQueryData(["assignment", assignment.id], resolvedAssignment);
             queryClient.refetchQueries({ queryKey: ["assignment", assignment.id] });
             return resolvedAssignment;
-        }),
+        })
     );
     return resolvedAssignments;
 }
@@ -104,7 +93,7 @@ async function getAssignment(id: string): Promise<Assignment.AssignmentFull> {
 
 async function updateAssignment(
     updatedData: PartialWith<Assignment.AssignmentFull, "id">,
-    previousAssignment: Assignment.AssignmentFull,
+    previousAssignment: Assignment.AssignmentFull
 ): Promise<Assignment.AssignmentFull> {
     const queryClient = config.getQueryClient();
     const campaignId = previousAssignment.campaign.id;
@@ -115,9 +104,7 @@ async function updateAssignment(
         if (!prev) {
             return [updatedAssignment];
         }
-        return prev.map((assignment) =>
-            assignment.id === updatedAssignment.id ? updatedAssignment : assignment,
-        );
+        return prev.map((assignment) => (assignment.id === updatedAssignment.id ? updatedAssignment : assignment));
     });
     queryClient.refetchQueries({ queryKey: ["assignments", campaignId] });
     queryClient.refetchQueries({ queryKey: ["assignment", updatedData.id] });
@@ -134,7 +121,7 @@ async function deleteAssignment(id: string): Promise<void> {
     await database.assignment.delete({ id });
     queryClient.setQueryData(["assignment", id], undefined);
     queryClient.setQueryData(["assignments"], (prev: Assignment.AssignmentFull[]) =>
-        prev?.filter((assignment) => assignment.id !== id),
+        prev?.filter((assignment) => assignment.id !== id)
     );
     queryClient.refetchQueries({ queryKey: ["assignments"] });
     queryClient.refetchQueries({ queryKey: ["assignment", id] });
@@ -148,10 +135,7 @@ async function deleteAssignment(id: string): Promise<void> {
 async function byCampaign(campaignId: string): Promise<Assignment.AssignmentFull[]> {
     const queryClient = config.getQueryClient();
     //Return cached data if available
-    const cachedAssignments = queryClient.getQueryData([
-        "assignments",
-        campaignId,
-    ]) as Assignment.AssignmentFull[];
+    const cachedAssignments = queryClient.getQueryData(["assignments", campaignId]) as Assignment.AssignmentFull[];
     if (cachedAssignments) {
         return cachedAssignments;
     }
@@ -162,7 +146,7 @@ async function byCampaign(campaignId: string): Promise<Assignment.AssignmentFull
             queryClient.setQueryData(["assignment", assignment.id], resolvedAssignment);
             // queryClient.refetchQueries({ queryKey: ["assignment", assignment.id] });
             return resolvedAssignment;
-        }),
+        })
     );
     return resolvedAssignments;
 }
@@ -173,9 +157,7 @@ async function byCampaign(campaignId: string): Promise<Assignment.AssignmentFull
  * @returns The resolved assignment object
  */
 
-async function resolveAssignmentReferences(
-    assignment: Assignment.AssignmentMin,
-): Promise<Assignment.AssignmentFull> {
+async function resolveAssignmentReferences(assignment: Assignment.AssignmentMin): Promise<Assignment.AssignmentFull> {
     const queryClient = config.getQueryClient();
     //use cached data if available
     // const cachedAssignment = queryClient.getQueryData(["assignment", assignment.id]) as Assignment.AssignmentFull;

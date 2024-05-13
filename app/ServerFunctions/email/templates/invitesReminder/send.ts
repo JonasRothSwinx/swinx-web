@@ -28,7 +28,7 @@ export default async function send(props: SendMailProps) {
                     ErrorLogger.log("No event task amount found");
                     return acc;
                 }
-                const webinar = event.relatedEvents.parentEvent;
+                const webinar = event.parentEvent;
                 if (!webinar) {
                     throw new Error("No webinar found");
                 }

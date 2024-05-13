@@ -11,6 +11,7 @@ import config from "./config";
 async function createInfluencer(influencer: Omit<Influencer.Full, "id">): Promise<Influencer.Full> {
     const queryClient = config.getQueryClient();
     const id = await database.influencer.create(influencer);
+    if (!id) throw new Error("Failed to create influencer");
     const createdInfluencer = { ...influencer, id };
     queryClient.setQueryData(["influencer", id], { ...influencer, id });
     queryClient.setQueryData(["influencers"], (prev: Influencer.Full[]) => {
@@ -46,7 +47,7 @@ async function listInfluencers(): Promise<Influencer.Full[]> {
  */
 async function updateInfluencer(
     updatedData: PartialWith<Influencer.Full, "id">,
-    previousInfluencer: Influencer.Full,
+    previousInfluencer: Influencer.Full
 ): Promise<Influencer.Full> {
     const queryClient = config.getQueryClient();
     await database.influencer.update(updatedData);
@@ -56,9 +57,7 @@ async function updateInfluencer(
         if (!prev) {
             return [updatedInfluencer];
         }
-        return prev.map((influencer) =>
-            influencer.id === updatedInfluencer.id ? updatedInfluencer : influencer,
-        );
+        return prev.map((influencer) => (influencer.id === updatedInfluencer.id ? updatedInfluencer : influencer));
     });
     queryClient.refetchQueries({ queryKey: ["influencers"] });
     queryClient.refetchQueries({ queryKey: ["influencer", updatedData.id] });
@@ -99,6 +98,9 @@ async function deleteInfluencer(id: string): Promise<void> {
 async function getInfluencer(id: string): Promise<Influencer.Full> {
     const queryClient = config.getQueryClient();
     const influencer = await database.influencer.get(id);
+    if (!influencer) {
+        throw new Error("Influencer not found");
+    }
     queryClient.setQueryData(["influencer", id], influencer);
     return influencer;
 }
@@ -108,9 +110,7 @@ async function getInfluencer(id: string): Promise<Influencer.Full> {
  * @param influencer The influencer reference
  * @returns The full influencer object
  */
-export async function resolveInfluencerReference(
-    influencer: Influencer.Reference,
-): Promise<Influencer.Full> {
+export async function resolveInfluencerReference(influencer: Influencer.Reference): Promise<Influencer.Full> {
     const queryClient = config.getQueryClient();
     const { id } = influencer;
     if (!id) {

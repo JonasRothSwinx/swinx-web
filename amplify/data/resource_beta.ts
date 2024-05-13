@@ -98,30 +98,30 @@
 //      */
 //     //#region InfluencerAssignment
 
-//     InfluencerAssignment: a
-//         .model({
-//             budget: a.integer(),
-//             isPlaceholder: a.boolean().required(),
-//             placeholderName: a.string().authorization([adminsAndManagers]),
+// InfluencerAssignment: a
+//     .model({
+//         budget: a.integer(),
+//         isPlaceholder: a.boolean().required(),
+//         placeholderName: a.string().authorization([adminsAndManagers]),
 
-//             //##########################
-//             //### Relations ############
-//             influencerId: a.id().authorization([adminsAndManagers]),
-//             influencer: a
-//                 .belongsTo("Influencer", "influencerId")
-//                 .authorization([adminsAndManagers]),
+//         //##########################
+//         //### Relations ############
+//         influencerId: a.id().authorization([adminsAndManagers]),
+//         influencer: a
+//             .belongsTo("Influencer", "influencerId")
+//             .authorization([adminsAndManagers]),
 
-//             timelineEvents: a.hasMany("EventAssignment", "assignmentId"),
+//         timelineEvents: a.hasMany("EventAssignment", "assignmentId"),
 
-//             campaignId: a.id().required(),
-//             campaign: a.belongsTo("Campaign", "campaignId"),
+//         campaignId: a.id().required(),
+//         campaign: a.belongsTo("Campaign", "campaignId"),
 
-//             candidates: a
-//                 .hasMany("InfluencerCandidate", "candidateAssignmentId")
-//                 .authorization([adminsAndManagers]),
-//             //##########################
-//         })
-//         .authorization([publicRead, adminsAndManagers]),
+//         candidates: a
+//             .hasMany("InfluencerCandidate", "candidateAssignmentId")
+//             .authorization([adminsAndManagers]),
+//         //##########################
+//     })
+//     .authorization([publicRead, adminsAndManagers]),
 //     //#endregion InfluencerAssignment
 
 //     //#region InfluencerCandidate

@@ -8,6 +8,7 @@ import dataClient from "@/app/ServerFunctions/database";
 import { Prettify } from "@/app/Definitions/types";
 import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
+import { assignments } from "@/app/ServerFunctions/database/dbOperations";
 
 interface createEventProps {
     editing: boolean;
@@ -29,45 +30,15 @@ export async function submitEvent(props: createEventProps) {
 }
 
 async function updateEvent(props: createEventProps) {
-    const {
-        event,
-        event: { relatedEvents },
-        dates,
-        updatedData,
-    } = props;
+    const { event, dates, updatedData } = props;
     const assignment = event.assignments[0];
     if (!dates.dates[0]) throw new Error("No date provided for event update");
     event.date = dates.dates[0].toISOString();
     dataClient.timelineEvent.update(updatedData, event);
-    // console.log(event);
-    // timelineEvents.update(event).then((res) => console.log(res));
-    // const newCampaign = {
-    //     ...campaign,
-    //     campaignTimelineEvents: [
-    //         ...campaign.campaignTimelineEvents.map((x) => (x.id === event.id ? event : x)),
-    //     ],
-    // };
-    // await handleRelatedEvents(event, relatedEvents, assignment);
-    // queryClient.setQueryData(["campaign", campaign.id], newCampaign);
-    // queryClient.setQueryData(["event", event.id], event);
-    // queryClient.setQueryData(["events", campaign.id], (oldData: TimelineEvent.SingleEvent[]) => {
-    //     if (!oldData) return [];
-    //     return oldData.map((x) => (x.id === event.id ? event : x));
-    // });
-    // queryClient.setQueryData(
-    //     ["assignmentEvents", event.assignments[0].id],
-    //     (oldData: TimelineEvent.SingleEvent[]) => {
-    //         if (!oldData) return [];
-    //         return oldData.map((x) => (x.id === event.id ? event : x));
-    //     },
-    // );
 }
+
 async function createEvent(props: createEventProps) {
-    const {
-        event,
-        event: { relatedEvents },
-        dates,
-    } = props;
+    const { event, dates } = props;
     const assignment = event.assignments[0];
     const newEvent = applyDefaultValues({ event, assignment });
     if (!dates.dates.length) throw new Error("No dates provided for event creation");
@@ -85,38 +56,6 @@ async function createEvent(props: createEventProps) {
         event.emailTriggers = applyEmailTriggerDefaults({ event });
         createEmailTriggers({ event });
     });
-
-    // const events = queryClient.getQueryData<TimelineEvent.Event[]>(["events", campaign.id]) ?? [];
-    // if (!dates.dates.length) throw new Error("No dates provided for event creation");
-    // const assignment = event.assignments[0];
-    // const newEvents: TimelineEvent.SingleEvent[] = dates.dates
-    //     .map((date): TimelineEvent.SingleEvent | undefined => {
-    //         if (date === null) return;
-    //         return {
-    //             ...event,
-    //             assignments: event.assignments,
-    //             campaign: { id: campaign.id },
-    //             date: date.toISOString(),
-    //         } satisfies TimelineEvent.SingleEvent;
-    //     })
-    //     .filter((x): x is TimelineEvent.SingleEvent => x !== undefined);
-
-    // const originalEvents = [...events];
-    // const createResponse = Promise.all(
-    //     newEvents.map(async (x) => {
-    //         const res = await timelineEvents.create(x);
-
-    //         return { ...x, id: res };
-    //     }),
-    // ).then((res) => {
-    //     appendEventsToTimeline(res, campaign, originalEvents, queryClient);
-    //     invalidateData(res, queryClient);
-    // });
-    // await handleRelatedEvents(newEvents[0], relatedEvents, assignment);
-
-    // const tempEvents = newEvents.map((x) => ({ ...x, tempId: randomId() }));
-    // appendEventsToTimeline(tempEvents, campaign, campaign.campaignTimelineEvents, queryClient);
-    // invalidateData(tempEvents, queryClient);
 }
 interface applyDefaultValuesProps {
     event: TimelineEvent.Event;
@@ -124,19 +63,18 @@ interface applyDefaultValuesProps {
 }
 function applyDefaultValues(props: applyDefaultValuesProps) {
     const { event, assignment } = props;
-    event.assignments = assignment ? [assignment] : [];
-    event.eventAssignmentAmount = event.eventAssignmentAmount ?? 1;
-    event.eventTaskAmount = event.eventTaskAmount ?? 1;
-    event.eventTitle = event.eventTitle ?? "Neues Event";
-    event.relatedEvents = {
-        parentEvent: event.relatedEvents?.parentEvent ?? null,
-        childEvents: event.relatedEvents?.childEvents ?? [],
-    };
-    event.relatedEvents.childEvents = event.relatedEvents.childEvents.map((x) => ({
-        ...x,
+    const newEvent: TimelineEvent.Event = {
+        ...event,
         assignments: assignment ? [assignment] : [],
-    }));
-    return event;
+        eventAssignmentAmount: event.eventAssignmentAmount ?? 0,
+        eventTaskAmount: event.eventTaskAmount ?? 0,
+        eventTitle: event.eventTitle ?? "Neues Event",
+        parentEvent: event.parentEvent ?? null,
+        childEvents: event.childEvents
+            ? event.childEvents.map((x) => ({ ...x, assignments: assignment ? [assignment] : [] }))
+            : [],
+    };
+    return newEvent;
 }
 function appendEventsToTimeline(
     events: TimelineEvent.Event[],
@@ -188,32 +126,30 @@ function invalidateData(events: TimelineEvent.Event[], queryClient: ReturnType<t
 
 interface handleRelatedEventsProps {
     event: TimelineEvent.Event;
-    relatedEvents?: TimelineEvent.Event["relatedEvents"];
+    parentEvent?: TimelineEvent.Event["parentEvent"];
+    childEvents?: TimelineEvent.Event["childEvents"];
     assignment: Assignment.AssignmentMin;
 }
 async function handleRelatedEvents(props: handleRelatedEventsProps) {
-    const { event, relatedEvents, assignment } = props;
-    if (relatedEvents) {
-        const { childEvents, parentEvent } = relatedEvents;
-        //if updated event has children, set their parent reference to the new event
-        if (childEvents && childEvents.length) {
-            if (!childEvents.every((x) => x.id)) throw new Error("Child event has no id");
-            await Promise.all(
-                childEvents.map(async (x) => {
-                    // dataClient.timelineEvent.
-                })
-            );
-        }
-        /** if new event has a parent, set the parent reference to the new event
-         *  and connect the parent event to the assigned position
-         */
+    const { event, parentEvent, childEvents, assignment } = props;
+    //if updated event has children, set their parent reference to the new event
+    if (childEvents && childEvents.length) {
+        if (!childEvents.every((x) => x.id)) throw new Error("Child event has no id");
+        await Promise.all(
+            childEvents.map(async (x) => {
+                // dataClient.timelineEvent.
+            })
+        );
+    }
+    /** if new event has a parent, set the parent reference to the new event
+     *  and connect the parent event to the assigned position
+     */
 
-        if (parentEvent && parentEvent.id) {
-            await Promise.all([
-                // database.timelineEvent.connectEvents(parentEvent, event),
-                // database.timelineEvent.connectToAssignment(parentEvent.id, assignment.id),
-            ]);
-        }
+    if (parentEvent && parentEvent.id) {
+        await Promise.all([
+            // database.timelineEvent.connectEvents(parentEvent, event),
+            // database.timelineEvent.connectToAssignment(parentEvent.id, assignment.id),
+        ]);
     }
 }
 interface createEmailTriggersProps {

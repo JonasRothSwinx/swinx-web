@@ -30,9 +30,7 @@ namespace TimelineEvent {
         );
     }
 
-    export async function resolveEventReference(
-        event: Nullable<EventOrReference>,
-    ): Promise<Nullable<Event>> {
+    export async function resolveEventReference(event: Nullable<EventOrReference>): Promise<Nullable<Event>> {
         if (event === null) return null;
         else if (!isEventReference(event)) return event;
         else {
@@ -75,10 +73,8 @@ namespace TimelineEvent {
         eventTitle: Nullable<string>;
         assignments: Assignment.AssignmentMin[];
         tempId?: string;
-        relatedEvents: {
-            childEvents: EventOrReference[];
-            parentEvent: Nullable<EventOrReference>;
-        };
+        childEvents: EventOrReference[];
+        parentEvent: Nullable<EventOrReference>;
         emailTriggers: EmailTriggers.EmailTriggerEventRef[];
         info: EventInfo;
         targetAudience?: TargetAudience;

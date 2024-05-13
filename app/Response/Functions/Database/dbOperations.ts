@@ -10,10 +10,7 @@ interface GetCandidateParams {
     id: string;
 }
 export async function getCandidate({ id }: GetCandidateParams) {
-    const candidateResponse = await client.models.InfluencerCandidate.get(
-        { id },
-        { selectionSet: ["id"] },
-    );
+    const candidateResponse = await client.models.InfluencerCandidate.get({ id }, { selectionSet: ["id"] });
     console.log({ data: candidateResponse.data, error: JSON.stringify(candidateResponse.errors) });
     return candidateResponse.data;
 }
@@ -29,7 +26,7 @@ export async function getAssignmentData({ id }: GetAssignmentDataParams) {
                 "id",
                 "budget",
             ],
-        },
+        }
     );
     // console.log({
     //     data: JSON.stringify(assignmentResponse.data, null, 2),
@@ -42,7 +39,7 @@ interface GetEventsByAssignmentParams {
     id: string;
 }
 export async function getEventsByAssignment({ id }: GetEventsByAssignmentParams) {
-    const { data, errors } = await client.models.EventAssignment.listEventAssignmentByAssignmentId(
+    const { data, errors } = await client.models.EventAssignment.listByAssignmentId(
         {
             assignmentId: id,
         },
@@ -57,13 +54,13 @@ export async function getEventsByAssignment({ id }: GetEventsByAssignmentParams)
                 "timelineEvent.date",
                 "timelineEvent.timelineEventType",
             ],
-        },
+        }
     );
     if (errors) return { data: [], errors: errors };
 
     const events = data.map((event) => event.timelineEvent);
 
-    return { data: events, errors };
+    return data;
 }
 
 interface GetCampaignInfoParams {
@@ -78,7 +75,7 @@ export async function getCampaignInfo({ id }: GetCampaignInfoParams) {
                 "id",
                 "customers.company",
             ],
-        },
+        }
     );
     const dataOut = {
         customerCompany: campaignResponse.data?.customers?.[0]?.company ?? "<Error>",

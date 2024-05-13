@@ -11,7 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import dataClient from "@/app/ServerFunctions/database";
 
 interface DateSelectorProps {
-    timelineEvent: PartialWith<TimelineEvent.Event, "relatedEvents" | "campaign">;
+    timelineEvent: PartialWith<TimelineEvent.Event, "parentEvent" | "childEvents" | "campaign">;
     setTimelineEvent: Dispatch<SetStateAction<DateSelectorProps["timelineEvent"]>>;
     isEditing: boolean;
     eventType?: TimelineEvent.eventType;
@@ -27,11 +27,11 @@ export function DateSelector(props: DateSelectorProps) {
     // }
 
     const parentEvent = useQuery({
-        queryKey: ["event", timelineEvent.relatedEvents?.parentEvent?.id],
-        queryFn: () => TimelineEvent.resolveEventReference(timelineEvent.relatedEvents?.parentEvent ?? null),
+        queryKey: ["event", timelineEvent.parentEvent?.id],
+        queryFn: () => TimelineEvent.resolveEventReference(timelineEvent.parentEvent ?? null),
     });
 
-    timelineEvent.relatedEvents ? TimelineEvent.resolveEventReference(timelineEvent.relatedEvents.parentEvent) : null;
+    timelineEvent.parentEvent ? TimelineEvent.resolveEventReference(timelineEvent.parentEvent) : null;
 
     const EventHandlers = {
         handleAddDateClick: () => {
@@ -235,7 +235,7 @@ function Date(props: DateProps) {
 
 interface ParentEventSelectorProps {
     parentEventType: { parentEventType: TimelineEvent.multiEventType } | false;
-    timelineEvent: PartialWith<TimelineEvent.Event, "relatedEvents" | "campaign">;
+    timelineEvent: PartialWith<TimelineEvent.Event, "parentEvent" | "campaign">;
     setTimelineEvent: DateSelectorProps["setTimelineEvent"];
 }
 function ParentEventSelector(props: ParentEventSelectorProps) {
@@ -283,10 +283,7 @@ function ParentEventSelector(props: ParentEventSelectorProps) {
             console.log("selectedEvent", selectedEvent);
             setTimelineEvent((prev) => ({
                 ...prev,
-                relatedEvents: {
-                    parentEvent: selectedEvent,
-                    childEvents: prev.relatedEvents.childEvents,
-                },
+                parentEvent: selectedEvent,
             }));
         },
     };
@@ -312,7 +309,7 @@ function ParentEventSelector(props: ParentEventSelectorProps) {
             required
             SelectProps={{
                 onChange: Handler.onParentEventChange,
-                value: timelineEvent.relatedEvents.parentEvent?.id ?? "",
+                value: timelineEvent.parentEvent?.id ?? "",
             }}
         >
             {parentEventChoices.map((parentEvent) => {

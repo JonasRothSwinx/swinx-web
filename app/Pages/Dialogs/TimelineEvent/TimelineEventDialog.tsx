@@ -64,7 +64,8 @@ const typeDefault: {
         eventAssignmentAmount: 1,
         eventTaskAmount: 0,
         targetAudience: { industry: [], cities: [], country: ["Deutschland"] },
-        relatedEvents: { parentEvent: null, childEvents: [] },
+        parentEvent: null,
+        childEvents: [],
     },
 };
 const EventHasEmailTriggers: { [key in TimelineEvent.eventType | "none"]: boolean } = {
@@ -96,11 +97,14 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
 
     //######################
     //#region States
-    const [timelineEvent, setTimelineEvent] = useState<PartialWith<DialogType, "campaign" | "relatedEvents">>(
+    const [timelineEvent, setTimelineEvent] = useState<
+        PartialWith<DialogType, "campaign" | "parentEvent" | "childEvents">
+    >(
         editingData ?? {
             campaign: { id: campaignId },
             assignments: targetAssignment ? [targetAssignment] : [],
-            relatedEvents: { parentEvent: null, childEvents: [] },
+            parentEvent: null,
+            childEvents: [],
         }
     );
     const [updatedData, setUpdatedData] = useState<Partial<DialogType>>({});

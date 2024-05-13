@@ -21,7 +21,7 @@ async function selectionSetTest() {
                 "notes",
                 "linkedinProfile",
             ],
-        },
+        }
     );
 }
 
@@ -37,9 +37,12 @@ const selectionSet = [
     "linkedinProfile",
 ] as const;
 
-type RawCustomer = SelectionSet<Schema["Customer"], typeof selectionSet>;
+type RawCustomer = SelectionSet<Schema["Customer"]["type"], typeof selectionSet>;
 //#region Create
-export async function createCustomer(customer: Omit<Customer.Customer, "id">, campaignId: string) {
+export async function createCustomer(
+    customer: Omit<Customer.Customer, "id">,
+    campaignId: string
+): Promise<Nullable<string>> {
     const { company, firstName, lastName, email, companyPosition, phoneNumber, notes } = customer;
 
     // Create primary customer
@@ -59,7 +62,7 @@ export async function createCustomer(customer: Omit<Customer.Customer, "id">, ca
     // const substitutePromises: Promise<string>[] = [];
 
     // await Promise.all(substitutePromises);
-    return createdCustomer.id;
+    return createdCustomer?.id ?? null;
 }
 //#endregion
 
@@ -102,21 +105,16 @@ export async function listCustomersByCampaign(campaignId: string): Promise<Custo
         {
             campaignId,
         },
-        { selectionSet },
+        { selectionSet }
     );
     if (errors) throw new Error(JSON.stringify(errors));
     const validationresult = validateRawCustomerArray(customers);
-    if (validationresult[1] > 0) {
-        console.error(
-            `Found ${validationresult[1]} invalid datasets when fetching customers for campaign ${campaignId}`,
-        );
-    }
-    return validationresult[0];
+    return validationresult;
 }
 //#endregion
 
 //#region Validation
-function validateRawCustomerArray(rawCustomers: RawCustomer[]): [Customer.Customer[], number] {
+function validateRawCustomerArray(rawCustomers: RawCustomer[]): Customer.Customer[] {
     let invalidDataSets = 0;
     const validatedCustomers: Customer.Customer[] = rawCustomers
         .map((rawCustomer) => validateRawCustomer(rawCustomer))
@@ -127,11 +125,12 @@ function validateRawCustomerArray(rawCustomers: RawCustomer[]): [Customer.Custom
             }
             return true;
         });
-
-    return [validatedCustomers, invalidDataSets];
+    console.error(`Found ${invalidDataSets} invalid datasets when validating customers`);
+    return validatedCustomers;
 }
 
-function validateRawCustomer(rawCustomer: RawCustomer): Nullable<Customer.Customer> {
+function validateRawCustomer(rawCustomer: Nullable<RawCustomer>): Nullable<Customer.Customer> {
+    if (!rawCustomer) return null;
     try {
         const validatedCustomer: Customer.Customer = {
             id: rawCustomer.id,

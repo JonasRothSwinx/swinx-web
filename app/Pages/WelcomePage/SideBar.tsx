@@ -1,19 +1,8 @@
 "use client";
 import UserView from "@/app/Pages/WelcomePage/User";
-import { useEffect, useState } from "react";
 import { getUserAttributes, getUserGroups } from "@/app/ServerFunctions/serverActions";
+import { useQuery } from "@tanstack/react-query";
 import stylesExporter from "../styles/stylesExporter";
-import { Button } from "@mui/material";
-import emailClient from "@/app/ServerFunctions/email";
-import {
-    createTestData,
-    listCampaignsTest,
-    wipeTestData,
-} from "@/app/ServerFunctions/database/dbOperations/test";
-import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
-import dataClient from "@/app/ServerFunctions/database";
-import dayjs from "@/app/utils/configuredDayJs";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
 import DebugButtons from "./debug/debugButtons";
 
 const styles = stylesExporter.sideBar;

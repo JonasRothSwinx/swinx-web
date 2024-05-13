@@ -1,5 +1,4 @@
 import dataClient from "@/app/ServerFunctions/database";
-import { createTestData, wipeTestData } from "@/app/ServerFunctions/database/dbOperations/test";
 import emailClient from "@/app/ServerFunctions/email";
 import { Button } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";

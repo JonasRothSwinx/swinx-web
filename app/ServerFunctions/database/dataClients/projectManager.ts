@@ -22,6 +22,7 @@ async function createProjectManager({
 }: CreateProjectManagerParams): Promise<ProjectManagers.ProjectManager> {
     const queryClient = config.getQueryClient();
     const id = await database.projectManager.create({ projectManager });
+    if (!id) throw new Error("Failed to create project manager");
     const createdProjectManager = { ...projectManager, id };
     queryClient.setQueryData(["projectManager", id], { ...projectManager, id });
     queryClient.setQueryData(["projectManagers"], (prev: ProjectManagers.ProjectManager[]) => {
@@ -68,10 +69,7 @@ async function updateProjectManager({
     updatedData,
 }: UpdateProjectManagerParams): Promise<ProjectManagers.ProjectManager> {
     const queryClient = config.getQueryClient();
-    const previousProjectManager = queryClient.getQueryData<ProjectManagers.ProjectManager>([
-        "projectManager",
-        id,
-    ]);
+    const previousProjectManager = queryClient.getQueryData<ProjectManagers.ProjectManager>(["projectManager", id]);
     if (!previousProjectManager) throw new Error("Project Manager not found");
     database.projectManager.update({ id, updatedData });
     const updatedProjectManager = {
@@ -83,9 +81,7 @@ async function updateProjectManager({
         if (!prev) {
             return [updatedProjectManager];
         }
-        return prev.map((projectManager) =>
-            projectManager.id === id ? updatedProjectManager : projectManager,
-        );
+        return prev.map((projectManager) => (projectManager.id === id ? updatedProjectManager : projectManager));
     });
     queryClient.refetchQueries({ queryKey: ["projectManagers"] });
     queryClient.refetchQueries({ queryKey: ["projectManager", id] });
@@ -98,10 +94,7 @@ async function updateProjectManager({
  */
 async function deleteProjectManager(id: string): Promise<void> {
     const queryClient = config.getQueryClient();
-    const previousProjectManager = queryClient.getQueryData<ProjectManagers.ProjectManager>([
-        "projectManager",
-        id,
-    ]);
+    const previousProjectManager = queryClient.getQueryData<ProjectManagers.ProjectManager>(["projectManager", id]);
     if (!previousProjectManager) throw new Error("Project Manager not found");
     database.projectManager.delete({ id });
     queryClient.setQueryData(["projectManagers"], (prev: ProjectManagers.ProjectManager[]) => {

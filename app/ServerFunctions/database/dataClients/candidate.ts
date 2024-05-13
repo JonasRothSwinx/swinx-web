@@ -12,14 +12,15 @@ import config from "./config";
 
 export async function createCandidate(
     influencer: Influencer.Full,
-    assignmentId: string,
+    assignmentId: string
 ): Promise<Candidates.Candidate> {
     const queryClient = config.getQueryClient();
     const newCandidate: Omit<Candidates.Candidate, "id"> = {
         influencer: influencer,
         response: "pending",
     };
-    const id = await database.candidate.create(newCandidate, assignmentId);
+    const id = await database.candidate.create({ candidate: newCandidate, candidateAssignmentId: assignmentId });
+    if (!id) throw new Error("Failed to create candidate");
     const createdCandidate: Candidates.Candidate = { ...newCandidate, id };
     queryClient.setQueryData(["candidate", id], createdCandidate);
     queryClient.setQueryData(["candidates", assignmentId], (prev: Candidates.Candidate[]) => {
