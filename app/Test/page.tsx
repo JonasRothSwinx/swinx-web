@@ -1,6 +1,7 @@
 "use client";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import emailClient from "../ServerFunctions/email";
 
 function SearchParams() {
     const params = useSearchParams();
@@ -9,6 +10,7 @@ function SearchParams() {
     return <div>{params.toString()}</div>;
 }
 export default function Page() {
+    // emailClient.templates.list().then((templates) => console.log(templates));
     return (
         <div>
             <h1>Hello!</h1>

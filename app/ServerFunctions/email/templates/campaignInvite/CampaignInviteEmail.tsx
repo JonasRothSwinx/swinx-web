@@ -23,17 +23,21 @@ export const defaultParams: TemplateVariables = {
     linkData: "testData",
     customerCompany: "TestCustomer",
 };
-export const subjectLineBase = "Einladung zur Kampagne";
 
 const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
     name: Placeholder({ name: "name" }),
-    assignments: PlaceholderList({ parentName: "assignments", listItemName: "assignmentDescription" }),
+    assignments: PlaceholderList({
+        parentName: "assignments",
+        listItemName: "assignmentDescription",
+    }),
     honorar: Placeholder({ name: "honorar" }),
     linkBase: Placeholder({ name: "linkBase" }),
     linkData: Placeholder({ name: "linkData" }),
     customerCompany: Placeholder({ name: "customerCompany" }),
 };
-const EmailTemplates: { [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element } = {
+const EmailTemplates: {
+    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
+} = {
     new: (debug?) => <NewCampaignInvite debug={debug} />,
     reduced: (debug?) => <ReducedCampaignInvite debug={debug} />,
 };
@@ -47,6 +51,7 @@ CampaignInviteEmail.PreviewProps = {
     debug: true,
 } satisfies EmailProps;
 
+export const subjectLineBase = "Anfrage für Kooperation";
 function NewCampaignInvite(props: DebugToggle) {
     const {
         name,
@@ -65,7 +70,8 @@ function NewCampaignInvite(props: DebugToggle) {
             <Preview>Anfrage für Kooperation</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
-                Wir würden sie gerne als Speaker für eine Kampagne unseres Kunden {customerName} gewinnen.
+                Wir würden sie gerne als Speaker für eine Kampagne unseres Kunden {customerName}{" "}
+                gewinnen.
             </Text>
             <Text style={styles.text}>Sie wären dabei für folgende Aufgaben zuständig:</Text>
             {assignments}
@@ -99,7 +105,8 @@ function ReducedCampaignInvite(props: DebugToggle) {
             <Preview>Einladung zur Kampagne</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
-                Wir würden dich gerne als Speaker für eine Kampagne unseres Kunden {customerName} gewinnen.
+                Wir würden dich gerne als Speaker für eine Kampagne unseres Kunden {customerName}{" "}
+                gewinnen.
             </Text>
             <Text style={styles.text}>Du wärst dabei für folgende Aufgaben zuständig:</Text>
             {assignments}

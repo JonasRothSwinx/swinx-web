@@ -32,12 +32,13 @@ interface GetTemplateProps {
     templateName: string;
 }
 
-function getTemplate(props: GetTemplateProps) {
-    props.setIsLoading(true);
-    emailClient.templates.get(props.templateName).then((result) => {
+function getTemplate({ setIsLoading, setEmailPreview, templateName }: GetTemplateProps) {
+    setIsLoading(true);
+    emailClient.templates.get({ templateName }).then((result) => {
+        if (result === null) throw new Error("Template not found");
         console.log("Template received:", result);
-        props.setIsLoading(false);
-        props.setEmailPreview(result.TemplateContent?.Html);
+        setIsLoading(false);
+        setEmailPreview(result.TemplateContent?.Html);
     });
 }
 
@@ -49,7 +50,8 @@ interface EmailPreviewProps {
     assignment: Assignment.AssignmentFull;
 }
 
-type inviteTemplateVariables = typeof templateDefinitions.mailTypes.campaignInvite.CampaignInvite.defaultParams;
+type inviteTemplateVariables =
+    typeof templateDefinitions.mailTypes.campaignInvite.CampaignInvite.defaultParams;
 /**
  * Renders the email preview component.
  *
@@ -68,15 +70,18 @@ export default function EmailPreview(props: EmailPreviewProps) {
         honorar: "0€",
         linkBase: "http://localhost:3000/Response?",
         linkData: "testData",
+        customerCompany: "TestCustomer",
     });
     const [templateName, setTemplateName] = useState<templateName>("CampaignInviteNew");
     const templates = useQueries({
-        queries: templateDefinitions.mailTypes.campaignInvite.CampaignInvite.templateNames.map((templateName) => {
-            return {
-                queryKey: ["template", templateName],
-                queryFn: () => emailClient.templates.get(templateName),
-            };
-        }),
+        queries: templateDefinitions.mailTypes.campaignInvite.CampaignInvite.templateNames.map(
+            (templateName) => {
+                return {
+                    queryKey: ["template", templateName],
+                    queryFn: () => emailClient.templates.get({ templateName }),
+                };
+            },
+        ),
         combine(result) {
             const out: {
                 [key in EmailTriggers.emailLevel]: Nullable<string>;
@@ -159,7 +164,9 @@ export default function EmailPreview(props: EmailPreviewProps) {
                                 animationPlayState: "running",
                                 animationName: "spin",
                                 animationDuration: "500ms",
-                                animationIterationCount: `${templates.isFetching ? "infinite" : "0"}`,
+                                animationIterationCount: `${
+                                    templates.isFetching ? "infinite" : "0"
+                                }`,
                                 animationTimingFunction: "linear",
                                 "@keyframes spin": {
                                     "100%": { transform: `rotate(360deg)` },
@@ -183,7 +190,10 @@ export default function EmailPreview(props: EmailPreviewProps) {
                     ) : (
                         <>
                             <EmailFrame
-                                emailPreview={templates[selectedCandidate.influencer.emailLevel ?? "new"] ?? null}
+                                emailPreview={
+                                    templates[selectedCandidate.influencer.emailLevel ?? "new"] ??
+                                    null
+                                }
                                 isLoading={templates.isLoading}
                                 variables={{
                                     ...variables,
@@ -269,7 +279,7 @@ function EmailFrame(props: EmailFrameProps) {
                     textAlign: "center",
                 },
             } satisfies SxProps),
-        []
+        [],
     );
     if (props.isLoading)
         return (

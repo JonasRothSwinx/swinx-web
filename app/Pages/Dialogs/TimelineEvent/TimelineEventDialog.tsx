@@ -105,7 +105,7 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
             assignments: targetAssignment ? [targetAssignment] : [],
             parentEvent: null,
             childEvents: [],
-        }
+        },
     );
     const [updatedData, setUpdatedData] = useState<Partial<DialogType>>({});
     const [dates, setDates] = useState<{ number: number; dates: (Dayjs | null)[] }>({
@@ -161,7 +161,8 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
             event.preventDefault();
             const combinedEvent = { ...timelineEvent, ...updatedData };
             const type = combinedEvent.type;
-            if (!type || !TimelineEvent.isTimelineEventType(type)) throw new Error("No event type selected");
+            if (!type || !TimelineEvent.isTimelineEventType(type))
+                throw new Error("No event type selected");
 
             if (!validateFields(combinedEvent, type)) return;
             // if (!campaignId || !TimelineEvent.validate(combinedEvent) || !targetAssignment) return;
@@ -203,7 +204,7 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                     ({
                         ...prev,
                         ...typeDefault[value],
-                    } satisfies Partial<TimelineEvent.Event>)
+                    } satisfies Partial<TimelineEvent.Event>),
             );
         },
         assignment: (e: SelectChangeEvent<unknown>) => {
@@ -253,7 +254,7 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
 
                     {/* Details */}
                     <EventDetails
-                        key="SingleEventDetails"
+                        key="EventDetails"
                         applyDetailsChange={(data: Partial<TimelineEvent.Event>) =>
                             setTimelineEvent((prev) => ({ ...prev, ...data }))
                         }
@@ -276,11 +277,13 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                         </Button>
                     </DialogActions>
                 </Box>
-                {EventHasEmailTriggers[timelineEvent.type ?? "none"] && editing && timelineEvent.id && (
-                    <Box id="Trigger" width="500px">
-                        <EmailTriggerMenu eventId={timelineEvent.id} />
-                    </Box>
-                )}
+                {EventHasEmailTriggers[timelineEvent.type ?? "none"] &&
+                    editing &&
+                    timelineEvent.id && (
+                        <Box id="Trigger" width="500px">
+                            <EmailTriggerMenu eventId={timelineEvent.id} />
+                        </Box>
+                    )}
             </Box>
         </Dialog>
     );

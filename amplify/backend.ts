@@ -23,68 +23,74 @@ export const backend = defineBackend({
 
 const stack = backend.createStack("SwinxWebResources");
 
-const sesHandlerLambda = backend.sesHandler.resources.lambda as Function;
+//#region SES Handler Lambda & API Gateway
+// // eslint-disable-next-line @typescript-eslint/ban-types -- this is a valid use case
+// const sesHandlerLambda = backend.sesHandler.resources.lambda as Function;
 
-const policyStatement = new PolicyStatement({
-    effect: Effect.ALLOW,
-    actions: ["ses:*"],
-    resources: ["*"],
-});
-sesHandlerLambda.addToRolePolicy(policyStatement);
-sesHandlerLambda.addFunctionUrl({
-    authType: lambda.FunctionUrlAuthType.AWS_IAM,
-    cors: {
-        allowedOrigins: ["*"],
-    },
-});
+// const policyStatement = new PolicyStatement({
+//     effect: Effect.ALLOW,
+//     actions: ["ses:*"],
+//     resources: ["*"],
+// });
+// sesHandlerLambda.addToRolePolicy(policyStatement);
+// sesHandlerLambda.addFunctionUrl({
+//     authType: lambda.FunctionUrlAuthType.AWS_IAM,
+//     cors: {
+//         allowedOrigins: ["*"],
+//     },
+// });
 
-const api = new apigateway.RestApi(stack, "swinx-web-api", {
-    // restApiName: `InvokeRestApi_swinxWeb_${process.env.AWS_BRANCH ?? randomInt(0, 999999)}`,
-    restApiName: `swinx-web-api-${process.env.AWS_BRANCH ?? randomUUID()}`,
-    description: "API for Swinx Web App",
-    apiKeySourceType: apigateway.ApiKeySourceType.HEADER,
-    defaultCorsPreflightOptions: {
-        allowOrigins: apigateway.Cors.ALL_ORIGINS,
-    },
-});
+// const api = new apigateway.RestApi(stack, "swinx-web-api", {
+//     // restApiName: `InvokeRestApi_swinxWeb_${process.env.AWS_BRANCH ?? randomInt(0, 999999)}`,
+//     restApiName: `swinx-web-api-${process.env.AWS_BRANCH ?? randomUUID()}`,
+//     description: "API for Swinx Web App",
+//     apiKeySourceType: apigateway.ApiKeySourceType.HEADER,
+//     defaultCorsPreflightOptions: {
+//         allowOrigins: apigateway.Cors.ALL_ORIGINS,
+//     },
+// });
 
-const lambdaIntegration = new apigateway.LambdaIntegration(sesHandlerLambda, {
-    // Max timeout allowed by AWS is 29 seconds
-    timeout: Duration.seconds(29),
-    allowTestInvoke: true,
-});
+// const lambdaIntegration = new apigateway.LambdaIntegration(sesHandlerLambda, {
+//     // Max timeout allowed by AWS is 29 seconds
+//     timeout: Duration.seconds(29),
+//     allowTestInvoke: true,
+// });
 
-api.root.addMethod("POST", lambdaIntegration, {
-    apiKeyRequired: true,
-});
+// api.root.addMethod("POST", lambdaIntegration, {
+//     apiKeyRequired: true,
+// });
 
-const apiKeyValue = process.env.ADMIN_API_KEY;
-const apiKey = api.addApiKey(`swinx-web-api-key`, {
-    apiKeyName: `swinx-web-api-key-${process.env.AWS_BRANCH}`,
-    value: apiKeyValue,
-});
+// const apiKeyValue = process.env.ADMIN_API_KEY;
+// const apiKey = api.addApiKey(`swinx-web-api-key`, {
+//     apiKeyName: `swinx-web-api-key-${process.env.AWS_BRANCH}`,
+//     value: apiKeyValue,
+// });
 
-const usagePlan = new UsagePlan(stack, "swinxWebUsagePlan", {
-    name: `swinx-web Usage Plan for ${process.env.AWS_BRANCH}`,
-    apiStages: [
-        {
-            api,
-            stage: api.deploymentStage,
-        },
-    ],
-});
-usagePlan.addApiKey(apiKey);
+// const usagePlan = new UsagePlan(stack, "swinxWebUsagePlan", {
+//     name: `swinx-web Usage Plan for ${process.env.AWS_BRANCH}`,
+//     apiStages: [
+//         {
+//             api,
+//             stage: api.deploymentStage,
+//         },
+//     ],
+// });
+// usagePlan.addApiKey(apiKey);
 
-backend.addOutput({
-    custom: {
-        sesHandlerUrl: api.url,
-    },
-});
+// backend.addOutput({
+//     custom: {
+//         sesHandlerUrl: api.url,
+//     },
+// });
+
+//#endregion
 /**
  * Eventbridge Rule, the target is the reminderTrigger lambda
  * The rule is scheduled to run every 6 hours, starting at 6:00 AM UTC+1
  * The reminderTrigger lambda is responsible for sending reminders to users
  */
+
+// eslint-disable-next-line @typescript-eslint/ban-types -- Function is an aws-cdk-lib construct here
 const reminderTriggerLambda = backend.reminderTrigger.resources.lambda as Function;
 const rule = new eventBridge.Rule(stack, "ReminderTriggerRule", {
     enabled: false,

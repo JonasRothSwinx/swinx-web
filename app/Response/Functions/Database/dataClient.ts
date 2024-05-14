@@ -5,6 +5,8 @@ const dataClient = {
     getAssignmentData,
     getEventsByAssignment,
     getCampaignInfo,
+    getEventInfo,
+    processResponse,
 };
 interface GetCandidateParams {
     id: string;
@@ -33,6 +35,22 @@ interface GetCampaignInfoParams {
 }
 async function getCampaignInfo({ id }: GetCampaignInfoParams) {
     return await dbOperations.getCampaignInfo({ id });
+}
+
+interface GetEventInfoParams {
+    id: string;
+}
+async function getEventInfo({ id }: GetEventInfoParams) {
+    return await dbOperations.getParentEventInfo({ id });
+}
+
+interface ProcessResponseParams {
+    candidateId: string;
+    response: boolean;
+}
+async function processResponse({ response, candidateId }: ProcessResponseParams) {
+    const dbResponse = await dbOperations.processResponse({ response, candidateId });
+    //TODO: Notify the campaignManager of the response
 }
 
 export default dataClient;

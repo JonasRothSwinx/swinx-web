@@ -27,7 +27,9 @@ export default function DebugButtons() {
             <Button
                 variant="outlined"
                 onClick={async () => {
-                    const response = await emailClient.templates.get(prompt("TemplateName") ?? "CampaignInvite");
+                    const templateName = prompt("TemplateName");
+                    if (!templateName) return;
+                    const response = await emailClient.templates.get({ templateName });
                     console.log(response);
                 }}
             >
@@ -75,7 +77,9 @@ export default function DebugButtons() {
                 onClick={async () => {
                     const templateName = prompt("TemplateName");
                     if (!templateName) return;
-                    const response = await emailClient.templates.delete({ name: templateName });
+                    const response = await emailClient.templates.delete({
+                        templateNames: [templateName],
+                    });
                     console.log(response);
                 }}
             >
@@ -137,7 +141,8 @@ export default function DebugButtons() {
             <Button
                 variant="outlined"
                 onClick={async () => {
-                    const html = await templateDefinitions.mailTypes.campaignInvite.CampaignInvite.levels.new.html;
+                    const html = await templateDefinitions.mailTypes.campaignInvite.CampaignInvite
+                        .levels.new.html;
                     console.log(html);
                 }}
             >

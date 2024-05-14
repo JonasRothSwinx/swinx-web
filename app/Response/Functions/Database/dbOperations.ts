@@ -3,6 +3,7 @@ import { Schema } from "@/amplify/data/resource";
 import { generateServerClientUsingCookies } from "@aws-amplify/adapter-nextjs/api";
 import config from "@/amplify_outputs.json";
 import { cookies } from "next/headers";
+import { SelectionSet } from "aws-amplify/api";
 
 const client = generateServerClientUsingCookies<Schema>({ config, cookies, authMode: "apiKey" });
 
@@ -10,8 +11,11 @@ interface GetCandidateParams {
     id: string;
 }
 export async function getCandidate({ id }: GetCandidateParams) {
-    const candidateResponse = await client.models.InfluencerCandidate.get({ id }, { selectionSet: ["id"] });
-    console.log({ data: candidateResponse.data, error: JSON.stringify(candidateResponse.errors) });
+    const candidateResponse = await client.models.InfluencerCandidate.get(
+        { id },
+        { selectionSet: ["id", "response"] },
+    );
+    // console.log({ data: candidateResponse.data, error: JSON.stringify(candidateResponse.errors) });
     return candidateResponse.data;
 }
 interface GetAssignmentDataParams {
@@ -26,13 +30,13 @@ export async function getAssignmentData({ id }: GetAssignmentDataParams) {
                 "id",
                 "budget",
             ],
-        }
+        },
     );
     // console.log({
     //     data: JSON.stringify(assignmentResponse.data, null, 2),
     //     error: JSON.stringify(assignmentResponse.errors, null, 2),
     // });
-    return { data: assignmentResponse.data, errors: assignmentResponse.errors };
+    return assignmentResponse.data;
 }
 
 interface GetEventsByAssignmentParams {
@@ -48,19 +52,48 @@ export async function getEventsByAssignment({ id }: GetEventsByAssignmentParams)
                 //
                 // Information about Event
                 "timelineEvent.id",
-                "timelineEvent.eventTaskAmount",
-                // "timelineEvent.parentEvent.eventTitle",
-                "timelineEvent.info.*",
-                "timelineEvent.date",
-                "timelineEvent.timelineEventType",
             ],
-        }
+        },
     );
-    if (errors) return { data: [], errors: errors };
+    if (errors) {
+        console.error(errors);
+        throw new Error("Error fetching events data");
+    }
 
-    const events = data.map((event) => event.timelineEvent);
+    const eventIds = data.map((event) => event.timelineEvent.id);
+    const selectionSet = [
+        //
+        "id",
+        "timelineEventType",
+        "eventTitle",
+        "date",
 
-    return data;
+        "info.*",
+        "eventTaskAmount",
+        "parentEventId",
+    ] as const;
+    const tasks = eventIds.map(async (eventId) => {
+        const { data: event, errors } = await client.models.TimelineEvent.get(
+            { id: eventId },
+            {
+                selectionSet,
+            },
+        );
+        if (errors) {
+            console.error(errors);
+            return null;
+        }
+        return event;
+    });
+    const events = (await Promise.all(tasks)).filter(
+        (
+            event,
+        ): event is NonNullable<
+            SelectionSet<Schema["TimelineEvent"]["type"], typeof selectionSet>
+        > => !!event,
+    );
+
+    return events;
 }
 
 interface GetCampaignInfoParams {
@@ -75,10 +108,55 @@ export async function getCampaignInfo({ id }: GetCampaignInfoParams) {
                 "id",
                 "customers.company",
             ],
-        }
+        },
     );
+    if (campaignResponse.errors) {
+        console.error(campaignResponse.errors);
+        throw new Error("Error fetching campaign data");
+    }
     const dataOut = {
         customerCompany: campaignResponse.data?.customers?.[0]?.company ?? "<Error>",
     };
-    return { data: dataOut, errors: JSON.stringify(campaignResponse.errors) };
+    return dataOut;
+}
+
+//MARK: - Get Event Info
+interface GetParentEventInfoParams {
+    id: string;
+}
+export async function getParentEventInfo({ id }: GetParentEventInfoParams) {
+    const eventResponse = await client.models.TimelineEvent.get(
+        { id },
+        {
+            selectionSet: [
+                //
+                "id",
+                "eventTitle",
+                "date",
+                "targetAudience.*",
+            ],
+        },
+    );
+    if (eventResponse.errors) {
+        console.error(eventResponse.errors);
+        throw new Error("Error fetching event data");
+    }
+    return eventResponse.data;
+}
+
+//MARK: - Process Response
+interface ProcessResponseParams {
+    candidateId: string;
+    response: boolean;
+}
+export async function processResponse({ response, candidateId }: ProcessResponseParams) {
+    const { data, errors } = await client.models.InfluencerCandidate.update({
+        id: candidateId,
+        response: response ? "accepted" : "rejected",
+    });
+    if (errors) {
+        console.error(errors);
+        throw new Error("Error processing response");
+    }
+    return data.id;
 }

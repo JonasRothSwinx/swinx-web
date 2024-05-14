@@ -38,9 +38,12 @@ const mailTypes = {
     },
 };
 
-const mailTypesFlat: { [key: string]: Template } = Object.values(mailTypes).reduce((acc, mailType) => {
-    return { ...acc, ...mailType };
-}, {});
+const mailTypesFlat: { [key: string]: Template } = Object.values(mailTypes).reduce(
+    (acc, mailType) => {
+        return { ...acc, ...mailType };
+    },
+    {},
+);
 
 const templateDefinitions = {
     mailTypes,

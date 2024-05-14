@@ -4,13 +4,14 @@ import { Candidates } from "../../types/candidates.js";
 import Customer from "../../types/customer.js";
 import { EmailTriggers } from "../../types/emailTriggers.js";
 import Influencer from "../../types/influencer.js";
+import ProjectManagers from "../../types/projectManagers.jsx";
 import TimelineEvent from "../../types/timelineEvents.js";
 
 export interface MailTemplate {
     name: string;
     subjectLine: string;
     html: string | Promise<string>;
-    text?: string | Promise<string>;
+    text: string | Promise<string>;
 }
 
 export interface MailTemplateVariables {
@@ -36,6 +37,7 @@ export type EmailContextProps = {
     influencer: Influencer.WithContactInfo;
     customer: Customer.Customer;
     taskDescriptions: string[];
+    campaignManager: ProjectManagers.ProjectManager;
 };
 
 export type Template = {
