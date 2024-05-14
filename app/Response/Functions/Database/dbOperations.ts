@@ -158,5 +158,8 @@ export async function processResponse({ response, candidateId }: ProcessResponse
         console.error(errors);
         throw new Error("Error processing response");
     }
+    if (!data) {
+        return null;
+    }
     return data.id;
 }
