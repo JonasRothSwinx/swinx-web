@@ -4,6 +4,7 @@ import { generateServerClientUsingCookies } from "@aws-amplify/adapter-nextjs/ap
 import config from "@/amplify_outputs.json";
 import { cookies } from "next/headers";
 import { SelectionSet } from "aws-amplify/api";
+import { projectManagers } from "@/app/ServerFunctions/database/dbOperations";
 
 const client = generateServerClientUsingCookies<Schema>({ config, cookies, authMode: "apiKey" });
 
@@ -107,6 +108,7 @@ export async function getCampaignInfo({ id }: GetCampaignInfoParams) {
                 //
                 "id",
                 "customers.company",
+                "projectManagers.projectManager.email",
             ],
         },
     );
@@ -116,6 +118,8 @@ export async function getCampaignInfo({ id }: GetCampaignInfoParams) {
     }
     const dataOut = {
         customerCompany: campaignResponse.data?.customers?.[0]?.company ?? "<Error>",
+        projectManagers:
+            campaignResponse.data?.projectManagers?.map((pm) => pm.projectManager.email) ?? [],
     };
     return dataOut;
 }

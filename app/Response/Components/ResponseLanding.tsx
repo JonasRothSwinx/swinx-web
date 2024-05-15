@@ -23,10 +23,15 @@ import Loading from "./Loading";
 import React from "react";
 import { Candidates } from "@/app/ServerFunctions/types/candidates";
 import Image from "next/image";
+import emailClient from "@/app/Emails";
+import sesAPIClient from "@/app/Emails/sesAPI";
+import { render } from "@react-email/components";
+import InfluencerResponseEmail from "@/app/Emails/manualTemplates/InfluencerResponse";
+import { renderAsync } from "@react-email/render";
 
 export default function ResponseLanding() {
     const params = useSearchParams();
-    const [received, setReceived] = useState(false);
+    // const [received, setReceived] = useState(false);
     const queryClient = useQueryClient();
     const dataParams = params.get("data");
     const decodedParams: CampaignInviteEncodedData = (() => {
@@ -136,6 +141,26 @@ export default function ResponseLanding() {
                 response: response ? "accepted" : "rejected",
             });
             const dataResponse = await dataClient.processResponse({ candidateId, response });
+
+            //TODO: Move this in a server component
+            const toAdresses = [CampaignData.data.projectManagers[0]];
+            const ccAdresses = CampaignData.data.projectManagers.slice(1);
+            const sender = { name: "Swinx Web", email: "noreply@swinx.de" };
+            const subject = `${candidateFullName} hat auf Anfrage geantwortet`;
+            const html = renderAsync(
+                InfluencerResponseEmail({
+                    accepted: response,
+                    InfluencerName: candidateFullName,
+                    customerName: CampaignData.data.customerCompany,
+                }),
+            );
+            sesAPIClient.send({
+                ToAddresses: toAdresses,
+                CcAddresses: ccAdresses,
+                sender,
+                subject,
+                html: await html,
+            });
         },
     };
     if (candidate.data.response && candidate.data.response !== "pending") {
@@ -187,7 +212,7 @@ export default function ResponseLanding() {
                     color="primary"
                     onClick={() => {
                         EventHandler.processResponse(true);
-                        setReceived(true);
+                        // setReceived(true);
                     }}
                 >
                     Ich möchte an der Kampagne teilnehmen
@@ -198,7 +223,7 @@ export default function ResponseLanding() {
                     color="info"
                     onClick={() => {
                         EventHandler.processResponse(false);
-                        setReceived(true);
+                        // setReceived(true);
                     }}
                 >
                     Ich möchte nicht an der Kampagne teilnehmen
