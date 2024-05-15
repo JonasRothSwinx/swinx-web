@@ -22,6 +22,7 @@ import { Nullable } from "@/app/Definitions/types";
 import Loading from "./Loading";
 import React from "react";
 import { Candidates } from "@/app/ServerFunctions/types/candidates";
+import Image from "next/image";
 
 export default function ResponseLanding() {
     const params = useSearchParams();
@@ -153,21 +154,21 @@ export default function ResponseLanding() {
             >
                 Refresh
             </Button> */}
-            <Typography variant="h4">
-                Hallo {candidateFullName},<br />
-            </Typography>
+            <SwinxLogo />
+            <Typography variant="h4">Werden Sie Teil unserer Kampagne</Typography>
             <Typography>
-                Wir würden sie gerne als Speaker für eine Kampagne unseres Kunden{" "}
-                {CampaignData.data?.customerCompany} gewinnen.
+                Hallo {candidateFullName},<br />
+                Wir würden Sie gerne als Speaker für eine Kampagne unseres Kunden{" "}
+                <strong>{CampaignData.data?.customerCompany}</strong> gewinnen.
             </Typography>
             <WebinarDescription webinar={parentEvent.data} campaign={CampaignData.data} />
+            <BudgetDescriptionText />
             <Typography>
-                Wir möchten dabei folgende Aufgaben in ihre Verantwortung übergeben:
+                Wir möchten dabei folgende Aufgaben in Ihre Verantwortung übergeben:
             </Typography>
             <br />
             <AssignmentDescription />
             <br />
-            <BudgetDescriptionText />
             <InterestDescriptionText />
             {/* <Grid container columns={5} rowGap={"10px"}>
                 <Grid xs={1}>Assignment Id:</Grid>
@@ -183,6 +184,7 @@ export default function ResponseLanding() {
                 <Button
                     id="submitButton"
                     variant="contained"
+                    color="primary"
                     onClick={() => {
                         EventHandler.processResponse(true);
                         setReceived(true);
@@ -192,7 +194,8 @@ export default function ResponseLanding() {
                 </Button>
                 <Button
                     id="rejectButton"
-                    variant="contained"
+                    variant="outlined"
+                    color="info"
                     onClick={() => {
                         EventHandler.processResponse(false);
                         setReceived(true);
@@ -221,8 +224,11 @@ function WebinarDescription({ webinar, campaign }: WebinarDescriptionProps) {
     const customerCompany = campaign.customerCompany;
     return (
         <Typography>
-            {customerCompany} werden am {dateString} um {timeString} ein Webinar zum Thema{" "}
-            {webinar.eventTitle} halten.
+            {customerCompany} werden am{" "}
+            <strong>
+                {dateString} um {timeString}
+            </strong>{" "}
+            ein Webinar zum Thema <strong>{`"${webinar.eventTitle}"`}</strong> halten.
         </Typography>
     );
 }
@@ -250,7 +256,7 @@ function AssignmentDescription() {
     }
     const descriptionOrder = ["Invites", "Post", "Video", "WebinarSpeaker"];
     return (
-        <Box id="AssignmentDescriptions">
+        <Box id="AssignmentDescriptionsContainer">
             {descriptionOrder.map((type) => {
                 return sortedEvents[type as keyof SortedEvents] ? (
                     <Box key={type} id="AssignmentDescriptionGroup">
@@ -279,42 +285,47 @@ function InvitesDescription({ events }: InvitesDescriptionProps) {
     }
     return (
         <Box id="DescriptionContainer" sx={style}>
-            <Box id="SummaryBox">
-                <Typography>
-                    An folgenden Terminen werden sie Einladungen zum Event des Kunden an ihre
-                    Follower verschicken.
-                    <br />
-                    Zielgruppe für das Event sind Profile aus{" "}
-                    {displayCountryString(webinar.targetAudience?.country ?? [])}, innerhalb der
-                    folgenden Branchen:
-                </Typography>
-                <Box>
-                    <List>
-                        {webinar.targetAudience?.industry?.map((industry) => (
-                            <Typography key={industry}>
-                                {`> `}
-                                {industry}
-                            </Typography>
-                        ))}
-                    </List>
-                </Box>
+            <Box id="DescriptionTitle">
+                <Typography id="SummaryTitle">Einladungen</Typography>
             </Box>
-            <Table id="InvitesTable">
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Datum</TableCell>
-                        <TableCell>Einladungen</TableCell>
-                    </TableRow>
-                </TableHead>
-                {events.map((event) => {
-                    return (
-                        <TableRow key={event.id}>
-                            <TableCell>{dayjs(event.date).format("dd. DD.MM")}</TableCell>
-                            <TableCell>{event.eventTaskAmount}</TableCell>
+            <Box id="SummaryContainer">
+                <Box id="SummaryBox">
+                    <Typography>
+                        An folgenden Terminen werden Sie Einladungen zum Event des Kunden an Ihre
+                        Follower verschicken.
+                        <br />
+                        Zielgruppe für das Event sind Profile aus{" "}
+                        {displayCountryString(webinar.targetAudience?.country ?? [])}, innerhalb der
+                        folgenden Branchen:
+                    </Typography>
+                    <Box>
+                        <List>
+                            {webinar.targetAudience?.industry?.map((industry) => (
+                                <Typography key={industry}>
+                                    {`> `}
+                                    {industry}
+                                </Typography>
+                            ))}
+                        </List>
+                    </Box>
+                </Box>
+                <Table id="InvitesTable">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Datum</TableCell>
+                            <TableCell>Einladungen</TableCell>
                         </TableRow>
-                    );
-                })}
-            </Table>
+                    </TableHead>
+                    {events.map((event) => {
+                        return (
+                            <TableRow key={event.id}>
+                                <TableCell>{dayjs(event.date).format("dd. DD.MM")}</TableCell>
+                                <TableCell>{event.eventTaskAmount}</TableCell>
+                            </TableRow>
+                        );
+                    })}
+                </Table>
+            </Box>
         </Box>
     );
 }
@@ -331,35 +342,40 @@ interface PostDescriptionProps {
 function PostDescription({ events }: PostDescriptionProps) {
     return (
         <Box id="DescriptionContainer">
-            {events.map((event) => {
-                return (
-                    <Typography key={event.id}>
-                        Sie werden das Webinar des Kunden{" "}
-                        {event.date && (
-                            <>
-                                am <strong>{`${dayjs(event.date).format("DD.MM")}`}</strong>{" "}
-                            </>
-                        )}
-                        in einem Textbeitrag{" "}
-                        {event.info?.topic && (
-                            <>
-                                zum Thema <strong>{`"${event.info.topic}"`}</strong>{" "}
-                            </>
-                        )}
-                        auf ihrem LinkedIn-Profil bewerben.
-                        {event.info?.draftDeadline && (
-                            <>
-                                <br />
-                                Der Entwurf muss dabei bis zum{" "}
-                                <strong>
-                                    {dayjs(event.info.draftDeadline).format("DD.MM")}
-                                </strong>{" "}
-                                bei uns eingereicht werden.
-                            </>
-                        )}
-                    </Typography>
-                );
-            })}
+            <Box id="DescriptionTitle">
+                <Typography id="SummaryTitle">Textbeiträge</Typography>
+            </Box>
+            <Box id="SummaryContainer">
+                {events.map((event) => {
+                    return (
+                        <Typography key={event.id}>
+                            Sie werden das Webinar des Kunden{" "}
+                            {event.date && (
+                                <>
+                                    am <strong>{`${dayjs(event.date).format("DD.MM")}`}</strong>{" "}
+                                </>
+                            )}
+                            in einem Textbeitrag{" "}
+                            {event.info?.topic && (
+                                <>
+                                    zum Thema <strong>{`"${event.info.topic}"`}</strong>{" "}
+                                </>
+                            )}
+                            auf ihrem LinkedIn-Profil bewerben.
+                            {event.info?.draftDeadline && (
+                                <>
+                                    <br />
+                                    Der Entwurf muss dabei bis zum{" "}
+                                    <strong>
+                                        {dayjs(event.info.draftDeadline).format("DD.MM")}
+                                    </strong>{" "}
+                                    bei uns eingereicht werden.
+                                </>
+                            )}
+                        </Typography>
+                    );
+                })}
+            </Box>
         </Box>
     );
 }
@@ -371,35 +387,40 @@ interface VideoDescriptionProps {
 function VideoDescription({ events }: VideoDescriptionProps) {
     return (
         <Box id="DescriptionContainer">
-            {events.map((event) => {
-                return (
-                    <Typography key={event.id}>
-                        Sie werden das Webinar des Kunden{" "}
-                        {event.date && (
-                            <>
-                                am <strong>{`${dayjs(event.date).format("DD.MM")}`}</strong>{" "}
-                            </>
-                        )}
-                        in einem Videobeitrag{" "}
-                        {event.info?.topic && (
-                            <>
-                                zum Thema <strong>{`"${event.info.topic}"`}</strong>{" "}
-                            </>
-                        )}
-                        auf ihrem LinkedIn-Profil bewerben.
-                        {event.info?.draftDeadline && (
-                            <>
-                                <br />
-                                Die Aufnahme muss dabei bis zum{" "}
-                                <strong>
-                                    {dayjs(event.info.draftDeadline).format("DD.MM")}
-                                </strong>{" "}
-                                bei uns eingereicht werden.
-                            </>
-                        )}
-                    </Typography>
-                );
-            })}
+            <Box id="DescriptionTitle">
+                <Typography id="SummaryTitle">Videobeiträge</Typography>
+            </Box>
+            <Box id="SummaryContainer">
+                {events.map((event) => {
+                    return (
+                        <Typography key={event.id}>
+                            Sie werden das Webinar des Kunden{" "}
+                            {event.date && (
+                                <>
+                                    am <strong>{`${dayjs(event.date).format("DD.MM")}`}</strong>{" "}
+                                </>
+                            )}
+                            in einem Videobeitrag{" "}
+                            {event.info?.topic && (
+                                <>
+                                    zum Thema <strong>{`"${event.info.topic}"`}</strong>{" "}
+                                </>
+                            )}
+                            auf ihrem LinkedIn-Profil bewerben.
+                            {event.info?.draftDeadline && (
+                                <>
+                                    <br />
+                                    Die Aufnahme muss dabei bis zum{" "}
+                                    <strong>
+                                        {dayjs(event.info.draftDeadline).format("DD.MM")}
+                                    </strong>{" "}
+                                    bei uns eingereicht werden.
+                                </>
+                            )}
+                        </Typography>
+                    );
+                })}
+            </Box>
         </Box>
     );
 }
@@ -417,22 +438,27 @@ function WebinarSpeakerDescription({ events }: WebinarSpeakerDescriptionProps) {
     }
     return (
         <Box id="DescriptionContainer">
-            {events.map((event) => {
-                return (
-                    <Typography key={event.id}>
-                        Sie werden{" "}
-                        {webinar.date && (
-                            <>
-                                am <strong>{dayjs(webinar.date).format("DD.MM")}</strong>{" "}
-                            </>
-                        )}
-                        als Speaker am Webinar des Kunden teilnehmen.
-                        <br />
-                        Dort sollen sie zum Thema <strong>{`"${event.eventTitle}"`}</strong>{" "}
-                        sprechen.
-                    </Typography>
-                );
-            })}
+            <Box id="DescriptionTitle">
+                <Typography id="SummaryTitle">Webinar Speaker</Typography>
+            </Box>
+            <Box id="SummaryContainer">
+                {events.map((event) => {
+                    return (
+                        <Typography key={event.id}>
+                            Sie werden{" "}
+                            {webinar.date && (
+                                <>
+                                    am <strong>{dayjs(webinar.date).format("DD.MM")}</strong>{" "}
+                                </>
+                            )}
+                            als Speaker am Webinar des Kunden teilnehmen.
+                            <br />
+                            Dort sollen Sie zum Thema <strong>{`"${event.eventTitle}"`}</strong>{" "}
+                            sprechen.
+                        </Typography>
+                    );
+                })}
+            </Box>
         </Box>
     );
 }
@@ -447,7 +473,7 @@ function BudgetDescriptionText() {
     }
     return (
         <Typography>
-            Für diese Aufgaben werden sie mit einem Honorar von{" "}
+            Für ihren Aufwand werden Sie mit einem Honorar von{" "}
             <strong>{assignmentData.budget} €</strong> vergütet.
         </Typography>
     );
@@ -457,10 +483,10 @@ function BudgetDescriptionText() {
 function InterestDescriptionText() {
     return (
         <Typography>
-            Wir haben sie aufgrund ihrer Expertise und ihres Interesses an den Themen des Kunden
-            ausgewählt. Bitte teilen sie uns mit, ob sie an der Kampagne teilnehmen möchten.
+            Wir haben Sie aufgrund ihrer Expertise und ihres Interesses an den Themen des Kunden
+            ausgewählt. Bitte teilen Sie uns mit, ob Sie an der Kampagne teilnehmen möchten.
             <br />
-            Wir werden ihre Entscheidung an unseren Kunden weiterleiten und sie zeitnah über deren
+            Wir werden Ihre Entscheidung an unseren Kunden weiterleiten und Sie zeitnah über deren
             Auswahl informieren.
         </Typography>
     );
@@ -485,9 +511,31 @@ function ResponseReceived({ response }: ResponseReceivedProps) {
     return (
         <Box id="ResponseReceivedContainer">
             <Typography>
-                Ihre Antwort wurde erfolgreich übermittelt. Vielen Dank für ihre Rückmeldung.
+                Ihre Antwort wurde erfolgreich übermittelt. Vielen Dank für Ihre Rückmeldung.
             </Typography>
-            <Typography>Wir werden sie über die Auswahl des Kunden informieren.</Typography>
+            <Typography>Wir werden Sie über die Auswahl des Kunden informieren.</Typography>
+        </Box>
+    );
+}
+
+//MARK: SwinxLogo
+function SwinxLogo() {
+    const style: SxProps = useMemo(
+        () => ({
+            position: "absolute",
+            right: "40px",
+            top: 0,
+            width: "fit-content",
+            // display: "flex",
+            // justifyContent: "center",
+            // alignItems: "center",
+            // mt: 2,
+        }),
+        [],
+    );
+    return (
+        <Box id="SwinxLogo" sx={style}>
+            <Image src="/swinx-logo.svg" alt="Swinx Logo" width={100} height={50} />
         </Box>
     );
 }

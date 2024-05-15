@@ -1,7 +1,7 @@
 "use client";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import emailClient from "../ServerFunctions/email";
+import emailClient from "@/app/Emails";
 
 function SearchParams() {
     const params = useSearchParams();

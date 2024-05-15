@@ -1,4 +1,4 @@
-import emailClient from "@/app/ServerFunctions/email";
+import emailClient from "@/app/Emails";
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import { Candidates } from "@/app/ServerFunctions/types/candidates";
 import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";

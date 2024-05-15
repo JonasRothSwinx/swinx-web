@@ -1,7 +1,7 @@
 import { RefreshIcon } from "@/app/Definitions/Icons";
 import stylesExporter from "@/app/Pages/styles/stylesExporter";
-import emailClient from "@/app/ServerFunctions/email/";
-import templateDefinitions, { templateName } from "@/app/ServerFunctions/email/templates";
+import emailClient from "@/app/Emails/";
+import templateDefinitions, { templateName } from "@/app/Emails/templates";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import { Candidates } from "@/app/ServerFunctions/types/candidates";

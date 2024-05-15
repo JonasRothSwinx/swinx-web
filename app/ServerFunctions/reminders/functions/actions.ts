@@ -5,10 +5,10 @@ import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 import database from "../../database/dbOperations";
 import { EmailTriggers } from "../../types/emailTriggers";
 import TimelineEvent from "../../types/timelineEvents";
-import templateDefinitions from "../../email/templates";
+import templateDefinitions from "@/app/Emails/templates";
 import Influencer from "../../types/influencer";
-import emailClient from "../../email";
-import { EmailContextProps, SendMailProps } from "../../email/templates/types";
+import emailClient from "@/app/Emails";
+import { EmailContextProps, SendMailProps } from "@/app/Emails/templates/types";
 import { EmailContextPropsByLevel } from "../types";
 import Campaign from "../../types/campaign";
 import Customer from "../../types/customer";
@@ -50,7 +50,7 @@ export async function startReminderRoutine(): Promise<boolean> {
         handling.push(
             handler(triggers).catch((error: Error) => {
                 console.error(`Error handling triggers for event type ${eventType}`, error.message);
-            })
+            }),
         );
     });
 
@@ -79,19 +79,22 @@ const DataCache: DataCache = {
 async function getEmailTriggers(props: GetEmailTriggerProps) {
     const { startDate, endDate } = props;
     console.log("Getting email triggers", startDate.toString(), endDate.toString());
-    const triggers = await database.emailTrigger.byDateRange(startDate.toISOString(), endDate.toISOString());
+    const triggers = await database.emailTrigger.byDateRange(
+        startDate.toISOString(),
+        endDate.toISOString(),
+    );
     const fullTriggers: EmailTriggers.EmailTrigger[] = (
         await Promise.all(
             triggers.map(async (trigger) => {
                 return await getEventsByEmailTrigger(trigger);
-            })
+            }),
         )
     ).filter((trigger): trigger is EmailTriggers.EmailTrigger => trigger !== null);
     return fullTriggers;
 }
 
 async function getEventsByEmailTrigger(
-    trigger: EmailTriggers.EmailTriggerEventRef
+    trigger: EmailTriggers.EmailTriggerEventRef,
 ): Promise<EmailTriggers.EmailTrigger | null> {
     console.log("Getting events by trigger", trigger);
     const response = await database.timelineEvent.getForEmailTrigger(trigger.event.id);
@@ -177,7 +180,9 @@ async function handleInviteMails(triggers: GroupedTrigger) {
                         commonContext: {},
                         individualContext: contextProps,
                     };
-                    promises.push(templateDefinitions.mailTypes.invites.InviteReminder.send(sendProps));
+                    promises.push(
+                        templateDefinitions.mailTypes.invites.InviteReminder.send(sendProps),
+                    );
                 });
                 break;
             }
@@ -203,7 +208,9 @@ async function handlePostMails(triggers: GroupedTrigger) {
                         commonContext: {},
                         individualContext: contextProps,
                     };
-                    promises.push(templateDefinitions.mailTypes.post.PostActionReminder.send(sendProps));
+                    promises.push(
+                        templateDefinitions.mailTypes.post.PostActionReminder.send(sendProps),
+                    );
                 });
                 break;
             }
@@ -215,7 +222,9 @@ async function handlePostMails(triggers: GroupedTrigger) {
                         commonContext: {},
                         individualContext: contextProps,
                     };
-                    promises.push(templateDefinitions.mailTypes.post.PostDeadlineReminder.send(sendProps));
+                    promises.push(
+                        templateDefinitions.mailTypes.post.PostDeadlineReminder.send(sendProps),
+                    );
                 });
                 break;
             }
@@ -238,7 +247,9 @@ async function handleVideoMails(triggers: GroupedTrigger) {
                         commonContext: {},
                         individualContext: contextProps,
                     };
-                    promises.push(templateDefinitions.mailTypes.video.VideoActionReminder.send(sendProps));
+                    promises.push(
+                        templateDefinitions.mailTypes.video.VideoActionReminder.send(sendProps),
+                    );
                 });
                 break;
             }
@@ -250,7 +261,9 @@ async function handleVideoMails(triggers: GroupedTrigger) {
                         commonContext: {},
                         individualContext: contextProps,
                     };
-                    promises.push(templateDefinitions.mailTypes.video.VideoDeadlineReminder.send(sendProps));
+                    promises.push(
+                        templateDefinitions.mailTypes.video.VideoDeadlineReminder.send(sendProps),
+                    );
                 });
                 break;
             }
@@ -274,13 +287,17 @@ async function handleWebinarSpeakerMails(triggers: GroupedTrigger) {
                         individualContext: contextProps,
                     };
                     promises.push(
-                        templateDefinitions.mailTypes.webinarSpeaker.WebinarSpeakerActionReminder.send(sendProps)
+                        templateDefinitions.mailTypes.webinarSpeaker.WebinarSpeakerActionReminder.send(
+                            sendProps,
+                        ),
                     );
                 });
                 break;
             }
             case "deadlineReminder":
-                console.log("Encountered Webinar Speaker Deadline Reminder. This should not exist.");
+                console.log(
+                    "Encountered Webinar Speaker Deadline Reminder. This should not exist.",
+                );
                 break;
         }
     });

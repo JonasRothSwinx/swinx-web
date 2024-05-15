@@ -15,7 +15,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 const theme = createTheme({
     palette: {
         primary: {
-            main: blue[500],
+            main: "#2867b2",
         },
         // secondary: { main: "#ffffff" },W
     },

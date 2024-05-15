@@ -1,4 +1,4 @@
-import { EmailContextProps } from "../email/templates/types";
+import { EmailContextProps } from "@/app/Emails/templates/types";
 import { EmailTriggers } from "../types/emailTriggers";
 
 export type EmailContextPropsByLevel = {

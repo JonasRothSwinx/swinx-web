@@ -16,6 +16,7 @@
     --callout-border-rgb: 172, 175, 176;
     --card-rgb: #6649ae;
     --card-border-rgb: 131, 134, 135;
+    --swinx-blue: #2867b2;
 }
 
 /* @media (prefers-color-scheme: dark) {
@@ -46,7 +47,8 @@ body {
 body {
     color: rgb(var(--foreground-rgb));
     background: rgb(35, 160, 176);
-    background: linear-gradient(135deg, rgba(35, 160, 176, 1) 0%, rgba(166, 232, 245, 1) 100%);
+    background: linear-gradient(135deg, var(--swinx-blue) 0%, #3f74b6 100%);
+    /* background: linear-gradient(135deg, rgba(35, 160, 176, 1) 0%, rgba(166, 232, 245, 1) 100%); */
 }
 
 a {
