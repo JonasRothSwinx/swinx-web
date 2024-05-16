@@ -135,6 +135,12 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
                             ".MuiAccordionSummary-content:not(.Mui-expanded) button": {
                                 display: "none",
                             },
+                            ".MuiAccordionSummary-expandIconWrapper": {
+                                color: "white",
+                            },
+                            ".MuiIconButton-root": {
+                                color: "white",
+                            },
                         },
                     },
                 },
