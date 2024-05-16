@@ -33,9 +33,9 @@ export default async function send(props: SendMailProps) {
 
     if (level === "none") return;
     // Check if all required data is present
-    if (!taskDescriptions || !candidates || !assignment || !customer || !campaignManager) {
+    if (/* !taskDescriptions || */ !candidates || !assignment || !customer || !campaignManager) {
         const missingContext = {
-            taskDescriptions: !!taskDescriptions,
+            /*  taskDescriptions: !!taskDescriptions, */
             candidates: !!candidates,
             assignment: !!assignment,
             customer: !!customer,

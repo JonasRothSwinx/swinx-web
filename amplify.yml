@@ -7,7 +7,7 @@ backend:
                 # - nvm install 20
                 - nvm use 20
                 - npm ci
-                - env | grep -e ADMIN_API_KEY -e BASE_URL >> .env
+                - env | grep -e ADMIN_API_KEY -e BASE_URL -e SES_ACCESS_KEY -e SES_SECRET_ACCESS_KEY >> .env
                 - |
                     if [ "${AWS_BRANCH}" = "main" ] || [ "${AWS_BRANCH}" = "dev" ]; then 
                         npx ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID 

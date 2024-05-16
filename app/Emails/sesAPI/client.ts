@@ -1,11 +1,11 @@
 "use server";
 
 import { SESv2Client } from "@aws-sdk/client-sesv2";
-import dotenv from "dotenv";
+// import dotenv from "dotenv";
 
 const client: { client: SESv2Client | null } = { client: null };
 function generateClient() {
-    dotenv.config({ path: ".env.local" });
+    // dotenv.config({ path: ".env.local" });
     // console.log(process.env);
     const accessKeyId = process.env.SES_ACCESS_KEY;
     const secretAccessKey = process.env.SES_SECRET_ACCESS_KEY;
