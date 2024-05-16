@@ -101,13 +101,13 @@ function EditToolbar(props: EditToolbarProps) {
             <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
                 Neuer Influencer
             </Button>
-            <Button
+            {/* <Button
                 color="primary"
                 startIcon={<AddIcon />}
                 onClick={() => createRandomInfluencers(queryClient)}
             >
                 Erstelle Influencer
-            </Button>
+            </Button> */}
             {isPending && <CircularProgress />}
         </GridToolbarContainer>
     );
@@ -254,14 +254,14 @@ function InfluencerList() {
     ];
     return (
         <>
-            {groups.data}
+            {/* {groups.data}
             {groups.data?.includes("admin") && (
                 <button
                     onClick={() => queryClient.invalidateQueries({ queryKey: ["influencers"] })}
                 >
                     Update
                 </button>
-            )}
+            )} */}
             {isOpen && (
                 <InfluencerDialog
                     {...dialogOtions}
@@ -310,7 +310,7 @@ function InfluencerList() {
                         autoHeight={true}
                         sx={{
                             m: 2,
-                            background: "lightgray",
+                            background: "white",
                             "& .MuiDataGrid-cell": {
                                 // color: "primary.main",
                                 borderLeft: "1px solid black",

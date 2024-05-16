@@ -211,6 +211,7 @@ export default function TimelineView(props: TimelineViewProps) {
                     borderRadius: "10px",
                     height: "fit-content",
                     maxWidth: "100%",
+                    overflow: "hidden",
 
                     ".MuiGrid2-container": {
                         alignItems: "center",

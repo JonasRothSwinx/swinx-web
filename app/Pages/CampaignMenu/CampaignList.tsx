@@ -472,7 +472,7 @@ function CampaignList() {
                 autoHeight={true}
                 sx={{
                     m: 2,
-                    background: "lightgray",
+                    background: "white",
                     "& .MuiDataGrid-columnHeaderTitleContainerContent": {
                         overflow: "visible",
                     },
