@@ -3,7 +3,7 @@ import Campaign from "@/app/ServerFunctions/types/campaign";
 import Customer from "@/app/ServerFunctions/types/customer";
 import { MouseEvent, SyntheticEvent, useEffect, useState } from "react";
 import CustomerDialog, { CustomerDialogContent } from "../../Dialogs/CustomerDialog";
-import { Accordion, AccordionDetails, AccordionSummary, IconButton, Tab } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Box, IconButton, Tab } from "@mui/material";
 import stylesExporter from "../../styles/stylesExporter";
 import { AddIcon, EditIcon, ExpandMoreIcon, MailIcon } from "@/app/Definitions/Icons";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
@@ -108,11 +108,11 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
                     expandIcon={<ExpandMoreIcon />}
                     aria-controls="panel1-content"
                     id="panel1-header"
-                    sx={{
-                        "& .MuiAccordionSummary-content:not(.Mui-expanded) button": {
-                            display: "none",
-                        },
-                    }}
+                    // sx={{
+                    //     "& .MuiAccordionSummary-content:not(.Mui-expanded) button": {
+                    //         display: "none",
+                    //     },
+                    // }}
                 >
                     <div className={styles.summaryWithEdit}>
                         Auftraggeber

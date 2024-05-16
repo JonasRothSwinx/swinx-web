@@ -110,6 +110,32 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
                             overflowY: "auto",
                             overflowX: "hidden",
                         },
+                        "#CampaignDetailsDisplay": {
+                            "& .MuiAccordion-root": {
+                                overflow: "hidden",
+                                borderRadius: "0px",
+
+                                border: "1px solid black",
+                                "&:first-of-type": {
+                                    borderTopLeftRadius: "20px",
+                                    borderTopRightRadius: "20px",
+                                    borderBottom: "none",
+                                },
+                                "&:last-of-type": {
+                                    borderBottomLeftRadius: "20px",
+                                    borderBottomRightRadius: "20px",
+                                    borderBottom: "1px solid black",
+                                },
+                            },
+                            ".MuiAccordionSummary-root": {
+                                backgroundColor: "var(--swinx-blue)",
+                                color: "white",
+                            },
+
+                            ".MuiAccordionSummary-content:not(.Mui-expanded) button": {
+                                display: "none",
+                            },
+                        },
                     },
                 },
             },
@@ -145,7 +171,12 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
                 </CustomErrorBoundary>
 
                 <Grid id="CampaignDetailsGrid" container columns={3} sx={{}} maxHeight={"100%"}>
-                    <Grid xs={1} display={"flex"} flexDirection={"column"}>
+                    <Grid
+                        id="CampaignDetailsDisplay"
+                        xs={1}
+                        display={"flex"}
+                        flexDirection={"column"}
+                    >
                         <CustomErrorBoundary message="Error loading customer details">
                             <CustomerDetails
                                 campaign={campaign.data}
