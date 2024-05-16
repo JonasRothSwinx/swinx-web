@@ -11,7 +11,7 @@ dataClient.config.setQueryClient(queryClient);
 const theme = createTheme({
     palette: {
         primary: {
-            main: "var(--swinx-blue)",
+            main: "#2867b2",
         },
         // secondary: { main: "#ffffff" },W
     },
