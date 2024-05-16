@@ -27,44 +27,10 @@ export default function TypedEventGroupDisplay(props: TypedEventGroupDisplayProp
         },
         placeholderData: [],
     });
-    const sxProps: SxProps = useMemo(() => {
-        return {
-            "&": {
-                "&": {
-                    // padding: "2px",
-
-                    border: "solid black",
-                    borderWidth: "0 0 1px",
-                    // borderLeft: "none",
-                    // borderRadius: "10px",
-                    display: "flex",
-                    flexDirection: " column",
-                    overflow: "hidden",
-                    // marginBottom: "2px",
-                },
-                "&:first-of-type": {
-                    borderTopLeftRadius: "10px",
-                    borderTopRightRadius: "10px",
-                    borderWidth: "1px 0 1px",
-                },
-                "&:last-of-type": {
-                    borderBottomLeftRadius: "10px",
-                    borderBottomRightRadius: "10px",
-                    borderWidth: "1px 0 1px",
-                    marginBottom: "0",
-                },
-                "#GroupTitle": {
-                    paddingLeft: "5px",
-                    backgroundColor: "lightgrey",
-                    borderBottom: "1px solid black",
-                },
-            },
-        };
-    }, []);
 
     if (hiddenEventTypes.includes(eventGroup.type)) return <></>;
     return (
-        <Box sx={sxProps}>
+        <Box id="TimelineViewGroupContent">
             <GroupTitle type={eventGroup.type} />
             <GroupContent
                 events={eventGroup.events}

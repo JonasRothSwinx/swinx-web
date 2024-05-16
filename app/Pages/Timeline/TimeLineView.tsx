@@ -215,6 +215,43 @@ export default function TimelineView(props: TimelineViewProps) {
                     ".MuiGrid2-container": {
                         alignItems: "center",
                     },
+                    "#TimelineViewGroupTitle": {
+                        width: "100%",
+                        display: "flex",
+                        padding: "5px",
+                        paddingBlockEnd: "10px",
+                        borderBottom: "1px solid black",
+                        backgroundColor: "var(--swinx-blue)",
+                        color: "white",
+                    },
+                    "#TimelineViewGroupContent": {
+                        // padding: "2px",
+
+                        border: "solid black",
+                        borderTop: "none",
+                        borderWidth: "0 0 1px",
+                        // borderLeft: "none",
+                        // borderRadius: "10px",
+                        display: "flex",
+                        flexDirection: " column",
+                        overflow: "hidden",
+                        "&:first-of-type": {
+                            borderTopLeftRadius: "10px",
+                            borderTopRightRadius: "10px",
+                        },
+                        "&:last-of-type": {
+                            borderBottomLeftRadius: "10px",
+                            borderBottomRightRadius: "10px",
+                            borderBottom: "none",
+                            marginBottom: "0",
+                        },
+                        "#GroupTitle": {
+                            paddingLeft: "5px",
+                            color: "white",
+                            backgroundColor: "var(--swinx-blue-light)",
+                            borderBottom: "1px solid black",
+                        },
+                    },
                 },
             },
         };

@@ -1,7 +1,7 @@
 import { CancelIcon, EditIcon } from "@/app/Definitions/Icons";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import dayjs from "@/app/utils/configuredDayJs";
-import { Unstable_Grid2 as Grid, IconButton, SxProps } from "@mui/material";
+import { Box, Unstable_Grid2 as Grid, IconButton, SxProps } from "@mui/material";
 import { GridDeleteForeverIcon } from "@mui/x-data-grid";
 import { useMemo, useState } from "react";
 import stylesExporter from "../../styles/stylesExporter";
@@ -66,58 +66,11 @@ function TimelineViewGroupTitle(props: TimelineViewGroupTitleProps) {
         ),
     };
     return (
-        <div
-            style={{
-                width: "100%",
-                display: "flex",
-                padding: "5px",
-                paddingBlockEnd: "10px",
-                borderBottom: "1px solid black",
-            }}
-        >
+        <Box id="TimelineViewGroupTitle">
             <div className={dialogStyles.cellActionSplit}>
                 <div>{titleContentByGroupType[groupedBy]()}</div>
                 {/* <TimelineViewEditButton editable={editable} editing={editing} setEditing={setEditing} /> */}
             </div>
-        </div>
-    );
-}
-interface TimelineViewEditButtonProps {
-    editable: boolean;
-    editing: boolean;
-    setEditing: (e: boolean) => void;
-}
-function TimelineViewEditButton(props: TimelineViewEditButtonProps) {
-    const { editable, editing, setEditing } = props;
-    return (
-        <>
-            {editable && (
-                <div style={{ display: "flex", flexDirection: "row" }}>
-                    {!editing && (
-                        <IconButton
-                            onClick={() => {
-                                setEditing(true);
-                            }}
-                        >
-                            <EditIcon />
-                        </IconButton>
-                    )}
-                    {editing && (
-                        <>
-                            <IconButton onClick={() => {}}>
-                                <GridDeleteForeverIcon color="error" />
-                            </IconButton>
-                            <IconButton
-                                onClick={() => {
-                                    setEditing(false);
-                                }}
-                            >
-                                <CancelIcon />
-                            </IconButton>
-                        </>
-                    )}
-                </div>
-            )}
-        </>
+        </Box>
     );
 }

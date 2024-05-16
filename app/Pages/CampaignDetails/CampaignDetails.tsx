@@ -93,6 +93,7 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
                         alignItems: "center",
                         padding: "5px 10px ",
                         backgroundColor: "var(--swinx-blue)",
+                        borderBottom: "1px solid black",
                         "#DeleteButton": {
                             color: "error.main",
                             borderColor: "error.main",
