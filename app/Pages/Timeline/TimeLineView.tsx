@@ -1,8 +1,8 @@
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import Influencer from "@/app/ServerFunctions/types/influencer";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import { CircularProgress, Unstable_Grid2 as Grid } from "@mui/material";
-import { useEffect, useState } from "react";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+import { Box, CircularProgress, Unstable_Grid2 as Grid, SxProps, Typography } from "@mui/material";
+import { useEffect, useMemo, useState } from "react";
 import stylesExporter from "../styles/stylesExporter";
 import TimelineControls from "./Components/TimelineControls";
 import TimelineViewItem from "./Components/TimelineViewItem";
@@ -48,7 +48,8 @@ export default function TimelineView(props: TimelineViewProps) {
     // const [groups, setGroups] = useState<EventGroup[]>([]);
     const [groupBy, setGroupBy] = useState<groupBy>(props.groupBy ?? "week");
     const [editingEvent, setEditingEvent] = useState<TimelineEvent.Event>();
-    const [controlsPositionState, setControlsPosition] = useState<controlsPosition>(controlsPosition);
+    const [controlsPositionState, setControlsPosition] =
+        useState<controlsPosition>(controlsPosition);
     const [campaign, setCampaign] = useState<Campaign.Campaign>(props.campaign);
     const [openDialog, setOpenDialog] = useState<openDialog>("none");
     //#endregion States
@@ -175,15 +176,63 @@ export default function TimelineView(props: TimelineViewProps) {
         ),
     };
 
+    const styles: SxProps = useMemo(() => {
+        return {
+            "&": {
+                display: "flex",
+                flexDirection: "column",
+                height: "100%",
+                width: "100%",
+
+                "#StatusState": {
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    textAlign: "center",
+                    height: "100%",
+                    width: "100%",
+                },
+                "#TimelineViewContent": {
+                    width: "100%",
+                    "& > .MuiGrid2-root": {
+                        // display: "flex",
+                        // flexDirection: "column",
+                        // overflowY: "auto",
+                        // maxHeight: "90vh",
+                        // paddingTop: "60px",
+                        width: "100%",
+                        // gap: "5px",
+                    },
+                },
+                "#TimelineViewGroup": {
+                    display: "flex",
+                    flexDirection: "column",
+                    border: "1px solid black",
+                    borderRadius: "10px",
+                    height: "fit-content",
+                    maxWidth: "100%",
+
+                    ".MuiGrid2-container": {
+                        alignItems: "center",
+                    },
+                },
+            },
+        };
+    }, []);
+
     if (events.isLoading || groups.isLoading || influencers.isLoading) {
         return <Placeholder />;
     }
     if (!events.data || !groups.data || !influencers.data) {
-        return <div className={styles.centered}>Keine Daten</div>;
+        return (
+            <Box>
+                <Typography id="StatusState">Keine Daten</Typography>
+            </Box>
+        );
     }
     if (events.data.length === 0 || groups.data.length === 0)
         return (
-            <>
+            <Box sx={styles}>
                 {controlsPositionState === "before" && (
                     <TimelineControls
                         {...{ groupBy, setGroupBy }}
@@ -193,7 +242,7 @@ export default function TimelineView(props: TimelineViewProps) {
                         onDataChange={EventHandlers.onDataChange}
                     />
                 )}
-                <div className={styles.centered}>Keine Events</div>;
+                <div id="StatusState">Keine Events</div>;
                 {controlsPositionState === "after" && (
                     <TimelineControls
                         {...{ groupBy, setGroupBy }}
@@ -203,17 +252,21 @@ export default function TimelineView(props: TimelineViewProps) {
                         onDataChange={EventHandlers.onDataChange}
                     />
                 )}
-            </>
+            </Box>
         );
     if (events.isError || groups.isError || influencers.isError) {
-        return <div className={styles.centered}>Error</div>;
+        return (
+            <Box sx={styles}>
+                <Typography id="StatusState">Error</Typography>
+            </Box>
+        );
     }
     // if (events.isFetching || groups.isFetching || influencers.isFetching) {
     //     return <Placeholder />;
     // }
 
     return (
-        <>
+        <Box sx={styles} id="TimelineViewContainer">
             {/* Dialogs */}
             {Dialogs[openDialog]()}
             {controlsPositionState === "before" && (
@@ -296,7 +349,7 @@ export default function TimelineView(props: TimelineViewProps) {
                     onDataChange={EventHandlers.onDataChange}
                 />
             )}
-        </>
+        </Box>
     );
 }
 
@@ -334,6 +387,7 @@ function TimelineViewContent(props: TimelineViewContentProps) {
 
     return (
         <Grid
+            id="TimelineViewContent"
             container
             direction={orientation === "horizontal" ? "row" : "column"}
             // rowSpacing={1}
@@ -342,38 +396,20 @@ function TimelineViewContent(props: TimelineViewContentProps) {
             columnGap={"5px"}
             // columnSpacing={1}
             justifyContent={"space-evenly"}
-            sx={{
-                "& > .MuiGrid2-root": {
-                    // display: "flex",
-                    // flexDirection: "column",
-                    // overflowY: "auto",
-                    // maxHeight: "90vh",
-                    // paddingTop: "60px",
-                    width: "100%",
-                    // gap: "5px",
-                },
-                // display: "flex",
-                // flexDirection: "column",
-                // overflowY: "auto",
-                // maxHeight: "90vh",
-                // paddingTop: "60px",
-                width: "100%",
-                // gap: "5px",
-            }}
         >
             {groups.slice(0, maxItems).map((group, i) => {
                 return (
-                    <Grid key={i} xs={orientation === "horizontal" ? 5 : 16}>
-                        <TimelineViewItem
-                            key={i}
-                            keyValue={i}
-                            group={group}
-                            groupedBy={groupBy}
-                            editEvent={EventHandlers.editEvent}
-                            editable={editable}
-                            campaignId={campaign.id}
-                        />
-                    </Grid>
+                    // <Grid key={i} xs={orientation === "horizontal" ? 5 : 16}>
+                    <TimelineViewItem
+                        key={i}
+                        keyValue={i}
+                        group={group}
+                        groupedBy={groupBy}
+                        editEvent={EventHandlers.editEvent}
+                        editable={editable}
+                        campaignId={campaign.id}
+                    />
+                    // </Grid>
                 );
             })}
         </Grid>

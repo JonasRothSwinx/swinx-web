@@ -1,7 +1,7 @@
 import { ExpandMoreIcon, RefreshIcon } from "@/app/Definitions/Icons";
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import Campaign from "@/app/ServerFunctions/types/campaign";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import {
     Unstable_Grid2 as Grid,
     Accordion,

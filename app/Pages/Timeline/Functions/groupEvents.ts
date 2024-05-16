@@ -1,4 +1,4 @@
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 
 export type groupBy = "day" | "week";

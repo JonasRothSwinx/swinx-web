@@ -1,6 +1,6 @@
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import Campaign from "@/app/ServerFunctions/types/campaign";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import { randomId } from "@mui/x-data-grid-generator";
 import { useQueryClient } from "@tanstack/react-query";
 import { dates } from "../TimelineEventDialog";
@@ -31,10 +31,11 @@ export async function submitEvent(props: createEventProps) {
 
 async function updateEvent(props: createEventProps) {
     const { event, dates, updatedData } = props;
+    if (!event.id) throw new Error("No event id provided for event update");
     const assignment = event.assignments[0];
     if (!dates.dates[0]) throw new Error("No date provided for event update");
     event.date = dates.dates[0].toISOString();
-    dataClient.timelineEvent.update(updatedData, event);
+    dataClient.timelineEvent.update({ id: event.id, updatedData: updatedData });
 }
 
 async function createEvent(props: createEventProps) {
@@ -50,7 +51,9 @@ async function createEvent(props: createEventProps) {
         })
         .filter((x): x is TimelineEvent.Event => x !== undefined);
     const createdEvents = await Promise.all(
-        newEvents.map((x) => dataClient.timelineEvent.create(x) as Promise<TimelineEvent.EventWithId>)
+        newEvents.map(
+            (x) => dataClient.timelineEvent.create(x) as Promise<TimelineEvent.EventWithId>,
+        ),
     );
     createdEvents.map((event) => {
         event.emailTriggers = applyEmailTriggerDefaults({ event });
@@ -80,7 +83,7 @@ function appendEventsToTimeline(
     events: TimelineEvent.Event[],
     campaign: Campaign.Campaign,
     oldTimeline: TimelineEvent.Event[],
-    queryClient: ReturnType<typeof useQueryClient>
+    queryClient: ReturnType<typeof useQueryClient>,
 ) {
     events.map((x) => queryClient.setQueryData(["event", x.id], x));
     const newTimeline = [...oldTimeline, ...events];
@@ -101,10 +104,13 @@ function appendEventsToTimeline(
     queryClient.refetchQueries({ queryKey: ["events", campaign.id] });
 
     //update assignment events
-    queryClient.setQueryData(["assignmentEvents", events[0].assignments[0].id], (oldData: TimelineEvent.Event[]) => {
-        if (!oldData) return [];
-        return newTimeline;
-    });
+    queryClient.setQueryData(
+        ["assignmentEvents", events[0].assignments[0].id],
+        (oldData: TimelineEvent.Event[]) => {
+            if (!oldData) return [];
+            return newTimeline;
+        },
+    );
     queryClient.refetchQueries({ queryKey: ["assignmentEvents", events[0].assignments[0].id] });
 
     // queryClient.refetchQueries({ queryKey: ["events", campaign.id] });
@@ -113,7 +119,10 @@ function appendEventsToTimeline(
     // queryClient.refetchQueries({ queryKey: ["assignmentEvents"], exact: false });
 }
 
-function invalidateData(events: TimelineEvent.Event[], queryClient: ReturnType<typeof useQueryClient>) {
+function invalidateData(
+    events: TimelineEvent.Event[],
+    queryClient: ReturnType<typeof useQueryClient>,
+) {
     events.map((x) => {
         queryClient.invalidateQueries({ queryKey: ["event", x.id] });
         queryClient.invalidateQueries({ queryKey: ["assignmentEvents", x.assignments[0].id] });
@@ -138,7 +147,7 @@ async function handleRelatedEvents(props: handleRelatedEventsProps) {
         await Promise.all(
             childEvents.map(async (x) => {
                 // dataClient.timelineEvent.
-            })
+            }),
         );
     }
     /** if new event has a parent, set the parent reference to the new event
@@ -169,7 +178,7 @@ async function createEmailTriggers({ event }: createEmailTriggersProps) {
                     console.log("Telling dataClient to create email trigger", trigger);
                     const createdTrigger = await dataClient.emailTrigger.create(trigger);
                     console.log("Created email trigger", createdTrigger);
-                })
+                }),
             );
         }
     } catch (error) {

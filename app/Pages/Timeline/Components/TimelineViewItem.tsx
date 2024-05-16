@@ -1,5 +1,5 @@
 import { CancelIcon, EditIcon } from "@/app/Definitions/Icons";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import dayjs from "@/app/utils/configuredDayJs";
 import { Unstable_Grid2 as Grid, IconButton, SxProps } from "@mui/material";
 import { GridDeleteForeverIcon } from "@mui/x-data-grid";
@@ -23,29 +23,11 @@ interface TimelineViewItemProps {
 export default function TimelineViewItem(props: TimelineViewItemProps) {
     const { keyValue, group, groupedBy, editEvent, editable } = props;
 
-    const sxProps: SxProps = useMemo(() => {
-        return {
-            "&": {
-                "&": {
-                    display: "flex",
-                    flexDirection: "column",
-                    border: "1px solid black",
-                    borderRadius: "10px",
-                    height: "fit-content",
-                    maxWidth: "100%",
-                },
-                ".MuiGrid2-container": {
-                    alignItems: "center",
-                },
-            },
-        };
-    }, []);
-
     return (
         <Grid
+            id="TimelineViewGroup"
             // xs={16}
             key={keyValue}
-            sx={sxProps}
         >
             <TimelineViewGroupTitle group={group} groupedBy={groupedBy} />
             {group.events.map((event, i) => {

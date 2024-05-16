@@ -18,7 +18,7 @@ import BudgetDialog from "@/app/Pages/Dialogs/BudgetDialog";
 import { useQuery } from "@tanstack/react-query";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import { Confirm } from "@/app/Components/Popups";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import dataClient from "@/app/ServerFunctions/database";
 
 type openDialog =

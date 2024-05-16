@@ -1,5 +1,5 @@
 import { Nullable, Prettify } from "@/app/Definitions/types";
-import TimelineEvent from "./timelineEvents";
+import TimelineEvent from "./timelineEvent";
 import { EmailTriggers } from "./emailTriggers";
 
 namespace Influencer {

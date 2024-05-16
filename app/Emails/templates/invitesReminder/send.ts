@@ -3,7 +3,7 @@ import { SendMailProps } from "../types";
 import { sesHandlerSendEmailTemplateBulk } from "@/amplify/functions/sesHandler/types";
 import sesAPIClient from "../../sesAPI";
 import { defaultParams, TemplateVariables } from "./InvitesReminderMail";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import ErrorLogger from "@/app/ServerFunctions/errorLog";
 import { inviteReminderTemplates } from ".";
 

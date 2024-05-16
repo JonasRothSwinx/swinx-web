@@ -359,6 +359,7 @@ const schema = a.schema({
             date: a.datetime().required(),
             notes: a.string(),
             info: a.ref("EventInfo"),
+            isCompleted: a.boolean().default(false),
 
             targetAudience: a.ref("FilterOptions"),
 

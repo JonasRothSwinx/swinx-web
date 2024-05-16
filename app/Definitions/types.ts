@@ -4,7 +4,7 @@ import { GridColDef } from "@mui/x-data-grid";
 import { Dispatch, SetStateAction } from "react";
 import Campaign from "../ServerFunctions/types/campaign";
 import Customer from "../ServerFunctions/types/customer";
-import TimelineEvent from "../ServerFunctions/types/timelineEvents";
+import TimelineEvent from "../ServerFunctions/types/timelineEvent";
 import Influencer from "../ServerFunctions/types/influencer";
 import Assignment from "../ServerFunctions/types/assignment";
 // export type RowDataInfluencer = Schema["InfluencerPrivate"] & Schema["InfluencerPublic"];

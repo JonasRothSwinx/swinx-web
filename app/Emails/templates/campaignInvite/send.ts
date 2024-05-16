@@ -15,7 +15,7 @@ import ProjectManagers from "@/app/ServerFunctions/types/projectManagers";
  * @param props.props.taskDescriptions The descriptions of the tasks in the assignment
  * @returns
  */
-type commonVariables = Pick<TemplateVariables, "assignments" | "honorar" | "customerCompany">;
+type commonVariables = Pick<TemplateVariables, /* "assignments" | */ "honorar" | "customerCompany">;
 type personalVariables = Pick<TemplateVariables, "name" | "linkBase" | "linkData">;
 export default async function send(props: SendMailProps) {
     const {
@@ -47,9 +47,9 @@ export default async function send(props: SendMailProps) {
     const templateName = templates[level].name;
 
     const commonVariables: commonVariables = {
-        assignments: taskDescriptions.map((assignmentDescription) => ({
-            assignmentDescription,
-        })),
+        // assignments: taskDescriptions.map((assignmentDescription) => ({
+        //     assignmentDescription,
+        // })),
         honorar: assignment.budget?.toString() ?? "<Honorar nicht definiert>",
         customerCompany: customer?.company ?? "TestCustomer",
     };
@@ -62,7 +62,7 @@ export default async function send(props: SendMailProps) {
     const senderAdress = `${senderName} <${senderEmail}>` ?? "swinx GmbH <noreply@swinx.de>";
     const defaultTemplateData: TemplateVariables = {
         name: "Error 418: Teapot",
-        assignments: commonVariables.assignments,
+        // assignments: commonVariables.assignments,
         honorar: commonVariables.honorar,
         linkBase: baseUrl,
         linkData: encodeURIComponent(

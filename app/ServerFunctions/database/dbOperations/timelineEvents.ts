@@ -2,7 +2,7 @@
 
 import { Nullable, PartialWith } from "@/app/Definitions/types";
 import Assignment from "@/app/ServerFunctions/types/assignment";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import client from "./.dbclient";
 import { emailTriggers } from ".";
 import dayjs from "@/app/utils/configuredDayJs";
@@ -48,7 +48,8 @@ export async function dummy() {
     });
     return { data: JSON.parse(JSON.stringify(data)), errors };
 }
-const selectionSetFull = [
+//MArk: Selection Set
+const selectionSet = [
     //Event info
     "id",
     "timelineEventType",
@@ -58,6 +59,7 @@ const selectionSetFull = [
     "date",
     "notes",
     "info.*",
+    "isCompleted",
 
     //campaign info
     "campaign.id",
@@ -82,13 +84,13 @@ const selectionSetFull = [
     //target audience
     "targetAudience.*",
 ] as const;
-type RawEvent = SelectionSet<Schema["TimelineEvent"]["type"], typeof selectionSetFull>;
+type RawEvent = SelectionSet<Schema["TimelineEvent"]["type"], typeof selectionSet>;
 
 const selectionSetMin = ["id", "timelineEventType", "campaign.id"] as const;
 
 export async function listTimelineEvents(): Promise<TimelineEvent.Event[]> {
     const { data, errors } = await client.models.TimelineEvent.list({
-        selectionSet: selectionSetFull,
+        selectionSet: selectionSet,
     });
     if (errors) throw new Error(JSON.stringify(errors));
     console.log("timeline", { data });
@@ -136,7 +138,7 @@ export async function createTimelineEvent(props: Omit<TimelineEvent.Event, "id">
             parentEventId,
             targetAudience,
         },
-        {}
+        {},
     );
     if (!data || !data.id) {
         console.error("No ID", data);
@@ -148,7 +150,7 @@ export async function createTimelineEvent(props: Omit<TimelineEvent.Event, "id">
     const connectionResponse = await Promise.all(
         assignments.map(async (assignment) => {
             return await connectToAssignment(data.id, assignment.id);
-        })
+        }),
     );
     const connectionData = connectionResponse.map((x) => x.data);
     const connectionErrors = connectionResponse.map((x) => x.errors);
@@ -168,9 +170,12 @@ export async function createTimelineEvent(props: Omit<TimelineEvent.Event, "id">
  * @returns - Promise that resolves when the timeline event is updated successfully.
  * @throws - Error if any required data is missing or if there are any errors during the update.
  */
-export async function updateTimelineEvent(props: PartialWith<TimelineEvent.Event, "id">) {
+interface UpdateTimelineEventParams {
+    id: string;
+    updatedData: Partial<TimelineEvent.Event>;
+}
+export async function updateTimelineEvent({ id, updatedData }: UpdateTimelineEventParams) {
     const {
-        id,
         type: timelineEventType,
         campaign: { id: campaignId } = {},
         date,
@@ -181,22 +186,24 @@ export async function updateTimelineEvent(props: PartialWith<TimelineEvent.Event
         eventTitle,
         childEvents,
         targetAudience,
-    } = props;
+        isCompleted,
+    } = updatedData;
     if (!id) {
         throw new Error("Missing Data");
     }
-    const newEvent = {
-        id: id,
-        ...(date ? { date: date } : {}),
-        ...(notes ? { notes: notes } : {}),
-        ...(timelineEventType ? { timelineEventType: timelineEventType } : {}),
-        ...(campaignId ? { campaignId: campaignId } : {}),
-        ...(eventAssignmentAmount ? { eventAssignmentAmount: eventAssignmentAmount } : {}),
-        ...(eventTaskAmount ? { eventTaskAmount: eventTaskAmount } : {}),
-        ...(eventTitle ? { eventTitle: eventTitle } : {}),
-        ...(info ? { info: info } : {}),
-        ...(targetAudience ? { targetAudience: targetAudience } : {}),
-    } satisfies PartialWith<Schema["TimelineEvent"]["type"], "id">;
+    const newEvent: Partial<Schema["TimelineEvent"]["type"]> = {
+        id,
+        ...(date && { date }),
+        ...(notes && { notes }),
+        ...(timelineEventType && { timelineEventType }),
+        ...(campaignId && { campaignId }),
+        ...(eventAssignmentAmount && { eventAssignmentAmount }),
+        ...(eventTaskAmount && { eventTaskAmount }),
+        ...(eventTitle && { eventTitle }),
+        ...(info && { info }),
+        ...(targetAudience && { targetAudience }),
+        isCompleted,
+    };
 
     // const { data, errors } = await client.models.TimelineEvent.update({
     //     id: id,
@@ -209,7 +216,7 @@ export async function updateTimelineEvent(props: PartialWith<TimelineEvent.Event
     //     ...(eventTitle ? { eventTitle: eventTitle } : {}),
     //     ...(info ? { info: info } : {}),
     // });
-    const { data, errors } = await client.models.TimelineEvent.update(newEvent);
+    const { data, errors } = await client.models.TimelineEvent.update({ id, ...newEvent });
     if (errors) throw new Error(JSON.stringify(errors));
     // console.log({ data, errors });
 }
@@ -223,27 +230,75 @@ export async function updateTimelineEvent(props: PartialWith<TimelineEvent.Event
  * @throws {Error} If there are any errors during the database operation.
  * @returns void
  */
-export async function deleteTimelineEvent(event: PartialWith<TimelineEvent.Event, "id">) {
-    if (!event.id) throw new Error("Missing Data");
+interface DeleteTimelineEventParams {
+    id: string;
+    debug?: boolean;
+}
+export async function deleteTimelineEvent({ id, debug }: DeleteTimelineEventParams) {
+    if (!id) throw new Error("DeleteTimelineEvent: No ID provided");
 
     //find and delete all connections
-    const { data: connectionData, errors: connectionErrors } = await client.models.EventAssignment.list({
-        selectionSet: ["id"],
-        filter: { timelineEventId: { eq: event.id } },
-    });
-    // console.log("connections", { connectionData, connectionErrors });
+    const { data: connectionData, errors: connectionErrors } =
+        await client.models.EventAssignment.list({
+            selectionSet: ["id"],
+            filter: { timelineEventId: { eq: id } },
+        });
+    if (debug) console.log(`Found ${connectionData.length} connections`);
 
     const connectionDeleteResponse = await Promise.all(
         connectionData.map(async (x: unknown) => {
             console.log({ connection: x });
             const connection = x as { id: string };
             return client.models.EventAssignment.delete({ id: connection.id });
-        })
+        }),
     );
+    if (debug) console.log("Deleted Event Connections:", { connectionDeleteResponse });
 
-    const { errors } = await client.models.TimelineEvent.delete({ id: event.id });
+    //find and delete all childEvents
+    const { data: childEventData, errors: childEventErrors } =
+        await client.models.TimelineEvent.list({
+            selectionSet: ["id"],
+            filter: { parentEventId: { eq: id } },
+        });
+    if (debug) console.log(`Found ${childEventData.length} child events`);
+
+    const childEventDeleteResponse = await Promise.all(
+        childEventData.map(async (x) => {
+            const childEvent = x;
+            return client.models.TimelineEvent.delete({ id: childEvent.id });
+        }),
+    );
+    if (debug) console.log("Deleted Child Events:", { childEventDeleteResponse });
+
+    //find and delete all email triggers
+    const { data: emailTriggerData, errors: emailTriggerErrors } =
+        await client.models.EmailTrigger.list({
+            selectionSet: ["id"],
+            filter: { eventId: { eq: id } },
+        });
+    if (debug) console.log(`Found ${emailTriggerData.length} email triggers`);
+
+    const emailTriggerDeleteResponse = await Promise.all(
+        emailTriggerData.map(async (x) => {
+            const emailTrigger = x;
+            return client.models.EmailTrigger.delete({ id: emailTrigger.id });
+        }),
+    );
+    if (debug) console.log("Deleted Email Triggers:", { emailTriggerDeleteResponse });
+
+    //delete the event
+    console.log("Deleting Event", { id });
+    const { errors } = await client.models.TimelineEvent.delete({ id });
     if (errors) throw new Error(JSON.stringify(errors));
     console.log(errors);
+    if (debug) {
+        return {
+            connections: connectionData.length,
+            childEvents: childEventData.length,
+            emailTriggers: emailTriggerData.length,
+        };
+    }
+    return;
 }
 //#endregion
 
@@ -259,7 +314,7 @@ export async function getTimelineEvent(id: string) {
         {
             id,
         },
-        { selectionSet: selectionSetFull }
+        { selectionSet: selectionSet },
     );
     if (data === null) return null;
     if (errors) throw new Error(JSON.stringify(errors));
@@ -309,7 +364,7 @@ export async function getAssignmentTimelineEvents(assignmentId: string) {
                 //email triggers
                 "timelineEvent.emailTriggers.*",
             ],
-        }
+        },
     );
     if (errors) throw new Error(JSON.stringify(errors));
     // console.log({ data });
@@ -350,8 +405,8 @@ export async function getCampaignTimelineEvents(campaignId: string, verbose = fa
             campaignId,
         },
         {
-            selectionSet: selectionSetFull,
-        }
+            selectionSet: selectionSet,
+        },
     );
 
     if (verbose) console.log({ campaignId, data });
@@ -384,11 +439,11 @@ export async function getEventForEmailTrigger(eventId: string): Promise<
         },
         {
             selectionSet: [
-                ...selectionSetFull,
+                ...selectionSet,
                 //Campaign info
                 "campaign.customers.*",
             ],
-        }
+        },
     );
     if (errors) throw new Error(JSON.stringify(errors));
     if (data === null) return null;
@@ -456,7 +511,7 @@ export async function disconnectFromAssignment(eventId: string, assignmentId: st
  */
 export async function connectEvents(
     parent: PartialWith<TimelineEvent.Event, "id">,
-    child: PartialWith<TimelineEvent.Event, "id">
+    child: PartialWith<TimelineEvent.Event, "id">,
 ): Promise<void> {
     if (!(parent.id && child.id)) throw new Error("No IDs provided");
     const { data, errors } = await client.models.TimelineEvent.update({
@@ -477,7 +532,14 @@ function validateEvent(rawEvent: Nullable<RawEvent>): Nullable<TimelineEvent.Eve
         console.error("No Event Data", rawEvent);
         return null;
     }
-    const { id, timelineEventType, campaign, assignments, childEvents: childEventsRaw, parentEventId } = rawEvent;
+    const {
+        id,
+        timelineEventType,
+        campaign,
+        assignments,
+        childEvents: childEventsRaw,
+        parentEventId,
+    } = rawEvent;
     // console.log("timeline", { rawData, assignment: rawData.assignments[0] });
     // console.log("validating", rawData);
     if (!id) {
@@ -489,7 +551,9 @@ function validateEvent(rawEvent: Nullable<RawEvent>): Nullable<TimelineEvent.Eve
         return null;
     }
 
-    const parentEvent: TimelineEvent.Event["parentEvent"] = parentEventId ? { id: parentEventId } : null;
+    const parentEvent: TimelineEvent.Event["parentEvent"] = parentEventId
+        ? { id: parentEventId }
+        : null;
     const childEvents: TimelineEvent.Event["childEvents"] = childEventsRaw.map((x) => {
         return { id: x.id, type: x.timelineEventType as TimelineEvent.eventType };
     });
@@ -538,6 +602,7 @@ function validateEvent(rawEvent: Nullable<RawEvent>): Nullable<TimelineEvent.Eve
         parentEvent,
         childEvents,
         info,
+        isCompleted: rawEvent.isCompleted ?? false,
         emailTriggers: rawEvent.emailTriggers.map((x) => ({
             id: x.id,
             type: x.type as EmailTriggers.emailTriggerType,
@@ -552,6 +617,8 @@ function validateEvent(rawEvent: Nullable<RawEvent>): Nullable<TimelineEvent.Eve
 }
 
 function validateArray(rawData: Nullable<RawEvent>[]): TimelineEvent.Event[] {
-    return rawData.map(validateEvent).filter((event): event is TimelineEvent.Event => event !== null);
+    return rawData
+        .map(validateEvent)
+        .filter((event): event is TimelineEvent.Event => event !== null);
 }
 //#endregion

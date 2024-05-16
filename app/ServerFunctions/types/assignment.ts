@@ -1,6 +1,6 @@
 import { Nullable, Prettify } from "@/app/Definitions/types";
 import Influencer from "./influencer";
-import TimelineEvent from "./timelineEvents";
+import TimelineEvent from "./timelineEvent";
 import { Candidates } from "./candidates";
 
 export default Assignment;

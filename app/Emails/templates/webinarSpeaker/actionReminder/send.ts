@@ -1,5 +1,5 @@
 import { SendMailProps } from "../../types";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import { sesHandlerSendEmailTemplateBulk } from "@/amplify/functions/sesHandler/types";
 import sesAPIClient from "../../../sesAPI";
 import { defaultParams, TemplateVariables } from "./WebinarSpeakerDateReminder";

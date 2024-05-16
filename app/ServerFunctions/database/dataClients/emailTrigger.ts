@@ -7,7 +7,7 @@ import dbOperations from "../dbOperations";
 import { EmailTriggers } from "../../types/emailTriggers";
 import dataClient from "..";
 import { PartialWith } from "@/app/Definitions/types";
-import TimelineEvent from "../../types/timelineEvents";
+import TimelineEvent from "../../types/timelineEvent";
 import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 import influencer from "./influencer";
 
@@ -31,7 +31,7 @@ export default emailTriggerClient;
  * @returns The created email trigger object
  */
 async function createEmailTrigger(
-    trigger: Omit<EmailTriggers.EmailTrigger, "id"> & { event: { id: string } }
+    trigger: Omit<EmailTriggers.EmailTrigger, "id"> & { event: { id: string } },
 ): Promise<EmailTriggers.EmailTrigger> {
     try {
         console.log("In datacclient emailTrigger createEmailTrigger", trigger);
@@ -81,7 +81,7 @@ export async function listEmailTriggers(): Promise<EmailTriggers.EmailTrigger[]>
  */
 export async function updateEmailTrigger(
     updatedData: Partial<Omit<EmailTriggers.EmailTriggerEventRef, "event">>,
-    previousTrigger: Omit<EmailTriggers.EmailTrigger, "id"> & { id: string }
+    previousTrigger: Omit<EmailTriggers.EmailTrigger, "id"> & { id: string },
 ): Promise<EmailTriggers.EmailTrigger> {
     const queryClient = config.getQueryClient();
 
@@ -112,7 +112,7 @@ export async function updateEmailTrigger(
  * @param trigger The email trigger object to delete
  */
 export async function deleteEmailTrigger(
-    trigger: Pick<EmailTriggers.EmailTrigger, "id"> & { id: string }
+    trigger: Pick<EmailTriggers.EmailTrigger, "id"> & { id: string },
 ): Promise<void> {
     const queryClient = config.getQueryClient();
     await dbOperations.emailTrigger.delete(trigger);
@@ -133,7 +133,7 @@ export async function deleteEmailTrigger(
  * @returns The list of email triggers
  */
 export async function getEmailTriggersForEvent(
-    event: Pick<TimelineEvent.Event, "id">
+    event: Pick<TimelineEvent.Event, "id">,
 ): Promise<EmailTriggers.EmailTrigger[]> {
     const queryClient = config.getQueryClient();
     const triggers = queryClient.getQueryData<EmailTriggers.EmailTrigger[]>(["emailTriggers"]);
@@ -164,10 +164,13 @@ export async function getEmailTriggersForDateRange(props: {
     const triggers = queryClient.getQueryData<EmailTriggers.EmailTrigger[]>(["emailTriggers"]);
     if (triggers && useCache) {
         return triggers.filter((trigger) =>
-            dayjs(trigger.date).isBetween(dayjs(startDate), dayjs(endDate), null, "[]")
+            dayjs(trigger.date).isBetween(dayjs(startDate), dayjs(endDate), null, "[]"),
         );
     }
-    const dateTriggers = await dbOperations.emailTrigger.byDateRange(startDate.toISOString(), endDate.toISOString());
+    const dateTriggers = await dbOperations.emailTrigger.byDateRange(
+        startDate.toISOString(),
+        endDate.toISOString(),
+    );
     const validatedTriggers = await Promise.all(dateTriggers.map(validateEmailTrigger));
     queryClient.setQueryData(["emailTriggers"], validatedTriggers);
     return validatedTriggers;
@@ -183,7 +186,9 @@ export async function getEmailTriggersForDateRange(props: {
  * @param trigger The email trigger object to validate
  * @returns The validated email trigger object
  */
-async function validateEmailTrigger(trigger: EmailTriggers.EmailTriggerEventRef): Promise<EmailTriggers.EmailTrigger> {
+async function validateEmailTrigger(
+    trigger: EmailTriggers.EmailTriggerEventRef,
+): Promise<EmailTriggers.EmailTrigger> {
     const {
         id,
         date,

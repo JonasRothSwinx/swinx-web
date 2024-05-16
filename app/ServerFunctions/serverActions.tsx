@@ -23,7 +23,8 @@ export async function getUserGroups() {
             // console.log(client);
             // console.log(cookies(), "---\n", session);
             // console.log("-------------------------------");
-            const payloadGroups = (session.tokens?.accessToken.payload["cognito:groups"] as string[]) ?? [];
+            const payloadGroups =
+                (session.tokens?.accessToken.payload["cognito:groups"] as string[]) ?? [];
             // console.log(typeof payloadGroups);
             // if (!payloadGroups || typeof payloadGroups !== Json[]) return [];
             // console.log(payloadGroups);
@@ -41,7 +42,7 @@ export async function getUserAttributes() {
             return attributes;
         },
     });
-    console.log(result);
+    // console.log(result);
     return sanitize(result);
 }
 

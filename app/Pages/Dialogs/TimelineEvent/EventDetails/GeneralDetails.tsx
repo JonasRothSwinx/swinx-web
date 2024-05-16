@@ -1,12 +1,12 @@
 import Assignment from "@/app/ServerFunctions/types/assignment";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import { DialogContent, MenuItem, SelectChangeEvent, TextField } from "@mui/material";
 import { AssignmentSelector } from "./AssignmentSelector";
 import { Nullable } from "@/app/Definitions/types";
 
 const AssignmentSelectorCreator: {
     [key in TimelineEvent.eventType | "none"]: (
-        props: Parameters<typeof AssignmentSelector>[0]
+        props: Parameters<typeof AssignmentSelector>[0],
     ) => Nullable<JSX.Element>;
 } = {
     Invites: (props) => <AssignmentSelector {...props} />,
@@ -30,7 +30,14 @@ interface EventTypeSelectorProps {
     onTypeChange: (e: SelectChangeEvent<unknown>) => void;
 }
 export function GeneralDetails(props: EventTypeSelectorProps) {
-    const { event: timelineEvent, onInfluencerChange, onTypeChange, editing, targetAssignment, campaignId } = props;
+    const {
+        event: timelineEvent,
+        onInfluencerChange,
+        onTypeChange,
+        editing,
+        targetAssignment,
+        campaignId,
+    } = props;
 
     const allowedTypes = getAllowedEventTypes(targetAssignment);
     return (

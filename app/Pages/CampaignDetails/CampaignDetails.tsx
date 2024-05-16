@@ -5,9 +5,9 @@ import dataClient from "@/app/ServerFunctions/database";
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import { Placeholder } from "@aws-amplify/ui-react";
-import { Dialog, Unstable_Grid2 as Grid, Typography } from "@mui/material";
+import { Dialog, Unstable_Grid2 as Grid, SxProps, Typography } from "@mui/material";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import TimelineView from "../Timeline/TimeLineView";
 import stylesExporter from "../styles/stylesExporter";
 import CustomerDetails from "./Components/CustomerDetails";
@@ -77,19 +77,61 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
             campaign.refetch();
         },
     };
+    const styles: SxProps = useMemo(() => {
+        return {
+            "&": {
+                padding: "10px",
+                "#CampaignDetailsDialogPaper": {
+                    borderRadius: "20px",
+                    // padding: "10px",
+                    "#CampaignDetailsButtons": {
+                        position: "relative",
+                        width: "100%",
+                        display: "flex",
+
+                        justifyContent: "right",
+                        alignItems: "center",
+                        padding: "5px 10px ",
+                        backgroundColor: "var(--swinx-blue)",
+                        "#DeleteButton": {
+                            color: "error.main",
+                            borderColor: "error.main",
+                            bgcolor: "white",
+                            position: "absolute",
+                            left: "10px",
+                        },
+                    },
+                    "#CampaignDetailsGrid": {
+                        padding: "5px 10px 10px",
+                        height: "100%",
+                        maxHeight: "100%",
+                        "& .MuiGrid2-root": {
+                            overflowY: "auto",
+                            overflowX: "hidden",
+                        },
+                    },
+                },
+            },
+        };
+    }, []);
     if (campaign.isLoading) return <Placeholder />;
     if (!campaign.data) return <Placeholder />;
     return (
         <Dialog
-            sx={{
-                padding: "5px",
-                "& .MuiDialog-container > .MuiPaper-root": {
-                    borderRadius: "20px",
-                    padding: "10px",
-                },
-            }}
+            id="CampaignDetailsDialog"
+            sx={styles}
+            // sx={{
+            //     padding: "5px",
+            //     "& .MuiDialog-container > .MuiPaper-root": {
+            //         borderRadius: "20px",
+            //         padding: "10px",
+            //     },
+            // }}
             open={isOpen}
             fullScreen
+            PaperProps={{
+                id: "CampaignDetailsDialogPaper",
+            }}
         >
             <>
                 <CustomErrorBoundary message="Error loading.... Buttons?">
@@ -101,19 +143,7 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
                     />
                 </CustomErrorBoundary>
 
-                <Grid
-                    container
-                    columns={3}
-                    sx={{
-                        height: "100%",
-                        maxHeight: "100%",
-                        "& .MuiGrid2-root": {
-                            overflowY: "auto",
-                            overflowX: "hidden",
-                        },
-                    }}
-                    maxHeight={"100%"}
-                >
+                <Grid id="CampaignDetailsGrid" container columns={3} sx={{}} maxHeight={"100%"}>
                     <Grid xs={1} display={"flex"} flexDirection={"column"}>
                         <CustomErrorBoundary message="Error loading customer details">
                             <CustomerDetails

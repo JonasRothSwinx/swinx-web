@@ -1,13 +1,26 @@
 import dataClient from "@/app/ServerFunctions/database";
 import emailClient from "@/app/Emails";
-import { Button } from "@mui/material";
+import { Box, Button, SxProps } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "@/app/utils/configuredDayJs";
+import { useMemo } from "react";
 
 export default function DebugButtons() {
     // const queryClient = useQueryClient();
+    const styles: SxProps = useMemo(
+        () => ({
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            "& .MuiButton-root": {
+                borderColor: "white",
+                color: "white",
+            },
+        }),
+        [],
+    );
     return (
-        <>
+        <Box sx={styles}>
             <Button
                 variant="outlined"
                 onClick={async () => {
@@ -70,6 +83,6 @@ export default function DebugButtons() {
             >
                 Test Email Triggers
             </Button>
-        </>
+        </Box>
     );
 }

@@ -2,13 +2,24 @@ import { DialogProps, PartialWith } from "@/app/Definitions/types";
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import Influencer from "@/app/ServerFunctions/types/influencer";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import { Box, Button, Dialog, DialogActions, DialogTitle, SelectChangeEvent } from "@mui/material";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+import {
+    Box,
+    Button,
+    Checkbox,
+    Dialog,
+    DialogActions,
+    DialogTitle,
+    FormControlLabel,
+    SelectChangeEvent,
+    SxProps,
+    Typography,
+} from "@mui/material";
 
 import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { UseMutationResult, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import "dayjs/locale/de";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import stylesExporter, { timeline } from "../../styles/stylesExporter";
 import { DateSelector } from "./EventDetails/DateSelector";
 import { submitEvent } from "./actions/submitEvent";
@@ -146,7 +157,73 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
 
     //#endregion Effects
     //######################
+    const sxProps: SxProps = useMemo(() => {
+        return {
+            "&": {
+                "& #EventTriggerContainer": {
+                    maxWidth: "300px",
+                },
+                "#EventCompleteCheckbox": {
+                    paddingInlineEnd: "10px",
+                },
+                "& #EmailTriggerMenu": {
+                    display: "flex",
+                    flexDirection: "column",
+                    // border: "1px solid black",
+                    // borderRadius: "10px",
+                    height: "100%",
+                    maxHeight: "100%",
+                    maxWidth: "100%",
+                },
+                "& #EmailTriggerMenuLoading": {
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    height: "100%",
+                    width: "100%",
+                },
 
+                "& #EmailTrigger": {
+                    position: "relative",
+                    border: "1px solid black",
+                    padding: "10px",
+                    borderRadius: "5px",
+                    marginBottom: "10px",
+                    maxWidth: "100%",
+                    "#TriggerModifyButtonContainer": {
+                        position: "absolute",
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        right: 0,
+                        top: 0,
+                        animation: "fadeOut 0.3s ease-in-out forwards",
+                        "@keyframes fadeOut": {
+                            from: {
+                                opacity: 1,
+                            },
+                            to: {
+                                opacity: 0,
+                                display: "none",
+                            },
+                        },
+                    },
+                    "&:hover > #TriggerModifyButtonContainer": {
+                        display: "flex",
+                        animation: "fadeIn 0.3s ease-in-out",
+                        "@keyframes fadeIn": {
+                            from: {
+                                opacity: 0,
+                            },
+                            to: {
+                                opacity: 1,
+                            },
+                        },
+                    },
+                },
+            },
+        };
+    }, []);
     //######################
     //#region Event Handlers
     const EventHandlers = {
@@ -211,6 +288,54 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
             const value = e.target.value;
             setTimelineEvent((prev) => ({ ...prev, assignment: value }));
         },
+        eventCompleted: useMutation({
+            mutationFn: async (isCompleted: boolean) => {
+                const event = timelineEvent;
+                if (!event.id) throw new Error("Event has no id");
+                const updatedEvent = await dataClient.timelineEvent.update({
+                    id: event.id,
+                    updatedData: { isCompleted },
+                });
+                return updatedEvent;
+            },
+            onMutate: async (isCompleted: boolean) => {
+                await queryClient.cancelQueries({
+                    queryKey: ["timelineEvent", timelineEvent.id],
+                });
+                const previousEvent = queryClient.getQueryData<TimelineEvent.Event>([
+                    "timelineEvent",
+                    timelineEvent.id,
+                ]);
+                if (!previousEvent) return null;
+                const newEvent = { ...previousEvent, isCompleted };
+                queryClient.setQueryData<TimelineEvent.Event>(["timelineEvent", timelineEvent.id], {
+                    ...newEvent,
+                });
+                return { previousEvent, newEvent };
+            },
+            onError(error, newEvent, context) {
+                console.error("Error updating record", { error, newEvent, context });
+                if (context?.previousEvent) {
+                    queryClient.setQueryData(
+                        ["timelineEvent", timelineEvent.id],
+                        context.previousEvent,
+                    );
+                }
+            },
+            onSettled(data, error, variables, context) {
+                console.log(
+                    "Mutation Settled",
+                    { data, error, variables, context },
+                    data?.isCompleted,
+                );
+                queryClient.invalidateQueries({
+                    queryKey: ["timelineEvent", timelineEvent.id],
+                });
+                queryClient.invalidateQueries({
+                    queryKey: ["timelineEvents"],
+                });
+            },
+        }),
     };
 
     //#endregion Event Handlers
@@ -228,7 +353,7 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
             }}
             sx={sxStyles.TimelineEventDialog}
         >
-            <Box id="EventTriggerSplit">
+            <Box id="EventTriggerSplit" sx={sxProps}>
                 <Box id="Event">
                     <DialogTitle>
                         {editing ? "Ereignis bearbeiten" : "Neues Ereignis"}
@@ -277,14 +402,57 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                         </Button>
                     </DialogActions>
                 </Box>
-                {EventHasEmailTriggers[timelineEvent.type ?? "none"] &&
-                    editing &&
-                    timelineEvent.id && (
-                        <Box id="Trigger" width="500px">
-                            <EmailTriggerMenu eventId={timelineEvent.id} />
-                        </Box>
-                    )}
+                {editing && (
+                    <Box id="EventTriggerContainer" display="flex" flexDirection="column">
+                        <EventCompleteCheckbox
+                            eventId={timelineEvent.id ?? "<Error>"}
+                            changeEventComplete={DataChange.eventCompleted}
+                        />
+                        {EventHasEmailTriggers[timelineEvent.type ?? "none"] &&
+                            timelineEvent.id && (
+                                <Box id="Trigger">
+                                    <EmailTriggerMenu eventId={timelineEvent.id} />
+                                </Box>
+                            )}
+                    </Box>
+                )}
             </Box>
         </Dialog>
+    );
+}
+//MARK: EventCompleteCheckbox
+interface EventCompleteCheckboxProps {
+    eventId: string;
+    changeEventComplete: UseMutationResult<TimelineEvent.Event, Error, boolean, unknown>;
+}
+function EventCompleteCheckbox(props: EventCompleteCheckboxProps) {
+    const { eventId, changeEventComplete } = props;
+    const queryClient = useQueryClient();
+    const event = useQuery({
+        queryKey: ["timelineEvent", eventId],
+        queryFn: async () => {
+            console.log(`Getting event ${eventId} in EventCompleteCheckbox`);
+            return dataClient.timelineEvent.get(eventId);
+        },
+    });
+    const isPlaceholder = event.data?.assignments[0]?.isPlaceholder ?? true;
+    if (!event.data) return <Typography>Event nicht gefunden</Typography>;
+    if (isPlaceholder) return null;
+    return (
+        <FormControlLabel
+            id="EventCompleteCheckbox"
+            label="Event abgeschlossen?"
+            labelPlacement="start"
+            control={
+                <Checkbox
+                    checked={event.data.isCompleted}
+                    onChange={() => {
+                        if (!event.data) return;
+                        changeEventComplete.mutate(!event.data.isCompleted);
+                    }}
+                    inputProps={{ "aria-label": "controlled" }}
+                />
+            }
+        ></FormControlLabel>
     );
 }

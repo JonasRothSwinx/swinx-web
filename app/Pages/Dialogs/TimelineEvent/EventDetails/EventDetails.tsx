@@ -1,5 +1,5 @@
 import { Prettify } from "@/app/Definitions/types";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import { Button, DialogContent, SxProps, TextField } from "@mui/material";
 import React, { Dispatch, SetStateAction, useMemo, useState } from "react";
 import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
@@ -15,7 +15,8 @@ interface DetailsProps {
     setUpdatedData: Dispatch<SetStateAction<Partial<TimelineEvent.Event>>>;
 }
 type relevantDetails = Prettify<
-    Pick<TimelineEvent.Event, "eventTitle" | "eventTaskAmount" | "eventAssignmentAmount"> & TimelineEvent.EventInfo
+    Pick<TimelineEvent.Event, "eventTitle" | "eventTaskAmount" | "eventAssignmentAmount"> &
+        TimelineEvent.EventInfo
 >;
 type relevantDetailsKey = Prettify<keyof relevantDetails>;
 type DetailsConfigEntry =
@@ -211,7 +212,7 @@ const AdditionalFields: {
 function getDataKey(
     key: relevantDetailsKey,
     data: Partial<TimelineEvent.Event>,
-    updatedData: Partial<TimelineEvent.Event>
+    updatedData: Partial<TimelineEvent.Event>,
 ): string | number | null | undefined {
     switch (key) {
         //in info
@@ -350,7 +351,12 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
                     type="number"
                     label={label}
                     value={(value as number) ?? config.defaultValue ?? 0}
-                    InputProps={{ inputProps: { min: config.minValue ?? 0, max: config.maxValue ?? undefined } }}
+                    InputProps={{
+                        inputProps: {
+                            min: config.minValue ?? 0,
+                            max: config.maxValue ?? undefined,
+                        },
+                    }}
                     onChange={(e) => changeHandler(Number(e.target.value))}
                     variant="standard"
                 />

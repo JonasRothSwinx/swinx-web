@@ -12,7 +12,7 @@ import {
     GridRowSelectionModel,
     GridToolbarQuickFilter,
 } from "@mui/x-data-grid";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import EmailPreview from "../EmailPreview/EmailPreview";
 import { Candidates } from "@/app/ServerFunctions/types/candidates";
 import dataClient from "@/app/ServerFunctions/database";
@@ -72,6 +72,13 @@ export default function CandidatePicker(props: CandidatePickerProps) {
     });
 
     const [openDialog, setOpenDialog] = useState<openDialog>("none");
+    const candidatesAfterChange = useMemo(() => {
+        return (
+            (assignment.data?.candidates?.length ?? 0) +
+            changedCandidates.added.length -
+            changedCandidates.removed.length
+        );
+    }, [assignment.data, changedCandidates]);
 
     if (!influencers.data || !assignment.data) return <Dialog open>loading</Dialog>;
     const EventHandlers = {
@@ -106,6 +113,10 @@ export default function CandidatePicker(props: CandidatePickerProps) {
         submitCandidates: async () => {
             const tasks: Promise<unknown>[] = [];
             // delete removed candidates
+            if (changedCandidates.removed.length === 0 && changedCandidates.added.length === 0) {
+                console.log("no changes");
+                return;
+            }
             console.log("submitCandidates", {
                 removed: changedCandidates.removed,
                 added: changedCandidates.added,
@@ -131,26 +142,27 @@ export default function CandidatePicker(props: CandidatePickerProps) {
             // EventHandlers.onClose(false);
         },
         openDialog: async (dialog: openDialog) => {
-            await EventHandlers.submitCandidates();
+            switch (dialog) {
+                case "none": {
+                    break;
+                }
+                case "emailPreview": {
+                    if (candidatesAfterChange === 0) {
+                        alert("Keine Influencer ausgewählt");
+                        return;
+                    }
+
+                    await EventHandlers.submitCandidates();
+                }
+            }
+
             setOpenDialog(dialog);
         },
     };
-    const dialogs: { [state in openDialog]: JSX.Element | null } = {
-        none: null,
-        emailPreview: (
-            <EmailPreview
-                onClose={EventHandlers.dialogClose}
-                // templateName="CampaignInvite"
-                // variables={{
-                //     honorar: "0.50€",
-                //     assignments: [
-                //         { assignmentDescription: "Krebs heilen" },
-                //         { assignmentDescription: "Weltfrieden sichern" },
-                //     ],
-                // }}
-                assignment={assignment.data}
-                candidates={assignment.data.candidates ?? []}
-            />
+    const dialogs: { [state in openDialog]: () => JSX.Element | null } = {
+        none: () => null,
+        emailPreview: () => (
+            <EmailPreview onClose={EventHandlers.dialogClose} assignmentId={assignment.data.id} />
         ),
     } as const;
 
@@ -161,7 +173,7 @@ export default function CandidatePicker(props: CandidatePickerProps) {
             fullWidth
             sx={{ margin: "0", "& .MuiPaper-root": { maxWidth: "75%" } }}
         >
-            <>{dialogs[openDialog]}</>
+            <>{dialogs[openDialog]()}</>
             <Grid container sx={{ maxHeight: "90vh", overflow: "hidden" }}>
                 <Grid xs={6} sx={{ "&": { maxHeight: "90vh", overflowY: "auto" } }}>
                     <InfluencerPicker
@@ -179,7 +191,7 @@ export default function CandidatePicker(props: CandidatePickerProps) {
                     />
                     <Buttons
                         setOpenDialog={EventHandlers.openDialog}
-                        candidates={assignment.data.candidates ?? []}
+                        canProceed={candidatesAfterChange > 0}
                     />
                 </Grid>
             </Grid>
@@ -394,25 +406,13 @@ function InfluencerPicker(props: InfluencerPickerProps) {
     );
 }
 interface ButtonProps {
-    candidates: Candidates.Candidate[];
+    canProceed: boolean;
     setOpenDialog: (dialog: openDialog) => Promise<void>;
 }
-function Buttons(props: ButtonProps) {
-    const [userGroups, setUserGroups] = useState<string[]>([]);
-    useEffect(() => {
-        getUserGroups().then((groups) => {
-            setUserGroups(groups);
-            console.log(groups);
-        });
-
-        return () => {
-            setUserGroups([]);
-        };
-    }, []);
-
+function Buttons({ canProceed, setOpenDialog }: ButtonProps) {
     const Clickhandlers = {
         openPreview: () => {
-            props.setOpenDialog("emailPreview");
+            setOpenDialog("emailPreview");
         },
         send: async () => {
             // const response = await sendTestMail();
@@ -425,7 +425,9 @@ function Buttons(props: ButtonProps) {
     return (
         <div style={{ position: "absolute", bottom: "0", right: "0" }}>
             {/* {userGroups.includes("admin") && <Button onClick={updateTemplates}>UpdateTemplates</Button>} */}
-            <Button onClick={Clickhandlers.openPreview}>Anfrage verfassen</Button>
+            <Button onClick={Clickhandlers.openPreview} disabled={!canProceed}>
+                Anfrage verfassen
+            </Button>
         </div>
     );
 }

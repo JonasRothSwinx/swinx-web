@@ -1,5 +1,5 @@
 import dataClient from "@/app/ServerFunctions/database";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import {
     Box,
     Checkbox,
@@ -11,7 +11,7 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
 import { Nullable } from "@/app/Definitions/types";
@@ -26,7 +26,9 @@ interface EmailTriggerMenuProps {
 }
 
 const emailTypeDisplayNames: {
-    [key in TimelineEvent.eventType]: Nullable<{ [key in EmailTriggers.emailTriggerType]: string | null }>;
+    [key in TimelineEvent.eventType]: Nullable<{
+        [key in EmailTriggers.emailTriggerType]: string | null;
+    }>;
 } = {
     Invites: {
         actionReminder: "Erinnerung",
@@ -58,82 +60,31 @@ export default function EmailTriggerMenu(props: EmailTriggerMenuProps) {
             return data;
         },
     });
-    const sxProps: SxProps = useMemo(() => {
-        return {
-            "&": {
-                "&#EmailTriggerMenu": {
-                    display: "flex",
-                    flexDirection: "column",
-                    // border: "1px solid black",
-                    // borderRadius: "10px",
-                    height: "100%",
-                    maxHeight: "100%",
-                    maxWidth: "100%",
-                },
-                "&#EmailTriggerMenuLoading": {
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    height: "100%",
-                    width: "100%",
-                },
 
-                "#EmailTrigger": {
-                    position: "relative",
-                    border: "1px solid black",
-                    padding: "10px",
-                    borderRadius: "5px",
-                    marginBottom: "10px",
-                },
-                "#EmailTrigger:hover > #TriggerModifyButtonContainer": {
-                    display: "flex",
-                    animation: "fadeIn 0.3s ease-in-out",
-                    "@keyframes fadeIn": {
-                        from: {
-                            opacity: 0,
-                        },
-                        to: {
-                            opacity: 1,
-                        },
-                    },
-                },
-                "#TriggerModifyButtonContainer": {
-                    position: "absolute",
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    right: 0,
-                    top: 0,
-                    animation: "fadeOut 0.3s ease-in-out forwards",
-                    "@keyframes fadeOut": {
-                        from: {
-                            opacity: 1,
-                        },
-                        to: {
-                            opacity: 0,
-                            display: "none",
-                        },
-                    },
-                },
-            },
-        };
-    }, []);
-
+    const ChangeHandlers = {
+        eventCompletionChange: useMutation({}),
+    };
+    //#region Query States
     if (triggers.isLoading)
         return (
-            <Box id="EmailTriggerMenuLoading" sx={sxProps}>
+            <Box id="EmailTriggerMenuLoading">
                 <Typography>Loading...</Typography>
                 <CircularProgress />
             </Box>
         );
+    if (triggers.isError) return <Typography>Error</Typography>;
+    if (!triggers.data) return <Typography>Keine Daten</Typography>;
+    //#endregion
     return (
-        <Box id="EmailTriggerMenu" sx={sxProps}>
+        <Box id="EmailTriggerMenu">
             {triggers.data?.map((trigger) => (
                 <EmailTrigger key={trigger.id} trigger={trigger} event={trigger.event} />
             ))}
         </Box>
     );
 }
+
+//MARK: EmailTrigger
 interface EmailTriggerProps {
     trigger: EmailTriggers.EmailTrigger;
     event: TimelineEvent.Event;
@@ -145,13 +96,6 @@ function EmailTrigger(props: EmailTriggerProps) {
     const [changedData, setChangedData] = useState<Partial<EmailTriggers.EmailTrigger>>({});
     const confirm = useConfirm();
 
-    if (isPlaceholder)
-        return (
-            <Box id="EmailTrigger">
-                <Typography>{dayjs(trigger.date).format("DD.MM.YYYY")}</Typography>
-                <Typography>{emailTypeDisplayNames[event.type]?.[trigger.type] ?? trigger.type}</Typography>
-            </Box>
-        );
     const EventHandler = {
         saveChanges: async () => {
             const id = trigger.id;
@@ -206,10 +150,23 @@ function EmailTrigger(props: EmailTriggerProps) {
         },
     };
     const influencer = trigger.influencer;
-    if (!influencer) return <Typography>Kein Influencer gefunden</Typography>;
-    const emailLevel = changedData.emailLevelOverride ?? trigger.emailLevelOverride ?? influencer.emailLevel ?? "new";
+    const emailLevel =
+        changedData.emailLevelOverride ??
+        trigger.emailLevelOverride ??
+        influencer?.emailLevel ??
+        "new";
     const emailBodyOverride = trigger.emailBodyOverride;
     const subjectLineOverride = trigger.subjectLineOverride;
+    if (isPlaceholder)
+        return (
+            <Box id="EmailTrigger">
+                <Typography>{dayjs(trigger.date).format("DD.MM.YYYY")}</Typography>
+                <Typography>
+                    {emailTypeDisplayNames[event.type]?.[trigger.type] ?? trigger.type}
+                </Typography>
+            </Box>
+        );
+    if (!influencer) return <Typography>Kein Influencer gefunden</Typography>;
     return (
         <Box id="EmailTrigger">
             <ButtonContainer
@@ -217,11 +174,20 @@ function EmailTrigger(props: EmailTriggerProps) {
                 cancelChanges={EventHandler.cancelChanges}
                 printEvent={EventHandler.printEvent}
             />
-            <Typography variant="h5">{emailTypeDisplayNames[event.type]?.[trigger.type] ?? trigger.type}</Typography>
-            <TriggerDatePicker event={event} trigger={trigger} dateChange={ChangeHandler.dateChange} />
+            <Typography variant="h5">
+                {emailTypeDisplayNames[event.type]?.[trigger.type] ?? trigger.type}
+            </Typography>
+            <TriggerDatePicker
+                event={event}
+                trigger={trigger}
+                dateChange={ChangeHandler.dateChange}
+            />
             <EmailLevelSelector emailLevel={emailLevel} onChange={ChangeHandler.emailLevelChange} />
             {/* Overwrite Email */}
-            <ToggleActive isActive={changedData.active ?? trigger.active} toggle={ChangeHandler.ToggleActive} />
+            <ToggleActive
+                isActive={changedData.active ?? trigger.active}
+                toggle={ChangeHandler.ToggleActive}
+            />
         </Box>
     );
 }

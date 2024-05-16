@@ -46,8 +46,9 @@ interface EmailPreviewProps {
     onClose: () => void;
     // templateName: string;
     // variables: Partial<TemplateVariableType>;
-    candidates: Candidates.Candidate[];
-    assignment: Assignment.AssignmentFull;
+    // candidates: Candidates.Candidate[];
+    // assignment: Assignment.AssignmentFull;
+    assignmentId: string;
 }
 
 type inviteTemplateVariables =
@@ -59,19 +60,19 @@ type inviteTemplateVariables =
  * @returns The rendered email preview component.
  */
 export default function EmailPreview(props: EmailPreviewProps) {
-    const { assignment, candidates, onClose } = props;
+    const { assignmentId, onClose } = props;
     const queryClient = useQueryClient();
-    const campaignId = assignment.campaign.id;
+    // const campaignId = assignment.campaign.id;
     // const [emailPreview, setEmailPreview] = useState<string>();
     const [isLoading, setIsLoading] = useState(false);
-    const [variables, setVariables] = useState<Partial<inviteTemplateVariables>>({
-        name: "testName",
-        assignments: [{ assignmentDescription: "Fliege zum Mars" }],
-        honorar: "0€",
-        linkBase: "http://localhost:3000/Response?",
-        linkData: "testData",
-        customerCompany: "TestCustomer",
-    });
+    // const [variables, setVariables] = useState<Partial<inviteTemplateVariables>>({
+    //     name: "testName",
+    //     assignments: [{ assignmentDescription: "Fliege zum Mars" }],
+    //     honorar: "0€",
+    //     linkBase: "http://localhost:3000/Response?",
+    //     linkData: "testData",
+    //     customerCompany: "TestCustomer",
+    // });
     const [templateName, setTemplateName] = useState<templateName>("CampaignInviteNew");
     const templates = useQueries({
         queries: templateDefinitions.mailTypes.campaignInvite.CampaignInvite.templateNames.map(
@@ -96,38 +97,65 @@ export default function EmailPreview(props: EmailPreviewProps) {
             return out;
         },
     });
-    const [selectedCandidate, setSelectedCandidate] = useState(candidates[0]);
-    const [groups, setGroups] = useState<string[]>([]);
+
+    const assignment = useQuery({
+        queryKey: ["assignment", assignmentId],
+        queryFn: async () => (await dataClient.assignment.get(assignmentId)) ?? null,
+    });
+    const campaignId = useMemo(() => assignment.data?.campaign.id ?? null, [assignment.data]);
     const customer = useQuery({
+        enabled: campaignId !== null,
         queryKey: ["mainCustomer", campaignId],
-        queryFn: async () => (await dataClient.customer.byCampaign(campaignId))[0],
+        queryFn: async () => {
+            if (!campaignId) return null;
+            return (await dataClient.customer.byCampaign(campaignId))[0];
+        },
+    });
+    const candidates = useMemo(() => {
+        if (!assignment.data) return [];
+        return assignment.data.candidates ?? [];
+    }, [assignment.data]);
+    const userGroups = useQuery({
+        queryKey: ["userGroups"],
+        queryFn: getUserGroups,
     });
 
+    const [selectedCandidate, setSelectedCandidate] = useState(candidates[0] ?? null);
+    // useEffect(() => {
+    //     setVariables((prev) => {
+    //         if (!selectedCandidate) return prev;
+    //         return {
+    //             ...prev,
+    //             name: `${selectedCandidate.influencer.firstName} ${selectedCandidate.influencer.lastName}`,
+    //         };
+    //     });
+
+    //     return () => {};
+    // }, [selectedCandidate]);
     useEffect(() => {
-        getUserGroups().then((result) => setGroups(result));
-
-        return () => {
-            setGroups([]);
-        };
-    }, []);
-
-    useEffect(() => {
-        setVariables((prev) => {
-            return {
-                ...prev,
-                name: `${selectedCandidate.influencer.firstName} ${selectedCandidate.influencer.lastName}`,
-            };
-        });
-
+        setSelectedCandidate(candidates[0] ?? null);
         return () => {};
-    }, [selectedCandidate]);
+    }, [candidates]);
+
+    const variables: inviteTemplateVariables = useMemo(() => {
+        if (!selectedCandidate) return {};
+        const data: inviteTemplateVariables = {
+            name: `${selectedCandidate.influencer.firstName} ${selectedCandidate.influencer.lastName}`,
+            linkBase: "http://localhost:3000/Response?",
+            linkData: "testData",
+            customerCompany: customer.data?.company ?? "<Kundendaten nicht gefunden>",
+            honorar: `${assignment.data?.budget} €` ?? "<Honorar nicht gefunden>",
+        };
+
+        return data;
+    }, [selectedCandidate, assignment.data, customer.data]);
 
     const EventHandlers = {
         sendEmail: async () => {
-            if (!customer.data) return;
+            if (!customer.data || !assignment.data || !campaignId) return;
             const responses = await sendInvites({
                 candidates,
-                assignment,
+                assignment: assignment.data,
                 customer: customer.data,
                 queryClient,
 
@@ -142,7 +170,31 @@ export default function EmailPreview(props: EmailPreviewProps) {
     };
     //Loading placeholder
     // if (!template.data) return <div>Template not found</div>;
-    if (!selectedCandidate) return <div>Selected Candidate not found</div>;
+    if (!selectedCandidate) {
+        return (
+            <Dialog
+                open
+                onClose={onClose}
+                fullWidth
+                sx={{
+                    margin: "0",
+                    "& .MuiPaper-root": { maxWidth: "75%", height: "50vh", overflow: "hidden" },
+                }}
+            >
+                <Box
+                    sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        height: "100%",
+                        width: "100%",
+                    }}
+                >
+                    <CircularProgress />
+                </Box>
+            </Dialog>
+        );
+    }
     return (
         <Dialog
             open
@@ -155,7 +207,7 @@ export default function EmailPreview(props: EmailPreviewProps) {
         >
             <Grid container sx={{ width: "100%", height: "100%" }}>
                 <Grid xs={4}>
-                    {groups.includes("admin") && (
+                    {userGroups.data?.includes("admin") && (
                         <IconButton
                             onClick={() => templates.original.forEach((x) => x.refetch())}
                             sx={{

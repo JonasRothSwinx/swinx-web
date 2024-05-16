@@ -1,7 +1,13 @@
 import { timelineEventTypesType } from "@/amplify/data/types";
 import { CheckIcon, ExpandMoreIcon } from "@/app/Definitions/Icons";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import { Accordion, AccordionDetails, AccordionSummary, Unstable_Grid2 as Grid, Typography } from "@mui/material";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
+    Unstable_Grid2 as Grid,
+    Typography,
+} from "@mui/material";
 import { EventCategory } from "./functions/categorizeEvents";
 import dayjs from "dayjs";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -122,7 +128,11 @@ function EventFinished(props: { date: string }) {
     }
     return (
         <div style={{ maxHeight: ".8em", overflow: "visible" }}>
-            {date.isBefore(dayjs()) ? <CheckIcon color={"success"} sx={{ overflow: "hidden" }} /> : <></>}
+            {date.isBefore(dayjs()) ? (
+                <CheckIcon color={"success"} sx={{ overflow: "hidden" }} />
+            ) : (
+                <></>
+            )}
         </div>
     );
 }
@@ -175,7 +185,10 @@ function InviteEventItem(props: {
     const { event, setHighlightedEvent } = props;
     if (!TimelineEvent.isInviteEvent(event)) return <>Error</>;
     return (
-        <div onClick={() => setHighlightedEvent(event)} style={{ backgroundColor: props.highlightData?.color }}>
+        <div
+            onClick={() => setHighlightedEvent(event)}
+            style={{ backgroundColor: props.highlightData?.color }}
+        >
             <Grid container columnGap={"10px"}>
                 <Grid xs={4} paddingRight="5px" display={"flex"} justifyContent={"flex-end"}>
                     <EventDate date={props.event.date ?? ""} />
@@ -231,7 +244,10 @@ function PostEventItem(props: {
 }) {
     const { event, setHighlightedEvent } = props;
     return (
-        <div onClick={() => setHighlightedEvent(event)} style={{ backgroundColor: props.highlightData?.color }}>
+        <div
+            onClick={() => setHighlightedEvent(event)}
+            style={{ backgroundColor: props.highlightData?.color }}
+        >
             <Grid container columnGap={"10px"}>
                 <Grid xs={4} paddingRight="5px" display={"flex"} justifyContent={"flex-end"}>
                     <EventDate date={props.event.date ?? ""} />
@@ -287,7 +303,10 @@ function WebinarEventItem(props: {
 }) {
     const { event, setHighlightedEvent } = props;
     return (
-        <div onClick={() => setHighlightedEvent(event)} style={{ backgroundColor: props.highlightData?.color }}>
+        <div
+            onClick={() => setHighlightedEvent(event)}
+            style={{ backgroundColor: props.highlightData?.color }}
+        >
             <Grid container columnGap={"10px"}>
                 <Grid xs={4} paddingRight="5px" display={"flex"} justifyContent={"flex-end"}>
                     <EventDate date={props.event.date ?? ""} />
@@ -343,7 +362,10 @@ function VideoEventItem(props: {
 }) {
     const { event, setHighlightedEvent } = props;
     return (
-        <div onClick={() => setHighlightedEvent(event)} style={{ backgroundColor: props.highlightData?.color }}>
+        <div
+            onClick={() => setHighlightedEvent(event)}
+            style={{ backgroundColor: props.highlightData?.color }}
+        >
             <Grid container columnGap={"10px"} width={"100%"}>
                 <Grid xs={4} paddingRight="5px" display={"flex"} justifyContent={"flex-end"}>
                     <EventDate date={props.event.date ?? ""} />

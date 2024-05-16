@@ -1,4 +1,4 @@
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 
 export type EventCategory = {
     type: string;

@@ -53,7 +53,7 @@ export default async function sendInvites({
                 level: level as EmailTriggers.emailLevel,
                 commonContext: {
                     candidates,
-                    taskDescriptions: ["Make Tea"],
+                    // taskDescriptions: ["Make Tea"],
                     assignment,
                     customer,
                     campaign,

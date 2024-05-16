@@ -2,7 +2,7 @@ import Campaign from "@/app/ServerFunctions/types/campaign";
 import { Dispatch, SetStateAction, useState } from "react";
 import Influencer from "@/app/ServerFunctions/types/influencer";
 import { DialogConfig, DialogOptions } from "@/app/Definitions/types";
-import { Button, MenuItem, TextField, Typography } from "@mui/material";
+import { Box, Button, MenuItem, TextField, Typography } from "@mui/material";
 import { groupBy } from "../Functions/groupEvents";
 import { AddIcon } from "@/app/Definitions/Icons";
 import { useQueryClient } from "@tanstack/react-query";
@@ -20,7 +20,14 @@ type openDialog = "None" | "Timeline";
 
 export default function TimelineControls(props: TimelineControlsProps) {
     const queryClient = useQueryClient();
-    const { groupBy, setGroupBy, campaign, influencers, setCampaign: setRows, onDataChange } = props;
+    const {
+        groupBy,
+        setGroupBy,
+        campaign,
+        influencers,
+        setCampaign: setRows,
+        onDataChange,
+    } = props;
     const [openDialog, setOpenDialog] = useState<openDialog>("None");
     const DialogOptions: DialogOptions = {
         campaignId: campaign.id,
@@ -58,10 +65,12 @@ export default function TimelineControls(props: TimelineControlsProps) {
     }
     const Dialogs: { [key in openDialog]: JSX.Element | null } = {
         None: null,
-        Timeline: <TimelineEventDialog onClose={onDialogClose} campaignId={campaign.id} editing={false} />,
+        Timeline: (
+            <TimelineEventDialog onClose={onDialogClose} campaignId={campaign.id} editing={false} />
+        ),
     };
     return (
-        <>
+        <Box id="TimelineControls">
             {/* Dialogs */}
             <>{Dialogs[openDialog]}</>
             <div
@@ -102,9 +111,9 @@ export default function TimelineControls(props: TimelineControlsProps) {
                     onClick={ClickHandlers.addTimeline()}
                 >
                     <AddIcon />
-                    <Typography variant="body1">Ereignis</Typography>
+                    <Typography variant="body1">Webinar</Typography>
                 </Button>
             </div>
-        </>
+        </Box>
     );
 }

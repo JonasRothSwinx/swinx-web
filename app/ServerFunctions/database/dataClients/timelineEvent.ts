@@ -1,9 +1,10 @@
 import { simplify } from "@/app/utils/simplify";
-import TimelineEvent from "../../types/timelineEvents";
+import TimelineEvent from "../../types/timelineEvent";
 import database from "../dbOperations";
 import config from "./config";
 import dayjs from "@/app/utils/configuredDayJs";
 
+//MARK: Create Timeline Event
 /**
  * Create a new timeline event and update queryClient cache
  * @param timelineEvent The timeline event object to create
@@ -48,56 +49,68 @@ export async function createTimelineEvent(
     return createdTimelineEvent;
 }
 
+//MARK: Update Timeline Event
 /**
  * Update a timeline event
  * @param updatedData The updated timeline event data
  * @param previousTimelineEvent The timeline event object before the update, for updating the cache
  * @returns The updated timeline event object
  */
-export async function updateTimelineEvent(
-    updatedData: Partial<TimelineEvent.Event>,
-    previousTimelineEvent: TimelineEvent.Event,
-): Promise<TimelineEvent.Event> {
+interface UpdateTimelineEventParams {
+    id: string;
+    updatedData: Partial<TimelineEvent.Event>;
+}
+export async function updateTimelineEvent({
+    id,
+    updatedData,
+}: UpdateTimelineEventParams): Promise<TimelineEvent.Event> {
     const queryClient = config.getQueryClient();
-    const id = previousTimelineEvent.id;
+    const previousTimelineEvent = queryClient.getQueryData<TimelineEvent.Event>([
+        "timelineEvent",
+        id,
+    ]);
+    if (!previousTimelineEvent) {
+        throw new Error("Timeline event not found");
+    }
     const campaignId = previousTimelineEvent.campaign.id;
     if (updatedData.type && previousTimelineEvent.type !== updatedData.type) {
         throw new Error("Cannot change the type of a timeline event");
     }
-    await database.timelineEvent.update({ ...updatedData, id });
+    await database.timelineEvent.update({ id, updatedData });
     const updatedTimelineEvent = { ...previousTimelineEvent, ...updatedData };
-    queryClient.invalidateQueries({
-        queryKey: ["timelineEvent", id],
-        type: "all",
-    });
-    queryClient.invalidateQueries({
-        queryKey: ["timelineEvents", campaignId],
-        type: "all",
-    });
-    queryClient.invalidateQueries({
-        queryKey: ["timelineEvents"],
-        type: "all",
-    });
+    // queryClient.invalidateQueries({
+    //     queryKey: ["timelineEvent", id],
+    //     type: "all",
+    // });
+    // queryClient.invalidateQueries({
+    //     queryKey: ["timelineEvents", campaignId],
+    //     type: "all",
+    // });
+    // queryClient.invalidateQueries({
+    //     queryKey: ["timelineEvents"],
+    //     type: "all",
+    // });
 
-    queryClient.setQueryData(["timelineEvent", id], updatedTimelineEvent);
-    queryClient.setQueryData(["timelineEvents", campaignId], (prev: TimelineEvent.Event[]) => {
-        if (!prev) {
-            return [updatedTimelineEvent];
-        }
-        return prev.map((event) => (event.id === id ? updatedTimelineEvent : event));
-    });
-    queryClient.setQueryData(["timelineEvents"], (prev: TimelineEvent.Event[]) => {
-        if (!prev) {
-            return [updatedTimelineEvent];
-        }
-        return prev.map((event) => (event.id === id ? updatedTimelineEvent : event));
-    });
-    queryClient.refetchQueries({ queryKey: ["timelineEvents"] });
-    queryClient.refetchQueries({ queryKey: ["timelineEvents", campaignId] });
-    queryClient.refetchQueries({ queryKey: ["timelineEvent", id] });
+    // queryClient.setQueryData(["timelineEvent", id], updatedTimelineEvent);
+    // queryClient.setQueryData(["timelineEvents", campaignId], (prev: TimelineEvent.Event[]) => {
+    //     if (!prev) {
+    //         return [updatedTimelineEvent];
+    //     }
+    //     return prev.map((event) => (event.id === id ? updatedTimelineEvent : event));
+    // });
+    // queryClient.setQueryData(["timelineEvents"], (prev: TimelineEvent.Event[]) => {
+    //     if (!prev) {
+    //         return [updatedTimelineEvent];
+    //     }
+    //     return prev.map((event) => (event.id === id ? updatedTimelineEvent : event));
+    // });
+    // queryClient.refetchQueries({ queryKey: ["timelineEvents"] });
+    // queryClient.refetchQueries({ queryKey: ["timelineEvents", campaignId] });
+    // queryClient.refetchQueries({ queryKey: ["timelineEvent", id] });
     return updatedTimelineEvent as TimelineEvent.Event;
 }
 
+//MARK: List Timeline Events
 /**
  * List all timeline events
  * @returns The list of timeline events
@@ -120,6 +133,7 @@ export async function listAll(): Promise<TimelineEvent.Event[]> {
     return timelineEvents;
 }
 
+//MARK: List Timeline Events by Campaign
 /**
  * List all timeline events of a campaign
  * @param campaignId The id of the campaign to list timeline events for
@@ -142,6 +156,7 @@ export async function listByCampaign(campaignId: string): Promise<TimelineEvent.
     return timelineEvents;
 }
 
+//MARK: Delete Timeline Event
 /**
  * Delete a timeline event
  * @param id The id of the timeline event to delete
@@ -150,6 +165,9 @@ export async function listByCampaign(campaignId: string): Promise<TimelineEvent.
 
 export async function deleteTimelineEvent(id: string): Promise<void> {
     const queryClient = config.getQueryClient();
+    const debug = process.env.NODE_ENV === "development";
+    // console.log(debug, "Deleting Timeline Event", id);
+    // return;
     const timelineEvent = await getTimelineEvent(id);
     const campaignId = timelineEvent.campaign.id;
     queryClient.setQueryData(["timelineEvent", id], undefined);
@@ -168,7 +186,8 @@ export async function deleteTimelineEvent(id: string): Promise<void> {
     queryClient.refetchQueries({ queryKey: ["timelineEvents"] });
     queryClient.refetchQueries({ queryKey: ["timelineEvents", campaignId] });
     queryClient.refetchQueries({ queryKey: ["timelineEvent", id] });
-    await database.timelineEvent.delete({ id });
+    const data = await database.timelineEvent.delete({ id, debug });
+    console.log("Deleted Timeline Event", data ?? "");
 }
 
 /**

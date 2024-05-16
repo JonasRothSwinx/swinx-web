@@ -1,7 +1,7 @@
 "use client";
 import { Box } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import reminderProcessor from "../../ServerFunctions/reminders";
+import reminderProcessor from "../functions/reminders";
 
 export default function Processor() {
     const finished = useQuery({

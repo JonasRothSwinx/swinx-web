@@ -2,8 +2,15 @@ import { AddIcon, ExpandMoreIcon } from "@/app/Definitions/Icons";
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import Influencer from "@/app/ServerFunctions/types/influencer";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import { Accordion, AccordionDetails, AccordionSummary, Button, CircularProgress, Typography } from "@mui/material";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
+    Button,
+    CircularProgress,
+    Typography,
+} from "@mui/material";
 import { randomDesk, randomId } from "@mui/x-data-grid-generator";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -40,7 +47,9 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
             for (const event of events /* .filter((event) => event.assignment.isPlaceholder) */) {
                 switch (true) {
                     case TimelineEvent.isSingleEvent(event): {
-                        const assignment = assignments.find((x) => x.id === event.assignments[0]?.id);
+                        const assignment = assignments.find(
+                            (x) => x.id === event.assignments[0]?.id,
+                        );
                         if (!assignment) continue;
                         if (assignment.timelineEvents.find((x) => x.id === event.id)) {
                             continue;
@@ -53,7 +62,7 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                         const assignment = assignments.find((x) =>
                             event.assignments?.find((y) => {
                                 y.id === x.id;
-                            })
+                            }),
                         );
                         if (!assignment) continue;
                         if (assignment.timelineEvents.find((x) => x.id === event.id)) {
@@ -67,7 +76,9 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
             }
 
             for (const assignment of assignments) {
-                assignment.timelineEvents.sort((a, b) => (a.date && b.date ? a.date.localeCompare(b.date) : 0));
+                assignment.timelineEvents.sort((a, b) =>
+                    a.date && b.date ? a.date.localeCompare(b.date) : 0,
+                );
             }
             return assignments;
         }
@@ -92,7 +103,10 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                 // const newPlaceholders = campaign.assignedInfluencers.map((x) =>
                 //     x.id === tempId ? { ...x, id: id } : x
                 // );
-                const newPlaceholders = [...campaign.data.assignedInfluencers, { ...newPlaceholder, id }];
+                const newPlaceholders = [
+                    ...campaign.data.assignedInfluencers,
+                    { ...newPlaceholder, id },
+                ];
                 // console.log({ newPlaceholders });
                 setIsProcessing(false);
             });
@@ -107,7 +121,11 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
         <>
             <>{/* Dialogs */}</>
             <Accordion defaultExpanded disableGutters variant="outlined">
-                <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1-content" id="panel1-header">
+                <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="panel1-content"
+                    id="panel1-header"
+                >
                     Influencer
                 </AccordionSummary>
                 <AccordionDetails>

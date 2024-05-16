@@ -1,7 +1,7 @@
 import { Nullable, Prettify } from "@/app/Definitions/types";
 import Customer from "./customer";
 import Influencer from "./influencer";
-import TimelineEvent from "./timelineEvents";
+import TimelineEvent from "./timelineEvent";
 import Assignment from "./assignment";
 import ProjectManagers from "./projectManagers";
 

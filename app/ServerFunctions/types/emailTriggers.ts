@@ -1,6 +1,6 @@
 import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 import { Nullable, Prettify } from "@/app/Definitions/types";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import Influencer from "./influencer";
 import influencer from "../database/dataClients/influencer";
 import database from "../database/dbOperations";
@@ -10,7 +10,9 @@ export namespace EmailTriggers {
     export type EmailTrigger = Prettify<
         GeneralInfo & EventInfo & ContactInfo & EmailOverrides & State & CustomerContext
     >;
-    export type EmailTriggerEventRef = Prettify<GeneralInfo & EventReference & ContactInfo & EmailOverrides & State>;
+    export type EmailTriggerEventRef = Prettify<
+        GeneralInfo & EventReference & ContactInfo & EmailOverrides & State
+    >;
 
     type GeneralInfo = {
         id?: string;
@@ -25,7 +27,7 @@ export namespace EmailTriggers {
         event: TimelineEvent.Event;
     };
     type EventReference = {
-        event: { id: string };
+        event: { id: string; isCompleted?: boolean };
     };
     type ContactInfo = {
         influencer?: Prettify<Influencer.WithContactInfo>;
@@ -106,7 +108,11 @@ export namespace EmailTriggers {
     } as const;
     type EmailConfigKey = keyof typeof EmailConfig;
 
-    export function getTemplateName(key: EmailConfigKey, type: emailTriggerType, level: emailLevel) {
+    export function getTemplateName(
+        key: EmailConfigKey,
+        type: emailTriggerType,
+        level: emailLevel,
+    ) {
         if (level === "none") return null;
         const template = EmailConfig?.[key]?.[type]?.[level]?.templateName ?? null;
         return template;

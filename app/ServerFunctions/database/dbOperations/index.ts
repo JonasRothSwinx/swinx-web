@@ -1,14 +1,25 @@
-import { createNewCampaign, deleteCampaign, dummyListCampaigns, getCampaign, listCampaigns } from "./campaigns";
-import { createCustomer, deleteCustomer, getCustomer, listCustomersByCampaign, updateCustomer } from "./customers";
-import { createNewInfluencer, deleteInfluencer, getInfluencer, listInfluencers, updateInfluencer } from "./influencers";
 import {
-    createAssignment,
-    deletePlaceholder,
-    listAssignments,
-    updateAssignment,
-    getAssignment,
-    listAssignmentsByCampaign,
-} from "./assignments";
+    createNewCampaign,
+    deleteCampaign,
+    dummyListCampaigns,
+    getCampaign,
+    listCampaigns,
+} from "./campaigns";
+import {
+    createCustomer,
+    deleteCustomer,
+    getCustomer,
+    listCustomersByCampaign,
+    updateCustomer,
+} from "./customers";
+import {
+    createNewInfluencer,
+    deleteInfluencer,
+    getInfluencer,
+    listInfluencers,
+    updateInfluencer,
+} from "./influencers";
+import * as assignmentOps from "./assignments";
 import {
     connectEvents,
     connectToAssignment,
@@ -23,7 +34,7 @@ import {
     getAssignmentTimelineEvents,
     getEventForEmailTrigger,
 } from "./timelineEvents";
-import { createCandidate, deleteCandidate, publicProcessResponse } from "./candidate";
+import { createCandidate, deleteCandidate } from "./candidate";
 import {
     createEmailTrigger,
     deleteEmailTrigger,
@@ -79,18 +90,18 @@ export const timelineEvents = {
 };
 
 export const assignments = {
-    create: createAssignment,
-    list: listAssignments,
-    delete: deletePlaceholder,
-    update: updateAssignment,
-    get: getAssignment,
-    listByCampaign: listAssignmentsByCampaign,
+    create: assignmentOps.createAssignment,
+    list: assignmentOps.listAssignments,
+    delete: assignmentOps.deletePlaceholder,
+    update: assignmentOps.updateAssignment,
+    get: assignmentOps.getAssignment,
+    listByCampaign: assignmentOps.listAssignmentsByCampaign,
 };
 
 export const candidates = {
     create: createCandidate,
     delete: deleteCandidate,
-    publicUpdate: publicProcessResponse,
+    // publicUpdate: publicProcessResponse,
 };
 
 export const emailTriggers = {

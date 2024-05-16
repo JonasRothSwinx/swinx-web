@@ -1,5 +1,5 @@
 import Assignment from "@/app/ServerFunctions/types/assignment";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import { MenuItem, SelectChangeEvent, TextField } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import dataClient from "@/app/ServerFunctions/database";
@@ -21,7 +21,8 @@ export function AssignmentSelector(props: AssignmentSelectorProps) {
     });
     if (assignedInfluencers.isLoading) return <div>Loading...</div>;
     if (assignedInfluencers.isError) return <div>Error...</div>;
-    if (assignedInfluencers.data === undefined || assignedInfluencers.data.length === 0) return <div>Undefined...</div>;
+    if (assignedInfluencers.data === undefined || assignedInfluencers.data.length === 0)
+        return <div>Undefined...</div>;
     return (
         <TextField
             select

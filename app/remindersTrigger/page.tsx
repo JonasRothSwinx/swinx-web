@@ -1,20 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { log } from "./logger";
-import { Box, ThemeProvider, createTheme } from "@mui/material";
-import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
-import reminderProcessor from "../ServerFunctions/reminders";
-import Processor from "./pages/Processor";
+import { ThemeProvider, createTheme } from "@mui/material";
 import { blue } from "@mui/material/colors";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import dataClient from "../ServerFunctions/database";
+import Processor from "./pages/Processor";
 
 const queryClient = new QueryClient();
 dataClient.config.setQueryClient(queryClient);
 const theme = createTheme({
     palette: {
         primary: {
-            main: blue[500],
+            main: "var(--swinx-blue)",
         },
         // secondary: { main: "#ffffff" },W
     },

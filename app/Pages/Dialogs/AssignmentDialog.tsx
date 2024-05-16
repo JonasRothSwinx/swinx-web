@@ -12,7 +12,7 @@ import Assignment from "@/app/ServerFunctions/types/assignment";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import Customer from "@/app/ServerFunctions/types/customer";
 import Influencer from "@/app/ServerFunctions/types/influencer";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import { DialogOptions, DialogConfig, DialogProps } from "@/app/Definitions/types";
 import stylesExporter from "../styles/stylesExporter";
 import { influencers } from "@/app/ServerFunctions/database/dbOperations";

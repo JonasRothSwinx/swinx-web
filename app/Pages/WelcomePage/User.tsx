@@ -11,19 +11,23 @@ import ProjectManagerDialog from "../Dialogs/ProjectManagerDialog";
 const styles = stylesExporter.user;
 
 function UserView() {
-    const { user, signOut, authStatus } = useAuthenticator((context) => [context.user, context.authStatus]);
+    const { user, signOut, authStatus } = useAuthenticator((context) => [
+        context.user,
+        context.authStatus,
+    ]);
     const attributes = useQuery({
         queryKey: ["userAttributes"],
         queryFn: async () => {
-            console.log("fetching attributes");
+            // console.log("fetching attributes");
             const res = await getUserAttributes();
-            console.log("attributes fetched", res);
+            // console.log("attributes fetched", res);
             return res;
         },
     });
     const userGroups = useQuery({
         queryKey: ["userGroups"],
         queryFn: () => getUserGroups(),
+        refetchOnWindowFocus: false,
     });
     const projectManagerEntry = useQuery({
         enabled:
@@ -33,16 +37,17 @@ function UserView() {
             ["projektmanager", "admin"].some((group) => userGroups.data.includes(group)),
         queryKey: ["projectManager"],
         queryFn: async () => {
-            console.log("fetching project manager entry");
+            // console.log("fetching project manager entry");
             const cognitoId = attributes.data?.sub;
             if (!cognitoId) {
                 console.error("Cognito ID not found");
                 return null;
             }
             const projectManager = await dataClient.projectManager.getByCognitoId({ cognitoId });
-            if (projectManager !== null) console.log("Project Manager Entry", projectManager);
+            // if (projectManager !== null) console.log("Project Manager Entry", projectManager);
             return projectManager;
         },
+        refetchOnWindowFocus: false,
     });
     // getUserAttributes().then((res) => console.log(res));
     if (attributes.isLoading || userGroups.isLoading) return <div>Loading...</div>;
@@ -62,7 +67,11 @@ function UserView() {
             )}
             <div className={styles.user}>
                 <h1>Hello {attributes?.data.given_name ?? ""}</h1>
-                <Button sx={{ background: "darkgray", color: "white" }} variant="outlined" onClick={signOut}>
+                <Button
+                    sx={{ background: "darkgray", color: "white" }}
+                    variant="outlined"
+                    onClick={signOut}
+                >
                     Abmelden
                 </Button>
                 <Typography variant="h6">Gruppen:</Typography>

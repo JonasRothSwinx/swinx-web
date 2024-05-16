@@ -1,7 +1,7 @@
 import { CloseIcon, DeleteIcon, RefreshIcon } from "@/app/Definitions/Icons";
 import { campaigns as campaigns } from "@/app/ServerFunctions/database/dbOperations";
 import Campaign from "@/app/ServerFunctions/types/campaign";
-import { Button, IconButton, Skeleton, Typography } from "@mui/material";
+import { Box, Button, IconButton, Skeleton, Typography } from "@mui/material";
 
 interface CampaignDetailsButtonsProps {
     updateCampaign: (background?: boolean) => void;
@@ -21,17 +21,10 @@ export default function CampaignDetailsButtons(props: CampaignDetailsButtonsProp
         },
     };
     return (
-        <div
-            style={{
-                width: "100%",
-                display: "flex",
-                justifyContent: "right",
-                position: "relative",
-            }}
-        >
+        <Box id="CampaignDetailsButtons">
             {campaign ? (
                 <Button
-                    style={{ position: "absolute", left: "0" }}
+                    id="DeleteButton"
                     variant="outlined"
                     color="inherit"
                     onClick={ClickHandlers.deleteCampaign()}
@@ -62,6 +55,6 @@ export default function CampaignDetailsButtons(props: CampaignDetailsButtonsProp
             <IconButton onClick={() => handleClose()}>
                 <CloseIcon />
             </IconButton>
-        </div>
+        </Box>
     );
 }

@@ -1,4 +1,4 @@
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 type necesaryKeyInfo = {
     flat?: (keyof TimelineEvent.Event)[];
     info?: (keyof TimelineEvent.Event["info"])[];
@@ -13,7 +13,7 @@ const necessaryKeys: { [key in TimelineEvent.eventType]?: necesaryKeyInfo } = {
 };
 export default function validateFields(
     event: Partial<TimelineEvent.Event>,
-    type: TimelineEvent.eventType
+    type: TimelineEvent.eventType,
 ): event is TimelineEvent.Event {
     const keys = necessaryKeys[type];
     if (!keys) return true;
@@ -26,7 +26,11 @@ export default function validateFields(
     }
     if (keys.targetAudience) {
         const targetAudience = event.targetAudience;
-        if (!targetAudience || !keys.targetAudience.every((key) => validateKey(targetAudience[key]))) return false;
+        if (
+            !targetAudience ||
+            !keys.targetAudience.every((key) => validateKey(targetAudience[key]))
+        )
+            return false;
     }
     if (keys.campaign) {
         const campaign = event.campaign;

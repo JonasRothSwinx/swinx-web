@@ -21,7 +21,7 @@ import CampaignDialog from "../Dialogs/CampaignDialog";
 import CustomErrorBoundary from "@/app/Components/CustomErrorBoundary";
 import dataClient from "@/app/ServerFunctions/database";
 import database from "@/app/ServerFunctions/database/dbOperations";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import CampaignDetails from "../CampaignDetails/CampaignDetails";
 import { groupBy } from "../Timeline/Functions/groupEvents";

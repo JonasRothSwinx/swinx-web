@@ -1,4 +1,4 @@
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import { Unstable_Grid2 as Grid, GridSize, Typography } from "@mui/material";
 import { groupBy } from "../Functions/groupEvents";
 import dayjs from "@/app/utils/configuredDayJs";

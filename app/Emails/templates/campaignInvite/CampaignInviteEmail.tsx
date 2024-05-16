@@ -9,7 +9,7 @@ import DebugTemplates from "../../DebugTemplates";
 
 export type TemplateVariables = {
     name: string;
-    assignments: { assignmentDescription: string }[];
+    // assignments: { assignmentDescription: string }[];
     honorar: string;
     linkBase: string;
     linkData: string;
@@ -17,7 +17,7 @@ export type TemplateVariables = {
 };
 export const defaultParams: TemplateVariables = {
     name: "testName",
-    assignments: [{ assignmentDescription: "Fliege zum Mars" }],
+    // assignments: [{ assignmentDescription: "Fliege zum Mars" }],
     honorar: "0€",
     linkBase: "http://localhost:3000/Response?",
     linkData: "testData",
@@ -26,10 +26,10 @@ export const defaultParams: TemplateVariables = {
 
 const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
     name: Placeholder({ name: "name" }),
-    assignments: PlaceholderList({
-        parentName: "assignments",
-        listItemName: "assignmentDescription",
-    }),
+    // assignments: PlaceholderList({
+    //     parentName: "assignments",
+    //     listItemName: "assignmentDescription",
+    // }),
     honorar: Placeholder({ name: "honorar" }),
     linkBase: Placeholder({ name: "linkBase" }),
     linkData: Placeholder({ name: "linkData" }),
@@ -60,9 +60,9 @@ function NewCampaignInvite(props: DebugToggle) {
         linkData,
         customerCompany: customerName,
     } = props.debug ? defaultParams : placeholders;
-    const assignments = props.debug
-        ? defaultParams.assignments.map((a) => a.assignmentDescription).join("\n")
-        : placeholders.assignments;
+    // const assignments = props.debug
+    //     ? defaultParams.assignments.map((a) => a.assignmentDescription).join("\n")
+    //     : placeholders.assignments;
 
     return (
         <Html dir="ltr" lang="de">
@@ -73,11 +73,12 @@ function NewCampaignInvite(props: DebugToggle) {
                 Wir würden sie gerne als Speaker für eine Kampagne unseres Kunden {customerName}{" "}
                 gewinnen.
             </Text>
-            <Text style={styles.text}>Sie wären dabei für folgende Aufgaben zuständig:</Text>
-            {assignments}
+            {/* <Text style={styles.text}>Sie wären dabei für folgende Aufgaben zuständig:</Text>
+            {assignments} */}
             <Text style={styles.text}>
-                Das Honorar dafür ist {honorar}. <br />
-                Bitte teilen sie uns unter folgendem Link mit, ob sie Interesse haben.
+                Sie erhalten für ihren Aufwand ein Honorar in Höhe von {honorar} <br />
+                Unter folgendem Link erhalten sie genauere Informationen zu ihren Aufgaben und
+                können uns mitteilen, ob sie Interesse haben.
             </Text>
             <Container align="left" style={styles.buttonContainer}>
                 <Button style={styles.responseButton} href={`${linkBase}${linkData}`}>
@@ -96,9 +97,9 @@ function ReducedCampaignInvite(props: DebugToggle) {
         linkData,
         customerCompany: customerName,
     } = props.debug ? defaultParams : placeholders;
-    const assignments = props.debug
-        ? defaultParams.assignments.map((a) => a.assignmentDescription).join("\n")
-        : placeholders.assignments;
+    // const assignments = props.debug
+    //     ? defaultParams.assignments.map((a) => a.assignmentDescription).join("\n")
+    //     : placeholders.assignments;
     return (
         <Html dir="ltr" lang="de">
             <Head />
@@ -108,11 +109,12 @@ function ReducedCampaignInvite(props: DebugToggle) {
                 Wir würden dich gerne als Speaker für eine Kampagne unseres Kunden {customerName}{" "}
                 gewinnen.
             </Text>
-            <Text style={styles.text}>Du wärst dabei für folgende Aufgaben zuständig:</Text>
-            {assignments}
+            {/* <Text style={styles.text}>Du wärst dabei für folgende Aufgaben zuständig:</Text>
+            {assignments} */}
             <Text style={styles.text}>
-                Das Honorar dafür ist {honorar}. <br />
-                Bitte teile uns unter folgendem Link mit, ob du Interesse hast.
+                Du erhältst für deinen Aufwand ein Honorar in Höhe von {honorar} <br />
+                Unter folgendem Link erhältst du genauere Informationen zu deinen Aufgaben und
+                kannst uns mitteilen, ob du Interesse hast.
             </Text>
             <Container align="left" style={styles.buttonContainer}>
                 <Button style={styles.responseButton} href={`${linkBase}${linkData}`}>

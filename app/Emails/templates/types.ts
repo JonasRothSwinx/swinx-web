@@ -5,7 +5,7 @@ import Customer from "@/app/ServerFunctions/types/customer.js";
 import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers.js";
 import Influencer from "@/app/ServerFunctions/types/influencer.js";
 import ProjectManagers from "@/app/ServerFunctions/types/projectManagers.jsx";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents.js";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent.js";
 
 export interface MailTemplate {
     name: string;

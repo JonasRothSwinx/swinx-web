@@ -30,7 +30,7 @@ export default async function send(props: SendMailProps) {
                     name: recipientName,
                     customerName,
                     customerLink,
-                    postContent,
+                    // postContent,
                     postTime,
                 } satisfies TemplateVariables),
             },

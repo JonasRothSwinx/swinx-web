@@ -21,7 +21,7 @@ async function selectionSetTest() {
                 "notes",
                 "linkedinProfile",
             ],
-        }
+        },
     );
 }
 
@@ -41,7 +41,7 @@ type RawCustomer = SelectionSet<Schema["Customer"]["type"], typeof selectionSet>
 //#region Create
 export async function createCustomer(
     customer: Omit<Customer.Customer, "id">,
-    campaignId: string
+    campaignId: string,
 ): Promise<Nullable<string>> {
     const { company, firstName, lastName, email, companyPosition, phoneNumber, notes } = customer;
 
@@ -105,7 +105,7 @@ export async function listCustomersByCampaign(campaignId: string): Promise<Custo
         {
             campaignId,
         },
-        { selectionSet }
+        { selectionSet },
     );
     if (errors) throw new Error(JSON.stringify(errors));
     const validationresult = validateRawCustomerArray(customers);
@@ -125,7 +125,9 @@ function validateRawCustomerArray(rawCustomers: RawCustomer[]): Customer.Custome
             }
             return true;
         });
-    console.error(`Found ${invalidDataSets} invalid datasets when validating customers`);
+    if (invalidDataSets > 0) {
+        console.error(`Found ${invalidDataSets} invalid datasets when validating customers`);
+    }
     return validatedCustomers;
 }
 

@@ -1,7 +1,7 @@
 import { Box, ListSubheader, MenuItem, SxProps, TextField } from "@mui/material";
 import { industries, countries } from "./data";
 import React, { useMemo } from "react";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 interface filterProps {
     event: Partial<TimelineEvent.Event>;
     onChange: (newData: Partial<TimelineEvent.Event>) => void;
@@ -55,7 +55,7 @@ export default function Filter(props: filterProps) {
                     },
                 },
             } satisfies SxProps),
-        []
+        [],
     );
     const Changehandler = {
         targetIndustryChange: (newData: string[]) => {
@@ -73,8 +73,14 @@ export default function Filter(props: filterProps) {
     };
     return (
         <Box id="AudienceFilterWrapper" sx={sxProps}>
-            <IndustryFilter industryTargets={targetAudience.industry} onChange={Changehandler.targetIndustryChange} />
-            <CountryFilter countryTargets={targetAudience.country} onChange={Changehandler.targetCountryChange} />
+            <IndustryFilter
+                industryTargets={targetAudience.industry}
+                onChange={Changehandler.targetIndustryChange}
+            />
+            <CountryFilter
+                countryTargets={targetAudience.country}
+                onChange={Changehandler.targetCountryChange}
+            />
         </Box>
     );
 }

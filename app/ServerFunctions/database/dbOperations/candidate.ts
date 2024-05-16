@@ -30,18 +30,18 @@ export async function deleteCandidate(candidate: PartialWith<Candidates.Candidat
     return { errors };
 }
 
-export async function publicProcessResponse(candidate: PartialWith<Candidates.Candidate, "id" | "response">) {
-    const { id, response } = candidate;
+// export async function publicProcessResponse(candidate: PartialWith<Candidates.Candidate, "id" | "response">) {
+//     const { id, response } = candidate;
 
-    if (typeof id !== "string") throw new Error("Missing Id");
-    if (typeof response !== "string") throw new Error("Missing Response");
+//     if (typeof id !== "string") throw new Error("Missing Id");
+//     if (typeof response !== "string") throw new Error("Missing Response");
 
-    const { data, errors } = await client.models.InfluencerCandidate.update(
-        { id, response },
-        {
-            authMode: "apiKey",
-        }
-    );
+//     const { data, errors } = await client.models.InfluencerCandidate.update(
+//         { id, response },
+//         {
+//             authMode: "apiKey",
+//         }
+//     );
 
-    return { errors };
-}
+//     return { errors };
+// }

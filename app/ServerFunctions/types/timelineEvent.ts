@@ -30,7 +30,9 @@ namespace TimelineEvent {
         );
     }
 
-    export async function resolveEventReference(event: Nullable<EventOrReference>): Promise<Nullable<Event>> {
+    export async function resolveEventReference(
+        event: Nullable<EventOrReference>,
+    ): Promise<Nullable<Event>> {
         if (event === null) return null;
         else if (!isEventReference(event)) return event;
         else {
@@ -78,6 +80,7 @@ namespace TimelineEvent {
         emailTriggers: EmailTriggers.EmailTriggerEventRef[];
         info: EventInfo;
         targetAudience?: TargetAudience;
+        isCompleted: boolean;
     };
 
     type TargetAudience = {

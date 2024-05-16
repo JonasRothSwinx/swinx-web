@@ -1,8 +1,15 @@
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
-import { Button, DialogContent, MenuItem, SelectChangeEvent, TextField, Typography } from "@mui/material";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+import {
+    Button,
+    DialogContent,
+    MenuItem,
+    SelectChangeEvent,
+    TextField,
+    Typography,
+} from "@mui/material";
 import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 import { Add as AddIcon, DeleteOutlined as DeleteIcon } from "@mui/icons-material";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { DatePicker, DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import React, { Dispatch, MouseEvent, SetStateAction, useEffect, useMemo } from "react";
 import { dates, styles } from "../TimelineEventDialog";
@@ -19,7 +26,14 @@ interface DateSelectorProps {
     setDates: Dispatch<SetStateAction<dates>>;
 }
 export function DateSelector(props: DateSelectorProps) {
-    const { dates, setDates, isEditing, timelineEvent, setTimelineEvent, eventType = "none" } = props;
+    const {
+        dates,
+        setDates,
+        isEditing,
+        timelineEvent,
+        setTimelineEvent,
+        eventType = "none",
+    } = props;
 
     // if (TimelineEvent.isEventReference(timelineEvent)) {
     //     //TODO resolve EventReference
@@ -27,11 +41,13 @@ export function DateSelector(props: DateSelectorProps) {
     // }
 
     const parentEvent = useQuery({
-        queryKey: ["event", timelineEvent.parentEvent?.id],
-        queryFn: () => TimelineEvent.resolveEventReference(timelineEvent.parentEvent ?? null),
+        queryKey: ["timelineEvent", timelineEvent.parentEvent?.id],
+        queryFn: () => {
+            const parentId = timelineEvent.parentEvent?.id;
+            if (!parentId) return null;
+            return dataClient.timelineEvent.get(parentId);
+        },
     });
-
-    timelineEvent.parentEvent ? TimelineEvent.resolveEventReference(timelineEvent.parentEvent) : null;
 
     const EventHandlers = {
         handleAddDateClick: () => {
@@ -88,8 +104,8 @@ export function DateSelector(props: DateSelectorProps) {
         none: false,
 
         Invites: true,
-        Post: true,
-        Video: true,
+        Post: false,
+        Video: false,
         WebinarSpeaker: false,
 
         Webinar: false,
@@ -119,7 +135,9 @@ export function DateSelector(props: DateSelectorProps) {
         Webinar: () => null,
     };
     const hasParentEvent: {
-        [key in TimelineEvent.eventType | "none"]: { parentEventType: TimelineEvent.multiEventType } | false;
+        [key in TimelineEvent.eventType | "none"]:
+            | { parentEventType: TimelineEvent.multiEventType }
+            | false;
     } = {
         none: false,
 
@@ -137,7 +155,10 @@ export function DateSelector(props: DateSelectorProps) {
         <>
             {/*  */}
             <Button onClick={printVariables}>Print Variables</Button>
-            <DialogContent dividers sx={{ "& .MuiFormControl-root": { flexBasis: "100%", flex: 1 } }}>
+            <DialogContent
+                dividers
+                sx={{ "& .MuiFormControl-root": { flexBasis: "100%", flex: 1 } }}
+            >
                 <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
                     <div style={{ flexBasis: "100%" }}>
                         {dates.dates.map((date, index) => {
@@ -153,6 +174,7 @@ export function DateSelector(props: DateSelectorProps) {
                                         fixedDate: fixedDate[eventType](),
                                         showDeleteButton: !isEditing && dates.number > 1,
                                         removeDate: EventHandlers.handleRemoveDateClick,
+                                        parentEvent: parentEvent.data ?? null,
                                     } satisfies DateProps)}
                                 />
                             );
@@ -192,17 +214,36 @@ interface DateProps {
     fixedDate: Dayjs | null;
     showDeleteButton?: boolean;
     removeDate: (index: number) => void;
+    parentEvent: TimelineEvent.Event | null;
 }
 function Date(props: DateProps) {
-    const { date, index, handleDateChange, isEditing, isFixedDate, fixedDate, showDeleteButton, removeDate } = props;
+    const {
+        date,
+        index,
+        handleDateChange,
+        isEditing,
+        isFixedDate,
+        fixedDate,
+        showDeleteButton,
+        removeDate,
+        parentEvent,
+    } = props;
     const value = useMemo(() => {
         if (isEditing) return date;
         if (isFixedDate) return fixedDate;
         return date;
     }, [date, fixedDate, isEditing, isFixedDate]);
+
+    const maxDate = useMemo(() => {
+        if (parentEvent) return dayjs(parentEvent.date);
+        return dayjs().add(5000, "year");
+    }, [parentEvent]);
+    const minDate = useMemo(() => {
+        return dayjs();
+    }, []);
     return (
         <div className={styles.cellActionSplit}>
-            <DatePicker
+            <DateTimePicker
                 disabled={isFixedDate}
                 // closeOnSelect={false}
                 label="Termin"
@@ -212,8 +253,8 @@ function Date(props: DateProps) {
                     console.log("onChange", value?.toString());
                     handleDateChange(index, value);
                 }}
-                maxDate={dayjs().add(5000, "year")}
-                minDate={dayjs()}
+                maxDate={maxDate}
+                minDate={minDate}
                 onError={(error) => {
                     console.log({ error });
                 }}
@@ -255,7 +296,9 @@ function ParentEventSelector(props: ParentEventSelectorProps) {
     });
 
     const parentEventChoices = useMemo(() => {
-        return events.data?.filter((event) => parentEventType && event.type === parentEventType) ?? [];
+        return (
+            events.data?.filter((event) => parentEventType && event.type === parentEventType) ?? []
+        );
     }, [events.data, parentEventType]);
     //#endregion
     //########################################

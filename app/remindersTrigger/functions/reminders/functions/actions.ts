@@ -1,18 +1,18 @@
 "use server";
 
-// import dataClient from "../../database";
+// import dataClient from "@/app/ServerFunctions/database";
 import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
-import database from "../../database/dbOperations";
-import { EmailTriggers } from "../../types/emailTriggers";
-import TimelineEvent from "../../types/timelineEvents";
+import database from "@/app/ServerFunctions/database/dbOperations";
+import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import templateDefinitions from "@/app/Emails/templates";
-import Influencer from "../../types/influencer";
+import Influencer from "@/app/ServerFunctions/types/influencer";
 import emailClient from "@/app/Emails";
 import { EmailContextProps, SendMailProps } from "@/app/Emails/templates/types";
 import { EmailContextPropsByLevel } from "../types";
-import Campaign from "../../types/campaign";
-import Customer from "../../types/customer";
-import ErrorLogger from "../../errorLog";
+import Campaign from "@/app/ServerFunctions/types/campaign";
+import Customer from "@/app/ServerFunctions/types/customer";
+import ErrorLogger from "@/app/ServerFunctions/errorLog";
 // import dayjs from "@/app/utils/configuredDayJs";
 const triggerHandlers: {
     [key in TimelineEvent.eventType]: (triggers: GroupedTrigger) => Promise<unknown>;
@@ -25,8 +25,10 @@ const triggerHandlers: {
 };
 export async function startReminderRoutine(): Promise<boolean> {
     console.log("Starting reminder routine");
-    const startTime = dayjs().startOf("day").subtract(7, "week");
-    const endTime = dayjs().endOf("day").add(7, "week");
+    const isDev = process.env.NODE_ENV === "development";
+    const [startTime, endTime] = isDev
+        ? [dayjs().subtract(10, "year"), dayjs().add(10, "year")]
+        : [dayjs(), dayjs().endOf("day").add(1, "day")];
     const emailTriggers = await getEmailTriggers({ startDate: startTime, endDate: endTime });
     console.log(`Found ${emailTriggers.length} triggers for today`);
     if (emailTriggers.length === 0) {
@@ -86,6 +88,7 @@ async function getEmailTriggers(props: GetEmailTriggerProps) {
     const fullTriggers: EmailTriggers.EmailTrigger[] = (
         await Promise.all(
             triggers.map(async (trigger) => {
+                if (!trigger.event || !trigger.event.id || trigger.event.isCompleted) return null;
                 return await getEventsByEmailTrigger(trigger);
             }),
         )
@@ -101,6 +104,7 @@ async function getEventsByEmailTrigger(
     if (response === null) return null;
     const { event, customer } = response;
     if (!event || !customer) return null;
+    if (event.isCompleted) return null;
     const triggerWithEvent = { ...trigger, event, customer };
     return triggerWithEvent;
 }

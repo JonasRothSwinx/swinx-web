@@ -1,4 +1,4 @@
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import stylesExporter from "../../styles/stylesExporter";
 import { TypedEventGroup as TypedEventGroup, groupBy } from "../Functions/groupEvents";
 import { Event } from "./EventDisplay";

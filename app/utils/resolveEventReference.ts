@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import TimelineEvent from "../ServerFunctions/types/timelineEvents";
+import TimelineEvent from "../ServerFunctions/types/timelineEvent";
 
 /**
  * Resolve event reference

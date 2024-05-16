@@ -1,4 +1,4 @@
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvents";
+import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import {
     Box,
     CircularProgress,
@@ -71,8 +71,12 @@ export function Event(props: EventProps) {
         },
         setEvent: async (updatedData: Partial<TimelineEvent.Event>) => {
             if (!event.data) return;
+            if (!event.data.id) return console.error("Event has no id");
             console.log("Updating event", updatedData, event.data);
-            const newEvent = await dataClient.timelineEvent.update(updatedData, event.data);
+            const newEvent = await dataClient.timelineEvent.update({
+                id: event.data.id,
+                updatedData,
+            });
             console.log("Updated event", newEvent);
         },
     };
@@ -83,27 +87,35 @@ export function Event(props: EventProps) {
         () => totalColumns - dateColumns /* - modifyColumns */,
         [totalColumns, dateColumns],
     );
+    const isOverdue = useMemo(() => {
+        if (!event.data) return false;
+        const eventDate = dayjs(event.data.date);
+        const now = dayjs();
+        return eventDate.isBefore(now);
+    }, [event.data]);
 
     const sxProps: SxProps = useMemo(() => {
-        const sx: SxProps = {
+        return {
             "&#EventContainer": {
-                "&": {
-                    position: "relative",
-                    display: "flex",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    // flexWrap: "wrap",
-                    width: "100%",
-                    padding: "0",
-                    margin: "0",
+                position: "relative",
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                // flexWrap: "wrap",
+                width: "100%",
+                padding: "0",
+                margin: "0",
+                backgroundColor: event.data?.isCompleted ? "green" : isOverdue ? "red" : "inherit",
+                // backgroundColor: "green",
+                "& *": event.data?.isCompleted && {
+                    textDecoration: "line-through",
                 },
                 "&:hover": {
-                    "&": {
-                        backgroundColor: "lightgrey",
-                    },
+                    backgroundColor: "lightgrey",
                     "#modifyButtonGroup": {
                         display: editable ? "flex" : "none",
                         width: "40px",
+                        backgroundColor: "lightgrey",
 
                         "@keyframes fadeIn": {
                             from: { opacity: 0, width: 0 },
@@ -165,8 +177,7 @@ export function Event(props: EventProps) {
                 },
             },
         };
-        return sx;
-    }, [highlightData, event.isFetching, editable]);
+    }, [highlightData, event.isFetching, editable, event.data?.isCompleted, isOverdue]);
 
     //#endregion Styles
     //######################################################################################################################
