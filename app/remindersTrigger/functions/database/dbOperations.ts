@@ -9,6 +9,7 @@ import { Nullable } from "@/app/Definitions/types";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
 import Assignment from "@/app/ServerFunctions/types/assignment";
+import ProjectManagers from "@/app/ServerFunctions/types/projectManagers";
 
 const client = generateServerClientUsingCookies<Schema>({ config, cookies, authMode: "apiKey" });
 
@@ -124,14 +125,19 @@ const getEventForEmailTriggerSelectionSet = [
     "targetAudience.*",
     //Campaign info
     "campaign.customers.*",
+    "campaign.projectManagers.projectManager.*",
 ] as const;
 type RawEvent = SelectionSet<
     Schema["TimelineEvent"]["type"],
     typeof getEventForEmailTriggerSelectionSet
 >;
-export async function getEventForEmailTrigger(
-    eventId: string,
-): Promise<Nullable<{ event: TimelineEvent.Event; customer: Customer.Customer }>> {
+export async function getEventForEmailTrigger(eventId: string): Promise<
+    Nullable<{
+        event: TimelineEvent.Event;
+        customer: Customer.Customer;
+        projectManagers: ProjectManagers.ProjectManager[];
+    }>
+> {
     const { data, errors } = await client.models.TimelineEvent.get(
         {
             id: eventId,
@@ -155,8 +161,20 @@ export async function getEventForEmailTrigger(
         companyPosition: rawCustomer.companyPosition,
         notes: rawCustomer.notes,
     };
+    const projectManagers: ProjectManagers.ProjectManager[] = campaign.projectManagers.map((x) => {
+        const projectManager: ProjectManagers.ProjectManager = {
+            id: x.projectManager.id,
+            firstName: x.projectManager.firstName ?? "<Error>",
+            lastName: x.projectManager.lastName ?? "<Error>",
+            email: x.projectManager.email ?? "<Error>",
+            phoneNumber: x.projectManager.phoneNumber ?? undefined,
+            notes: x.projectManager.notes ?? undefined,
+            cognitoId: x.projectManager.cognitoId,
+        };
+        return projectManager;
+    });
 
-    return { event, customer };
+    return { event, customer, projectManagers };
 }
 const getEventSelectionSet = [
     "id",
