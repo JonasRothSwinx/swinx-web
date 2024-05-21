@@ -582,6 +582,8 @@ function validateEvent(rawEvent: Nullable<RawEvent>): Nullable<TimelineEvent.Eve
         draftDeadline: rawEvent.info?.draftDeadline ?? undefined,
         instructions: rawEvent.info?.instructions ?? undefined,
         maxDuration: rawEvent.info?.maxDuration ?? undefined,
+        eventLink: rawEvent.info?.eventLink ?? undefined,
+        eventPostContent: rawEvent.info?.eventPostContent ?? undefined,
     };
     const targetAudience: TimelineEvent.Event["targetAudience"] = {
         industry: rawEvent.targetAudience?.industry?.filter((x): x is string => x !== null) ?? [],

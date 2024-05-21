@@ -216,6 +216,7 @@ function getDataKey(
 ): string | number | null | undefined {
     switch (key) {
         //in info
+        case "eventLink":
         case "topic":
         case "charLimit":
         case "maxDuration":
@@ -230,6 +231,10 @@ function getDataKey(
         case "eventAssignmentAmount": {
             return updatedData[key] ?? data[key];
         }
+        default: {
+            console.error(`Unknown key: ${key}`);
+            return null;
+        }
     }
 }
 
@@ -239,6 +244,7 @@ export default function EventDetails(props: DetailsProps): JSX.Element {
     function handleChange(key: relevantDetailsKey, value: string | number | Dayjs) {
         const oldData = isEditing ? updatedData : data;
         const handler = isEditing ? setUpdatedData : applyDetailsChange;
+        // debugger;
         switch (key) {
             case "eventAssignmentAmount":
             case "eventTitle":
@@ -251,7 +257,8 @@ export default function EventDetails(props: DetailsProps): JSX.Element {
             case "charLimit":
             case "draftDeadline":
             case "instructions":
-            case "maxDuration": {
+            case "maxDuration":
+            case "eventLink": {
                 const newData = { ...oldData, info: { ...oldData.info, [key]: value } };
                 handler(newData);
                 break;
@@ -339,7 +346,9 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
                     name={name.toString()}
                     label={label}
                     value={(value as string) ?? ""}
-                    onChange={(e) => changeHandler(e.target.value)}
+                    onChange={(e) => {
+                        changeHandler(e.target.value);
+                    }}
                     variant="standard"
                 />
             );

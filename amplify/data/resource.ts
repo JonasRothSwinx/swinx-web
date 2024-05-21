@@ -45,24 +45,19 @@ const schema = a.schema({
         .model({
             //##########################
             //### Contact Information ##
-            firstName: a
-                .string()
-                .required()
-                .authorization((allow) => [
-                    allow.publicApiKey().to(["read"]),
-                    allow.groups(["admin", "projektmanager"]),
-                ]),
-            lastName: a
-                .string()
-                .required()
-                .authorization((allow) => [
-                    allow.publicApiKey().to(["read"]),
-                    allow.groups(["admin", "projektmanager"]),
-                ]),
-            phoneNumber: a
-                .string()
-                .authorization((allow) => [allow.groups(["admin", "projektmanager"])]),
-            email: a.email().authorization((allow) => [allow.groups(["admin", "projektmanager"])]),
+            firstName: a.string().required(),
+            // .authorization((allow) => [
+            //     allow.publicApiKey().to(["read"]),
+            //     allow.groups(["admin", "projektmanager"]),
+            // ])
+            lastName: a.string().required(),
+            // .authorization((allow) => [
+            //     allow.publicApiKey().to(["read"]),
+            //     allow.groups(["admin", "projektmanager"]),
+            // ])
+            phoneNumber: a.string(),
+            // .authorization((allow) => [allow.groups(["admin", "projektmanager"])])
+            email: a.email().required(),
             emailType: a.string().default("new"),
             //##########################
 
@@ -120,14 +115,11 @@ const schema = a.schema({
 
             //##########################
             //### Relations ############
-            influencerId: a
-                .id()
-                .authorization((allow) => [allow.groups(["admin", "projektmanager"])]),
-            influencer: a
-                .belongsTo("Influencer", "influencerId")
-                .authorization((allow) => [allow.groups(["admin", "projektmanager"])]),
-
-            timelineEvents: a.hasMany("EventAssignment", "assignmentId"),
+            influencerId: a.id(),
+            /* .authorization((allow) => [allow.groups(["admin", "projektmanager"])]) */ influencer:
+                a.belongsTo("Influencer", "influencerId"),
+            /* .authorization((allow) => [allow.groups(["admin", "projektmanager"])]) */ timelineEvents:
+                a.hasMany("EventAssignment", "assignmentId"),
 
             campaignId: a.id().required(),
             campaign: a.belongsTo("Campaign", "campaignId"),
@@ -324,7 +316,10 @@ const schema = a.schema({
             //#####################
         })
         .secondaryIndexes((index) => [index("campaignId").queryField("listCustomersByCampaign")])
-        .authorization((allow) => [allow.groups(["admin", "projektmanager"])]),
+        .authorization((allow) => [
+            allow.publicApiKey().to(["read"]),
+            allow.groups(["admin", "projektmanager"]),
+        ]),
     //#endregion Customer
 
     //#region TimelineEvent
@@ -446,7 +441,10 @@ const schema = a.schema({
         .secondaryIndexes((index) => [
             index("eventId").queryField("listByEvent").name("listByEvent"),
         ])
-        .authorization((allow) => [allow.groups(["admin", "projektmanager"])]),
+        .authorization((allow) => [
+            allow.publicApiKey().to(["read"]),
+            allow.groups(["admin", "projektmanager"]),
+        ]),
     //#endregion EmailTrigger
 });
 

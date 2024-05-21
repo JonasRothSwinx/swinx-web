@@ -2,7 +2,7 @@
 
 // import dataClient from "@/app/ServerFunctions/database";
 import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
-import database from "@/app/ServerFunctions/database/dbOperations";
+// import database from "@/app/ServerFunctions/database/dbOperations";
 import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import templateDefinitions from "@/app/Emails/templates";
@@ -13,6 +13,9 @@ import { EmailContextPropsByLevel } from "../types";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import Customer from "@/app/ServerFunctions/types/customer";
 import ErrorLogger from "@/app/ServerFunctions/errorLog";
+import getDbClient from "../../database";
+import { RawEmailTrigger } from "../../database/types";
+import { Prettify } from "@/app/Definitions/types";
 // import dayjs from "@/app/utils/configuredDayJs";
 const triggerHandlers: {
     [key in TimelineEvent.eventType]: (triggers: GroupedTrigger) => Promise<unknown>;
@@ -77,30 +80,30 @@ const DataCache: DataCache = {
     customer: {},
     influencer: {},
 };
-
+type EmailTrigger = Prettify<NonNullable<Awaited<ReturnType<typeof getEventsByEmailTrigger>>>>;
 async function getEmailTriggers(props: GetEmailTriggerProps) {
     const { startDate, endDate } = props;
+    const dbClient = await getDbClient();
     console.log("Getting email triggers", startDate.toString(), endDate.toString());
-    const triggers = await database.emailTrigger.byDateRange(
-        startDate.toISOString(),
-        endDate.toISOString(),
-    );
-    const fullTriggers: EmailTriggers.EmailTrigger[] = (
+    const triggers = await dbClient.getEmailTriggers({
+        start: startDate.toISOString(),
+        end: endDate.toISOString(),
+    });
+    const fullTriggers = (
         await Promise.all(
             triggers.map(async (trigger) => {
                 if (!trigger.event || !trigger.event.id || trigger.event.isCompleted) return null;
                 return await getEventsByEmailTrigger(trigger);
             }),
         )
-    ).filter((trigger): trigger is EmailTriggers.EmailTrigger => trigger !== null);
+    ).filter((trigger): trigger is EmailTrigger => trigger !== null);
     return fullTriggers;
 }
 
-async function getEventsByEmailTrigger(
-    trigger: EmailTriggers.EmailTriggerEventRef,
-): Promise<EmailTriggers.EmailTrigger | null> {
+async function getEventsByEmailTrigger(trigger: RawEmailTrigger) {
+    const dbClient = await getDbClient();
     console.log("Getting events by trigger", trigger);
-    const response = await database.timelineEvent.getForEmailTrigger(trigger.event.id);
+    const response = await dbClient.getEvent(trigger.event.id);
     if (response === null) return null;
     const { event, customer } = response;
     if (!event || !customer) return null;
@@ -110,12 +113,12 @@ async function getEventsByEmailTrigger(
 }
 
 type GroupedTriggerLevel = {
-    [key in Exclude<EmailTriggers.emailLevel, "none">]?: EmailTriggers.EmailTrigger[];
+    [key in Exclude<EmailTriggers.emailLevel, "none">]?: EmailTrigger[];
 };
 type GroupedTrigger = { [key in EmailTriggers.emailTriggerType]?: GroupedTriggerLevel };
 type TriggerGroup = { [key in TimelineEvent.eventType]?: GroupedTrigger };
 
-function groupTriggers(triggers: EmailTriggers.EmailTrigger[]): TriggerGroup {
+function groupTriggers(triggers: EmailTrigger[]): TriggerGroup {
     const grouped: TriggerGroup = {};
     triggers.reduce((grouped, trigger) => {
         const {
@@ -153,11 +156,11 @@ function groupTriggers(triggers: EmailTriggers.EmailTrigger[]): TriggerGroup {
     return grouped;
 }
 
-function getContext(triggers: EmailTriggers.EmailTrigger[]): Partial<EmailContextProps>[] {
+function getContext(triggers: EmailTrigger[]): Partial<EmailContextProps>[] {
     const context: Partial<EmailContextProps>[] = triggers.reduce((context, trigger) => {
         const { event, influencer, customer } = trigger;
         if (!event || !influencer || !customer) {
-            ErrorLogger.log("Missing context");
+            console.error("Missing context");
             return context;
         }
         context.push({

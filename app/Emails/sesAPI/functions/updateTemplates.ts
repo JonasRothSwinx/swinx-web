@@ -11,6 +11,7 @@ import {
     UpdateEmailTemplateCommandOutput,
 } from "@aws-sdk/client-sesv2";
 import listTemplates from "./listTemplates";
+import { SESError } from "../types";
 
 type updateDataWithPromises = Prettify<
     Omit<SesHandlerTypes.sesHandlerUpdateTemplate["updateData"][number], "html" | "text"> & {
@@ -46,7 +47,7 @@ export default async function updateTemplates(templateNames: templateName[] = []
     //         return { ...template, html };
     //     }),
     // );
-    const client = await getSESClient();
+    // const client = await getSESClient();
     const existingTemplateNames = (await listTemplates())
         .map((template) => template.TemplateName)
         .filter((templateName): templateName is string => typeof templateName === "string");
@@ -67,11 +68,17 @@ export default async function updateTemplates(templateNames: templateName[] = []
                 console.log(`Updated ${processed} of ${total} templates`);
                 break;
             } catch (error) {
-                console.error(error);
-                await sleep(1000);
+                const sesError = error as SESError;
+                if (sesError.$metadata?.httpStatusCode === 429) {
+                    console.log("Rate limited, waiting 1 second");
+                    await sleep(1000);
+                } else {
+                    console.error(error);
+                    throw error;
+                }
             }
         }
-        await sleep(200);
+        // await sleep(100);
     }
     // console.log(responses);
     return responses;
@@ -112,7 +119,10 @@ async function processTemplate({ template, existingTemplateNames }: ProcessTempl
         const response = await client.send(command);
         return response;
     } catch (error) {
-        console.error(error);
+        const sesError = error as SESError;
+        if (!(sesError.$metadata?.httpStatusCode === 429)) {
+            console.error(error);
+        }
         throw error;
     }
 }

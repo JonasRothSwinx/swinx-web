@@ -72,13 +72,18 @@ export default function DebugButtons() {
             <Button
                 variant="outlined"
                 onClick={async () => {
-                    const start = dayjs().subtract(1, "day");
+                    const start = dayjs().subtract(1, "year");
                     const end = dayjs().add(1, "year");
                     const response = await dataClient.emailTrigger.inRange({
                         startDate: start,
                         endDate: end,
                     });
-                    console.log("Events in range", start.toLocaleString(), end, response);
+                    console.log(
+                        "Events in range",
+                        start.format("DD.MM"),
+                        end.format("DD.MM"),
+                        response,
+                    );
                 }}
             >
                 Test Email Triggers
