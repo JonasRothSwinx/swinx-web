@@ -27,10 +27,12 @@ export default async function sendEmailTemplateBulk({
     bulkTemplateData,
 }: SendEmailTemplateBulkParams) {
     const client = await getSESClient();
+    const bcc = from.includes("noreply") ? [] : [from];
     const bulkEntries: BulkEmailEntry[] = bulkTemplateData.map((entry) => {
         return {
             Destination: {
                 ToAddresses: [entry.to],
+                BccAddresses: bcc,
             },
             ReplacementEmailContent: {
                 ReplacementTemplate: {

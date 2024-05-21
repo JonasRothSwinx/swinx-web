@@ -217,6 +217,7 @@ function getDataKey(
     switch (key) {
         //in info
         case "eventLink":
+        case "eventPostContent":
         case "topic":
         case "charLimit":
         case "maxDuration":

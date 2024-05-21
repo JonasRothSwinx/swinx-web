@@ -28,6 +28,11 @@ const triggerHandlers: {
 };
 export async function startReminderRoutine(): Promise<boolean> {
     console.log("Starting reminder routine");
+    console.log(
+        `In environment ${process.env.NODE_ENV}. Current time: ${dayjs().format(
+            "YYYY-MM-DD HH:mm",
+        )}`,
+    );
     const isDev = process.env.NODE_ENV === "development";
     const [startTime, endTime] = isDev
         ? [dayjs().subtract(10, "year"), dayjs().add(10, "year")]
@@ -105,10 +110,10 @@ async function getEventsByEmailTrigger(trigger: RawEmailTrigger) {
     console.log("Getting events by trigger", trigger);
     const response = await dbClient.getEvent(trigger.event.id);
     if (response === null) return null;
-    const { event, customer } = response;
+    const { event, customer, projectManagers } = response;
     if (!event || !customer) return null;
     if (event.isCompleted) return null;
-    const triggerWithEvent = { ...trigger, event, customer };
+    const triggerWithEvent = { ...trigger, event, customer, projectManagers };
     return triggerWithEvent;
 }
 
@@ -158,7 +163,7 @@ function groupTriggers(triggers: EmailTrigger[]): TriggerGroup {
 
 function getContext(triggers: EmailTrigger[]): Partial<EmailContextProps>[] {
     const context: Partial<EmailContextProps>[] = triggers.reduce((context, trigger) => {
-        const { event, influencer, customer } = trigger;
+        const { event, influencer, customer, projectManagers } = trigger;
         if (!event || !influencer || !customer) {
             console.error("Missing context");
             return context;
@@ -167,6 +172,7 @@ function getContext(triggers: EmailTrigger[]): Partial<EmailContextProps>[] {
             event,
             influencer,
             customer,
+            campaignManager: projectManagers[0],
         });
         return context;
     }, [] as Partial<EmailContextProps>[]);
