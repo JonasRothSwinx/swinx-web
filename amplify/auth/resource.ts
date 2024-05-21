@@ -10,37 +10,10 @@ export const auth = defineAuth({
         email: {
             verificationEmailStyle: "CODE",
             verificationEmailSubject: "Verifiziere deine Email",
-            verificationEmailBody: (code: string) => `Dein Verifizierungscode ist ${code}`,
-        },
-        // add social providers
-        externalProviders: {
-            /**
-             * first, create your secrets using `amplify sandbox secret`
-             * then, import `secret` from `@aws-amplify/backend`
-             * @see https://docs.amplify.aws/gen2/deploy-and-host/sandbox-environments/features/#setting-secrets
-             */
-            // loginWithAmazon: {
-            //   clientId: secret('LOGINWITHAMAZON_CLIENT_ID'),
-            //   clientSecret: secret('LOGINWITHAMAZON_CLIENT_SECRET'),
-            // }
+            verificationEmailBody: (code: () => string) => `Dein Verifizierungscode ist ${code()}`,
         },
     },
-    /**
-     * enable multifactor authentication
-     * @see https://docs.amplify.aws/gen2/build-a-backend/auth/manage-mfa
-     */
-    // multifactor: {
-    //   mode: 'OPTIONAL',
-    //   sms: {
-    //     smsMessage: (code) => `Your verification code is ${code}`,
-    //   },
-    // },
     userAttributes: {
-        /** request additional attributes for your app's users */
-        // profilePicture: {
-        //   mutable: true,
-        //   required: false,
-        // },
         givenName: {
             required: true,
             mutable: true,
@@ -58,4 +31,6 @@ export const auth = defineAuth({
             mutable: true,
         },
     },
+
+    groups: ["admin", "projektmanager"],
 });

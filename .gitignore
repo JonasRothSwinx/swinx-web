@@ -1,6 +1,7 @@
 # amplify generated files
 .amplify
 amplifyconfiguration*
+amplify_outputs*
 
 # node modules
 node_modules
@@ -9,3 +10,7 @@ node_modules
 .next
 
 # amplify
+
+.env*
+tsconfig.tsbuildinfo
+amplify_outputs.json

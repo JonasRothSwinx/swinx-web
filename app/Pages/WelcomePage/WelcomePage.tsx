@@ -1,28 +1,11 @@
-import { Schema } from "@/amplify/data/resource";
 import { useAuthenticator, withAuthenticator } from "@aws-amplify/ui-react";
-import { generateClient } from "aws-amplify/api";
-import { FetchUserAttributesOutput, fetchUserAttributes } from "aws-amplify/auth";
 import { useEffect, useState } from "react";
-import TodosList from "../../todosList";
-import Image from "next/image";
-import styles from "./welcomePage.module.css";
-import UserView from "../../Components/User";
-import TodoCreateForm from "@/ui-components/TodoCreateForm";
-import InfluencerList from "../InfluencerMenu/InfluencerList";
-import InfluencerPublicCreateForm from "@/ui-components/InfluencerPublicCreateForm";
-import InfluencerPrivateCreateForm from "@/ui-components/InfluencerPrivateCreateForm";
-import InfluencerPublicUpdateForm from "@/ui-components/InfluencerPublicUpdateForm";
 import SideBar, { sideBarButtonId } from "./SideBar";
 import InfluencerMenu from "../InfluencerMenu/InfluencerMenu";
+import CampaignMenu from "../CampaignMenu/CampaignMenu";
+import stylesExporter from "../styles/stylesExporter";
 
-const client = generateClient<Schema>();
-
-async function createTodo() {
-    const content = window.prompt("Todo Content");
-
-    const { errors, data: newTodo } = await client.models.Todo.create({ content });
-    console.log({ errors, newTodo });
-}
+const styles = stylesExporter.welcomePage;
 function WelcomePage({}) {
     const { signOut, user, authStatus } = useAuthenticator((context) => [context.user, context.authStatus]);
     const [openMenu, setOpenMenu] = useState<sideBarButtonId>(sideBarButtonId.campaigns);
@@ -31,15 +14,10 @@ function WelcomePage({}) {
     return (
         <main className={styles.main}>
             <div className={styles.mainContent}>
-                {openMenu}
-                <br />
-                {openMenu === sideBarButtonId.campaigns && <></>}
+                {/* {openMenu}
+                <br /> */}
+                {openMenu === sideBarButtonId.campaigns && <CampaignMenu />}
                 {openMenu === sideBarButtonId.influencers && <InfluencerMenu />}
-                {/* <div className={styles.description}>
-                    <TodosList />
-                    <button onClick={createTodo}>Add Todo</button>
-                </div>
-                <TodoCreateForm /> */}
                 {/* 
                 <div className={styles.center}>
                     <Image
