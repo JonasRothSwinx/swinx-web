@@ -66,7 +66,7 @@ export default async function send(props: SendMailProps) {
     }, [] as { to: string; templateData: string }[]);
 
     const response = await sesAPIClient.sendBulk({
-        from: fromAdress ?? "swinx GmbH <noreplay@swinx.de>",
+        from: fromAdress ?? "swinx GmbH <noreply@swinx.de>",
         templateName: templateName,
         defaultTemplateData: JSON.stringify(defaultParams),
         bulkTemplateData: templateData,

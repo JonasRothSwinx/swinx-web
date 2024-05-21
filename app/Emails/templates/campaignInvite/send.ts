@@ -50,7 +50,7 @@ export default async function send(props: SendMailProps) {
         // assignments: taskDescriptions.map((assignmentDescription) => ({
         //     assignmentDescription,
         // })),
-        honorar: assignment.budget?.toString() ?? "<Honorar nicht definiert>",
+        honorar: `${assignment.budget?.toString()} €` ?? "<Honorar nicht definiert>",
         customerCompany: customer?.company ?? "TestCustomer",
     };
 

@@ -28,6 +28,11 @@ const triggerHandlers: {
 };
 export async function startReminderRoutine(): Promise<boolean> {
     console.log("Starting reminder routine");
+    console.log(
+        `In environment ${process.env.NODE_ENV}. Current time: ${dayjs().format(
+            "YYYY-MM-DD HH:mm",
+        )}`,
+    );
     const isDev = process.env.NODE_ENV === "development";
     const [startTime, endTime] = isDev
         ? [dayjs().subtract(10, "year"), dayjs().add(10, "year")]

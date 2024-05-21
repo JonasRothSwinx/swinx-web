@@ -24,9 +24,11 @@ export default async function sendEmailTemplate({
     templateData,
 }: SendEmailTemplateParams) {
     const client = await getSESClient();
+    const bcc = from.includes("noreply") ? [] : [from];
     const Command = new SendEmailCommand({
         Destination: {
             ToAddresses: to,
+            BccAddresses: bcc,
         },
         FromEmailAddress: from,
         Content: {

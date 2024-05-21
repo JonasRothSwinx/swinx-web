@@ -22,11 +22,12 @@ export default async function sendMail({
     text,
 }: SendMailProps) {
     const emailClient = await getSESClient();
+    const bcc = sender?.email ? [sender.email] : [];
     const command = new SendEmailCommand({
         FromEmailAddress: sender
             ? `${sender.name} <${sender.email}>`
             : "swinx GmbH <noreply@swinx.de>",
-        Destination: { ToAddresses, CcAddresses },
+        Destination: { ToAddresses, CcAddresses, BccAddresses: bcc },
         Content: {
             Simple: {
                 Subject: { Data: subject, Charset: "UTF-8" },
