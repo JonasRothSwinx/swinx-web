@@ -89,14 +89,14 @@ export default function DebugButtons() {
             >
                 Test Email Triggers
             </Button>
-            <Button
+            {/* <Button
                 variant="outlined"
                 onClick={async () => {
                     printJson();
                 }}
             >
                 TESTJSON
-            </Button>
+            </Button> */}
         </Box>
     );
 }
