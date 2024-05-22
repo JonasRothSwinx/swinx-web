@@ -15,7 +15,12 @@ import ProjectManagers from "@/app/ServerFunctions/types/projectManagers";
  * @param props.props.taskDescriptions The descriptions of the tasks in the assignment
  * @returns
  */
-type commonVariables = Pick<TemplateVariables, /* "assignments" | */ "honorar" | "customerCompany">;
+type commonVariables = Pick<
+    TemplateVariables,
+    /* "assignments" | */
+    /* "honorar" | */
+    "customerCompany"
+>;
 type personalVariables = Pick<TemplateVariables, "name" | "linkBase" | "linkData">;
 export default async function send(props: SendMailProps) {
     const {
@@ -23,7 +28,7 @@ export default async function send(props: SendMailProps) {
         commonContext: {
             candidates,
             assignment,
-            taskDescriptions,
+            // taskDescriptions,
             customer,
             // campaign,
             campaignManager,
@@ -41,7 +46,12 @@ export default async function send(props: SendMailProps) {
             customer: !!customer,
             campaignManager: !!campaignManager,
         };
-        throw new Error("Missing context" + JSON.stringify(missingContext));
+        Object.entries(missingContext).forEach(([key, value]) => {
+            if (value) {
+                delete missingContext[key as keyof typeof missingContext];
+            }
+        });
+        throw new Error(`Missing email context: ${Object.keys(missingContext).join(", ")}`);
     }
 
     const templateName = templates[level].name;
@@ -50,7 +60,7 @@ export default async function send(props: SendMailProps) {
         // assignments: taskDescriptions.map((assignmentDescription) => ({
         //     assignmentDescription,
         // })),
-        honorar: `${assignment.budget?.toString()} €` ?? "<Honorar nicht definiert>",
+        // honorar: `${assignment.budget?.toString()} €` ?? "<Honorar nicht definiert>",
         customerCompany: customer?.company ?? "TestCustomer",
     };
 
@@ -63,7 +73,7 @@ export default async function send(props: SendMailProps) {
     const defaultTemplateData: TemplateVariables = {
         name: "Error 418: Teapot",
         // assignments: commonVariables.assignments,
-        honorar: commonVariables.honorar,
+        // honorar: commonVariables.honorar,
         linkBase: baseUrl,
         linkData: encodeURIComponent(
             btoa(

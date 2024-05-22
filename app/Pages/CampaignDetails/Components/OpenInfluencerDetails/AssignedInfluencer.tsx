@@ -83,21 +83,7 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
     });
 
     const [categorizedEvents, setCategorizedEvents] = useState<EventCategory[]>([]);
-    const DebugDisplay: JSX.Element = (
-        <QueryDebugDisplay
-            data={[
-                { name: "campaign", ...campaign },
-                { name: "campaignEvents", ...campaignEvents },
-                { name: "influencers", ...influencers },
-                {
-                    name: "assignment",
-                    ...assignedInfluencer,
-                    queryKey: ["assignment", props.assignedInfluencer.id],
-                },
-                { name: "assignmentEvents", ...assignmentEvents },
-            ]}
-        />
-    );
+
     useEffect(() => {
         console.log("recategorizing events");
         const newCategorizedEvents = categorizeEvents(assignmentEvents?.data ?? []);
@@ -132,30 +118,27 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
             assignedInfluencer.error?.message ??
             "Unknown error";
         return (
-            <>
-                {DebugDisplay}
-                <div
-                    style={{
-                        display: "flex",
-                        flexDirection: "row",
-                        justifyContent: "center",
-                        alignItems: "center",
+            <div
+                style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    alignItems: "center",
+                }}
+            >
+                <Typography>There was an error: {errorMessage}</Typography>
+                <IconButton
+                    onClick={() => {
+                        [campaign, influencers, assignmentEvents, assignedInfluencer].forEach(
+                            (query) => {
+                                if (query.isError) query.refetch();
+                            },
+                        );
                     }}
                 >
-                    <Typography>There was an error: {errorMessage}</Typography>
-                    <IconButton
-                        onClick={() => {
-                            [campaign, influencers, assignmentEvents, assignedInfluencer].forEach(
-                                (query) => {
-                                    if (query.isError) query.refetch();
-                                },
-                            );
-                        }}
-                    >
-                        <RefreshIcon />
-                    </IconButton>
-                </div>
-            </>
+                    <RefreshIcon />
+                </IconButton>
+            </div>
         );
     }
     if (
@@ -165,94 +148,85 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
         assignedInfluencer.isLoading
     ) {
         return (
-            <>
-                {DebugDisplay}
-                <Skeleton
-                    variant="rectangular"
-                    width={"100%"}
-                    height={"100px"}
-                    sx={{ borderRadius: "20px" }}
-                ></Skeleton>
-            </>
+            <Skeleton
+                variant="rectangular"
+                width={"100%"}
+                height={"100px"}
+                sx={{ borderRadius: "20px" }}
+            ></Skeleton>
         );
     }
 
     if (!campaign.data || !influencers.data || !assignmentEvents.data || !assignedInfluencer.data) {
         return (
-            <>
-                {DebugDisplay}
-                <Skeleton
-                    variant="rectangular"
-                    width={"100%"}
-                    height={"100px"}
-                    sx={{ borderRadius: "20px" }}
-                ></Skeleton>
-            </>
+            <Skeleton
+                variant="rectangular"
+                width={"100%"}
+                height={"100px"}
+                sx={{ borderRadius: "20px" }}
+            ></Skeleton>
         );
     }
     return (
-        <>
-            {DebugDisplay}
-            <Accordion
-                key={assignedInfluencer.data.id}
-                defaultExpanded
-                disableGutters
-                variant="outlined"
+        <Accordion
+            key={assignedInfluencer.data.id}
+            defaultExpanded
+            disableGutters
+            variant="outlined"
+        >
+            <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                sx={{
+                    "& .MuiAccordionSummary-content:not(.Mui-expanded) button": {
+                        display: "none",
+                    },
+                }}
             >
-                <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    sx={{
-                        "& .MuiAccordionSummary-content:not(.Mui-expanded) button": {
-                            display: "none",
-                        },
-                    }}
-                >
-                    <div className={stylesExporter.campaignDetails.assignmentAccordionHeader}>
-                        <InfluencerName assignedInfluencer={assignedInfluencer.data} />
-                        {assignmentEvents.isFetching ? (
-                            <Skeleton
-                                variant="rectangular"
-                                width={200}
-                                height={40}
-                                sx={{ borderRadius: "20px" }}
-                            >
-                                <CircularProgress />
-                            </Skeleton>
-                        ) : (
-                            <InfluencerDetailsButtons
-                                influencers={influencers.data ?? []}
-                                assignment={assignedInfluencer.data}
-                                campaign={campaign.data}
-                                setCampaign={EventHandlers.setCampaign}
-                                isProcessing={isProcessing}
-                                setIsProcessing={setIsProcessing}
-                                events={assignmentEvents.data ?? []}
-                            />
-                        )}
-                    </div>
-                </AccordionSummary>
-                <AccordionDetails>
-                    <>
-                        {assignmentEvents.isLoading ? (
-                            <Skeleton
-                                variant="rectangular"
-                                width={"100%"}
-                                height={"100px"}
-                                sx={{ borderRadius: "20px" }}
-                            ></Skeleton>
-                        ) : (
-                            <>
-                                {!!assignedInfluencer.data.budget && (
-                                    <Typography>{`Honorar: ${assignedInfluencer.data.budget}€`}</Typography>
-                                )}
-                                {categorizedEvents.map((category, index) => {
-                                    return <EventCategoryDisplay key={index} category={category} />;
-                                })}
-                            </>
-                        )}
-                    </>
-                </AccordionDetails>
-            </Accordion>
-        </>
+                <div className={stylesExporter.campaignDetails.assignmentAccordionHeader}>
+                    <InfluencerName assignedInfluencer={assignedInfluencer.data} />
+                    {assignmentEvents.isFetching ? (
+                        <Skeleton
+                            variant="rectangular"
+                            width={200}
+                            height={40}
+                            sx={{ borderRadius: "20px" }}
+                        >
+                            <CircularProgress />
+                        </Skeleton>
+                    ) : (
+                        <InfluencerDetailsButtons
+                            influencers={influencers.data ?? []}
+                            assignment={assignedInfluencer.data}
+                            campaign={campaign.data}
+                            setCampaign={EventHandlers.setCampaign}
+                            isProcessing={isProcessing}
+                            setIsProcessing={setIsProcessing}
+                            events={assignmentEvents.data ?? []}
+                        />
+                    )}
+                </div>
+            </AccordionSummary>
+            <AccordionDetails>
+                <>
+                    {assignmentEvents.isLoading ? (
+                        <Skeleton
+                            variant="rectangular"
+                            width={"100%"}
+                            height={"100px"}
+                            sx={{ borderRadius: "20px" }}
+                        ></Skeleton>
+                    ) : (
+                        <>
+                            {!!assignedInfluencer.data.budget && (
+                                <Typography>{`Honorar: ${assignedInfluencer.data.budget}€`}</Typography>
+                            )}
+                            {categorizedEvents.map((category, index) => {
+                                return <EventCategoryDisplay key={index} category={category} />;
+                            })}
+                        </>
+                    )}
+                </>
+            </AccordionDetails>
+        </Accordion>
     );
 }

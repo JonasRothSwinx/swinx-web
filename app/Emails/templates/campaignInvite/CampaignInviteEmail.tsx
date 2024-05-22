@@ -10,7 +10,7 @@ import DebugTemplates from "../../DebugTemplates";
 export type TemplateVariables = {
     name: string;
     // assignments: { assignmentDescription: string }[];
-    honorar: string;
+    // honorar: string;
     linkBase: string;
     linkData: string;
     customerCompany: string;
@@ -18,7 +18,7 @@ export type TemplateVariables = {
 export const defaultParams: TemplateVariables = {
     name: "testName",
     // assignments: [{ assignmentDescription: "Fliege zum Mars" }],
-    honorar: "0€",
+    // honorar: "0€",
     linkBase: "http://localhost:3000/Response?",
     linkData: "testData",
     customerCompany: "TestCustomer",
@@ -30,7 +30,7 @@ const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } =
     //     parentName: "assignments",
     //     listItemName: "assignmentDescription",
     // }),
-    honorar: Placeholder({ name: "honorar" }),
+    // honorar: Placeholder({ name: "honorar" }),
     linkBase: Placeholder({ name: "linkBase" }),
     linkData: Placeholder({ name: "linkData" }),
     customerCompany: Placeholder({ name: "customerCompany" }),
@@ -55,7 +55,7 @@ export const subjectLineBase = "Anfrage für Kooperation";
 function NewCampaignInvite(props: DebugToggle) {
     const {
         name,
-        honorar,
+        // honorar,
         linkBase,
         linkData,
         customerCompany: customerName,
@@ -76,7 +76,7 @@ function NewCampaignInvite(props: DebugToggle) {
             {/* <Text style={styles.text}>Sie wären dabei für folgende Aufgaben zuständig:</Text>
             {assignments} */}
             <Text style={styles.text}>
-                Sie erhalten für ihren Aufwand ein Honorar in Höhe von {honorar} <br />
+                {/* Sie erhalten für ihren Aufwand ein Honorar in Höhe von {honorar} <br /> */}
                 Unter folgendem Link erhalten sie genauere Informationen zu ihren Aufgaben und
                 können uns mitteilen, ob sie Interesse haben.
             </Text>
@@ -92,7 +92,7 @@ function NewCampaignInvite(props: DebugToggle) {
 function ReducedCampaignInvite(props: DebugToggle) {
     const {
         name,
-        honorar,
+        // honorar,
         linkBase,
         linkData,
         customerCompany: customerName,
@@ -112,7 +112,7 @@ function ReducedCampaignInvite(props: DebugToggle) {
             {/* <Text style={styles.text}>Du wärst dabei für folgende Aufgaben zuständig:</Text>
             {assignments} */}
             <Text style={styles.text}>
-                Du erhältst für deinen Aufwand ein Honorar in Höhe von {honorar} <br />
+                {/* Du erhältst für deinen Aufwand ein Honorar in Höhe von {honorar} <br /> */}
                 Unter folgendem Link erhältst du genauere Informationen zu deinen Aufgaben und
                 kannst uns mitteilen, ob du Interesse hast.
             </Text>

@@ -30,6 +30,7 @@ import sxStyles from "../sxStyles";
 import EmailTriggerMenu from "./EmailTriggerMenu";
 import { GeneralDetails } from "./EventDetails/GeneralDetails";
 import validateFields from "./actions/validateFields";
+import { random, randomId } from "@mui/x-data-grid-generator";
 
 export const styles = stylesExporter.dialogs;
 type DialogType = TimelineEvent.Event;
@@ -288,6 +289,96 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
             const value = e.target.value;
             setTimelineEvent((prev) => ({ ...prev, assignment: value }));
         },
+        createEvent: useMutation({
+            mutationFn: async (data: { newEvent: TimelineEvent.Event; dates: dates }) => {
+                const { newEvent, dates } = data;
+                const createdEvents = await submitEvent({ event: newEvent, dates, editing: false });
+                return createdEvents;
+            },
+            onMutate: async (data: { newEvent: TimelineEvent.Event; dates: dates }) => {
+                const { newEvent, dates } = data;
+                const newEvents = dates.dates
+                    .map((date) => {
+                        if (date === null) return;
+                        const tempId = randomId();
+                        const event: TimelineEvent.Event = {
+                            ...newEvent,
+                            date: date.toISOString(),
+                            id: tempId,
+                        };
+                        return event;
+                    })
+                    .filter((x): x is TimelineEvent.Event => x !== undefined);
+                await queryClient.cancelQueries({
+                    queryKey: ["timelineEvents"],
+                });
+                const previousEvents = queryClient.getQueryData<TimelineEvent.Event[]>([
+                    "timelineEvents",
+                ]);
+                newEvents.forEach((event) => {
+                    queryClient.setQueryData<TimelineEvent.Event>(["timelineEvent", event.id], {
+                        ...event,
+                    });
+                });
+                queryClient.setQueryData<TimelineEvent.Event[]>(
+                    ["timelineEvents"],
+                    [...(previousEvents ?? []), ...newEvents],
+                );
+                const assignment = newEvent.assignments[0];
+                let previousAssignmentEvents: TimelineEvent.Event[] | undefined = [];
+                if (assignment) {
+                    previousAssignmentEvents = queryClient.getQueryData<TimelineEvent.Event[]>([
+                        "assignmentEvents",
+                        assignment.id,
+                    ]);
+                    queryClient.setQueryData(
+                        ["assignmentEvents", assignment.id],
+                        [...(previousAssignmentEvents ?? []), ...newEvents],
+                    );
+                }
+                return { previousEvents, previousAssignmentEvents, newEvents, assignment };
+            },
+            onError(error, newData, context) {
+                console.error("Error updating record", { error, newData, context });
+                if (context?.previousEvents) {
+                    queryClient.setQueryData(["timelineEvents"], context.previousEvents);
+                }
+                if (context?.previousAssignmentEvents && context.assignment) {
+                    queryClient.setQueryData(
+                        ["assignmentEvents", context.assignment.id],
+                        context.previousAssignmentEvents,
+                    );
+                }
+                if (context?.newEvents) {
+                    context.newEvents.forEach((event) => {
+                        queryClient.setQueryData(["timelineEvent", event.id], null);
+                    });
+                }
+            },
+            onSettled(data, error, variables, context) {
+                console.log(
+                    "Events created",
+                    { data, error, variables, context },
+                    // data?.isCompleted,
+                );
+                if (context?.newEvents) {
+                    context.newEvents.forEach((event) => {
+                        queryClient.setQueryData(["timelineEvent", event.id], null);
+                        queryClient.invalidateQueries({
+                            queryKey: ["timelineEvent", event.id],
+                        });
+                    });
+                }
+                queryClient.invalidateQueries({
+                    queryKey: ["timelineEvents"],
+                });
+                if (context?.assignment) {
+                    queryClient.invalidateQueries({
+                        queryKey: ["assignmentEvents", context.assignment.id],
+                    });
+                }
+            },
+        }),
         eventCompleted: useMutation({
             mutationFn: async (isCompleted: boolean) => {
                 const event = timelineEvent;

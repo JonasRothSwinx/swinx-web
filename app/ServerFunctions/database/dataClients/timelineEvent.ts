@@ -3,6 +3,8 @@ import TimelineEvent from "../../types/timelineEvent";
 import database from "../dbOperations";
 import config from "./config";
 import dayjs from "@/app/utils/configuredDayJs";
+import { randomId } from "@mui/x-data-grid-generator";
+import { useMutation } from "@tanstack/react-query";
 
 //MARK: Create Timeline Event
 /**
@@ -15,37 +17,59 @@ export async function createTimelineEvent(
 ): Promise<TimelineEvent.EventWithId> {
     const campaignId = timelineEvent.campaign.id;
     const queryClient = config.getQueryClient();
-    const id = await database.timelineEvent.create(simplify(timelineEvent));
-    const createdTimelineEvent: TimelineEvent.EventWithId = { ...timelineEvent, id, info: {} };
-    queryClient.invalidateQueries({
-        queryKey: ["timelineEvent", id],
-        type: "all",
-    });
-    queryClient.invalidateQueries({
-        queryKey: ["timelineEvents", campaignId],
-        type: "all",
-    });
-    queryClient.invalidateQueries({
-        queryKey: ["timelineEvents"],
-        type: "all",
-    });
-
-    queryClient.setQueryData(["timelineEvent", id], { ...timelineEvent, id });
+    const assignment = timelineEvent.assignments[0];
+    //  const mutation = useMutation()
+    const tempId = randomId();
+    const tempEvent: TimelineEvent.Event = { ...timelineEvent, id: tempId };
+    queryClient.setQueryData(["timelineEvent", tempId], tempEvent);
     queryClient.setQueryData(["timelineEvents", campaignId], (prev: TimelineEvent.Event[]) => {
         if (!prev) {
-            return [createdTimelineEvent];
+            return [tempEvent];
         }
-        return [...prev, createdTimelineEvent];
+        return [...prev, tempEvent];
     });
     queryClient.setQueryData(["timelineEvents"], (prev: TimelineEvent.Event[]) => {
         if (!prev) {
-            return [createdTimelineEvent];
+            return [tempEvent];
         }
-        return [...prev, createdTimelineEvent];
+        return [...prev, tempEvent];
     });
-    queryClient.refetchQueries({ queryKey: ["timelineEvents"] });
-    queryClient.refetchQueries({ queryKey: ["timelineEvent", id] });
-    queryClient.refetchQueries({ queryKey: ["timelineEvents", campaignId] });
+    if (assignment) {
+        queryClient.setQueryData(
+            ["assignmentEvents", assignment.id],
+            (prev: TimelineEvent.Event[]) => {
+                if (!prev) {
+                    return [tempEvent];
+                }
+                return [...prev, tempEvent];
+            },
+        );
+    }
+
+    const id = await database.timelineEvent.create(simplify(timelineEvent));
+    const createdTimelineEvent: TimelineEvent.EventWithId = { ...timelineEvent, id, info: {} };
+
+    queryClient.invalidateQueries({
+        queryKey: ["timelineEvent", id],
+    });
+    queryClient.invalidateQueries({
+        queryKey: ["timelineEvents", campaignId],
+    });
+    queryClient.invalidateQueries({
+        queryKey: ["timelineEvents"],
+    });
+    if (assignment) {
+        queryClient.invalidateQueries({
+            queryKey: ["assignmentEvents", assignment.id],
+        });
+        queryClient.invalidateQueries({
+            queryKey: ["assignment", assignment.id],
+        });
+    }
+
+    // queryClient.refetchQueries({ queryKey: ["timelineEvents"] });
+    // queryClient.refetchQueries({ queryKey: ["timelineEvent", id] });
+    // queryClient.refetchQueries({ queryKey: ["timelineEvents", campaignId] });
     return createdTimelineEvent;
 }
 
@@ -190,6 +214,7 @@ export async function deleteTimelineEvent(id: string): Promise<void> {
     console.log("Deleted Timeline Event", data ?? "");
 }
 
+//MARK: By Assignment
 /**
  * List all timeline events, belonging to an assignment
  * @param assignmentId The id of the assignment to list timeline events for
@@ -207,7 +232,7 @@ export async function listByAssignment(assignmentId: string): Promise<TimelineEv
     const timelineEvents = await database.timelineEvent.listByAssignment(assignmentId);
     timelineEvents.forEach((event) => {
         queryClient.setQueryData(["timelineEvent", event.id], event);
-        queryClient.refetchQueries({ queryKey: ["timelineEvent", event.id] });
+        // queryClient.refetchQueries({ queryKey: ["timelineEvent", event.id] });
     });
     return timelineEvents;
 }

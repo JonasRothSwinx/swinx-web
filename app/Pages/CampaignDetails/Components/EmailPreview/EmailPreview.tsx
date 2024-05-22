@@ -144,11 +144,11 @@ export default function EmailPreview(props: EmailPreviewProps) {
             linkBase: "http://localhost:3000/Response?",
             linkData: "testData",
             customerCompany: customer.data?.company ?? "<Kundendaten nicht gefunden>",
-            honorar: `${assignment.data?.budget} €` ?? "<Honorar nicht gefunden>",
+            // honorar: `${assignment.data?.budget} €` ?? "<Honorar nicht gefunden>",
         };
 
         return data;
-    }, [selectedCandidate, assignment.data, customer.data]);
+    }, [selectedCandidate, customer.data]);
 
     const EventHandlers = {
         sendEmail: async () => {

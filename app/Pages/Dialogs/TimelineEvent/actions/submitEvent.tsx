@@ -13,7 +13,7 @@ import { assignments } from "@/app/ServerFunctions/database/dbOperations";
 interface createEventProps {
     editing: boolean;
     event: TimelineEvent.Event;
-    updatedData: Partial<TimelineEvent.Event>;
+    updatedData?: Partial<TimelineEvent.Event>;
     dates: dates;
 }
 export async function submitEvent(props: createEventProps) {
@@ -34,8 +34,13 @@ async function updateEvent(props: createEventProps) {
     if (!event.id) throw new Error("No event id provided for event update");
     const assignment = event.assignments[0];
     if (!dates.dates[0]) throw new Error("No date provided for event update");
+    if (!updatedData) return event;
     event.date = dates.dates[0].toISOString();
-    dataClient.timelineEvent.update({ id: event.id, updatedData: updatedData });
+    const updatedEvent = await dataClient.timelineEvent.update({
+        id: event.id,
+        updatedData: updatedData,
+    });
+    return updatedEvent;
 }
 
 async function createEvent(props: createEventProps) {
@@ -59,6 +64,7 @@ async function createEvent(props: createEventProps) {
         event.emailTriggers = applyEmailTriggerDefaults({ event });
         createEmailTriggers({ event });
     });
+    return createdEvents;
 }
 interface applyDefaultValuesProps {
     event: TimelineEvent.Event;

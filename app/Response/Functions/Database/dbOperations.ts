@@ -108,7 +108,6 @@ export async function getCampaignInfo({ id }: GetCampaignInfoParams) {
                 //
                 "id",
                 "customers.company",
-                "projectManagers.projectManager.email",
             ],
         },
     );
@@ -118,8 +117,6 @@ export async function getCampaignInfo({ id }: GetCampaignInfoParams) {
     }
     const dataOut = {
         customerCompany: campaignResponse.data?.customers?.[0]?.company ?? "<Error>",
-        projectManagers:
-            campaignResponse.data?.projectManagers?.map((pm) => pm.projectManager.email) ?? [],
     };
     return dataOut;
 }
@@ -166,4 +163,29 @@ export async function processResponse({ response, candidateId }: ProcessResponse
         return null;
     }
     return data.id;
+}
+
+//MARK: - Get Project Managers
+interface GetProjectManagerEmailsParams {
+    campaignId: string;
+}
+export async function getProjectManagerEmails({ campaignId }: GetProjectManagerEmailsParams) {
+    const { data, errors } = await client.models.Campaign.get(
+        { id: campaignId },
+        {
+            selectionSet: [
+                //
+                "projectManagers.projectManager.email",
+            ],
+        },
+    );
+    if (errors) {
+        console.error(errors);
+        throw new Error("Error fetching project managers");
+    }
+    if (!data) {
+        return [];
+    }
+    const emails = data.projectManagers.map((pm) => pm.projectManager.email);
+    return emails;
 }

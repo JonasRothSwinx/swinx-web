@@ -7,6 +7,8 @@ import dataClient from "../ServerFunctions/database";
 import ResponseLanding from "./Components/ResponseLanding";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import styles from "./styles";
+import Head from "next/head";
+import { Metadata } from "next";
 
 const queryClient = new QueryClient();
 dataClient.config.setQueryClient(queryClient);
