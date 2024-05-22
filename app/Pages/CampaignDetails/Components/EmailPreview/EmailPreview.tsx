@@ -296,6 +296,7 @@ export default function EmailPreview(props: EmailPreviewProps) {
 }
 function replaceVariables(template: string, variables: Partial<inviteTemplateVariables>) {
     let out = template;
+    // debugger;
     Object.entries(variables).forEach(([key, value]) => {
         if (typeof value === "string") {
             out = out.replaceAll(`{{${key}}}`, value);
