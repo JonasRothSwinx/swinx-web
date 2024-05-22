@@ -34,7 +34,6 @@ export default async function sendInvites({
         alert("Kampagnenmanager nicht gefunden");
         return;
     }
-    return;
     const groupedCandidates = candidates.reduce(
         (acc, candidate) => {
             const level = candidate.influencer.emailLevel;

@@ -127,10 +127,17 @@ export default function CandidatePicker(props: CandidatePickerProps) {
                     return dataClient.candidate.delete(candidate.id, assignment.data.id);
                 }),
             );
-
+            const addedCandidates = changedCandidates.added.filter((influencer) => {
+                return !assignment.data.candidates?.find(
+                    (candidate) => candidate.influencer.id === influencer.id,
+                );
+            });
+            const diff = changedCandidates.added.length - addedCandidates.length;
+            if (diff > 0 && process.env.NODE_ENV === "development")
+                console.log(`removed ${diff} duplicates from addedCandidates`);
             //create new candidates
             tasks.push(
-                ...changedCandidates.added.map((candidate) =>
+                ...addedCandidates.map((candidate) =>
                     dataClient.candidate.create(candidate, assignment.data.id),
                 ),
             );

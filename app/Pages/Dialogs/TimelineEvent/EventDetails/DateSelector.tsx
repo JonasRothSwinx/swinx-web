@@ -16,7 +16,34 @@ import { dates, styles } from "../TimelineEventDialog";
 import { PartialWith } from "@/app/Definitions/types";
 import { useQuery } from "@tanstack/react-query";
 import dataClient from "@/app/ServerFunctions/database";
+import { EventType } from "@aws-sdk/client-sesv2";
 
+//#region config
+const isRepeatable: {
+    [key in TimelineEvent.eventType | "none"]: boolean;
+} = {
+    none: false,
+
+    Invites: true,
+    Post: false,
+    Video: false,
+    WebinarSpeaker: false,
+
+    Webinar: false,
+};
+const isFixedDate: {
+    [key in TimelineEvent.eventType | "none"]: boolean;
+} = {
+    none: false,
+
+    Invites: false,
+    Post: false,
+    Video: false,
+    WebinarSpeaker: true,
+
+    Webinar: false,
+};
+//#endregion
 interface DateSelectorProps {
     timelineEvent: PartialWith<TimelineEvent.Event, "parentEvent" | "childEvents" | "campaign">;
     setTimelineEvent: Dispatch<SetStateAction<DateSelectorProps["timelineEvent"]>>;
@@ -98,30 +125,7 @@ export function DateSelector(props: DateSelectorProps) {
     }
     //########################################
     //#region Configuration
-    const isRepeatable: {
-        [key in TimelineEvent.eventType | "none"]: boolean;
-    } = {
-        none: false,
 
-        Invites: true,
-        Post: false,
-        Video: false,
-        WebinarSpeaker: false,
-
-        Webinar: false,
-    };
-    const isFixedDate: {
-        [key in TimelineEvent.eventType | "none"]: boolean;
-    } = {
-        none: false,
-
-        Invites: false,
-        Post: false,
-        Video: false,
-        WebinarSpeaker: true,
-
-        Webinar: false,
-    };
     const fixedDate: {
         [key in TimelineEvent.eventType | "none"]: () => Dayjs | null;
     } = {
@@ -200,6 +204,7 @@ export function DateSelector(props: DateSelectorProps) {
                     parentEventType={hasParentEvent[eventType]}
                     timelineEvent={timelineEvent}
                     setTimelineEvent={setTimelineEvent}
+                    setDates={setDates}
                 />
             </DialogContent>
         </>
@@ -274,14 +279,17 @@ function Date(props: DateProps) {
     );
 }
 
+//MARK: ParentEventSelector
 interface ParentEventSelectorProps {
     parentEventType: { parentEventType: TimelineEvent.multiEventType } | false;
     timelineEvent: PartialWith<TimelineEvent.Event, "parentEvent" | "campaign">;
     setTimelineEvent: DateSelectorProps["setTimelineEvent"];
+    setDates: DateSelectorProps["setDates"];
 }
 function ParentEventSelector(props: ParentEventSelectorProps) {
-    const { timelineEvent, setTimelineEvent } = props;
+    const { timelineEvent, setTimelineEvent, setDates } = props;
     const { id: campaignId } = timelineEvent.campaign;
+    const { type: eventType } = timelineEvent;
 
     const parentEventType = props.parentEventType ? props.parentEventType.parentEventType : null;
 
@@ -328,6 +336,13 @@ function ParentEventSelector(props: ParentEventSelectorProps) {
                 ...prev,
                 parentEvent: selectedEvent,
             }));
+            //If event type has a fixed date, set the date to the parent event date
+            if (eventType && isFixedDate[eventType]) {
+                setDates((prev) => ({
+                    ...prev,
+                    dates: prev.dates.map((x) => dayjs(selectedEvent.date)),
+                }));
+            }
         },
     };
 
