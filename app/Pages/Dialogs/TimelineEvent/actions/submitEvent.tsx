@@ -10,26 +10,34 @@ import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
 import { assignments } from "@/app/ServerFunctions/database/dbOperations";
 
-interface createEventProps {
-    editing: boolean;
-    event: TimelineEvent.Event;
+type updateEventProps = SubmitEventProps & {
+    editing: true;
     updatedData?: Partial<TimelineEvent.Event>;
+};
+type createEventProps = SubmitEventProps & {
+    editing: false;
+};
+type SubmitEventProps = {
+    event: TimelineEvent.Event;
     dates: dates;
-}
-export async function submitEvent(props: createEventProps) {
+    editing: boolean;
+};
+export async function submitEvent(props: updateEventProps): Promise<TimelineEvent.Event>;
+export async function submitEvent(props: createEventProps): Promise<TimelineEvent.EventWithId[]>;
+export async function submitEvent(props: createEventProps | updateEventProps) {
     const { editing } = props;
     try {
         if (editing) {
-            updateEvent(props);
+            return updateEvent(props);
         } else {
-            createEvent(props);
+            return createEvent(props);
         }
     } catch (error) {
         console.log(error);
     }
 }
 
-async function updateEvent(props: createEventProps) {
+async function updateEvent(props: updateEventProps) {
     const { event, dates, updatedData } = props;
     if (!event.id) throw new Error("No event id provided for event update");
     const assignment = event.assignments[0];

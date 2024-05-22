@@ -5,6 +5,8 @@ import { SendMailProps } from "../types";
 import { TemplateVariables } from "./CampaignInviteEmail";
 import { templates } from ".";
 import ProjectManagers from "@/app/ServerFunctions/types/projectManagers";
+import encodeQueryParams from "./encodeQueryParams";
+import { getInviteBaseUrl } from "@/app/ServerFunctions/serverActions";
 
 /**
  * Send campaign invites to candidates
@@ -67,7 +69,7 @@ export default async function send(props: SendMailProps) {
     const senderName = ProjectManagers.getFullName(campaignManager);
     const senderEmail = campaignManager.email;
     const campaignId = assignment.campaign.id;
-    const baseUrl = process.env.BASE_URL + "/Response?data=";
+    const baseUrl = await getInviteBaseUrl();
 
     const senderAdress = `${senderName} <${senderEmail}>` ?? "swinx GmbH <noreply@swinx.de>";
     const defaultTemplateData: TemplateVariables = {
@@ -95,13 +97,18 @@ export default async function send(props: SendMailProps) {
                 return null;
             }
             const candidateFullName = `${influencer.firstName} ${influencer.lastName}`;
-            const baseParams: CampaignInviteEncodedData = {
+            // const baseParams: CampaignInviteEncodedData = {
+            //     assignmentId: assignment.id,
+            //     candidateId,
+            //     candidateFullName,
+            //     campaignId,
+            // };
+            const encodedData = encodeQueryParams({
                 assignmentId: assignment.id,
                 candidateId,
                 candidateFullName,
                 campaignId,
-            };
-            const encodedData = encodeURIComponent(btoa(JSON.stringify(baseParams)));
+            });
             return {
                 to: candidate.influencer.email,
                 templateData: JSON.stringify({

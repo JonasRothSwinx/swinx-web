@@ -236,25 +236,31 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
             };
         },
         onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
+            // debugger;
             event.preventDefault();
             const combinedEvent = { ...timelineEvent, ...updatedData };
             const type = combinedEvent.type;
             if (!type || !TimelineEvent.isTimelineEventType(type))
                 throw new Error("No event type selected");
 
-            if (!validateFields(combinedEvent, type)) return;
             // if (!campaignId || !TimelineEvent.validate(combinedEvent) || !targetAssignment) return;
             // if (!TimelineEvent.isTimelineEvent(combinedEvent)) throw new Error("Invalid event type");
-
-            submitEvent({
-                editing,
-                event: combinedEvent,
-                // campaign,
-                dates,
-                updatedData,
-                // queryClient,
-                // assignment: targetAssignment,
-            });
+            if (!editing) {
+                if (!validateFields(combinedEvent, type)) return;
+                DataChange.createEvent.mutate({ newEvent: combinedEvent, dates });
+            } else {
+                if (!validateFields(timelineEvent, type)) return;
+                DataChange.updateEvent.mutate({ previousEvent: timelineEvent, updatedData });
+                // submitEvent({
+                //     editing,
+                //     event: combinedEvent,
+                //     // campaign,
+                //     dates,
+                //     updatedData,
+                //     // queryClient,
+                //     // assignment: targetAssignment,
+                // });
+            }
             console.log("closing");
             EventHandlers.handleClose(true)();
         },
@@ -369,6 +375,115 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                         });
                     });
                 }
+                queryClient.invalidateQueries({
+                    queryKey: ["timelineEvents"],
+                });
+                if (context?.assignment) {
+                    queryClient.invalidateQueries({
+                        queryKey: ["assignmentEvents", context.assignment.id],
+                    });
+                }
+            },
+        }),
+        updateEvent: useMutation({
+            mutationFn: async (input: {
+                previousEvent: TimelineEvent.Event;
+                updatedData: Partial<TimelineEvent.Event>;
+            }) => {
+                // debugger;
+                const { previousEvent, updatedData } = input;
+                const id = previousEvent.id;
+                if (process.env.NODE_ENV === "development")
+                    console.log("Updating event", { id, previousEvent, updatedData });
+                if (!id) throw new Error("No id provided for event update");
+                const updatedEvent = await submitEvent({
+                    editing: true,
+                    event: previousEvent,
+                    updatedData,
+                    dates,
+                });
+                return updatedEvent;
+            },
+            onMutate: async (input) => {
+                const { previousEvent, updatedData } = input;
+                await queryClient.cancelQueries({
+                    queryKey: ["timelineEvent", timelineEvent.id],
+                });
+                await queryClient.cancelQueries({
+                    queryKey: ["timelineEvents", campaignId],
+                });
+                const newEvent = { ...previousEvent, ...updatedData };
+                const previousEvents = queryClient.getQueryData<TimelineEvent.Event[]>([
+                    "timelineEvents",
+                ]);
+                queryClient.setQueryData<TimelineEvent.Event>(["timelineEvent", timelineEvent.id], {
+                    ...newEvent,
+                });
+                queryClient.setQueryData<TimelineEvent.Event[]>(
+                    ["timelineEvents", campaignId],
+                    (prev) => {
+                        // debugger;
+                        if (!prev) return [newEvent];
+                        return prev.map((event) => (event.id === newEvent.id ? newEvent : event));
+                    },
+                );
+
+                const assignment = newEvent.assignments[0];
+                let previousAssignmentEvents: TimelineEvent.Event[] | undefined = [];
+                if (assignment) {
+                    previousAssignmentEvents = queryClient.getQueryData<TimelineEvent.Event[]>([
+                        "assignmentEvents",
+                        assignment.id,
+                    ]);
+                    queryClient.setQueryData<TimelineEvent.Event[]>(
+                        ["assignmentEvents", assignment.id],
+                        (prev) => {
+                            if (!prev) return [newEvent];
+                            return prev.map((event) =>
+                                event.id === newEvent.id ? newEvent : event,
+                            );
+                        },
+                    );
+                }
+                return {
+                    previousEvent,
+                    newEvent,
+                    previousEvents,
+                    previousAssignmentEvents,
+                    assignment,
+                };
+            },
+            onError(error, newEvent, context) {
+                console.error("Error updating record", { error, newEvent, context });
+                if (context?.previousEvent) {
+                    queryClient.setQueryData(
+                        ["timelineEvent", timelineEvent.id],
+                        context.previousEvent,
+                    );
+                }
+                if (context?.previousEvents) {
+                    queryClient.setQueryData(
+                        ["timelineEvents", campaignId],
+                        context.previousEvents,
+                    );
+                }
+                if (context?.previousAssignmentEvents && context.assignment) {
+                    queryClient.setQueryData(
+                        ["assignmentEvents", context.assignment.id],
+                        context.previousAssignmentEvents,
+                    );
+                }
+            },
+            onSettled(data, error, variables, context) {
+                if (process.env.NODE_ENV === "development")
+                    console.log(
+                        "Event updated",
+                        { data, error, variables, context },
+                        // data?.isCompleted,
+                    );
+                queryClient.invalidateQueries({
+                    queryKey: ["timelineEvent", timelineEvent.id],
+                });
                 queryClient.invalidateQueries({
                     queryKey: ["timelineEvents"],
                 });
