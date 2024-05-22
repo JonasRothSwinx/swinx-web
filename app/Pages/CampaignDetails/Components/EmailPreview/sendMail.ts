@@ -24,16 +24,17 @@ export default async function sendInvites({
 }: SendInvitesProps) {
     console.log("Sending invites");
 
-    const campaignManager = await dataClient.projectManager.getForUser();
-    if (!campaignManager) {
-        alert("Kampagnenmanager nicht gefunden");
-        return;
-    }
     const campaign = queryClient.getQueryData<Campaign.Campaign>(["campaign", campaignId]);
     if (!campaign) {
         alert("Kampagnendaten nicht gefunden");
         return;
     }
+    const campaignManager = campaign.projectManagers[0];
+    if (!campaignManager) {
+        alert("Kampagnenmanager nicht gefunden");
+        return;
+    }
+    return;
     const groupedCandidates = candidates.reduce(
         (acc, candidate) => {
             const level = candidate.influencer.emailLevel;
