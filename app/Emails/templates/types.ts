@@ -26,6 +26,7 @@ export type SendMailProps = {
     fromAdress?: string;
     commonContext: Partial<EmailContextProps>;
     individualContext: Partial<EmailContextProps>[];
+    bcc?: string[];
 };
 export type SendMailFunction = (props: SendMailProps) => Promise<unknown>;
 

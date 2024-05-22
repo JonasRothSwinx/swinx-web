@@ -4,6 +4,7 @@ import { Box, Button, SxProps } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "@/app/utils/configuredDayJs";
 import { useMemo } from "react";
+import printJson from "./json";
 
 export default function DebugButtons() {
     // const queryClient = useQueryClient();
@@ -87,6 +88,14 @@ export default function DebugButtons() {
                 }}
             >
                 Test Email Triggers
+            </Button>
+            <Button
+                variant="outlined"
+                onClick={async () => {
+                    printJson();
+                }}
+            >
+                TESTJSON
             </Button>
         </Box>
     );
