@@ -1,4 +1,4 @@
-import { startReminderRoutine } from "./functions/actions";
+import startReminderRoutine from "./functions";
 
 const reminderProcessor = {
     start: startReminderRoutine,
