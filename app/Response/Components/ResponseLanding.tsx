@@ -1,8 +1,10 @@
+import { Nullable } from "@/app/Definitions/types";
+import { Candidates } from "@/app/ServerFunctions/types/candidates";
+import dayjs from "@/app/utils/configuredDayJs";
 import {
     Box,
     Button,
     CircularProgress,
-    Unstable_Grid2 as Grid,
     List,
     SxProps,
     Table,
@@ -12,22 +14,14 @@ import {
     Typography,
 } from "@mui/material";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { dataClient } from "../Functions/Database";
-import dayjs from "@/app/utils/configuredDayJs";
 import { Assignment, Campaign, TimelineEvent, Webinar } from "../Functions/Database/types";
 import sortEvents, { SortedEvents } from "../Functions/sortEvents";
-import { Nullable } from "@/app/Definitions/types";
 import Loading from "./Loading";
-import React from "react";
-import { Candidates } from "@/app/ServerFunctions/types/candidates";
-import Image from "next/image";
-import emailClient from "@/app/Emails";
-import sesAPIClient from "@/app/Emails/sesAPI";
-import { render } from "@react-email/components";
-import InfluencerResponseEmail from "@/app/Emails/manualTemplates/InfluencerResponse";
-import { renderAsync } from "@react-email/render";
+import notifyResponse from "../Functions/notifyResponse";
 
 export default function ResponseLanding() {
     const params = useSearchParams();
@@ -136,30 +130,16 @@ export default function ResponseLanding() {
     //#endregion
     const EventHandler = {
         processResponse: async (response: boolean) => {
-            queryClient.setQueryData(["candidate"], {
-                ...candidate.data,
-                response: response ? "accepted" : "rejected",
-            });
-            const dataResponse = await dataClient.processResponse({ candidateId, response });
-
-            //TODO: Move this in a server component
-            const toAdresses = [CampaignData.data.projectManagers[0]];
-            const ccAdresses = CampaignData.data.projectManagers.slice(1);
-            const sender = { name: "Swinx Web", email: "noreply@swinx.de" };
-            const subject = `${candidateFullName} hat auf Anfrage geantwortet`;
-            const html = renderAsync(
-                InfluencerResponseEmail({
-                    accepted: response,
-                    InfluencerName: candidateFullName,
-                    customerName: CampaignData.data.customerCompany,
-                }),
-            );
-            sesAPIClient.send({
-                ToAddresses: toAdresses,
-                CcAddresses: ccAdresses,
-                sender,
-                subject,
-                html: await html,
+            // queryClient.setQueryData(["candidate"], {
+            //     ...candidate.data,
+            //     response: response ? "accepted" : "rejected",
+            // });
+            // const dataResponse = await dataClient.processResponse({ candidateId, response });
+            await notifyResponse({
+                response,
+                candidateFullName,
+                customerCompany: CampaignData.data.customerCompany,
+                campaignId,
             });
         },
     };
@@ -259,9 +239,7 @@ function WebinarDescription({ webinar, campaign }: WebinarDescriptionProps) {
 }
 
 //MARK: - AssignmentDescription
-interface AssignmentDescriptionProps {
-    events: TimelineEvent[];
-}
+
 type EventTypeDescription = {
     [key: string]: (props: { events: TimelineEvent[] }) => Nullable<JSX.Element>;
 };
@@ -490,16 +468,21 @@ function WebinarSpeakerDescription({ events }: WebinarSpeakerDescriptionProps) {
 
 //MARK: BudgetDescriptionText
 function BudgetDescriptionText() {
-    const queryClient = useQueryClient();
-    const assignmentData = queryClient.getQueryData<Assignment>(["assignment"]);
-    if (!assignmentData) {
-        queryClient.refetchQueries();
-        return <Loading />;
-    }
+    // const queryClient = useQueryClient();
+    // const assignmentData = queryClient.getQueryData<Assignment>(["assignment"]);
+    // if (!assignmentData) {
+    //     queryClient.refetchQueries();
+    //     return <Loading />;
+    // }
+    // return (
+    //     <Typography>
+    //         Für ihren Aufwand werden Sie mit einem Honorar von{" "}
+    //         <strong>{assignmentData.budget} €</strong> vergütet.
+    //     </Typography>
+    // );
     return (
         <Typography>
-            Für ihren Aufwand werden Sie mit einem Honorar von{" "}
-            <strong>{assignmentData.budget} €</strong> vergütet.
+            Für ihren Aufwand werden Sie mit einem attraktiven Honorar vergütet.
         </Typography>
     );
 }

@@ -6,6 +6,7 @@ import Customer from "@/app/ServerFunctions/types/customer";
 import { QueryClient, useQueryClient } from "@tanstack/react-query";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import ProjectManagers from "@/app/ServerFunctions/types/projectManagers";
+import dataClient from "@/app/ServerFunctions/database";
 
 interface SendInvitesProps {
     customer: Customer.Customer;
@@ -23,9 +24,11 @@ export default async function sendInvites({
 }: SendInvitesProps) {
     console.log("Sending invites");
 
-    const campaignManager = queryClient.getQueryData<ProjectManagers.ProjectManager>([
-        "projectManager",
-    ]);
+    const campaignManager = await dataClient.projectManager.getForUser();
+    if (!campaignManager) {
+        alert("Kampagnenmanager nicht gefunden");
+        return;
+    }
     const campaign = queryClient.getQueryData<Campaign.Campaign>(["campaign", campaignId]);
     if (!campaign) {
         alert("Kampagnendaten nicht gefunden");

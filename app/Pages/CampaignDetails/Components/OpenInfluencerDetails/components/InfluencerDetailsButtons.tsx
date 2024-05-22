@@ -8,7 +8,7 @@ import {
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import Influencer from "@/app/ServerFunctions/types/influencer";
-import { Tooltip, IconButton } from "@mui/material";
+import { Tooltip, IconButton, Box } from "@mui/material";
 import { MouseEvent, useState } from "react";
 import database from "@/app/ServerFunctions/database/dbOperations";
 import TimelineEventDialog from "@/app/Pages/Dialogs/TimelineEvent/TimelineEventDialog";
@@ -181,11 +181,11 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
         >
             {DialogElements[openDialog]()}
             <Tooltip title="Honorar bearbeiten" placement="top">
-                <span>
+                <Box>
                     <IconButton disabled={isProcessing} onClick={EventHandlers.openBudget()}>
                         <EuroSymbolIcon color={assignment.budget ? "inherit" : "error"} />
                     </IconButton>
-                </span>
+                </Box>
             </Tooltip>
             {hasNecessaryData(assignment, events) && (
                 <Tooltip title="Kandidaten zuweisen" placement="top">
@@ -230,5 +230,5 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
     );
 }
 function hasNecessaryData(assignment: Assignment.Assignment, events: TimelineEvent.Event[]) {
-    return !!assignment.budget && assignment.budget > 0 && events.length > 0;
+    return /* !!assignment.budget && assignment.budget > 0 && */ events.length > 0;
 }

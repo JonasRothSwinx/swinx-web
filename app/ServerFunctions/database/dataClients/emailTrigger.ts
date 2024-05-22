@@ -34,7 +34,7 @@ async function createEmailTrigger(
     trigger: Omit<EmailTriggers.EmailTrigger, "id"> & { event: { id: string } },
 ): Promise<EmailTriggers.EmailTrigger> {
     try {
-        console.log("In datacclient emailTrigger createEmailTrigger", trigger);
+        // console.log("In datacclient emailTrigger createEmailTrigger", trigger);
         const queryClient = config.getQueryClient();
 
         const id = await dbOperations.emailTrigger.create({ ...trigger });

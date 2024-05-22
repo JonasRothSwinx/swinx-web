@@ -22,7 +22,8 @@ export default async function sendMail({
     text,
 }: SendMailProps) {
     const emailClient = await getSESClient();
-    const bcc = sender?.email ? [sender.email] : [];
+    const bcc: string[] = [];
+    if (sender && !sender.email.includes("noreply")) bcc.push(sender.email);
     const command = new SendEmailCommand({
         FromEmailAddress: sender
             ? `${sender.name} <${sender.email}>`
