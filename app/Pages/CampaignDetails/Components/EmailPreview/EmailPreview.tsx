@@ -2,7 +2,7 @@ import { RefreshIcon } from "@/app/Definitions/Icons";
 import stylesExporter from "@/app/Pages/styles/stylesExporter";
 import emailClient from "@/app/Emails/";
 import templateDefinitions, { templateName } from "@/app/Emails/templates";
-import { getUserGroups } from "@/app/ServerFunctions/serverActions";
+import { getInviteBaseUrl, getUserGroups } from "@/app/ServerFunctions/serverActions";
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import { Candidates } from "@/app/ServerFunctions/types/candidates";
 import {
@@ -25,6 +25,7 @@ import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
 import { Nullable } from "@/app/Definitions/types";
 import Customer from "@/app/ServerFunctions/types/customer";
 import dataClient from "@/app/ServerFunctions/database";
+import encodeQueryParams from "@/app/Emails/templates/campaignInvite/encodeQueryParams";
 
 interface GetTemplateProps {
     setIsLoading: (value: boolean) => void;
@@ -111,6 +112,10 @@ export default function EmailPreview(props: EmailPreviewProps) {
             return (await dataClient.customer.byCampaign(campaignId))[0];
         },
     });
+    const baseUrl = useQuery({
+        queryKey: ["campaignInviteBaseUrl"],
+        queryFn: () => getInviteBaseUrl(),
+    });
     const candidates = useMemo(() => {
         if (!assignment.data) return [];
         return assignment.data.candidates ?? [];
@@ -138,17 +143,24 @@ export default function EmailPreview(props: EmailPreviewProps) {
     }, [candidates]);
 
     const variables: inviteTemplateVariables = useMemo(() => {
-        if (!selectedCandidate) return {};
+        if (!selectedCandidate || !selectedCandidate.id || !baseUrl.data || !campaignId) return {};
+        const candidateFullName = `${selectedCandidate.influencer.firstName} ${selectedCandidate.influencer.lastName}`;
+        const encodedData = encodeQueryParams({
+            assignmentId,
+            candidateId: selectedCandidate.id,
+            campaignId,
+            candidateFullName,
+        });
         const data: inviteTemplateVariables = {
-            name: `${selectedCandidate.influencer.firstName} ${selectedCandidate.influencer.lastName}`,
-            linkBase: "http://localhost:3000/Response?",
-            linkData: "testData",
+            name: candidateFullName,
+            linkBase: baseUrl.data,
+            linkData: encodedData,
             customerCompany: customer.data?.company ?? "<Kundendaten nicht gefunden>",
             // honorar: `${assignment.data?.budget} €` ?? "<Honorar nicht gefunden>",
         };
 
         return data;
-    }, [selectedCandidate, customer.data]);
+    }, [selectedCandidate, baseUrl.data, campaignId, assignmentId, customer.data?.company]);
 
     const EventHandlers = {
         sendEmail: async () => {

@@ -88,6 +88,7 @@ export async function updateTimelineEvent({
     id,
     updatedData,
 }: UpdateTimelineEventParams): Promise<TimelineEvent.Event> {
+    // debugger;
     const queryClient = config.getQueryClient();
     const previousTimelineEvent = queryClient.getQueryData<TimelineEvent.Event>([
         "timelineEvent",

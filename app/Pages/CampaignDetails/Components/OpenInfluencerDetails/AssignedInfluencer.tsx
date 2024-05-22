@@ -85,10 +85,10 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
     const [categorizedEvents, setCategorizedEvents] = useState<EventCategory[]>([]);
 
     useEffect(() => {
-        console.log("recategorizing events");
+        // console.log("recategorizing events");
         const newCategorizedEvents = categorizeEvents(assignmentEvents?.data ?? []);
         setCategorizedEvents(newCategorizedEvents);
-        console.log({ newCategorizedEvents });
+        // console.log({ newCategorizedEvents });
     }, [assignmentEvents.data, campaign.data]);
     const EventHandlers = {
         setCampaign: (updatedCampaign: Campaign.Campaign) => {

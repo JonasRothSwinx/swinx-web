@@ -56,45 +56,8 @@ interface WebinarUpdate {
     title?: string;
     date?: string;
 }
-// export async function parseWebinarFormData(formJson: { [key: string]: any }) {
-//     console.log(formJson);
-//     const { id, title, date: dateRaw } = formJson;
 
-//     if (!(id && title && dateRaw)) {
-//         throw new Error("Missing Data");
-//     }
-//     const date = dayjs(dateRaw, "DD.MM.YYYY HH:MM").toISOString();
-//     const webinar: WebinarUpdate = {
-//         id,
-//         title,
-//         date,
-//     };
-//     const response = await updateWebinar(webinar);
-// }
-
-// export async function createWebinar(props: WebinarNew) {
-//     const customer = props;
-//     const { data, errors } = await client.models.Webinar.create(customer);
-//     if (errors) throw new Error(errors.map((x) => x.message).join(";\n"));
-//     return data;
-// }
-
-// export async function updateWebinar(props: WebinarUpdate) {
-//     const customer = props;
-//     const { data, errors } = await client.models.Webinar.update(customer);
-//     if (errors) throw new Error(errors.map((x) => x.message).join(";\n"));
-//     return data;
-// }
-// export async function deleteWebinar(webinar: Webinar) {
-//     if (!webinar.id) throw new Error("Missing Data");
-
-//     const { errors } = await client.models.Webinar.delete({ id: webinar.id });
-//     console.log(errors);
-// }
-
-//#endregion
-
-//#region InfluencerAssignments
-// export interface InfluencerAssignment {}
-// export async function createInfluencerAssignment(params: type) {}
-//#endregion
+export async function getInviteBaseUrl() {
+    const baseUrl = (process.env.BASE_URL ?? "www.google.com") + "/Response?data=";
+    return baseUrl;
+}

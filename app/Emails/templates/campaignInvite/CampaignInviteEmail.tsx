@@ -70,15 +70,15 @@ function NewCampaignInvite(props: DebugToggle) {
             <Preview>Anfrage für Kooperation</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
-                Wir würden sie gerne als Speaker für eine Kampagne unseres Kunden {customerName}{" "}
+                Wir würden Sie gerne als Speaker für eine Kampagne unseres Kunden {customerName}{" "}
                 gewinnen.
             </Text>
             {/* <Text style={styles.text}>Sie wären dabei für folgende Aufgaben zuständig:</Text>
             {assignments} */}
             <Text style={styles.text}>
                 {/* Sie erhalten für ihren Aufwand ein Honorar in Höhe von {honorar} <br /> */}
-                Unter folgendem Link erhalten sie genauere Informationen zu ihren Aufgaben und
-                können uns mitteilen, ob sie Interesse haben.
+                Unter folgendem Link erhalten Sie genauere Informationen zu Ihren Aufgaben und
+                können uns mitteilen, ob Sie Interesse haben.
             </Text>
             <Container align="left" style={styles.buttonContainer}>
                 <Button style={styles.responseButton} href={`${linkBase}${linkData}`}>
