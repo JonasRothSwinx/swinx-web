@@ -112,11 +112,17 @@ export default function ResponseLanding() {
                 backgroundColor: "var(--background-color)",
                 display: "flex",
                 flexDirection: "column",
-                overflowY: "auto",
+                // overflowY: "auto",
                 "#ResponseLandingScrollableContent": {
                     padding: "20px",
+                    paddingTop: "0",
+                    maxHeight: "-webkit-fill-available",
+                    // maxHeight: "calc(100vh - 40px)",
                     overflowY: "auto",
                     flex: 1,
+                    "@media (max-width: 600px)": {
+                        overflowY: "auto",
+                    },
                 },
                 "#ErrorText": {
                     width: "100%",
@@ -129,7 +135,10 @@ export default function ResponseLanding() {
                 },
                 "#Title": {
                     // position: "sticky",
+                    padding: "20px",
+                    paddingBottom: "0",
                     width: "100%",
+                    textAlign: "center",
                     "#SwinxLogo": {
                         float: "right",
                         width: "100px",
@@ -138,6 +147,90 @@ export default function ResponseLanding() {
                     },
                 },
 
+                "#AssignmentDescriptionsContainer": {
+                    overflowY: "auto",
+                    border: "1px solid black",
+                    borderRadius: "5px",
+                    maxHeight: "80%",
+                    "#DescriptionContainer": {
+                        display: "flex",
+                        flexDirection: "column",
+                        maxHeight: "400px",
+
+                        background: "var(--background-color)",
+                        // padding: "2px",
+                        // border: "1px solid black",
+                        // borderRadius: "5px",
+                        "#DescriptionTitle": {
+                            fontWeight: "bold",
+                            fontSize: "20px",
+                            padding: "10px",
+                            color: "white",
+                            backgroundColor: "var(--swinx-blue)",
+                        },
+                        "#SummaryContainer": {
+                            display: "flex",
+                            flexDirection: "row",
+                            paddingLeft: "10px",
+                            "#SummaryBox": {
+                                // float: "left",
+                                flex: 3,
+                            },
+                            "#InvitesTable": {
+                                // float: "right",
+                                overflowY: "auto",
+                                height: "fit-content",
+                                width: "fit-content",
+                                maxHeight: "fit-content",
+                                flex: 1,
+                                "& .MuiTableCell-head": {
+                                    fontWeight: "bold",
+                                    padding: "10px",
+                                },
+                                "& .MuiTableCell-root": {
+                                    padding: "5px",
+                                    width: "10em",
+                                    textAlign: "center",
+                                    height: "fit-content",
+                                },
+                            },
+                        },
+                        "@media (max-width: 500px)": {
+                            maxHeight: "fit-content",
+
+                            "#SummaryContainer": {
+                                flexDirection: "column",
+                                alignItems: "center",
+                                "#SummaryBox": {
+                                    width: "100%",
+                                },
+                                "#InvitesTable": {
+                                    width: "fit-content",
+                                },
+                            },
+                        },
+                    },
+                },
+                "#AssignmentDescriptionGroup": {
+                    display: "flex",
+                    flexDirection: "column",
+                    // padding: "10px",
+                    borderBlock: "1px solid black",
+                    overflow: "auto",
+
+                    borderBottom: "none",
+                    "&:first-of-type": {
+                        borderTop: "none",
+                        // borderTopLeftRadius: "5px",
+                        // borderTopRightRadius: "5px",
+                        // marginBottom: "10px",
+                    },
+                    "&:last-of-type": {
+                        borderBottom: "none",
+                        // borderBottomLeftRadius: "5px",
+                        // borderBottomRightRadius: "5px",
+                    },
+                },
                 "#ButtonContainer": {
                     // boxSizing: "border-box",
                     // position: "absolute",
@@ -152,6 +245,7 @@ export default function ResponseLanding() {
                     alignItems: "end",
                     width: "max-content",
                     maxWidth: "100%",
+                    flex: 1,
 
                     "& button": {
                         width: "fit-content",
@@ -172,77 +266,6 @@ export default function ResponseLanding() {
                             width: "100%",
                             // margin: "5px",
                         },
-                    },
-                },
-                "#DescriptionContainer": {
-                    display: "flex",
-                    flexDirection: "column",
-                    maxHeight: "400px",
-                    "@media (max-width: 600px)": {
-                        maxHeight: "fit-content",
-                    },
-                    background: "var(--background-color)",
-                    // padding: "2px",
-                    // border: "1px solid black",
-                    // borderRadius: "5px",
-                    "#DescriptionTitle": {
-                        fontWeight: "bold",
-                        fontSize: "20px",
-                        padding: "10px",
-                        color: "white",
-                        backgroundColor: "var(--swinx-blue)",
-                    },
-                    "#SummaryContainer": {
-                        // display: "flex",
-                        flexDirection: "row",
-                        paddingLeft: "10px",
-                        "#SummaryBox": {
-                            float: "left",
-                            flex: 3,
-                        },
-                        "#InvitesTable": {
-                            float: "right",
-                            overflowY: "auto",
-                            height: "fit-content",
-                            width: "fit-content",
-                            maxHeight: "fit-content",
-                            flex: 1,
-                            "& .MuiTableCell-head": {
-                                fontWeight: "bold",
-                                padding: "10px",
-                            },
-                            "& .MuiTableCell-root": {
-                                padding: "5px",
-                                width: "10em",
-                                textAlign: "center",
-                                height: "fit-content",
-                            },
-                        },
-                    },
-                },
-                "#AssignmentDescriptionsContainer": {
-                    overflowY: "auto",
-                    border: "1px solid black",
-                    borderRadius: "5px",
-                },
-                "#AssignmentDescriptionGroup": {
-                    display: "flex",
-                    flexDirection: "column",
-                    // padding: "10px",
-                    borderBlock: "1px solid black",
-                    overflow: "auto",
-
-                    borderBottom: "none",
-                    "&:first-of-type": {
-                        borderTop: "none",
-                        // borderTopLeftRadius: "5px",
-                        // borderTopRightRadius: "5px",
-                        // marginBottom: "10px",
-                    },
-                    "&:last-of-type": {
-                        borderBottom: "none",
-                        // borderBottomLeftRadius: "5px",
-                        // borderBottomRightRadius: "5px",
                     },
                 },
                 "#ResponseReceivedContainer": {
@@ -348,8 +371,8 @@ export default function ResponseLanding() {
 
     return (
         <Box id="ResponseLandingContainer" sx={styles}>
+            <Title />
             <Box id="ResponseLandingScrollableContent">
-                <Title />
                 <Introduction
                     candidateFullName={candidateFullName}
                     webinar={parentEvent.data}
