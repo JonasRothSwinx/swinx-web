@@ -14,6 +14,7 @@ import { useMemo } from "react";
 import { TimelineEvent, Webinar } from "../../Functions/Database/types";
 import Loading from "../Loading";
 import { displayCountryString } from "../../Functions/displayCountryString";
+import dateToRange from "../../Functions/dateToRange";
 
 //MARK: InvitesDescription
 interface InvitesDescriptionProps {
@@ -39,14 +40,14 @@ export function InvitesDescription({ events }: InvitesDescriptionProps) {
                         Follower*innen verschicken.
                         <br />
                         Zielgruppe für das Event sind Profile aus{" "}
-                        {displayCountryString(webinar.targetAudience?.country ?? [])}, innerhalb der
+                        {displayCountryString(webinar.targetAudience?.country ?? [])} innerhalb der
                         folgenden Branchen:
                     </Typography>
                     <Box>
                         <List>
                             {webinar.targetAudience?.industry?.map((industry) => (
                                 <Typography key={industry}>
-                                    {`> `}
+                                    <strong>{`> `}</strong>
                                     {industry}
                                 </Typography>
                             ))}
@@ -61,14 +62,13 @@ export function InvitesDescription({ events }: InvitesDescriptionProps) {
                         </TableRow>
                     </TableHead>
                     {events.map((event) => {
-                        const date = dayjs(event.date);
-                        const startDate = date.startOf("week");
-                        const endDate = date.endOf("week").subtract(2, "day"); // Limit to friday of week
-                        const startDateString = startDate.format("DD.MM");
-                        const endDateString = endDate.format("DD.MM");
+                        const { startDate, endDate } = dateToRange({
+                            date: event.date,
+                            format: "DD.MM",
+                        });
                         return (
                             <TableRow key={event.id}>
-                                <TableCell>{`${startDateString} - ${endDateString}`}</TableCell>
+                                <TableCell>{`${startDate} - ${endDate}`}</TableCell>
                                 <TableCell>{event.eventTaskAmount}</TableCell>
                             </TableRow>
                         );

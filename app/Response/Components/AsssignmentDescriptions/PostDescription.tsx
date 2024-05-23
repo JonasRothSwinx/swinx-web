@@ -1,6 +1,7 @@
 import dayjs from "@/app/utils/configuredDayJs";
 import { Box, Typography } from "@mui/material";
 import { TimelineEvent } from "../../Functions/Database/types";
+import dateToRange from "../../Functions/dateToRange";
 
 //MARK: PostDescription
 interface PostDescriptionProps {
@@ -14,12 +15,17 @@ export function PostDescription({ events }: PostDescriptionProps) {
             </Box>
             <Box id="SummaryContainer">
                 {events.map((event) => {
+                    const { startDate, endDate } = dateToRange({ date: event.date });
                     return (
                         <Typography key={event.id}>
                             Sie werden das Webinar des Kunden{" "}
                             {event.date && (
+                                // <>
+                                //     am <strong>{`${dayjs(event.date).format("DD.MM")}`}</strong>{" "}
+                                // </>
                                 <>
-                                    am <strong>{`${dayjs(event.date).format("DD.MM")}`}</strong>{" "}
+                                    im Zeitraum vom <strong>{`${startDate}`}</strong> bis{" "}
+                                    <strong>{`${endDate}`}</strong>{" "}
                                 </>
                             )}
                             in einem Textbeitrag{" "}

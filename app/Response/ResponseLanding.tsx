@@ -104,15 +104,26 @@ export default function ResponseLanding() {
                 position: "relative",
                 width: "calc(100vw - 40px)", // Account for left and right margins
                 height: "fit-content", // Account for top and bottom margins
-                maxHeight: "calc(100vh - 40px)",
+                maxHeight: "calc(100dvh - 40px)",
                 maxWidth: "100vw",
-                padding: "20px",
                 margin: "20px",
+                border: "1px solid gray",
                 borderRadius: "10px",
                 backgroundColor: "var(--background-color)",
                 display: "flex",
                 flexDirection: "column",
-                overflowY: "auto",
+                // overflowY: "auto",
+                "#ResponseLandingScrollableContent": {
+                    padding: "20px",
+                    paddingTop: "0",
+                    maxHeight: "-webkit-fill-available",
+                    // maxHeight: "calc(100dvh - 40px)",
+                    overflowY: "auto",
+                    flex: 1,
+                    "@media (max-width: 600px)": {
+                        overflowY: "auto",
+                    },
+                },
                 "#ErrorText": {
                     width: "100%",
                     height: "100%",
@@ -123,7 +134,11 @@ export default function ResponseLanding() {
                     color: "red",
                 },
                 "#Title": {
+                    // position: "sticky",
+                    padding: "20px",
+                    paddingBottom: "0",
                     width: "100%",
+                    textAlign: "center",
                     "#SwinxLogo": {
                         float: "right",
                         width: "100px",
@@ -132,72 +147,69 @@ export default function ResponseLanding() {
                     },
                 },
 
-                "#ButtonContainer": {
-                    // boxSizing: "border-box",
-                    // position: "absolute",
-                    // bottom: "0",
-                    // right: "0",
-                    float: "right",
-                    alignSelf: "flex-end",
-                    display: "flex",
-                    flexWrap: "wrap",
-                    // flexDirection: "column",
-                    justifyContent: "right",
-                    alignItems: "end",
-                    width: "max-content",
-                    maxWidth: "100%",
-                    "& button": {
-                        width: "fit-content",
-                        margin: "10px",
-                    },
-                    "#submitButton": {
-                        backgroundColor: "primary",
-                    },
-                    "#rejectButton": {
-                        backgroundColor: "secondary",
-                    },
-                },
-                "#DescriptionContainer": {
-                    display: "flex",
-                    flexDirection: "column",
-                    maxHeight: "400px",
-                    background: "var(--background-color)",
-                    // padding: "2px",
-                    // border: "1px solid black",
-                    // borderRadius: "5px",
-                    "#DescriptionTitle": {
-                        fontWeight: "bold",
-                        fontSize: "20px",
-                        padding: "10px",
-                        color: "white",
-                        backgroundColor: "var(--swinx-blue)",
-                    },
-                    "#SummaryContainer": {
-                        display: "flex",
-                        flexDirection: "row",
-                        paddingLeft: "10px",
-                        "#SummaryBox": {
-                            flex: 3,
-                        },
-                        "#InvitesTable": {
-                            overflowY: "auto",
-                            flex: 1,
-                            "& .MuiTableCell-head": {
-                                fontWeight: "bold",
-                                padding: "10px",
-                            },
-                            "& .MuiTableCell-root": {
-                                padding: "5px",
-                                width: "10em",
-                                textAlign: "center",
-                            },
-                        },
-                    },
-                },
                 "#AssignmentDescriptionsContainer": {
                     overflowY: "auto",
                     border: "1px solid black",
                     borderRadius: "5px",
+                    maxHeight: "80%",
+                    "#DescriptionContainer": {
+                        display: "flex",
+                        flexDirection: "column",
+                        maxHeight: "400px",
+
+                        background: "var(--background-color)",
+                        // padding: "2px",
+                        // border: "1px solid black",
+                        // borderRadius: "5px",
+                        "#DescriptionTitle": {
+                            fontWeight: "bold",
+                            fontSize: "20px",
+                            padding: "10px",
+                            color: "white",
+                            backgroundColor: "var(--swinx-blue)",
+                        },
+                        "#SummaryContainer": {
+                            display: "flex",
+                            flexDirection: "row",
+                            paddingLeft: "10px",
+                            "#SummaryBox": {
+                                // float: "left",
+                                flex: 3,
+                            },
+                            "#InvitesTable": {
+                                // float: "right",
+                                overflowY: "auto",
+                                height: "fit-content",
+                                width: "fit-content",
+                                maxHeight: "fit-content",
+                                flex: 1,
+                                "& .MuiTableCell-head": {
+                                    fontWeight: "bold",
+                                    padding: "10px",
+                                },
+                                "& .MuiTableCell-root": {
+                                    padding: "5px",
+                                    width: "10em",
+                                    textAlign: "center",
+                                    height: "fit-content",
+                                },
+                            },
+                        },
+                        "@media (max-width: 500px)": {
+                            maxHeight: "fit-content",
+
+                            "#SummaryContainer": {
+                                flexDirection: "column",
+                                alignItems: "center",
+                                "#SummaryBox": {
+                                    width: "100%",
+                                },
+                                "#InvitesTable": {
+                                    width: "fit-content",
+                                },
+                            },
+                        },
+                    },
                 },
                 "#AssignmentDescriptionGroup": {
                     display: "flex",
@@ -217,6 +229,43 @@ export default function ResponseLanding() {
                         borderBottom: "none",
                         // borderBottomLeftRadius: "5px",
                         // borderBottomRightRadius: "5px",
+                    },
+                },
+                "#ButtonContainer": {
+                    // boxSizing: "border-box",
+                    // position: "absolute",
+                    // bottom: "0",
+                    // right: "0",
+                    float: "right",
+                    alignSelf: "flex-end",
+                    display: "flex",
+                    flexWrap: "wrap",
+                    // flexDirection: "column",
+                    justifyContent: "right",
+                    alignItems: "end",
+                    width: "max-content",
+                    maxWidth: "100%",
+                    flex: 1,
+
+                    "& button": {
+                        width: "fit-content",
+                        margin: "10px",
+                    },
+                    "#submitButton": {
+                        backgroundColor: "primary",
+                    },
+                    "#rejectButton": {
+                        backgroundColor: "secondary",
+                    },
+                    "@media (max-width: 600px)": {
+                        width: "100%",
+                        justifyContent: "center",
+                        button: {
+                            // maxHeight: "20px",
+                            fontSize: "10px",
+                            width: "100%",
+                            // margin: "5px",
+                        },
                     },
                 },
                 "#ResponseReceivedContainer": {
@@ -260,31 +309,32 @@ export default function ResponseLanding() {
         },
     };
     //MARK: - small screen handling
-    if (!(process.env.NODE_ENV === "development") && (isLowHeight || isLowWidth)) {
-        return (
-            <Box id="TempMessageBox">
-                <Box
-                    height={50}
-                    sx={{
-                        "& svg": {
-                            fontSize: "50px",
-                        },
-                    }}
-                >
-                    <Engineering htmlColor="red" />
-                </Box>
-                <Typography variant="h5">Fenstergröße zu klein</Typography>
-                <Typography>
-                    Die Anzeige dieser Seite auf einem mobilen Gerät oder in kleinen Fenstern wird
-                    nicht unterstützt. Bitte verwenden Sie ein Gerät mit größerem Bildschirm oder
-                    vergößern sie ihren Browser.
-                    <br />
-                    <br />
-                    Wir arbeiten daran, dieses Problem zu beheben.
-                </Typography>
-            </Box>
-        );
-    }
+    // if (!(process.env.NODE_ENV === "development") && (isLowHeight || isLowWidth)) {
+    //     return (
+    //         <Box id="TempMessageBox">
+    //             <Box
+    //                 height={50}
+    //                 sx={{
+    //                     "& svg": {
+    //                         fontSize: "50px",
+    //                     },
+    //                 }}
+    //             >
+    //                 <Engineering htmlColor="red" />
+    //             </Box>
+    //             <Typography variant="h5">Fenstergröße zu klein</Typography>
+    //             <Typography>
+    //                 Die Anzeige dieser Seite auf einem mobilen Gerät oder in kleinen Fenstern wird
+    //                 nicht unterstützt.
+    //                 <br /> Bitte verwenden Sie einen Laptop, ein Tablet mit größerem Bildschirm,
+    //                 oder vergrössern sie ihr Browser Fenster.
+    //                 <br />
+    //                 <br />
+    //                 Wir arbeiten daran, dieses Problem zu beheben.
+    //             </Typography>
+    //         </Box>
+    //     );
+    // }
     //#region Error Handling
     if (!assignmentId || !candidateId || !candidateFullName) {
         return <Typography id="ErrorText">Ungültige Daten empfangen</Typography>;
@@ -322,15 +372,17 @@ export default function ResponseLanding() {
     return (
         <Box id="ResponseLandingContainer" sx={styles}>
             <Title />
-            <Introduction
-                candidateFullName={candidateFullName}
-                webinar={parentEvent.data}
-                CampaignData={CampaignData.data}
-            />
-            <br />
-            <AssignmentDescription assignmentId={assignmentId} />
-            <br />
-            <InterestDescriptionText />
+            <Box id="ResponseLandingScrollableContent">
+                <Introduction
+                    candidateFullName={candidateFullName}
+                    webinar={parentEvent.data}
+                    CampaignData={CampaignData.data}
+                />
+                <br />
+                <AssignmentDescription assignmentId={assignmentId} />
+                <br />
+                <InterestDescriptionText />
+            </Box>
 
             <Box id="ButtonContainer">
                 <Button
