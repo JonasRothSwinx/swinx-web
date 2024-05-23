@@ -275,7 +275,8 @@ export default function ResponseLanding() {
                 <Typography variant="h5">Fenstergröße zu klein</Typography>
                 <Typography>
                     Die Anzeige dieser Seite auf einem mobilen Gerät oder in kleinen Fenstern wird
-                    nicht unterstützt. Bitte verwenden Sie ein Gerät mit größerem Bildschirm.
+                    nicht unterstützt. Bitte verwenden Sie ein Gerät mit größerem Bildschirm oder
+                    vergößern sie ihren Browser.
                     <br />
                     <br />
                     Wir arbeiten daran, dieses Problem zu beheben.
