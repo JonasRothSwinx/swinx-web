@@ -7,7 +7,7 @@ interface LoadingProps {
 export default function Loading({ textMessage, spinnerSize }: LoadingProps) {
     return (
         <Box id="LoadingContainer">
-            <Typography variant="h3">{textMessage ?? "Lade"}</Typography>
+            <Typography variant="h4">{textMessage ?? "Lade"}</Typography>
             <CircularProgress size={spinnerSize ?? 20} />
         </Box>
     );
