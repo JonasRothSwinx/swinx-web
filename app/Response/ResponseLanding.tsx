@@ -259,7 +259,8 @@ export default function ResponseLanding() {
             });
         },
     };
-    if (isLowHeight || isLowWidth) {
+    //MARK: - small screen handling
+    if (!(process.env.NODE_ENV === "development") && (isLowHeight || isLowWidth)) {
         return (
             <Box id="TempMessageBox">
                 <Box
