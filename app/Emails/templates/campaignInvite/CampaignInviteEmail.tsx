@@ -70,7 +70,7 @@ function NewCampaignInvite(props: DebugToggle) {
             <Preview>Anfrage für Kooperation</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
-                Wir würden Sie gerne als Speaker für eine Kampagne unseres Kunden {customerName}{" "}
+                Wir würden Sie gerne als Speaker*in für eine Kampagne unseres Kunden {customerName}{" "}
                 gewinnen.
             </Text>
             {/* <Text style={styles.text}>Sie wären dabei für folgende Aufgaben zuständig:</Text>
@@ -106,7 +106,7 @@ function ReducedCampaignInvite(props: DebugToggle) {
             <Preview>Einladung zur Kampagne</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
-                Wir würden dich gerne als Speaker für eine Kampagne unseres Kunden {customerName}{" "}
+                Wir würden dich gerne als Speaker*in für eine Kampagne unseres Kunden {customerName}{" "}
                 gewinnen.
             </Text>
             {/* <Text style={styles.text}>Du wärst dabei für folgende Aufgaben zuständig:</Text>

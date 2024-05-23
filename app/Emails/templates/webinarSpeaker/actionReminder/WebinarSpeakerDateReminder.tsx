@@ -27,7 +27,9 @@ const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } =
     webinarTitle: Placeholder({ name: "webinarTitle" }),
     topic: Placeholder({ name: "topic" }),
 };
-const EmailTemplates: { [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element } = {
+const EmailTemplates: {
+    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
+} = {
     new: (debug?) => <NewWebinarSpeakerDateReminder debug={debug} />,
     reduced: (debug?) => <ReducedWebinarSpeakerDateReminder debug={debug} />,
 };
@@ -43,16 +45,17 @@ WebinarSpeakerDateReminder.PreviewProps = {
 } satisfies EmailProps;
 
 function NewWebinarSpeakerDateReminder(props: DebugToggle) {
+    const { name, time, webinarTitle, topic } = props.debug ? defaultParams : placeholders;
     return (
         <Html dir="ltr" lang="de">
             <Head />
             <Preview>Erinnerung: Webinar</Preview>
-            <Text style={styles.text}>Hallo {placeholders.name}!</Text>
+            <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
-                Wir möchten sie daran erinnern, dass sie heute um {"{{time}}"} als Speaker im {"{{Webinar}}"} auftreten
-                werden.
+                Wir möchten sie daran erinnern, dass sie heute um {time} als Speaker*in im Webinar{" "}
+                {webinarTitle} auftreten werden.
                 <br />
-                Sie werden dabei über {"{{topic}}"} sprechen.
+                Sie werden dabei über {topic} sprechen.
             </Text>
         </Html>
     );
@@ -65,7 +68,8 @@ function ReducedWebinarSpeakerDateReminder(props: DebugToggle) {
             <Preview>Erinnerung: Webinar</Preview>
             <Text style={styles.text}>Hallo {placeholders.name}!</Text>
             <Text style={styles.text}>
-                Wir möchten dich daran erinnern, dass du heute als Speaker in einem Webinar auftreten wirst.
+                Wir möchten dich daran erinnern, dass du heute als Speaker in einem Webinar
+                auftreten wirst.
             </Text>
             <Container align="left" style={styles.buttonContainer}>
                 <Button style={styles.responseButton} href="https://www.swinx.de">

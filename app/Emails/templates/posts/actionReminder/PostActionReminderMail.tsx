@@ -101,9 +101,9 @@ function ReducedPostActionReminder(props: DebugToggle) {
             <Preview>Erinnerung: Beitragsveröffentlichung</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
-                Wir möchten sie daran erinnern, dass sie heute um {postTime} einen Beitrag für{" "}
+                Wir möchten dich daran erinnern, dass du heute um {postTime} einen Beitrag für{" "}
                 {customerName}
-                veröffentlichen sollen.
+                veröffentlichen sollst.
             </Text>
             <Text style={styles.text}>
                 Wichtig: <br />
@@ -125,9 +125,7 @@ function ReducedPostActionReminder(props: DebugToggle) {
                 <br />
                 {postContent}
             </Text> */}
-            <Text style={styles.text}>
-                Bitte teilen sie uns danach mit, ob alles funktioniert hat.
-            </Text>
+            <Text style={styles.text}>Bitte teile uns danach mit, ob alles funktioniert hat.</Text>
             {/* <Container align="left" style={styles.buttonContainer}>
                 <Button style={styles.responseButton} href="https://www.swinx.de">
                     Zu Swinx
