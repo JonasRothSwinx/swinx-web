@@ -104,7 +104,7 @@ export default function ResponseLanding() {
                 position: "relative",
                 width: "calc(100vw - 40px)", // Account for left and right margins
                 height: "fit-content", // Account for top and bottom margins
-                maxHeight: "calc(100vh - 40px)",
+                maxHeight: "calc(100dvh - 40px)",
                 maxWidth: "100vw",
                 margin: "20px",
                 border: "1px solid gray",
@@ -117,7 +117,7 @@ export default function ResponseLanding() {
                     padding: "20px",
                     paddingTop: "0",
                     maxHeight: "-webkit-fill-available",
-                    // maxHeight: "calc(100vh - 40px)",
+                    // maxHeight: "calc(100dvh - 40px)",
                     overflowY: "auto",
                     flex: 1,
                     "@media (max-width: 600px)": {
