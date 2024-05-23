@@ -4,7 +4,7 @@ import { Box, ThemeProvider, createTheme } from "@mui/material";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { blue } from "@mui/material/colors";
 import dataClient from "../ServerFunctions/database";
-import ResponseLanding from "./Components/ResponseLanding";
+import ResponseLanding from "./ResponseLanding";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import styles from "./styles";
 import Head from "next/head";
