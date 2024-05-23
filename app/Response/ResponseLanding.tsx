@@ -36,8 +36,8 @@ export default function ResponseLanding() {
         }
     })();
     const { assignmentId, candidateId, candidateFullName, campaignId } = decodedParams;
-    const isLowHeight = useMediaQuery("(min-height: 600px)");
-    const isLowWidth = useMediaQuery("(min-width: 600px)");
+    const isLowHeight = useMediaQuery("(max-height: 600px)");
+    const isLowWidth = useMediaQuery("(max-width: 600px)");
     //#region Queries
     const candidate = useQuery({
         enabled: !!candidateId,
