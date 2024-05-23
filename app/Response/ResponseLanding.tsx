@@ -286,32 +286,32 @@ export default function ResponseLanding() {
         },
     };
     //MARK: - small screen handling
-    if (!(process.env.NODE_ENV === "development") && (isLowHeight || isLowWidth)) {
-        return (
-            <Box id="TempMessageBox">
-                <Box
-                    height={50}
-                    sx={{
-                        "& svg": {
-                            fontSize: "50px",
-                        },
-                    }}
-                >
-                    <Engineering htmlColor="red" />
-                </Box>
-                <Typography variant="h5">Fenstergröße zu klein</Typography>
-                <Typography>
-                    Die Anzeige dieser Seite auf einem mobilen Gerät oder in kleinen Fenstern wird
-                    nicht unterstützt.
-                    <br /> Bitte verwenden Sie einen Laptop, ein Tablet mit größerem Bildschirm,
-                    oder vergrössern sie ihr Browser Fenster.
-                    <br />
-                    <br />
-                    Wir arbeiten daran, dieses Problem zu beheben.
-                </Typography>
-            </Box>
-        );
-    }
+    // if (!(process.env.NODE_ENV === "development") && (isLowHeight || isLowWidth)) {
+    //     return (
+    //         <Box id="TempMessageBox">
+    //             <Box
+    //                 height={50}
+    //                 sx={{
+    //                     "& svg": {
+    //                         fontSize: "50px",
+    //                     },
+    //                 }}
+    //             >
+    //                 <Engineering htmlColor="red" />
+    //             </Box>
+    //             <Typography variant="h5">Fenstergröße zu klein</Typography>
+    //             <Typography>
+    //                 Die Anzeige dieser Seite auf einem mobilen Gerät oder in kleinen Fenstern wird
+    //                 nicht unterstützt.
+    //                 <br /> Bitte verwenden Sie einen Laptop, ein Tablet mit größerem Bildschirm,
+    //                 oder vergrössern sie ihr Browser Fenster.
+    //                 <br />
+    //                 <br />
+    //                 Wir arbeiten daran, dieses Problem zu beheben.
+    //             </Typography>
+    //         </Box>
+    //     );
+    // }
     //#region Error Handling
     if (!assignmentId || !candidateId || !candidateFullName) {
         return <Typography id="ErrorText">Ungültige Daten empfangen</Typography>;
