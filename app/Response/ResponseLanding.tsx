@@ -106,13 +106,18 @@ export default function ResponseLanding() {
                 height: "fit-content", // Account for top and bottom margins
                 maxHeight: "calc(100vh - 40px)",
                 maxWidth: "100vw",
-                padding: "20px",
                 margin: "20px",
+                border: "1px solid gray",
                 borderRadius: "10px",
                 backgroundColor: "var(--background-color)",
                 display: "flex",
                 flexDirection: "column",
                 overflowY: "auto",
+                "#ResponseLandingScrollableContent": {
+                    padding: "20px",
+                    overflowY: "auto",
+                    flex: 1,
+                },
                 "#ErrorText": {
                     width: "100%",
                     height: "100%",
@@ -123,6 +128,7 @@ export default function ResponseLanding() {
                     color: "red",
                 },
                 "#Title": {
+                    // position: "sticky",
                     width: "100%",
                     "#SwinxLogo": {
                         float: "right",
@@ -146,6 +152,7 @@ export default function ResponseLanding() {
                     alignItems: "end",
                     width: "max-content",
                     maxWidth: "100%",
+
                     "& button": {
                         width: "fit-content",
                         margin: "10px",
@@ -156,11 +163,24 @@ export default function ResponseLanding() {
                     "#rejectButton": {
                         backgroundColor: "secondary",
                     },
+                    "@media (max-width: 600px)": {
+                        width: "100%",
+                        justifyContent: "center",
+                        button: {
+                            // maxHeight: "20px",
+                            fontSize: "10px",
+                            width: "100%",
+                            // margin: "5px",
+                        },
+                    },
                 },
                 "#DescriptionContainer": {
                     display: "flex",
                     flexDirection: "column",
                     maxHeight: "400px",
+                    "@media (max-width: 600px)": {
+                        maxHeight: "fit-content",
+                    },
                     background: "var(--background-color)",
                     // padding: "2px",
                     // border: "1px solid black",
@@ -173,14 +193,19 @@ export default function ResponseLanding() {
                         backgroundColor: "var(--swinx-blue)",
                     },
                     "#SummaryContainer": {
-                        display: "flex",
+                        // display: "flex",
                         flexDirection: "row",
                         paddingLeft: "10px",
                         "#SummaryBox": {
+                            float: "left",
                             flex: 3,
                         },
                         "#InvitesTable": {
+                            float: "right",
                             overflowY: "auto",
+                            height: "fit-content",
+                            width: "fit-content",
+                            maxHeight: "fit-content",
                             flex: 1,
                             "& .MuiTableCell-head": {
                                 fontWeight: "bold",
@@ -190,6 +215,7 @@ export default function ResponseLanding() {
                                 padding: "5px",
                                 width: "10em",
                                 textAlign: "center",
+                                height: "fit-content",
                             },
                         },
                     },
@@ -276,8 +302,9 @@ export default function ResponseLanding() {
                 <Typography variant="h5">Fenstergröße zu klein</Typography>
                 <Typography>
                     Die Anzeige dieser Seite auf einem mobilen Gerät oder in kleinen Fenstern wird
-                    nicht unterstützt. Bitte verwenden Sie ein Gerät mit größerem Bildschirm oder
-                    vergößern sie ihren Browser.
+                    nicht unterstützt.
+                    <br /> Bitte verwenden Sie einen Laptop, ein Tablet mit größerem Bildschirm,
+                    oder vergrössern sie ihr Browser Fenster.
                     <br />
                     <br />
                     Wir arbeiten daran, dieses Problem zu beheben.
@@ -321,16 +348,18 @@ export default function ResponseLanding() {
 
     return (
         <Box id="ResponseLandingContainer" sx={styles}>
-            <Title />
-            <Introduction
-                candidateFullName={candidateFullName}
-                webinar={parentEvent.data}
-                CampaignData={CampaignData.data}
-            />
-            <br />
-            <AssignmentDescription assignmentId={assignmentId} />
-            <br />
-            <InterestDescriptionText />
+            <Box id="ResponseLandingScrollableContent">
+                <Title />
+                <Introduction
+                    candidateFullName={candidateFullName}
+                    webinar={parentEvent.data}
+                    CampaignData={CampaignData.data}
+                />
+                <br />
+                <AssignmentDescription assignmentId={assignmentId} />
+                <br />
+                <InterestDescriptionText />
+            </Box>
 
             <Box id="ButtonContainer">
                 <Button
