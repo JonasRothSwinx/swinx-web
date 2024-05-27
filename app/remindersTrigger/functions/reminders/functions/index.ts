@@ -28,12 +28,12 @@ import handleTriggers from "./handleTriggers";
 //     WebinarSpeaker: handleWebinarSpeakerMails,
 //     Webinar: handleWebinarMails,
 // };
-const devBranches = ["sandbox"];
+const devBranches = ["sandbox", "dev"];
 export default async function startReminderRoutine(): Promise<boolean> {
     console.log("Starting reminder routine");
     console.log(`In environment ${process.env.NODE_ENV}. Current time: ${dayjs().format("YYYY-MM-DD HH:mm")}`);
-    console.log(process.env.AWS_BRANCH);
-    return true;
+    console.log(process.env);
+
     const awsBranch = process.env.AWS_BRANCH;
     if (!awsBranch || typeof awsBranch !== "string") {
         console.error("No AWS_BRANCH found");
