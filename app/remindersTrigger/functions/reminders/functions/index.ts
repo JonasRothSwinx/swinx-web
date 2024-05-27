@@ -39,7 +39,7 @@ export default async function startReminderRoutine(): Promise<boolean> {
         console.error("No AWS_BRANCH found");
         return false;
     }
-    const isDev = devBranches.includes(awsBranch);
+    const isDev = devBranches.includes(awsBranch ?? "<error>");
     const [startTime, endTime] = isDev
         ? [dayjs().subtract(10, "year"), dayjs().add(10, "year")]
         : [dayjs(), dayjs().endOf("day").add(1, "day")];
