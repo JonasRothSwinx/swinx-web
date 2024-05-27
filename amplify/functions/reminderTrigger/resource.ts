@@ -6,7 +6,7 @@ export const reminderTrigger = defineFunction({
     name: "reminderTrigger",
     entry: "handler.ts",
     environment: {
-        BASE_URL: process.env.BASE_URL ?? "http://localhost:3000",
+        BASE_URL: process.env.BASE_URL ?? "null",
         REGION: "eu-west-1",
     },
 });
