@@ -28,7 +28,7 @@ import handleTriggers from "./handleTriggers";
 //     WebinarSpeaker: handleWebinarSpeakerMails,
 //     Webinar: handleWebinarMails,
 // };
-const devBranches = ["sandbox"];
+const devBranches = ["sandbox", "dev"];
 export default async function startReminderRoutine(): Promise<boolean> {
     console.log("Starting reminder routine");
     console.log(`In environment ${process.env.NODE_ENV}. Current time: ${dayjs().format("YYYY-MM-DD HH:mm")}`);
