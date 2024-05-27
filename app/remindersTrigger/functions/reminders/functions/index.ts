@@ -28,14 +28,18 @@ import handleTriggers from "./handleTriggers";
 //     WebinarSpeaker: handleWebinarSpeakerMails,
 //     Webinar: handleWebinarMails,
 // };
+const devBranches = ["sandbox"];
 export default async function startReminderRoutine(): Promise<boolean> {
     console.log("Starting reminder routine");
-    console.log(
-        `In environment ${process.env.NODE_ENV}. Current time: ${dayjs().format(
-            "YYYY-MM-DD HH:mm",
-        )}`,
-    );
-    const isDev = process.env.NODE_ENV === "development";
+    console.log(`In environment ${process.env.NODE_ENV}. Current time: ${dayjs().format("YYYY-MM-DD HH:mm")}`);
+    console.log(process.env.AWS_BRANCH);
+    return true;
+    const awsBranch = process.env.AWS_BRANCH;
+    if (!awsBranch || typeof awsBranch !== "string") {
+        console.error("No AWS_BRANCH found");
+        return false;
+    }
+    const isDev = devBranches.includes(awsBranch);
     const [startTime, endTime] = isDev
         ? [dayjs().subtract(10, "year"), dayjs().add(10, "year")]
         : [dayjs(), dayjs().endOf("day").add(1, "day")];
