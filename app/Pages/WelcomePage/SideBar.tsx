@@ -4,6 +4,8 @@ import { getUserAttributes, getUserGroups } from "@/app/ServerFunctions/serverAc
 import { useQuery } from "@tanstack/react-query";
 import stylesExporter from "../styles/stylesExporter";
 import DebugButtons from "./debug/debugButtons";
+import { Link, SxProps } from "@mui/material";
+import { withAuthenticator } from "@aws-amplify/ui-react";
 
 const styles = stylesExporter.sideBar;
 
@@ -55,11 +57,12 @@ function SideBar(props: ISideBar) {
                     callback={setMenuCallback ?? (() => {})}
                 />
             ))}
+            <SideBarLink link={"/FollowerAnalysis"} />
             {groups.data.includes("admin") && <DebugButtons />}
         </div>
     );
 }
-export default SideBar;
+export default withAuthenticator(SideBar);
 
 function SideBarButton(props: {
     buttonProps: ISideBarButton;
@@ -77,6 +80,35 @@ function SideBarButton(props: {
             </h2>
             <p>{description}</p>
         </button>
+    );
+}
+interface ISideBarLink {
+    link: string;
+}
+function SideBarLink({ link }: ISideBarLink) {
+    const style: SxProps = {
+        "&": {
+            display: "flex",
+            flexDirection: "column",
+            width: "100%",
+            padding: "1rem 0.2rem",
+            borderRadius: "var(--border-radius)",
+            background: "rgba(var(--card-rgb), 0)",
+            border: "1px solid rgba(var(--card-border-rgb), 0)",
+            transition: "background 200ms, border 200ms, box-shadow 200ms",
+            cursor: "pointer",
+        },
+        "&:hover": {
+            backgroundColor: "lightgrey",
+        },
+    };
+    return (
+        <Link href={link} sx={style}>
+            <h2>
+                <span>&lt;-</span> {link}
+            </h2>
+            <p>{"Ipsum Lorem"}</p>
+        </Link>
     );
 }
 
