@@ -1,21 +1,10 @@
 "use server";
 
 // import dataClient from "@/app/ServerFunctions/database";
-import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
+import dayjs from "@/app/utils/configuredDayJs";
 // import database from "@/app/ServerFunctions/database/dbOperations";
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
-import templateDefinitions from "@/app/Emails/templates";
-import Influencer from "@/app/ServerFunctions/types/influencer";
 import emailClient from "@/app/Emails";
-import { SendMailProps } from "@/app/Emails/templates/types";
-import { EmailContextPropsByLevel, EmailTriggerWithContext, GroupedTrigger } from "../types";
-import Campaign from "@/app/ServerFunctions/types/campaign";
-import Customer from "@/app/ServerFunctions/types/customer";
-import ErrorLogger from "@/app/ServerFunctions/errorLog";
-import { Prettify } from "@/app/Definitions/types";
 import { getEmailTriggers } from "./getEmailTriggers";
-import defineContext from "./defineContext";
 import groupTriggers from "./groupTriggers";
 import handleTriggers from "./handleTriggers";
 // import dayjs from "@/app/utils/configuredDayJs";
@@ -32,7 +21,7 @@ const devBranches = ["sandbox", "dev"];
 export default async function startReminderRoutine(): Promise<boolean> {
     console.log("Starting reminder routine");
     console.log(`In environment ${process.env.NODE_ENV}. Current time: ${dayjs().format("YYYY-MM-DD HH:mm")}`);
-    console.log(process.env);
+    // console.log(process.env);
 
     const awsBranch = process.env.AWS_BRANCH;
     if (!awsBranch || typeof awsBranch !== "string") {
