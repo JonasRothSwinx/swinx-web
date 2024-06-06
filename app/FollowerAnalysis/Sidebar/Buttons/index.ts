@@ -1,5 +1,3 @@
-import { SidebarButton } from "./SidebarButton";
+// import { SidebarButton } from "./SidebarButton";
 
-const HomeButton = new SidebarButton("/", "Home");
-
-export default renderedButtons;
+// const HomeButton = new SidebarButton("/", "Home");
