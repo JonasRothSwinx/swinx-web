@@ -1,7 +1,6 @@
 "use server";
 
 import { Nullable, PartialWith } from "@/app/Definitions/types";
-import { timelineEvents } from ".";
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import client from "./.dbclient";
 import Influencer from "@/app/ServerFunctions/types/influencer";
@@ -11,11 +10,9 @@ import { Candidates } from "../../types/candidates";
 import { EmailTriggers } from "../../types/emailTriggers";
 import { SelectionSet } from "aws-amplify/api";
 import { Schema } from "@/amplify/data/resource";
+import database from ".";
 
-export async function createAssignment(
-    assignment: Omit<Assignment.AssignmentFull, "id">,
-    campaignId: string,
-) {
+export async function createAssignment(assignment: Omit<Assignment.AssignmentFull, "id">, campaignId: string) {
     const { placeholderName: name, budget, isPlaceholder = true } = assignment;
     if (!name) throw new Error("Missing Data");
 
@@ -63,6 +60,7 @@ const selectionSet = [
 ] as const;
 type RawAssignment = SelectionSet<Schema["InfluencerAssignment"]["type"], typeof selectionSet>;
 
+//MARK: List
 export async function listAssignments() {
     const { data, errors } = await client.models.InfluencerAssignment.list({ selectionSet });
     if (errors) {
@@ -71,6 +69,8 @@ export async function listAssignments() {
     const validatedAssignments: Assignment.AssignmentMin[] = data.map(validateAssignment);
     return validatedAssignments;
 }
+
+//Mark: Get all
 /**
  * Retrieves all candidates for a given assignment.
  * @param assignmentId - The ID of the assignment.
@@ -79,12 +79,13 @@ export async function listAssignments() {
 export async function getAllCandidates(assignmentId: string) {
     const { data, errors } = await client.models.InfluencerAssignment.get(
         { id: assignmentId },
-        { selectionSet: ["candidates.id"] },
+        { selectionSet: ["candidates.id"] }
     );
     if (data === null) return [];
     return data.candidates;
 }
 
+//MARK: Update
 /**
  * Updates an assignment in the database.
  *
@@ -129,26 +130,36 @@ export async function updateAssignment(assignment: PartialWith<Assignment.Assign
     return data.id;
 }
 
-export async function deletePlaceholder(assignment: PartialWith<Assignment.AssignmentFull, "id">) {
-    const { id } = assignment;
+//MARK: Delete
+interface DeleteAssignmentParams {
+    id: string;
+}
+export async function deletePlaceholder({ id }: DeleteAssignmentParams) {
+    // const { id } = assignment;
     if (!id) throw new Error("Missing Data");
-    const events = assignment.timelineEvents ?? [];
-
-    await Promise.all(
-        events.map(async (x) => {
-            if (!x.id) return;
-            timelineEvents.delete({ id: x.id });
-        }),
+    const { data: events, errors } = await client.models.InfluencerAssignment.get(
+        { id },
+        { selectionSet: ["timelineEvents.timelineEvent.id", "timelineEvents.id"] }
     );
+
+    if (events) {
+        await Promise.all(
+            events.timelineEvents.map(async (x) => {
+                const {
+                    id: eventAssignmentId,
+                    timelineEvent: { id: eventId },
+                } = x;
+                if (eventId) await database.timelineEvent.delete({ id: eventId });
+                if (eventAssignmentId) await client.models.InfluencerAssignment.delete({ id: eventAssignmentId });
+            })
+        );
+    }
 
     await client.models.InfluencerAssignment.delete({ id });
 }
 
 export async function getAssignment(assignmentId: string) {
-    const { data, errors } = await client.models.InfluencerAssignment.get(
-        { id: assignmentId },
-        { selectionSet },
-    );
+    const { data, errors } = await client.models.InfluencerAssignment.get({ id: assignmentId }, { selectionSet });
     if (data === null) throw new Error(`No data for assignment ${assignmentId}`);
     const dataOut = validateAssignment(data);
     return dataOut;
@@ -200,17 +211,14 @@ function validateAssignment(rawData: RawAssignment): Assignment.AssignmentMin {
     return dataOut;
 }
 
-const eventSelectionSet = [
-    "timelineEvents.timelineEvent.*",
-    "timelineEvents.timelineEvent.campaign.id",
-] as const;
+const eventSelectionSet = ["timelineEvents.timelineEvent.*", "timelineEvents.timelineEvent.campaign.id"] as const;
 export async function getAssignmentTimelineEvents(assignment: Assignment.AssignmentMin) {
     const fetchStart = performance.now();
     const { data, errors } = await client.models.InfluencerAssignment.get(
         { id: assignment.id },
         {
             selectionSet: eventSelectionSet,
-        },
+        }
     );
     const fetchEnd = performance.now();
     console.log("Fetch Time", fetchEnd - fetchStart);
@@ -219,7 +227,7 @@ export async function getAssignmentTimelineEvents(assignment: Assignment.Assignm
     const dataOut: TimelineEvent.Event[] = await Promise.all(
         data.timelineEvents.map((x) => {
             return validateTimelineEvent(x, assignment);
-        }),
+        })
     );
     const validateEnd = performance.now();
     console.log("Validate Time", validateEnd - validateStart);
@@ -246,11 +254,8 @@ export async function listAssignmentsByCampaign(campaignId: string) {
 }
 
 function validateTimelineEvent(
-    rawData: SelectionSet<
-        Schema["InfluencerAssignment"]["type"],
-        typeof eventSelectionSet
-    >["timelineEvents"][number],
-    assignment: Assignment.AssignmentMin,
+    rawData: SelectionSet<Schema["InfluencerAssignment"]["type"], typeof eventSelectionSet>["timelineEvents"][number],
+    assignment: Assignment.AssignmentMin
 ): TimelineEvent.Event {
     const {
         timelineEvent: {

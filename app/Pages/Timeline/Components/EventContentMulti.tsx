@@ -1,11 +1,5 @@
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
-import {
-    CircularProgress,
-    Unstable_Grid2 as Grid,
-    GridSize,
-    Link,
-    Typography,
-} from "@mui/material";
+import { CircularProgress, Unstable_Grid2 as Grid, GridSize, Link, Typography } from "@mui/material";
 import { groupBy } from "../Functions/groupEvents";
 import dayjs from "@/app/utils/configuredDayJs";
 import { timelineEventTypesType } from "@/amplify/data/types";
@@ -35,7 +29,7 @@ function WebinarEventContent(props: EventContentProps) {
     const { event } = props;
     const speakers = useMemo(
         () => event.childEvents.filter((childEvent) => childEvent.type === "WebinarSpeaker"),
-        [event],
+        [event]
     );
     const speakerEvents = useQueries({
         queries: speakers.map((speaker) => ({
@@ -56,7 +50,7 @@ function WebinarEventContent(props: EventContentProps) {
                 <>
                     <Typography variant="body1">Speaker:</Typography>
                     {speakerEvents.map((event, index) => {
-                        console.log(event);
+                        // console.log(event);
                         const data = event.data;
                         if (!data) return <CircularProgress key={index} />;
                         const assignment = data.assignments[0];

@@ -8,7 +8,7 @@ import { Authenticator, useAuthenticator, withAuthenticator } from "@aws-amplify
 import FollowerAnalysis from "./Landing";
 import AuthError from "./Components/AuthError";
 import { ConfirmProvider } from "material-ui-confirm";
-import SideBar from "./Components/SideBar";
+import SideBar from "./Sidebar";
 
 const queryClient = new QueryClient();
 const theme = createTheme({
