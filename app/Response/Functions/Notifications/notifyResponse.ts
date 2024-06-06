@@ -27,7 +27,7 @@ export default async function notifyResponse({
     const ccAdresses = projectManagers.length > 1 ? projectManagers.slice(1) : undefined;
     const sender = { name: "Swinx Web", email: "noreply@swinx.de" };
     const subject = getSubjectLine(response, influencerName);
-    const { html, text } = renderEmail({ response, influencerName, customerCompany });
+    const { html, text } = renderEmail({ response, influencerName, customerCompany, feedback });
     sesAPIClient.send({
         ToAddresses: toAdresses,
         CcAddresses: ccAdresses,
@@ -50,11 +50,12 @@ function getSubjectLine(response: Candidates.candidateResponse, candidateFullNam
 }
 
 type RenderEmailParams = Prettify<Parameters<typeof InfluencerResponseEmail>[0]>;
-function renderEmail({ response, influencerName, customerCompany }: RenderEmailParams) {
+function renderEmail({ response, influencerName, customerCompany, feedback }: RenderEmailParams) {
     const mailJSX = InfluencerResponseEmail({
         response,
         influencerName,
         customerCompany,
+        feedback,
     });
     return { html: renderAsync(mailJSX), text: renderAsync(mailJSX, { plainText: true }) };
 }

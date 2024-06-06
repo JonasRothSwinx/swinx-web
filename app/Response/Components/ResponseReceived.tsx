@@ -44,10 +44,9 @@ export function ResponseReceived({ response, resetResponse }: ResponseReceivedPr
                     },
                 },
 
-                //Resetting Container
-                "#ResetResponseContainer": {
-                    display: "flex",
-                    flexDirection: "column",
+                //Circular Progress
+                ".MuiCircularProgress-root": {
+                    margin: "10px",
                 },
             },
         },
@@ -55,15 +54,19 @@ export function ResponseReceived({ response, resetResponse }: ResponseReceivedPr
     const EventHandlers = {
         resetResponse: async () => {
             setResetting(true);
-            // await resetResponse
-            await sleep(50000);
+            await resetResponse();
+            // await sleep(50000);
             setResetting(false);
         },
     };
     if (resetting) {
         return (
-            <Box id="ResetResponseContainer">
-                <Typography> Ihre Antwort wird zurückgesetzt. Bitte warten Sie...</Typography>
+            <Box id="ResponseReceivedContainer" sx={styles}>
+                <Typography>
+                    {" "}
+                    Ihre Antwort wird zurückgesetzt.
+                    <br /> Bitte warten Sie...
+                </Typography>
                 <CircularProgress />
             </Box>
         );

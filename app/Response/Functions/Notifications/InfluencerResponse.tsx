@@ -13,13 +13,14 @@ export default function InfluencerResponseEmail({
     response,
     influencerName,
     customerCompany,
+    feedback,
 }: InfluencerResponseEmailProps) {
     switch (response) {
         case "accepted": {
-            return Accepted({ influencerName: influencerName, customerCompany });
+            return Accepted({ influencerName: influencerName, customerCompany, feedback });
         }
         case "rejected": {
-            return Declined({ influencerName: influencerName, customerCompany });
+            return Declined({ influencerName: influencerName, customerCompany, feedback });
         }
         case "pending": {
             return Pending(influencerName, customerCompany);
