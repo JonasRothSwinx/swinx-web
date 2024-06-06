@@ -1,6 +1,10 @@
 "use client";
 import UserView from "@/app/Pages/WelcomePage/User";
-import { getUserAttributes, getUserGroups } from "@/app/ServerFunctions/serverActions";
+import {
+    getEnvironment,
+    getUserAttributes,
+    getUserGroups,
+} from "@/app/ServerFunctions/serverActions";
 import { useQuery } from "@tanstack/react-query";
 import stylesExporter from "../styles/stylesExporter";
 import DebugButtons from "./debug/debugButtons";
@@ -41,6 +45,7 @@ interface ISideBar {
 function SideBar(props: ISideBar) {
     const { setMenuCallback } = props;
     const groups = useQuery({ queryKey: ["userGroups"], queryFn: getUserGroups });
+    const environment = useQuery({ queryKey: ["environment"], queryFn: getEnvironment });
     // const userAttributes = useQuery({ queryKey: ["userAttributes"], queryFn: getUserAttributes });
     if (groups.isLoading) return <div>Loading...</div>;
     if (groups.isError) return <div>Error: {JSON.stringify(groups.error)}</div>;
@@ -57,7 +62,9 @@ function SideBar(props: ISideBar) {
                     callback={setMenuCallback ?? (() => {})}
                 />
             ))}
-            <SideBarLink link={"/FollowerAnalysis"} />
+            {environment.data?.awsBranch === "sandbox" && (
+                <SideBarLink link={"/FollowerAnalysis"} />
+            )}
             {groups.data.includes("admin") && <DebugButtons />}
         </div>
     );

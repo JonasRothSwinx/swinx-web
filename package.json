@@ -36,6 +36,7 @@
         "@tanstack/react-query": "^5.28.0",
         "@tanstack/react-query-devtools": "^5.35.1",
         "aws-amplify": "^6.3.0",
+        "csv-string": "^4.1.1",
         "dayjs": "^1.11.10",
         "eslint-config-react-app": "^7.0.1",
         "html-loader": "^5.0.0",
@@ -65,6 +66,7 @@
         "dotenv": "^16.4.5",
         "eslint-config-next": "^14.1.4",
         "eslint-plugin-react-hooks": "^4.6.0",
+        "raw-loader": "^4.0.2",
         "ts-node": "^10.9.2",
         "typescript": "^5.4.5"
     }

@@ -5,6 +5,7 @@ import config from "@/amplify_outputs.json";
 import { cookies } from "next/headers";
 import { SelectionSet } from "aws-amplify/api";
 import { projectManagers } from "@/app/ServerFunctions/database/dbOperations";
+import { Candidates } from "@/app/ServerFunctions/types/candidates";
 
 const client = generateServerClientUsingCookies<Schema>({ config, cookies, authMode: "apiKey" });
 
@@ -16,8 +17,21 @@ export async function getCandidate({ id }: GetCandidateParams) {
         { id },
         { selectionSet: ["id", "response"] },
     );
+    if (candidateResponse.errors) {
+        console.error(candidateResponse.errors);
+        throw new Error("Error fetching candidate data");
+    }
+    if (!candidateResponse.data) {
+        return null;
+    }
+    const responseRaw = candidateResponse.data.response ?? "pending";
+    const response = Candidates.isValidResponse(responseRaw) ? responseRaw : "pending";
+    const dataOut = {
+        id: candidateResponse.data.id,
+        response,
+    };
     // console.log({ data: candidateResponse.data, error: JSON.stringify(candidateResponse.errors) });
-    return candidateResponse.data;
+    return dataOut;
 }
 interface GetAssignmentDataParams {
     id: string;
@@ -148,12 +162,12 @@ export async function getParentEventInfo({ id }: GetParentEventInfoParams) {
 //MARK: - Process Response
 interface ProcessResponseParams {
     candidateId: string;
-    response: boolean;
+    response: Candidates.candidateResponse;
 }
 export async function processResponse({ response, candidateId }: ProcessResponseParams) {
     const { data, errors } = await client.models.InfluencerCandidate.update({
         id: candidateId,
-        response: response ? "accepted" : "rejected",
+        response: response,
     });
     if (errors) {
         console.error(errors);

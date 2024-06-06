@@ -5,6 +5,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "@/app/utils/configuredDayJs";
 import { useMemo } from "react";
 import printJson from "./json";
+import filterCSV from "./filterCSV/filter";
+import * as debugServerside from "./debugServerside";
 
 export default function DebugButtons() {
     // const queryClient = useQueryClient();
@@ -88,6 +90,23 @@ export default function DebugButtons() {
                 }}
             >
                 Test Email Triggers
+            </Button>
+            <Button
+                onClick={async () => {
+                    console.log(process.env);
+                    const client = process.env;
+                    const server = JSON.parse(await debugServerside.getEnv());
+                    console.log("env", { client, server });
+                }}
+            >
+                Print env
+            </Button>
+            <Button
+                onClick={() => {
+                    filterCSV();
+                }}
+            >
+                Filter CSV
             </Button>
             {/* <Button
                 variant="outlined"

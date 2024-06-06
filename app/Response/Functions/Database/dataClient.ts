@@ -1,3 +1,4 @@
+import { Candidates } from "@/app/ServerFunctions/types/candidates";
 import * as dbOperations from "./dbOperations";
 
 const dataClient = {
@@ -46,11 +47,10 @@ async function getEventInfo({ id }: GetEventInfoParams) {
 
 interface ProcessResponseParams {
     candidateId: string;
-    response: boolean;
+    response: Candidates.candidateResponse;
 }
 async function processResponse({ response, candidateId }: ProcessResponseParams) {
     const dbResponse = await dbOperations.processResponse({ response, candidateId });
-    //TODO: Notify the campaignManager of the response
 }
 
 export default dataClient;

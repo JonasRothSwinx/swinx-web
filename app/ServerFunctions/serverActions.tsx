@@ -47,17 +47,14 @@ export async function getUserAttributes() {
 }
 
 //#region Webinar
-interface WebinarNew {
-    title: string;
-    date: string;
-}
-interface WebinarUpdate {
-    id: string;
-    title?: string;
-    date?: string;
-}
 
 export async function getInviteBaseUrl() {
     const baseUrl = (process.env.BASE_URL ?? "www.google.com") + "/Response?data=";
     return baseUrl;
+}
+
+export async function getEnvironment() {
+    const nodeEnv = process.env.NODE_ENV;
+    const awsBranch = process.env.AWS_BRANCH;
+    return { nodeEnv, awsBranch };
 }

@@ -3,12 +3,17 @@ import { candidates } from "../database/dbOperations";
 import Influencer from "./influencer";
 
 export namespace Candidates {
-    export type candidateResponse = "pending" | "accepted" | "rejected";
+    const candidateResponseValues = ["pending", "accepted", "rejected"] as const;
+    export type candidateResponse = (typeof candidateResponseValues)[number];
     export type Candidate = {
         id: Nullable<string>;
         influencer: Influencer.WithContactInfo;
         response: Nullable<string>;
     };
+
+    export function isValidResponse(response: string): response is candidateResponse {
+        return candidateResponseValues.includes(response as candidateResponse);
+    }
 
     export type CandidateReference = {
         id: Nullable<string>;

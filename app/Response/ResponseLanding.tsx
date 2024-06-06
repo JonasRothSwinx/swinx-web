@@ -1,13 +1,21 @@
 import { Candidates } from "@/app/ServerFunctions/types/candidates";
-import { Box, Button, Icon, SxProps, Typography, useMediaQuery } from "@mui/material";
+import {
+    Box,
+    Button,
+    CircularProgress,
+    Icon,
+    SxProps,
+    Typography,
+    useMediaQuery,
+} from "@mui/material";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { dataClient } from "./Functions/Database";
-import { Assignment } from "./Functions/Database/types";
+import { Assignment, Candidate } from "./Functions/Database/types";
 import sortEvents from "./Functions/sortEvents";
 import Loading from "./Components/Loading";
-import notifyResponse from "./Functions/notifyResponse";
+import notifyResponse from "./Functions/Notifications/notifyResponse";
 import { WebinarDescription } from "./Components/WebinarDescription";
 import { AssignmentDescription } from "./Components/AssignmentDescription";
 import { BudgetDescriptionText } from "./Components/BudgetDescriptionText";
@@ -17,6 +25,8 @@ import { SwinxLogo } from "./Components/SwinxLogo";
 import Title from "./Components/Title";
 import Introduction from "./Components/Introduction";
 import { Engineering } from "@mui/icons-material";
+import sleep from "../utils/sleep";
+import ResponseButtons from "./Components/ResponseButtons";
 
 export default function ResponseLanding() {
     const params = useSearchParams();
@@ -38,6 +48,7 @@ export default function ResponseLanding() {
     const { assignmentId, candidateId, candidateFullName, campaignId } = decodedParams;
     const isLowHeight = useMediaQuery("(max-height: 600px)");
     const isLowWidth = useMediaQuery("(max-width: 600px)");
+    const [responseClicked, setResponseClicked] = useState(false);
     //#region Queries
     const candidate = useQuery({
         enabled: !!candidateId,
@@ -231,80 +242,40 @@ export default function ResponseLanding() {
                         // borderBottomRightRadius: "5px",
                     },
                 },
-                "#ButtonContainer": {
-                    // boxSizing: "border-box",
-                    // position: "absolute",
-                    // bottom: "0",
-                    // right: "0",
-                    float: "right",
-                    alignSelf: "flex-end",
-                    display: "flex",
-                    flexWrap: "wrap",
-                    // flexDirection: "column",
-                    justifyContent: "right",
-                    alignItems: "end",
-                    width: "max-content",
-                    maxWidth: "100%",
-                    flex: 1,
-
-                    "& button": {
-                        width: "fit-content",
-                        margin: "10px",
-                    },
-                    "#submitButton": {
-                        backgroundColor: "primary",
-                    },
-                    "#rejectButton": {
-                        backgroundColor: "secondary",
-                    },
-                    "@media (max-width: 600px)": {
-                        width: "100%",
-                        justifyContent: "center",
-                        button: {
-                            // maxHeight: "20px",
-                            fontSize: "10px",
-                            width: "100%",
-                            // margin: "5px",
-                        },
-                    },
-                },
-                "#ResponseReceivedContainer": {
-                    padding: "40px",
-                    margin: "auto",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    backgroundColor: "#f0f0f0",
-                    borderRadius: "10px",
-                    border: "1px solid black",
-                    "& #ResponseReceivedText": {
-                        fontSize: "30px",
-                        margin: "10px",
-                    },
-                    "& #ResponseReceivedButton": {
-                        margin: "10px",
-                    },
-                },
             },
         }),
         [],
     );
     //#endregion
+    //MARK: - Event Handler
     const EventHandler = {
-        processResponse: async (response: boolean) => {
-            // queryClient.setQueryData(["candidate"], {
-            //     ...candidate.data,
-            //     response: response ? "accepted" : "rejected",
-            // });
+        processResponse: async (response: Candidates.candidateResponse, feedback?: string) => {
             if (!CampaignData.data) return;
-            const dataResponse = await dataClient.processResponse({ candidateId, response });
+            setResponseClicked(true);
+            // await sleep(5000);
+            console.log("preocessRespone", { response, feedback });
+            // return;
 
+            const dataResponse = await dataClient.processResponse({ candidateId, response });
+            queryClient.setQueryData(["candidate"], {
+                ...candidate.data,
+                response: response,
+            });
+
+            setResponseClicked(false);
             await notifyResponse({
                 response,
-                candidateFullName,
+                influencerName: candidateFullName,
                 customerCompany: CampaignData.data.customerCompany,
                 campaignId,
+                feedback,
+            });
+        },
+        resetResponse: async () => {
+            await EventHandler.processResponse("pending");
+            queryClient.setQueryData(["candidate"], {
+                ...candidate.data,
+                response: "pending",
             });
         },
     };
@@ -363,7 +334,10 @@ export default function ResponseLanding() {
     }
     if (candidate.data.response && candidate.data.response !== "pending") {
         return (
-            <ResponseReceived response={candidate.data.response as Candidates.candidateResponse} />
+            <ResponseReceived
+                response={candidate.data.response as Candidates.candidateResponse}
+                resetResponse={EventHandler.resetResponse}
+            />
         );
     }
     //#endregion
@@ -383,31 +357,7 @@ export default function ResponseLanding() {
                 <br />
                 <InterestDescriptionText />
             </Box>
-
-            <Box id="ButtonContainer">
-                <Button
-                    id="submitButton"
-                    variant="contained"
-                    color="primary"
-                    onClick={() => {
-                        EventHandler.processResponse(true);
-                        // setReceived(true);
-                    }}
-                >
-                    Ich möchte an der Kampagne teilnehmen
-                </Button>
-                <Button
-                    id="rejectButton"
-                    variant="outlined"
-                    color="info"
-                    onClick={() => {
-                        EventHandler.processResponse(false);
-                        // setReceived(true);
-                    }}
-                >
-                    Ich möchte nicht an der Kampagne teilnehmen
-                </Button>
-            </Box>
+            <ResponseButtons processResponse={EventHandler.processResponse} />
         </Box>
     );
 }

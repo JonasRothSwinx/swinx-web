@@ -14,3 +14,5 @@ node_modules
 .env*
 tsconfig.tsbuildinfo
 amplify_outputs.json
+
+*.csv
