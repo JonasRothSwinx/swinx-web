@@ -9,6 +9,8 @@ export namespace Candidates {
         id: Nullable<string>;
         influencer: Influencer.WithContactInfo;
         response: Nullable<string>;
+        feedback: Nullable<string>;
+        invitationSent: boolean;
     };
 
     export function isValidResponse(response: string): response is candidateResponse {

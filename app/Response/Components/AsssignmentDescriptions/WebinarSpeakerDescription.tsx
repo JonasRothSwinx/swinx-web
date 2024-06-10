@@ -8,7 +8,7 @@ import Loading from "../Loading";
 interface WebinarSpeakerDescriptionProps {
     events: TimelineEvent[];
 }
-export function WebinarSpeakerDescription({ events }: WebinarSpeakerDescriptionProps) {
+export default function WebinarSpeakerDescription({ events }: WebinarSpeakerDescriptionProps) {
     const queryClient = useQueryClient();
     const webinar = queryClient.getQueryData<Webinar>(["parentEvent"]);
     if (!events || !webinar) {
@@ -32,8 +32,7 @@ export function WebinarSpeakerDescription({ events }: WebinarSpeakerDescriptionP
                             )}
                             als Speaker am Webinar des Kunden teilnehmen.
                             <br />
-                            Dort sollen Sie zum Thema <strong>{`"${event.eventTitle}"`}</strong>{" "}
-                            sprechen.
+                            Dort sollen Sie zum Thema <strong>{`"${event.eventTitle}"`}</strong> sprechen.
                         </Typography>
                     );
                 })}

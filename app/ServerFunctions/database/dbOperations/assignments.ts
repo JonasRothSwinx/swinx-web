@@ -66,7 +66,7 @@ export async function listAssignments() {
     if (errors) {
         throw new Error(JSON.stringify(errors));
     }
-    const validatedAssignments: Assignment.AssignmentMin[] = data.map(validateAssignment);
+    const validatedAssignments = validateAssignments(data);
     return validatedAssignments;
 }
 
@@ -165,6 +165,7 @@ export async function getAssignment(assignmentId: string) {
     return dataOut;
 }
 
+//MARK: Validate
 function validateAssignment(rawData: RawAssignment): Assignment.AssignmentMin {
     const influencer: Nullable<Influencer.InfluencerWithName> = rawData.influencer
         ? {
@@ -189,6 +190,8 @@ function validateAssignment(rawData: RawAssignment): Assignment.AssignmentMin {
                 email: x.influencer.email,
                 emailLevel: emailType,
             },
+            feedback: x.feedback ?? null,
+            invitationSent: x.invitationSent ?? false,
         };
         return candidate;
     });
@@ -209,6 +212,10 @@ function validateAssignment(rawData: RawAssignment): Assignment.AssignmentMin {
         campaign: { id: rawData.campaignId },
     };
     return dataOut;
+}
+
+function validateAssignments(rawData: RawAssignment[]): Assignment.AssignmentMin[] {
+    return rawData.map(validateAssignment);
 }
 
 const eventSelectionSet = ["timelineEvents.timelineEvent.*", "timelineEvents.timelineEvent.campaign.id"] as const;

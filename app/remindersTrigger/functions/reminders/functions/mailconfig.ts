@@ -17,6 +17,10 @@ const mailConfig: MailConfig = {
         actionReminder: templateDefinitions.mailTypes.invites.InviteReminder.send,
         deadlineReminder: null,
     },
+    ImpulsVideo: {
+        actionReminder: null,
+        deadlineReminder: templateDefinitions.mailTypes.impulsVideo.ImpulsVideoDeadlineReminder.send,
+    },
     Post: {
         actionReminder: templateDefinitions.mailTypes.post.PostActionReminder.send,
         deadlineReminder: templateDefinitions.mailTypes.post.PostDeadlineReminder.send,
@@ -26,8 +30,7 @@ const mailConfig: MailConfig = {
         deadlineReminder: templateDefinitions.mailTypes.video.VideoDeadlineReminder.send,
     },
     WebinarSpeaker: {
-        actionReminder:
-            templateDefinitions.mailTypes.webinarSpeaker.WebinarSpeakerActionReminder.send,
+        actionReminder: templateDefinitions.mailTypes.webinarSpeaker.WebinarSpeakerActionReminder.send,
         deadlineReminder: null,
     },
     Webinar: {

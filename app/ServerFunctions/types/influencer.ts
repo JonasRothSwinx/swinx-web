@@ -102,11 +102,7 @@ namespace Influencer {
     //#endregion
     //#region type guards
 
-    export function isFull(
-        influencer: unknown,
-        requireId = true,
-        debug = false,
-    ): influencer is Full {
+    export function isFull(influencer: unknown, requireId = true, debug = false): influencer is Full {
         if (typeof influencer !== "object" || influencer === null) {
             if (debug) console.log("Influencer is not an object");
             return false;
@@ -138,6 +134,9 @@ namespace Influencer {
     export type AssignedInfluencer = Full & {
         inviteEvents: TimelineEvent.Invites[];
     };
+    export function getFullName(influencer: InfluencerWithName): string {
+        return `${influencer.firstName} ${influencer.lastName}`;
+    }
 }
 
 export default Influencer;

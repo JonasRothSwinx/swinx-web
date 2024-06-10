@@ -10,7 +10,7 @@ import { Schema } from "@/amplify/data/resource";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import { Nullable, PartialWith } from "@/app/Definitions/types";
 import { Candidates } from "@/app/ServerFunctions/types/candidates";
-import AssignedInfluencer from "@/app/Pages/CampaignDetails/Components/OpenInfluencerDetails/AssignedInfluencer";
+import AssignedInfluencer from "@/app/Main Menu/CampaignDetails/Components/OpenInfluencerDetails/AssignedInfluencer";
 import Customer from "../../types/customer";
 import ProjectManagers from "../../types/projectManagers";
 
@@ -93,7 +93,7 @@ export async function createNewCampaign({ campaign, projectManagerId }: CreateNe
     }
     //Create Customers
     const customersResponses = await Promise.all(
-        campaign.customers.map((customer) => customers.create(customer, createdCampaign.id)),
+        campaign.customers.map((customer) => customers.create(customer, createdCampaign.id))
     );
     //Connect projectManager
     const managerRespone = await connectToManager({
@@ -111,7 +111,7 @@ export async function getCampaign(id: string): Promise<Nullable<Campaign.Campaig
         { id },
         {
             selectionSet,
-        },
+        }
     );
     if (errors) {
         console.log({ errors });
@@ -142,7 +142,7 @@ export async function listCampaigns(): Promise<Campaign.CampaignMin[]> {
 
 //#region delete
 export async function deleteCampaign(
-    campaign: PartialWith<Campaign.Campaign, "id" | "customers" | "campaignTimelineEvents">,
+    campaign: PartialWith<Campaign.Campaign, "id" | "customers" | "campaignTimelineEvents">
 ) {
     if (!campaign.id) throw new Error("Missing Data");
 
@@ -195,19 +195,17 @@ function validateCampaign(rawCampaign: Nullable<RawCampaign>): Nullable<Campaign
                 notes: raw.notes ?? "",
             } satisfies Customer.Customer;
         });
-        const projectManagers: ProjectManagers.ProjectManager[] = rawCampaign.projectManagers.map(
-            (raw) => {
-                return {
-                    id: raw.projectManager.id,
-                    email: raw.projectManager.email,
-                    firstName: raw.projectManager.firstName,
-                    lastName: raw.projectManager.lastName,
-                    phoneNumber: raw.projectManager.phoneNumber ?? undefined,
-                    notes: raw.projectManager.notes ?? undefined,
-                    cognitoId: raw.projectManager.cognitoId,
-                } satisfies ProjectManagers.ProjectManager;
-            },
-        );
+        const projectManagers: ProjectManagers.ProjectManager[] = rawCampaign.projectManagers.map((raw) => {
+            return {
+                id: raw.projectManager.id,
+                email: raw.projectManager.email,
+                firstName: raw.projectManager.firstName,
+                lastName: raw.projectManager.lastName,
+                phoneNumber: raw.projectManager.phoneNumber ?? undefined,
+                notes: raw.projectManager.notes ?? undefined,
+                cognitoId: raw.projectManager.cognitoId,
+            } satisfies ProjectManagers.ProjectManager;
+        });
         const dataOut: Campaign.CampaignMin = {
             id: rawCampaign.id,
             notes: rawCampaign.notes,

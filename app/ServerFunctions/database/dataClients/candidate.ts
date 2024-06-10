@@ -18,6 +18,8 @@ export async function createCandidate(
     const newCandidate: Omit<Candidates.Candidate, "id"> = {
         influencer: influencer,
         response: "pending",
+        feedback: null,
+        invitationSent: false,
     };
     const id = await database.candidate.create({ candidate: newCandidate, candidateAssignmentId: assignmentId });
     if (!id) throw new Error("Failed to create candidate");

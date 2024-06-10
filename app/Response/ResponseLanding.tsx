@@ -1,13 +1,5 @@
 import { Candidates } from "@/app/ServerFunctions/types/candidates";
-import {
-    Box,
-    Button,
-    CircularProgress,
-    Icon,
-    SxProps,
-    Typography,
-    useMediaQuery,
-} from "@mui/material";
+import { Box, Button, CircularProgress, Icon, SxProps, Typography, useMediaQuery } from "@mui/material";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -244,7 +236,7 @@ export default function ResponseLanding() {
                 },
             },
         }),
-        [],
+        []
     );
     //#endregion
     //MARK: - Event Handler
@@ -256,9 +248,10 @@ export default function ResponseLanding() {
             console.log("preocessRespone", { response, feedback });
             // return;
 
-            const dataResponse = await dataClient.processResponse({ candidateId, response });
+            const dataResponse = await dataClient.processResponse({ candidateId, response, feedback });
             queryClient.setQueryData(["candidate"], {
                 ...candidate.data,
+                feedback: feedback,
                 response: response,
             });
 
@@ -323,13 +316,7 @@ export default function ResponseLanding() {
         return <Typography id="ErrorText">Ein Fehler ist aufgetreten</Typography>;
     }
     //assure that query data is present
-    if (
-        !candidate.data ||
-        !assignmentData.data ||
-        !events.data ||
-        !CampaignData.data ||
-        !parentEvent.data
-    ) {
+    if (!candidate.data || !assignmentData.data || !events.data || !CampaignData.data || !parentEvent.data) {
         return <Typography id="ErrorText">Ein Fehler ist aufgetreten</Typography>;
     }
     if (candidate.data.response && candidate.data.response !== "pending") {

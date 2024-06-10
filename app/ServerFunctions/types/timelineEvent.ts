@@ -10,7 +10,7 @@ namespace TimelineEvent {
     export type EventWithId = Prettify<SingleEventWithId | MultiEventWithId>;
 
     //#region Common
-    export const singleEventValues = ["Invites", "Post", "Video", "WebinarSpeaker"] as const;
+    export const singleEventValues = ["Invites", "Post", "Video", "WebinarSpeaker", "ImpulsVideo"] as const;
     export type singleEventType = (typeof singleEventValues)[number];
 
     export const multiEventValues = ["Webinar"] as const;
@@ -30,9 +30,7 @@ namespace TimelineEvent {
         );
     }
 
-    export async function resolveEventReference(
-        event: Nullable<EventOrReference>,
-    ): Promise<Nullable<Event>> {
+    export async function resolveEventReference(event: Nullable<EventOrReference>): Promise<Nullable<Event>> {
         if (event === null) return null;
         else if (!isEventReference(event)) return event;
         else {
@@ -104,7 +102,7 @@ namespace TimelineEvent {
         // assignment: Assignment.AssignmentMin;
         // eventAssignmentAmount: 1;
     };
-    export type SingleEvent = Prettify<Invites | Post | Video | WebinarSpeaker>;
+    export type SingleEvent = Prettify<Invites | ImpulsVideo | Post | Video | WebinarSpeaker>;
     export type SingleEventWithId = Prettify<SingleEvent & { id: string }>;
 
     export type Invites = SingleEventCommon & {
@@ -125,6 +123,10 @@ namespace TimelineEvent {
     export type WebinarSpeaker = SingleEventCommon & {
         type: "WebinarSpeaker";
         // details?: Nullable<WebinarSpeakerDetails>;
+    };
+    export type ImpulsVideo = SingleEventCommon & {
+        type: "ImpulsVideo";
+        // details?: Nullable<ImpulsVideoDetails>;
     };
     //#endregion Types
     //#region Type Guards
@@ -211,5 +213,26 @@ namespace TimelineEvent {
     }
     //#endregion Type Guards
     //#endregion Multi Event Types
+
+    //#region Display
+    export const EventTypeDisplayName: { [key in eventType]: { sing: string; plur: string } } = {
+        ImpulsVideo: { sing: "Impulsvideo", plur: "Impulsvideos" },
+        Invites: { sing: "Einladung", plur: "Einladungen" },
+        Post: { sing: "Textbeitrag", plur: "Textbeiträge" },
+        Video: { sing: "Videobeitrag", plur: "Videobeiträge" },
+        WebinarSpeaker: { sing: "Speaker", plur: "Speaker" },
+        Webinar: { sing: "Webinar", plur: "Webinare" },
+    };
+    export function getDisplayName(entry: string, form: "sing" | "plur" = "sing") {
+        switch (true) {
+            case eventValues.includes(entry as eventType): {
+                return EventTypeDisplayName[entry as eventType][form];
+            }
+            default: {
+                return entry;
+            }
+        }
+    }
+    //#endregion Display
 }
 export default TimelineEvent;

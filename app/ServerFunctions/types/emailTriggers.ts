@@ -10,9 +10,7 @@ export namespace EmailTriggers {
     export type EmailTrigger = Prettify<
         GeneralInfo & EventInfo & ContactInfo & EmailOverrides & State & CustomerContext
     >;
-    export type EmailTriggerEventRef = Prettify<
-        GeneralInfo & EventReference & ContactInfo & EmailOverrides & State
-    >;
+    export type EmailTriggerEventRef = Prettify<GeneralInfo & EventReference & ContactInfo & EmailOverrides & State>;
 
     type GeneralInfo = {
         id?: string;
@@ -56,67 +54,79 @@ export namespace EmailTriggers {
     type EmailTypeConfig = { [key in emailTriggerType]: Nullable<EmailLevelConfig> };
     type EventEmailConfig<Collection extends string> = { [key in Collection]: EmailTypeConfig };
 
-    const SingleEventEmailConfig: EventEmailConfig<TimelineEvent.singleEventType> = {
-        Invites: {
-            actionReminder: {
-                new: { templateName: "inviteActionReminder" },
-                reduced: { templateName: "inviteActionReminderReduced" },
-            },
-            deadlineReminder: null,
-        },
-        Post: {
-            actionReminder: {
-                new: { templateName: "postActionReminder" },
-                reduced: { templateName: "postActionReminderReduced" },
-            },
-            deadlineReminder: {
-                new: { templateName: "postDeadlineReminder" },
-                reduced: { templateName: "postDeadlineReminderReduced" },
-            },
-        },
-        Video: {
-            actionReminder: {
-                new: { templateName: "videoActionReminder" },
-                reduced: { templateName: "videoActionReminderReduced" },
-            },
-            deadlineReminder: {
-                new: { templateName: "videoDeadlineReminder" },
-                reduced: { templateName: "videoDeadlineReminderReduced" },
-            },
-        },
-        WebinarSpeaker: {
-            actionReminder: {
-                new: { templateName: "webinarSpeakerActionReminder" },
-                reduced: { templateName: "webinarSpeakerActionReminderReduced" },
-            },
-            deadlineReminder: {
-                new: { templateName: "webinarSpeakerDeadlineReminder" },
-                reduced: { templateName: "webinarSpeakerDeadlineReminderReduced" },
-            },
-        },
-    } as const;
-    const MultiEventEmailConfig: EventEmailConfig<TimelineEvent.multiEventType> = {
-        Webinar: {
-            actionReminder: null,
-            deadlineReminder: null,
-        },
-    } as const;
+    // const SingleEventEmailConfig: EventEmailConfig<TimelineEvent.singleEventType> = {
+    //     Invites: {
+    //         actionReminder: {
+    //             new: { templateName: "inviteActionReminder" },
+    //             reduced: { templateName: "inviteActionReminderReduced" },
+    //         },
+    //         deadlineReminder: null,
+    //     },
+    //     Post: {
+    //         actionReminder: {
+    //             new: { templateName: "postActionReminder" },
+    //             reduced: { templateName: "postActionReminderReduced" },
+    //         },
+    //         deadlineReminder: {
+    //             new: { templateName: "postDeadlineReminder" },
+    //             reduced: { templateName: "postDeadlineReminderReduced" },
+    //         },
+    //     },
+    //     Video: {
+    //         actionReminder: {
+    //             new: { templateName: "videoActionReminder" },
+    //             reduced: { templateName: "videoActionReminderReduced" },
+    //         },
+    //         deadlineReminder: {
+    //             new: { templateName: "videoDeadlineReminder" },
+    //             reduced: { templateName: "videoDeadlineReminderReduced" },
+    //         },
+    //     },
+    //     WebinarSpeaker: {
+    //         actionReminder: {
+    //             new: { templateName: "webinarSpeakerActionReminder" },
+    //             reduced: { templateName: "webinarSpeakerActionReminderReduced" },
+    //         },
+    //         deadlineReminder: {
+    //             new: { templateName: "webinarSpeakerDeadlineReminder" },
+    //             reduced: { templateName: "webinarSpeakerDeadlineReminderReduced" },
+    //         },
+    //     },
+    //     ImpulsVideo: {
+    //         //TODO: Add templates
+    //         actionReminder: null,
+    //         deadlineReminder: {
+    //             new: { templateName: "impulsVideoDeadlineReminder" },
+    //             reduced: { templateName: "impulsVideoDeadlineReminderReduced" },
+    //         },
+    //         // actionReminder: {
+    //         //     new: { templateName: "impulsVideoActionReminder" },
+    //         //     reduced: { templateName: "impulsVideoActionReminderReduced" },
+    //         // },
+    //         // deadlineReminder: {
+    //         //     new: { templateName: "impulsVideoDeadlineReminder" },
+    //         //     reduced: { templateName: "impulsVideoDeadlineReminderReduced" },
+    //         // },
+    //     },
+    // } as const;
+    // const MultiEventEmailConfig: EventEmailConfig<TimelineEvent.multiEventType> = {
+    //     Webinar: {
+    //         actionReminder: null,
+    //         deadlineReminder: null,
+    //     },
+    // } as const;
 
-    export const EmailConfig = {
-        ...SingleEventEmailConfig,
-        ...MultiEventEmailConfig,
-    } as const;
-    type EmailConfigKey = keyof typeof EmailConfig;
+    // export const EmailConfig = {
+    //     ...SingleEventEmailConfig,
+    //     ...MultiEventEmailConfig,
+    // } as const;
+    // type EmailConfigKey = keyof typeof EmailConfig;
 
-    export function getTemplateName(
-        key: EmailConfigKey,
-        type: emailTriggerType,
-        level: emailLevel,
-    ) {
-        if (level === "none") return null;
-        const template = EmailConfig?.[key]?.[type]?.[level]?.templateName ?? null;
-        return template;
-    }
+    // export function getTemplateName(key: EmailConfigKey, type: emailTriggerType, level: emailLevel) {
+    //     if (level === "none") return null;
+    //     const template = EmailConfig?.[key]?.[type]?.[level]?.templateName ?? null;
+    //     return template;
+    // }
     type timeOffset = {
         years?: number;
         months?: number;
@@ -150,6 +160,10 @@ export namespace EmailTriggers {
         Webinar: {
             actionReminder: null,
             deadlineReminder: null,
+        },
+        ImpulsVideo: {
+            actionReminder: null,
+            deadlineReminder: { offset: { days: -7 } },
         },
     } as const;
 }

@@ -7,7 +7,7 @@ import dateToRange from "../../Functions/dateToRange";
 interface PostDescriptionProps {
     events: TimelineEvent[];
 }
-export function PostDescription({ events }: PostDescriptionProps) {
+export default function PostDescription({ events }: PostDescriptionProps) {
     return (
         <Box id="DescriptionContainer">
             <Box id="DescriptionTitle">
@@ -39,10 +39,8 @@ export function PostDescription({ events }: PostDescriptionProps) {
                                 <>
                                     <br />
                                     Der Entwurf muss dabei bis zum{" "}
-                                    <strong>
-                                        {dayjs(event.info.draftDeadline).format("DD.MM")}
-                                    </strong>{" "}
-                                    bei uns eingereicht werden.
+                                    <strong>{dayjs(event.info.draftDeadline).format("DD.MM")}</strong> bei uns
+                                    eingereicht werden.
                                 </>
                             )}
                         </Typography>

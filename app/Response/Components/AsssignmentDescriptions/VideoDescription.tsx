@@ -7,7 +7,7 @@ import dateToRange from "../../Functions/dateToRange";
 interface VideoDescriptionProps {
     events: TimelineEvent[];
 }
-export function VideoDescription({ events }: VideoDescriptionProps) {
+export default function VideoDescription({ events }: VideoDescriptionProps) {
     return (
         <Box id="DescriptionContainer">
             <Box id="DescriptionTitle">
@@ -39,10 +39,8 @@ export function VideoDescription({ events }: VideoDescriptionProps) {
                                 <>
                                     <br />
                                     Die Aufnahme muss dabei bis zum{" "}
-                                    <strong>
-                                        {dayjs(event.info.draftDeadline).format("DD.MM")}
-                                    </strong>{" "}
-                                    bei uns eingereicht werden.
+                                    <strong>{dayjs(event.info.draftDeadline).format("DD.MM")}</strong> bei uns
+                                    eingereicht werden.
                                 </>
                             )}
                         </Typography>

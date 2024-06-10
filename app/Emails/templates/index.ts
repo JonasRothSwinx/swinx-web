@@ -6,6 +6,7 @@ import * as PostDeadlineReminder from "./posts/deadlineReminder/";
 import * as VideoReminder from "./video/actionReminder/";
 import * as VideoDeadlineReminder from "./video/deadlineReminder/";
 import * as WebinarSpeakerActionReminder from "./webinarSpeaker/actionReminder/";
+import * as ImpulsVideoReminder from "./impulsVideo";
 
 const templateNames = [
     ...CampaignInvite.templateNames,
@@ -15,12 +16,16 @@ const templateNames = [
     ...VideoReminder.templateNames,
     ...VideoDeadlineReminder.templateNames,
     ...WebinarSpeakerActionReminder.templateNames,
+    ...ImpulsVideoReminder.templateNames,
 ] as const satisfies string[];
 export type templateName = (typeof templateNames)[number];
 
 const mailTypes = {
     campaignInvite: {
         CampaignInvite: CampaignInvite.default,
+    },
+    impulsVideo: {
+        ImpulsVideoDeadlineReminder: ImpulsVideoReminder.default,
     },
     invites: {
         InviteReminder: InviteEvents.default,
@@ -38,12 +43,9 @@ const mailTypes = {
     },
 };
 
-const mailTypesFlat: { [key: string]: Template } = Object.values(mailTypes).reduce(
-    (acc, mailType) => {
-        return { ...acc, ...mailType };
-    },
-    {},
-);
+const mailTypesFlat: { [key: string]: Template } = Object.values(mailTypes).reduce((acc, mailType) => {
+    return { ...acc, ...mailType };
+}, {});
 
 const templateDefinitions = {
     mailTypes,

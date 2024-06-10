@@ -4,12 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { TimelineEvent } from "../Functions/Database/types";
 import sortEvents, { SortedEvents } from "../Functions/sortEvents";
 import Loading from "./Loading";
-import {
-    InvitesDescription,
-    PostDescription,
-    VideoDescription,
-    WebinarSpeakerDescription,
-} from "./AsssignmentDescriptions";
+import Descriptions from "./AsssignmentDescriptions";
 import { dataClient } from "../Functions/Database";
 
 //MARK: - AssignmentDescription
@@ -18,10 +13,11 @@ type EventTypeDescription = {
 };
 const eventTypeDescription: EventTypeDescription = {
     Webinar: (props) => null,
-    Invites: (props) => <InvitesDescription {...props} />,
-    WebinarSpeaker: (props) => <WebinarSpeakerDescription {...props} />,
-    Post: (props) => <PostDescription {...props} />,
-    Video: (props) => <VideoDescription {...props} />,
+    ImpulsVideo: (props) => <Descriptions.ImpulsVideo {...props} />,
+    Invites: (props) => <Descriptions.Invites {...props} />,
+    WebinarSpeaker: (props) => <Descriptions.WebinarSpeaker {...props} />,
+    Post: (props) => <Descriptions.Post {...props} />,
+    Video: (props) => <Descriptions.Video {...props} />,
 };
 interface AssignmentDescriptionProps {
     assignmentId: string;
@@ -45,7 +41,7 @@ export function AssignmentDescription({ assignmentId }: AssignmentDescriptionPro
             return sortEvents({ events: events.data });
         },
     });
-    const descriptionOrder = ["Invites", "Post", "Video", "WebinarSpeaker"];
+    const descriptionOrder = ["Invites", "Post", "Video", "ImpulsVideo", "WebinarSpeaker"];
     if (sortedEvents.isLoading) return <Loading />;
     if (sortedEvents.isError) return <Box>Error</Box>;
     if (!sortedEvents.data) return <Box>No data</Box>;

@@ -48,9 +48,10 @@ async function getEventInfo({ id }: GetEventInfoParams) {
 interface ProcessResponseParams {
     candidateId: string;
     response: Candidates.candidateResponse;
+    feedback?: string;
 }
-async function processResponse({ response, candidateId }: ProcessResponseParams) {
-    const dbResponse = await dbOperations.processResponse({ response, candidateId });
+async function processResponse({ response, candidateId, feedback }: ProcessResponseParams) {
+    const dbResponse = await dbOperations.processResponse({ response, candidateId, feedback });
 }
 
 export default dataClient;

@@ -1,14 +1,5 @@
 import dayjs from "@/app/utils/configuredDayJs";
-import {
-    Box,
-    List,
-    SxProps,
-    Table,
-    TableCell,
-    TableHead,
-    TableRow,
-    Typography,
-} from "@mui/material";
+import { Box, List, SxProps, Table, TableBody, TableCell, TableHead, TableRow, Typography } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { TimelineEvent, Webinar } from "../../Functions/Database/types";
@@ -20,7 +11,7 @@ import dateToRange from "../../Functions/dateToRange";
 interface InvitesDescriptionProps {
     events: TimelineEvent[];
 }
-export function InvitesDescription({ events }: InvitesDescriptionProps) {
+export default function InvitesDescription({ events }: InvitesDescriptionProps) {
     const queryClient = useQueryClient();
     const webinar = queryClient.getQueryData<Webinar>(["parentEvent"]);
     const style: SxProps = useMemo(() => ({}), []);
@@ -36,12 +27,11 @@ export function InvitesDescription({ events }: InvitesDescriptionProps) {
             <Box id="SummaryContainer">
                 <Box id="SummaryBox">
                     <Typography>
-                        An folgenden Terminen werden Sie Einladungen zum Event des Kunden an Ihre
-                        Follower*innen verschicken.
+                        An folgenden Terminen werden Sie Einladungen zum Event des Kunden an Ihre Follower*innen
+                        verschicken.
                         <br />
                         Zielgruppe für das Event sind Profile aus{" "}
-                        {displayCountryString(webinar.targetAudience?.country ?? [])} innerhalb der
-                        folgenden Branchen:
+                        {displayCountryString(webinar.targetAudience?.country ?? [])} innerhalb der folgenden Branchen:
                     </Typography>
                     <Box>
                         <List>
@@ -61,18 +51,20 @@ export function InvitesDescription({ events }: InvitesDescriptionProps) {
                             <TableCell>Einladungen</TableCell>
                         </TableRow>
                     </TableHead>
-                    {events.map((event) => {
-                        const { startDate, endDate } = dateToRange({
-                            date: event.date,
-                            format: "DD.MM",
-                        });
-                        return (
-                            <TableRow key={event.id}>
-                                <TableCell>{`${startDate} - ${endDate}`}</TableCell>
-                                <TableCell>{event.eventTaskAmount}</TableCell>
-                            </TableRow>
-                        );
-                    })}
+                    <TableBody>
+                        {events.map((event) => {
+                            const { startDate, endDate } = dateToRange({
+                                date: event.date,
+                                format: "DD.MM",
+                            });
+                            return (
+                                <TableRow key={event.id}>
+                                    <TableCell>{`${startDate} - ${endDate}`}</TableCell>
+                                    <TableCell>{event.eventTaskAmount}</TableCell>
+                                </TableRow>
+                            );
+                        })}
+                    </TableBody>
                 </Table>
             </Box>
         </Box>

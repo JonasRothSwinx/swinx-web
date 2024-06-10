@@ -2,7 +2,7 @@
 import { Authenticator, useAuthenticator, withAuthenticator } from "@aws-amplify/ui-react";
 import "@aws-amplify/ui-react/styles.css";
 import { ThemeProvider } from "@emotion/react";
-import WelcomePage from "./Pages/WelcomePage/WelcomePage";
+import WelcomePage from "./Main Menu/WelcomePage/WelcomePage";
 
 import { createTheme } from "@mui/material";
 import { blue } from "@mui/material/colors";

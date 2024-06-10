@@ -1,8 +1,9 @@
 import { Candidates } from "@/app/ServerFunctions/types/candidates";
-import { Box, Button, CircularProgress, SxProps, TextField, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, SxProps, Typography } from "@mui/material";
 import { useConfirm } from "material-ui-confirm";
 import { useEffect, useRef, useState } from "react";
 import useGetFeedback from "./useGetFeedback";
+import FeedbackInterface from "./Feedback";
 
 interface ResponseButtonProps {
     processResponse: (response: Candidates.candidateResponse, feedback?: string) => void;
@@ -16,21 +17,37 @@ export default function ResponseButtons({ processResponse }: ResponseButtonProps
     const feedbackDialogStyles: SxProps = {
         "&": {
             border: "1px solid black",
+            ".MuiDialogContent-root": {
+                padding: "0 20px",
+            },
             "#feedbackTitle": {
                 textAlign: "center",
                 backgroundColor: "var(--swinx-blue)",
                 color: "white",
+                padding: "10px 20px",
+            },
+            "#feedbackInterface": {
+                ".MuiTextField-root": {
+                    width: "100%",
+                    maxWidth: "100%",
+                    paddingBottom: "10px",
+                },
+                "#feedbackDescription": {
+                    paddingBottom: "10px",
+                    paddingTop: "10px",
+                },
             },
         },
     };
     const EventHandlers = {
-        getFeedback: async () => {
-            await confirm({
+        getFeedback: async (response: Candidates.candidateResponse) => {
+            const submit = await confirm({
                 title: "Feedback",
                 dialogProps: { id: "feedbackDialog", sx: feedbackDialogStyles },
                 titleProps: { id: "feedbackTitle" },
                 content: (
                     <FeedbackInterface
+                        response={response}
                         feedback={feedback}
                         setFeedback={EventHandlers.setFeedback}
                     />
@@ -47,12 +64,16 @@ export default function ResponseButtons({ processResponse }: ResponseButtonProps
                 },
             })
                 .then(() => {
+                    console.log("Feedback Dialog Confirmed");
+                    return true;
                     // console.log(feedback);
                     // return feedback;
                 })
                 .catch(() => {
-                    setFeedback("");
+                    console.log("Feedback Dialog Cancelled");
+                    return null;
                 });
+            if (!submit) return null;
             return feedbackRef.current;
         },
         processFeedback: () => {
@@ -69,7 +90,9 @@ export default function ResponseButtons({ processResponse }: ResponseButtonProps
             });
         },
         processResponse: async (response: Candidates.candidateResponse) => {
-            const feedback = await EventHandlers.getFeedback();
+            const feedback = await EventHandlers.getFeedback(response);
+            console.log("Feedback: ", feedback);
+            if (feedback === null) return;
             // console.log("State feedback: ", feedback);
             // console.log({ response, feedback: feedbackReturn });
             setResponseProcessing(true);
@@ -176,30 +199,6 @@ function ResponseProcessing() {
                 Ihre Antwort wird verarbeitet
             </Typography>
             <CircularProgress />
-        </Box>
-    );
-}
-interface FeedbackInterfaceProps {
-    feedback: string;
-    setFeedback: (feedback: string) => void;
-}
-export function FeedbackInterface({ setFeedback, feedback }: FeedbackInterfaceProps) {
-    return (
-        <Box id="feedbackInterface">
-            <Typography>Feedback:</Typography>
-            <TextField
-                id="feedback"
-                label="Feedback"
-                multiline
-                minRows={2}
-                variant="outlined"
-                // value={feedback}
-                defaultValue={feedback}
-                onChange={(event) => {
-                    // console.log({ event, target: event.target, value: event.target.value });
-                    setFeedback(event.target.value);
-                }}
-            />
         </Box>
     );
 }
