@@ -1,5 +1,13 @@
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
-import { Button, DialogContent, MenuItem, SelectChangeEvent, TextField, Typography } from "@mui/material";
+import {
+    Button,
+    DialogContent,
+    MenuItem,
+    SelectChangeEvent,
+    TextField,
+    Tooltip,
+    Typography,
+} from "@mui/material";
 import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 import { Add as AddIcon, DeleteOutlined as DeleteIcon } from "@mui/icons-material";
 import { DatePicker, DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
@@ -10,6 +18,7 @@ import { PartialWith } from "@/app/Definitions/types";
 import { useQuery } from "@tanstack/react-query";
 import dataClient from "@/app/ServerFunctions/database";
 import { EventType } from "@aws-sdk/client-sesv2";
+import TextFieldWithTooltip from "../../Components/TextFieldWithTooltip";
 
 //#region config
 const isRepeatable: {
@@ -48,7 +57,14 @@ interface DateSelectorProps {
     setDates: Dispatch<SetStateAction<dates>>;
 }
 export function DateSelector(props: DateSelectorProps) {
-    const { dates, setDates, isEditing, timelineEvent, setTimelineEvent, eventType = "none" } = props;
+    const {
+        dates,
+        setDates,
+        isEditing,
+        timelineEvent,
+        setTimelineEvent,
+        eventType = "none",
+    } = props;
 
     // if (TimelineEvent.isEventReference(timelineEvent)) {
     //     //TODO resolve EventReference
@@ -128,7 +144,9 @@ export function DateSelector(props: DateSelectorProps) {
         Webinar: () => null,
     };
     const hasParentEvent: {
-        [key in TimelineEvent.eventType | "none"]: { parentEventType: TimelineEvent.multiEventType } | false;
+        [key in TimelineEvent.eventType | "none"]:
+            | { parentEventType: TimelineEvent.multiEventType }
+            | false;
     } = {
         none: false,
 
@@ -147,8 +165,14 @@ export function DateSelector(props: DateSelectorProps) {
         <>
             {/*  */}
             <Button onClick={printVariables}>Print Variables</Button>
-            <DialogContent dividers sx={{ "& .MuiFormControl-root": { flexBasis: "100%", flex: 1 } }}>
-                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
+            <DialogContent
+                dividers
+                sx={{ "& .MuiFormControl-root": { flexBasis: "100%", flex: 1 } }}
+            >
+                <LocalizationProvider
+                    dateAdapter={AdapterDayjs}
+                    adapterLocale="de"
+                >
                     <div style={{ flexBasis: "100%" }}>
                         {dates.dates.map((date, index) => {
                             return (
@@ -232,35 +256,47 @@ function Date(props: DateProps) {
         return dayjs();
     }, []);
     return (
-        <div className={styles.cellActionSplit}>
-            <DateTimePicker
-                disabled={isFixedDate}
-                // closeOnSelect={false}
-                label="Termin"
-                name="date"
-                value={value}
-                onChange={(value) => {
-                    console.log("onChange", value?.toString());
-                    handleDateChange(index, value);
-                }}
-                maxDate={maxDate}
-                minDate={minDate}
-                onError={(error) => {
-                    console.log({ error });
-                }}
-                slotProps={{
-                    textField: {
-                        required: true,
-                        variant: "standard",
-                    },
-                }}
-            />
-            {showDeleteButton && (
-                <Button key={`removeButton${index}`} onClick={() => removeDate(index)}>
-                    <DeleteIcon />
-                </Button>
-            )}
-        </div>
+        <Tooltip
+            title={
+                isFixedDate
+                    ? "Dieser Ereignistyp findet am Datum des Webinars statt."
+                    : "Wannn soll dieses Ereignis stattfinden?"
+            }
+            placement="top-start"
+        >
+            <div className={styles.cellActionSplit}>
+                <DateTimePicker
+                    disabled={isFixedDate}
+                    // closeOnSelect={false}
+                    label="Termin"
+                    name="date"
+                    value={value}
+                    onChange={(value) => {
+                        console.log("onChange", value?.toString());
+                        handleDateChange(index, value);
+                    }}
+                    maxDate={maxDate}
+                    minDate={minDate}
+                    onError={(error) => {
+                        console.log({ error });
+                    }}
+                    slotProps={{
+                        textField: {
+                            required: true,
+                            variant: "standard",
+                        },
+                    }}
+                />
+                {showDeleteButton && (
+                    <Button
+                        key={`removeButton${index}`}
+                        onClick={() => removeDate(index)}
+                    >
+                        <DeleteIcon />
+                    </Button>
+                )}
+            </div>
+        </Tooltip>
     );
 }
 
@@ -289,7 +325,9 @@ function ParentEventSelector(props: ParentEventSelectorProps) {
     });
 
     const parentEventChoices = useMemo(() => {
-        return events.data?.filter((event) => parentEventType && event.type === parentEventType) ?? [];
+        return (
+            events.data?.filter((event) => parentEventType && event.type === parentEventType) ?? []
+        );
     }, [events.data, parentEventType]);
     //#endregion
     //########################################
@@ -344,23 +382,30 @@ function ParentEventSelector(props: ParentEventSelectorProps) {
         );
 
     return (
-        <TextField
+        <TextFieldWithTooltip
             name="parentEvent"
             select
             required
+            label="Hauptereignis"
             SelectProps={{
                 onChange: Handler.onParentEventChange,
                 value: timelineEvent.parentEvent?.id ?? "",
+            }}
+            tooltipProps={{
+                title: "Zu welchem Hauptereignis gehört dieses Ereignis?",
             }}
         >
             {parentEventChoices.map((parentEvent) => {
                 if (!parentEvent.id) return null;
                 return (
-                    <MenuItem key={parentEvent.id} value={parentEvent.id}>
+                    <MenuItem
+                        key={parentEvent.id}
+                        value={parentEvent.id}
+                    >
                         {EntryName[parentEventType](parentEvent.id)}
                     </MenuItem>
                 );
             })}
-        </TextField>
+        </TextFieldWithTooltip>
     );
 }

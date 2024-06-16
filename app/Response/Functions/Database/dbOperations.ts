@@ -4,7 +4,6 @@ import { generateServerClientUsingCookies } from "@aws-amplify/adapter-nextjs/ap
 import config from "@/amplify_outputs.json";
 import { cookies } from "next/headers";
 import { SelectionSet } from "aws-amplify/api";
-import { projectManagers } from "@/app/ServerFunctions/database/dbOperations";
 import { Candidates } from "@/app/ServerFunctions/types/candidates";
 
 const client = generateServerClientUsingCookies<Schema>({ config, cookies, authMode: "apiKey" });
@@ -13,7 +12,10 @@ interface GetCandidateParams {
     id: string;
 }
 export async function getCandidate({ id }: GetCandidateParams) {
-    const candidateResponse = await client.models.InfluencerCandidate.get({ id }, { selectionSet: ["id", "response"] });
+    const candidateResponse = await client.models.InfluencerCandidate.get(
+        { id },
+        { selectionSet: ["id", "response"] },
+    );
     if (candidateResponse.errors) {
         console.error(candidateResponse.errors);
         throw new Error("Error fetching candidate data");
@@ -42,7 +44,7 @@ export async function getAssignmentData({ id }: GetAssignmentDataParams) {
                 "id",
                 "budget",
             ],
-        }
+        },
     );
     // console.log({
     //     data: JSON.stringify(assignmentResponse.data, null, 2),
@@ -65,7 +67,7 @@ export async function getEventsByAssignment({ id }: GetEventsByAssignmentParams)
                 // Information about Event
                 "timelineEvent.id",
             ],
-        }
+        },
     );
     if (errors) {
         console.error(errors);
@@ -89,7 +91,7 @@ export async function getEventsByAssignment({ id }: GetEventsByAssignmentParams)
             { id: eventId },
             {
                 selectionSet,
-            }
+            },
         );
         if (errors) {
             console.error(errors);
@@ -98,7 +100,11 @@ export async function getEventsByAssignment({ id }: GetEventsByAssignmentParams)
         return event;
     });
     const events = (await Promise.all(tasks)).filter(
-        (event): event is NonNullable<SelectionSet<Schema["TimelineEvent"]["type"], typeof selectionSet>> => !!event
+        (
+            event,
+        ): event is NonNullable<
+            SelectionSet<Schema["TimelineEvent"]["type"], typeof selectionSet>
+        > => !!event,
     );
 
     return events;
@@ -116,7 +122,7 @@ export async function getCampaignInfo({ id }: GetCampaignInfoParams) {
                 "id",
                 "customers.company",
             ],
-        }
+        },
     );
     if (campaignResponse.errors) {
         console.error(campaignResponse.errors);
@@ -143,7 +149,7 @@ export async function getParentEventInfo({ id }: GetParentEventInfoParams) {
                 "date",
                 "targetAudience.*",
             ],
-        }
+        },
     );
     if (eventResponse.errors) {
         console.error(eventResponse.errors);
@@ -186,7 +192,7 @@ export async function getProjectManagerEmails({ campaignId }: GetProjectManagerE
                 //
                 "projectManagers.projectManager.email",
             ],
-        }
+        },
     );
     if (errors) {
         console.error(errors);

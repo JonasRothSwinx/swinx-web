@@ -13,18 +13,23 @@ import {
     TableCell,
     TableBody,
     SxProps,
+    Button,
 } from "@mui/material";
 import stylesExporter from "@/app/Main Menu/styles/stylesExporter";
 import { useQuery } from "@tanstack/react-query";
 import dataClient from "@/app/ServerFunctions/database";
 import { useMemo } from "react";
 import Components from "./Components";
+import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 
 interface CandidateResponsesProps {
     assignmentId: string;
     assignInfluencer: (influencer: Candidates.Candidate) => void;
 }
-export default function CandidateResponses({ assignmentId, assignInfluencer }: CandidateResponsesProps) {
+export default function CandidateResponses({
+    assignmentId,
+    assignInfluencer,
+}: CandidateResponsesProps) {
     const assignment = useQuery({
         queryKey: ["assignment", assignmentId],
         queryFn: () => dataClient.assignment.get(assignmentId),
@@ -37,13 +42,23 @@ export default function CandidateResponses({ assignmentId, assignInfluencer }: C
             assignInfluencer(candidate);
         },
     };
+    const userGroups = useQuery({
+        queryKey: ["userGroups"],
+        queryFn: () => getUserGroups(),
+    });
     const styles: SxProps = {
-        "&": {
+        "&#CandidateResponsesContainer": {
+            display: "flex",
+            flexDirection: "row",
             "#CandidateResponsesTable": {
                 border: "1px solid black",
                 borderRadius: "10px",
                 borderCollapse: "unset",
                 overflow: "hidden",
+                "&:not(:first-child)": {
+                    borderTopLeftRadius: "0px",
+                    borderBottomLeftRadius: "0px",
+                },
             },
             "#CandidateResponsesHeader": {
                 backgroundColor: "var(--swinx-blue)",
@@ -53,6 +68,7 @@ export default function CandidateResponses({ assignmentId, assignInfluencer }: C
                 color: "white",
                 textAlign: "center",
                 "*": {
+                    color: "white",
                     textAlign: "center",
                     fontWeight: "bold",
                 },
@@ -66,7 +82,14 @@ export default function CandidateResponses({ assignmentId, assignInfluencer }: C
     };
     return (
         <Box id="CandidateResponsesContainer" sx={styles}>
+            {userGroups.data?.includes("admin") && <AdminPanel candidates={candidates} />}
             <Table id="CandidateResponsesTable">
+                <colgroup>
+                    <col style={{ width: "100px" }} />
+                    <col width="100px" />
+                    <col style={{ flex: 1 }} />
+                    <col style={{ width: "40px" }} />
+                </colgroup>
                 <TableHead id="CandidateResponsesHeader">
                     <TableRow>
                         <TableCell>Name</TableCell>
@@ -114,6 +137,65 @@ export default function CandidateResponses({ assignmentId, assignInfluencer }: C
         //         );
         //     })}
         // </div>
+    );
+}
+
+//MARK: - SubComponents
+interface AdminPanelProps {
+    candidates: Candidates.Candidate[];
+}
+function AdminPanel({ candidates }: AdminPanelProps) {
+    const EventHandler = {
+        printObjects: () => {
+            console.log(candidates);
+        },
+    };
+    const styles: SxProps = {
+        "&": {
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "stretch",
+            minWidth: "100px",
+            borderRadius: "10px 0px 0px 10px",
+            border: "1px solid black",
+            borderRight: "none",
+            overflow: "hidden",
+
+            ".MuiTypography-root": {
+                backgroundColor: "var(--swinx-blue)",
+                textAlign: "center",
+                fontSize: "0.8rem",
+                fontWeight: "bold",
+                paddingBlock: "5px",
+                borderBottom: "1px solid black",
+                width: "100%",
+            },
+            "#AdminPanelContent": {
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "stretch",
+                gap: "5px",
+                width: "100%",
+                padding: "2px",
+            },
+            ".MuiButton-root": {
+                padding: "5px 2px",
+                width: "100%",
+                fontSize: "0.5rem",
+            },
+        },
+    };
+    return (
+        <Box sx={styles}>
+            <Typography>Admin Panel</Typography>
+            <Box id="AdminPanelContent">
+                <Button onClick={() => EventHandler.printObjects()} variant="outlined">
+                    Print Objects
+                </Button>
+            </Box>
+        </Box>
     );
 }
 

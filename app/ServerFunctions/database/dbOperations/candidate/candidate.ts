@@ -2,8 +2,8 @@
 
 import { Nullable, PartialWith } from "@/app/Definitions/types";
 import Influencer from "@/app/ServerFunctions/types/influencer";
-import client from "./.dbclient";
-import { Candidates } from "../../types/candidates";
+import client from "../.dbclient";
+import { Candidates } from "../../../types/candidates";
 
 interface CreateCandidateParams {
     candidate: Omit<Candidates.Candidate, "id">;
@@ -27,6 +27,21 @@ export async function deleteCandidate(candidate: PartialWith<Candidates.Candidat
     // ts-ignore
     const { data, errors } = await client.models.InfluencerCandidate.delete({ id: candidate.id });
 
+    return { errors };
+}
+
+interface UpdateCandidateParams {
+    candidateId: string;
+    updatedValues: Partial<Omit<Candidates.Candidate, "id">>;
+}
+/**
+ * Update a candidate
+ */
+export async function updateCandidate({ candidateId, updatedValues }: UpdateCandidateParams) {
+    const { data, errors } = await client.models.InfluencerCandidate.update({
+        id: candidateId,
+        ...updatedValues,
+    });
     return { errors };
 }
 

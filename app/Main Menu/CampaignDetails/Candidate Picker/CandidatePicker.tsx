@@ -3,28 +3,48 @@ import { Nullable } from "@/app/Definitions/types";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import Influencer from "@/app/ServerFunctions/types/influencer";
-import { Button, Dialog, IconButton, Skeleton, Tabs, Tab, Tooltip, Typography, SxProps, Box } from "@mui/material";
+import {
+    Button,
+    Dialog,
+    IconButton,
+    Skeleton,
+    Tabs,
+    Tab,
+    Tooltip,
+    Typography,
+    SxProps,
+    Box,
+    Grow,
+    Collapse,
+} from "@mui/material";
 import { TabList, TabPanel, TabContext } from "@mui/lab";
 import Grid from "@mui/material/Unstable_Grid2";
-import { DataGrid, GridColDef, GridRowSelectionModel, GridToolbarQuickFilter } from "@mui/x-data-grid";
+import {
+    DataGrid,
+    GridColDef,
+    GridRowSelectionModel,
+    GridToolbarQuickFilter,
+} from "@mui/x-data-grid";
 import { useEffect, useMemo, useState } from "react";
-import EmailPreview from "../Components/EmailPreview/EmailPreview";
+import EmailPreview from "../Email Preview";
 import { Candidates } from "@/app/ServerFunctions/types/candidates";
 import dataClient from "@/app/ServerFunctions/database";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { InfluencerDetailsButtonsOpenDialog } from "../Components/OpenInfluencerDetails/components/InfluencerDetailsButtons";
 import InfluencerTable from "./InfluencerTable";
 import CandidateResponses from "./CandidateResponses";
+import { TransitionGroup } from "react-transition-group";
 
 // eslint-disable-next-line
 interface CandidatePickerProps {
     influencers: Influencer.Full[];
-    assignment: Assignment.Assignment;
-    setAssignment: (assignment: Assignment.Assignment, updatedValues?: Partial<Assignment.Assignment>) => void;
+    assignmentId: string;
+    setAssignment: (
+        assignment: Assignment.Assignment,
+        updatedValues?: Partial<Assignment.Assignment>,
+    ) => void;
     onClose: (hasChanged?: boolean, newDialog?: InfluencerDetailsButtonsOpenDialog) => void;
 }
-
-type openDialog = "none" | "emailPreview";
 
 // export default function CandidatePicker(props: CandidatePickerProps) {
 //     const { setAssignment } = props;
@@ -165,38 +185,38 @@ type openDialog = "none" | "emailPreview";
 //         </Dialog>
 //     );
 // }
-export function CandidatePickerTabs(props: CandidatePickerProps) {
-    const { setAssignment } = props;
-    const queryClient = useQueryClient();
-    const assignmentId = props.assignment.id; //TODO: change props to only require assignmentId, get asignemnt by query
+export function CandidatePickerTabs({
+    setAssignment,
+    assignmentId,
+    onClose,
+}: CandidatePickerProps) {
+    const queryClient = useQueryClient(); //TODO: change props to only require assignmentId, get asignemnt by query
 
-    const influencers = useQuery({
-        queryKey: ["influencers"],
-        queryFn: () => dataClient.influencer.list(),
-    });
+    // const influencers = useQuery({
+    //     queryKey: ["influencers"],
+    //     queryFn: () => dataClient.influencer.list(),
+    // });
 
     const assignment = useQuery({
-        queryKey: ["assignment", props.assignment.id],
-        queryFn: () => dataClient.assignment.get(props.assignment.id),
+        queryKey: ["assignment", assignmentId],
+        queryFn: () => dataClient.assignment.get(assignmentId),
     });
 
-    const [openDialog, setOpenDialog] = useState<openDialog>("none");
+    const [tabValue, setTabValue] = useState("none");
+    useEffect(() => {}, [assignment.data]);
 
-    const [tabValue, setTabValue] = useState("1");
-    if (!influencers.data || !assignment.data) return <Dialog open>loading</Dialog>;
     const EventHandlers = {
         onClose: (submit = true) => {
             if (submit) {
                 console.log("submitCandidates before closing");
                 // EventHandlers.submitCandidates();
             }
-            props.onClose();
+            onClose();
             // setChangedCandidates({ removed: [], added: [] });
         },
-        dialogClose: () => {
-            setOpenDialog("none");
-        },
+
         assignInfluencer: (candidate: Candidates.Candidate) => {
+            if (!assignment.data) return;
             const newAssignment: Assignment.Assignment = {
                 ...assignment.data,
                 candidates: [...(assignment.data.candidates ?? []), candidate],
@@ -208,87 +228,99 @@ export function CandidatePickerTabs(props: CandidatePickerProps) {
                     influencer: candidate.influencer,
                     isPlaceholder: false,
                 },
-                assignment.data
+                assignment.data,
             );
-            props.onClose();
+            onClose();
             console.log("assignInfluencer");
         },
 
-        openDialog: async (dialog: openDialog) => {
-            switch (dialog) {
-                case "none": {
-                    break;
-                }
-                case "emailPreview": {
-                    // if (candidatesAfterChange === 0) {
-                    //     alert("Keine Influencer ausgewählt");
-                    //     return;
-                    // }
-                    // await EventHandlers.submitCandidates();
-                }
-            }
-
-            setOpenDialog(dialog);
-        },
         handleTabChange: (event: React.SyntheticEvent, newValue: string) => {
             console.log({ event, newValue });
             setTabValue(newValue);
         },
     };
-    const dialogs: { [state in openDialog]: () => JSX.Element | null } = {
-        none: () => null,
-        emailPreview: () => <EmailPreview onClose={EventHandlers.dialogClose} assignmentId={assignment.data.id} />,
-    } as const;
+    //#region Effects
+    useEffect(() => {
+        if (tabValue !== "none") return;
+        const numberOfInvitedCandidates =
+            assignment.data?.candidates?.filter((candidate) => candidate.invitationSent === true)
+                .length ?? 0;
+        if (numberOfInvitedCandidates > 0) {
+            setTabValue("response");
+        } else {
+            setTabValue("invite");
+        }
+    }, [assignment.data, tabValue]);
+
     const styles: SxProps = {
         "&": {
             margin: "0",
-            "& .MuiPaper-root": { maxWidth: "75%" },
+            minHeight: "50vh",
+            "& .MuiPaper-root": {
+                // width: "fit-content",
+                maxWidth: "75%",
+            },
+            // transition: "all 5s",
+            "#TabList": {
+                // backgroundColor: "var(--swinx-blue)",
+                ".MuiTab-root": {
+                    // color: "white",
+                    "&.Mui-selected": {
+                        color: "white",
+                        backgroundColor: "var(--swinx-blue-light)",
+                    },
+                },
+                ".MuiTabs-indicator": {
+                    backgroundColor: "var(--swinx-blue)",
+                },
+            },
         },
     };
+    if (!assignment.data) return <Loading />;
     return (
         <Dialog open onClose={() => EventHandlers.onClose()} fullWidth sx={styles}>
-            <>{dialogs[openDialog]()}</>
             <TabContext value={tabValue}>
                 <Box id="TabListContainer">
-                    <TabList onChange={EventHandlers.handleTabChange} aria-label="tab list" variant="fullWidth">
-                        <Tab label="Influencer einladen" value={"1"} />
-                        <Tab label="Antworten" value={"2"} />
+                    <TabList
+                        id="TabList"
+                        onChange={EventHandlers.handleTabChange}
+                        aria-label="tab list"
+                        variant="fullWidth"
+                    >
+                        <Tab label="Influencer einladen" value={"invite"} />
+                        <Tab label="Antworten" value={"response"} />
                     </TabList>
                 </Box>
-                <TabPanel value={"1"}>
-                    <InfluencerTable assignmentId={assignmentId} />
-                </TabPanel>
-                <TabPanel value={"2"}>
-                    <CandidateResponses assignmentId={assignmentId} assignInfluencer={EventHandlers.assignInfluencer} />
-                </TabPanel>
+                <Grow in={tabValue === "invite"}>
+                    <TabPanel value={"invite"}>
+                        <InfluencerTable
+                            assignmentId={assignmentId}
+                            // openEmailPreview={() => EventHandlers.openDialog("emailPreview")}
+                            setTab={setTabValue}
+                        />
+                    </TabPanel>
+                </Grow>
+                <Grow in={tabValue === "response"}>
+                    <TabPanel value={"response"}>
+                        <CandidateResponses
+                            assignmentId={assignmentId}
+                            assignInfluencer={EventHandlers.assignInfluencer}
+                        />
+                    </TabPanel>
+                </Grow>
             </TabContext>
         </Dialog>
     );
 }
 
-interface ButtonProps {
-    canProceed: boolean;
-    setOpenDialog: (dialog: openDialog) => Promise<void>;
-}
-function Buttons({ canProceed, setOpenDialog }: ButtonProps) {
-    const Clickhandlers = {
-        openPreview: () => {
-            setOpenDialog("emailPreview");
-        },
-        send: async () => {
-            // const response = await sendTestMail();
-            // const response = await sendTestTemplate();
-            // const response = await emailClient.invites.sendBulk({ candidates: props.candidates });
-            // console.log(response);
-        },
-    };
-
+function Loading() {
     return (
-        <div style={{ position: "absolute", bottom: "0", right: "0" }}>
-            {/* {userGroups.includes("admin") && <Button onClick={updateTemplates}>UpdateTemplates</Button>} */}
-            <Button onClick={Clickhandlers.openPreview} disabled={!canProceed}>
-                Anfrage verfassen
-            </Button>
-        </div>
+        <Dialog open>
+            <Box width={"min(50vw,500px)"}>
+                <Skeleton height={"100px"} />
+                <Skeleton height={"100px"} />
+                <Skeleton height={"100px"} />
+            </Box>
+        </Dialog>
     );
 }

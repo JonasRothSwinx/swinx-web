@@ -1,11 +1,12 @@
 import { Prettify } from "@/app/Definitions/types";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
-import { Button, DialogContent, SxProps, TextField } from "@mui/material";
+import { Box, Button, DialogContent, SxProps, TextField, Tooltip } from "@mui/material";
 import React, { Dispatch, SetStateAction, useMemo, useState } from "react";
 import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import AudienceTargetFilter from "./AudienceTargetFilter";
+import TextFieldWithTooltip from "../../Components/TextFieldWithTooltip";
 
 interface DetailsProps {
     applyDetailsChange: (data: Partial<TimelineEvent.Event>) => void;
@@ -15,7 +16,8 @@ interface DetailsProps {
     setUpdatedData: Dispatch<SetStateAction<Partial<TimelineEvent.Event>>>;
 }
 type relevantDetails = Prettify<
-    Pick<TimelineEvent.Event, "eventTitle" | "eventTaskAmount" | "eventAssignmentAmount"> & TimelineEvent.EventInfo
+    Pick<TimelineEvent.Event, "eventTitle" | "eventTaskAmount" | "eventAssignmentAmount"> &
+        TimelineEvent.EventInfo
 >;
 type relevantDetailsKey = Prettify<keyof relevantDetails>;
 type DetailsConfigEntry =
@@ -28,6 +30,7 @@ type DetailsConfigEntry =
           maxValue?: number;
           minValue?: number;
           defaultValue?: string | number;
+          tooltipTitle?: string;
       }
     | {
           enabled: false;
@@ -63,6 +66,7 @@ const EventTypeConfig: { [key in TimelineEvent.eventType]: DetailsConfig } = {
             defaultValue: 1000,
             maxValue: 1000,
             minValue: 0,
+            tooltipTitle: "Wie viele Einladungen sollen an jedem Termin verschickt werden?",
         },
         eventLink: {
             enabled: false,
@@ -72,6 +76,12 @@ const EventTypeConfig: { [key in TimelineEvent.eventType]: DetailsConfig } = {
         },
     },
     Post: {
+        eventTitle: {
+            enabled: true,
+            label: "Thema",
+            type: "text",
+            tooltipTitle: "Worum soll es in dem Post gehen?",
+        },
         topic: {
             enabled: false,
             // label: "Thema",
@@ -86,19 +96,16 @@ const EventTypeConfig: { [key in TimelineEvent.eventType]: DetailsConfig } = {
             enabled: true,
             label: "Deadline",
             type: "date",
+            tooltipTitle: "Bis wann muss der Entwurf eingereicht werden?",
         },
         instructions: {
             enabled: true,
             label: "Anweisungen",
             type: "textarea",
+            tooltipTitle: "Zusätzliche Anweisungen",
         },
         maxDuration: {
             enabled: false,
-        },
-        eventTitle: {
-            enabled: true,
-            label: "Thema",
-            type: "text",
         },
         eventTaskAmount: { enabled: false },
         eventLink: {
@@ -113,6 +120,7 @@ const EventTypeConfig: { [key in TimelineEvent.eventType]: DetailsConfig } = {
             enabled: true,
             label: "Thema",
             type: "text",
+            tooltipTitle: "Worum soll es in dem Video gehen?",
         },
         charLimit: {
             enabled: false,
@@ -121,7 +129,7 @@ const EventTypeConfig: { [key in TimelineEvent.eventType]: DetailsConfig } = {
             enabled: true,
             label: "Maximale Dauer",
             type: "number",
-            endAdornment: "Min",
+            endAdornment: "Minuten",
         },
         eventTitle: {
             enabled: false,
@@ -131,11 +139,13 @@ const EventTypeConfig: { [key in TimelineEvent.eventType]: DetailsConfig } = {
             enabled: true,
             label: "Deadline",
             type: "date",
+            tooltipTitle: "Bis wann muss die Aufnahme eingereicht werden?",
         },
         instructions: {
             enabled: true,
             label: "Anweisungen",
             type: "textarea",
+            tooltipTitle: "Zusätzliche Anweisungen",
         },
         eventLink: {
             enabled: false,
@@ -149,6 +159,7 @@ const EventTypeConfig: { [key in TimelineEvent.eventType]: DetailsConfig } = {
             enabled: true,
             label: "Thema",
             type: "text",
+            tooltipTitle: "Worüber soll der influencer sprechen?",
         },
         topic: {
             enabled: false,
@@ -159,9 +170,10 @@ const EventTypeConfig: { [key in TimelineEvent.eventType]: DetailsConfig } = {
             enabled: false,
         },
         draftDeadline: {
-            enabled: true,
-            label: "Deadline",
-            type: "date",
+            enabled: false,
+            // label: "Deadline",
+            // type: "date",
+            // tooltipTitle: "Bis wann muss der Entwurf für den Vortrag eingereicht werden?",
         },
         maxDuration: {
             enabled: true,
@@ -173,6 +185,7 @@ const EventTypeConfig: { [key in TimelineEvent.eventType]: DetailsConfig } = {
             enabled: true,
             label: "Anweisungen",
             type: "textarea",
+            tooltipTitle: "Zusätzliche Anweisungen",
         },
         eventLink: {
             enabled: false,
@@ -186,6 +199,7 @@ const EventTypeConfig: { [key in TimelineEvent.eventType]: DetailsConfig } = {
             enabled: true,
             label: "Titel",
             type: "text",
+            tooltipTitle: "Worum soll es in dem Webinar gehen?",
         },
         eventAssignmentAmount: {
             enabled: true,
@@ -193,11 +207,13 @@ const EventTypeConfig: { [key in TimelineEvent.eventType]: DetailsConfig } = {
             label: "Anzahl Speaker",
             minValue: 0,
             defaultValue: 0,
+            tooltipTitle: "Wie viele unserer Influencer sollen live am Webinar teilnehmen?",
         },
         eventLink: {
             enabled: true,
             type: "text",
             label: "Link",
+            tooltipTitle: "Link zur Webinar-Eventpage",
         },
     },
     ImpulsVideo: {
@@ -205,6 +221,7 @@ const EventTypeConfig: { [key in TimelineEvent.eventType]: DetailsConfig } = {
             enabled: true,
             label: "Thema",
             type: "text",
+            tooltipTitle: "Worum soll es in dem Impuls-Video gehen?",
         },
         topic: {
             enabled: false,
@@ -218,6 +235,7 @@ const EventTypeConfig: { [key in TimelineEvent.eventType]: DetailsConfig } = {
             enabled: true,
             label: "Deadline",
             type: "date",
+            tooltipTitle: "Bis wann muss die Aufnahme eingereicht werden?",
         },
         maxDuration: {
             enabled: true,
@@ -230,6 +248,7 @@ const EventTypeConfig: { [key in TimelineEvent.eventType]: DetailsConfig } = {
             enabled: true,
             label: "Anweisungen",
             type: "textarea",
+            tooltipTitle: "Zusätzliche Anweisungen",
         },
         eventLink: {
             enabled: false,
@@ -252,7 +271,7 @@ const AdditionalFields: {
 function getDataKey(
     key: relevantDetailsKey,
     data: Partial<TimelineEvent.Event>,
-    updatedData: Partial<TimelineEvent.Event>
+    updatedData: Partial<TimelineEvent.Event>,
 ): string | number | null | undefined {
     switch (key) {
         //in info
@@ -344,7 +363,10 @@ export default function EventDetails(props: DetailsProps): JSX.Element {
     }
     if (!data.type) return <></>;
     return (
-        <DialogContent dividers sx={sxProps}>
+        <DialogContent
+            dividers
+            sx={sxProps}
+        >
             {/* <Button onClick={printData}>Print Data</Button> */}
             {Object.entries(EventTypeConfig[data.type]).map(([key, config]) => {
                 const keyName = key as relevantDetailsKey;
@@ -385,7 +407,7 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
     switch (type) {
         case "text":
             return (
-                <TextField
+                <TextFieldWithTooltip
                     id={id}
                     name={name.toString()}
                     label={label}
@@ -394,11 +416,14 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
                         changeHandler(e.target.value);
                     }}
                     variant="standard"
+                    tooltipProps={{
+                        title: config.tooltipTitle ?? "",
+                    }}
                 />
             );
         case "number":
             return (
-                <TextField
+                <TextFieldWithTooltip
                     id={id}
                     name={name.toString()}
                     type="number"
@@ -414,37 +439,57 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
                     }}
                     onChange={(e) => changeHandler(Number(e.target.value))}
                     variant="standard"
+                    tooltipProps={{
+                        title: config.tooltipTitle ?? "",
+                    }}
                 />
             );
         case "date":
             return (
-                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
-                    <DatePicker
-                        // closeOnSelect={false}
-                        label={label}
-                        name={name.toString()}
-                        value={value ? dayjs(value as string) : null}
-                        onChange={(value) => {
-                            changeHandler(value?.toISOString() ?? "");
-                        }}
-                        // maxDate={event.date ? dayjs(event.date) : null}
-                        minDate={dayjs()}
-                        onError={(error) => {
-                            console.log({ error });
-                        }}
-                        slotProps={{
-                            textField: {
-                                id,
-                                required: true,
-                                variant: "standard",
+                <Tooltip
+                    title={config.tooltipTitle ?? ""}
+                    placement="top-start"
+                >
+                    <Box
+                        sx={{
+                            "&": {
+                                height: "2ch",
+                                padding: 0,
                             },
                         }}
-                    />
-                </LocalizationProvider>
+                    >
+                        <LocalizationProvider
+                            dateAdapter={AdapterDayjs}
+                            adapterLocale="de"
+                        >
+                            <DatePicker
+                                // closeOnSelect={false}
+                                label={label}
+                                name={name.toString()}
+                                value={value ? dayjs(value as string) : null}
+                                onChange={(value) => {
+                                    changeHandler(value?.toISOString() ?? "");
+                                }}
+                                // maxDate={event.date ? dayjs(event.date) : null}
+                                minDate={dayjs()}
+                                onError={(error) => {
+                                    console.log({ error });
+                                }}
+                                slotProps={{
+                                    textField: {
+                                        id,
+                                        required: true,
+                                        variant: "standard",
+                                    },
+                                }}
+                            />
+                        </LocalizationProvider>
+                    </Box>
+                </Tooltip>
             );
         case "textarea":
             return (
-                <TextField
+                <TextFieldWithTooltip
                     id={id}
                     name={name.toString()}
                     label={label}
@@ -453,6 +498,9 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
                     fullWidth
                     multiline
                     variant="standard"
+                    tooltipProps={{
+                        title: config.tooltipTitle ?? "",
+                    }}
                 />
             );
     }

@@ -1,4 +1,3 @@
-import { assignments } from "@/app/ServerFunctions/database/dbOperations";
 import { Button, Container, Head, Html, Preview, Text } from "@react-email/components";
 import styles from "../../../Emails/templates/styles";
 import { Candidates } from "@/app/ServerFunctions/types/candidates";

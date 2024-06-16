@@ -10,9 +10,9 @@ import config from "./config";
  * @returns The created candidate object
  */
 
-export async function createCandidate(
+async function createCandidate(
     influencer: Influencer.Full,
-    assignmentId: string
+    assignmentId: string,
 ): Promise<Candidates.Candidate> {
     const queryClient = config.getQueryClient();
     const newCandidate: Omit<Candidates.Candidate, "id"> = {
@@ -21,7 +21,10 @@ export async function createCandidate(
         feedback: null,
         invitationSent: false,
     };
-    const id = await database.candidate.create({ candidate: newCandidate, candidateAssignmentId: assignmentId });
+    const id = await database.candidate.create({
+        candidate: newCandidate,
+        candidateAssignmentId: assignmentId,
+    });
     if (!id) throw new Error("Failed to create candidate");
     const createdCandidate: Candidates.Candidate = { ...newCandidate, id };
     queryClient.setQueryData(["candidate", id], createdCandidate);
@@ -42,7 +45,7 @@ export async function createCandidate(
  * @param assignmentId The assignment id to link the candidate to
  */
 
-export async function deleteCandidate(candidateId: string, assignmentId: string): Promise<void> {
+async function deleteCandidate(candidateId: string, assignmentId: string): Promise<void> {
     const queryClient = config.getQueryClient();
     const { errors } = await database.candidate.delete({ id: candidateId });
     if (errors) {
@@ -59,12 +62,52 @@ export async function deleteCandidate(candidateId: string, assignmentId: string)
     queryClient.invalidateQueries({ queryKey: ["candidate", candidateId] });
 }
 
+interface UpdateCandidateParams {
+    candidateId: string;
+    updatedValues: Partial<Candidates.Candidate>;
+    previousCandidate: Candidates.Candidate;
+}
+/**
+ * Update a candidate
+ * @param candidateId The candidate id to update
+ * @param updatedValues The values to update
+ * @param previousCandidate The previous candidate object
+ * @returns The updated candidate object
+ */
+async function updateCandidate({
+    candidateId,
+    updatedValues,
+    previousCandidate,
+}: UpdateCandidateParams): Promise<Candidates.Candidate> {
+    // const queryClient = config.getQueryClient();
+    const updatedCandidate = { ...previousCandidate, ...updatedValues };
+    const { errors } = await database.candidate.update({
+        candidateId,
+        updatedValues,
+    });
+    if (errors) {
+        console.error(errors);
+        throw new Error(JSON.stringify(errors));
+    }
+    // queryClient.setQueryData(["candidate", candidateId], updatedCandidate);
+    // queryClient.setQueryData(["candidates", updatedCandidate.assignmentId], (prev: Candidates.Candidate[]) => {
+    //     if (!prev) {
+    //         return [updatedCandidate];
+    //     }
+    //     return prev.map((candidate) => (candidate.id === candidateId ? updatedCandidate : candidate));
+    // });
+    // queryClient.refetchQueries({ queryKey: ["candidates", updatedCandidate.assignmentId] });
+    // queryClient.refetchQueries({ queryKey: ["candidate", candidateId] });
+    return updatedCandidate;
+}
+
 /**
  *
  */
 const candidate = {
     create: createCandidate,
     delete: deleteCandidate,
+    update: updateCandidate,
 };
 
 export default candidate;

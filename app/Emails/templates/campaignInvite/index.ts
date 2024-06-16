@@ -19,7 +19,9 @@ export const templates: EmailLevelDefinition = {
     },
 } as const;
 
-export const templateNames = [...Object.values(templates).map((template) => template.name)] as const;
+export const templateNames = [
+    ...Object.values(templates).map((template) => template.name),
+] as const;
 
 const inviteEmails: Template = {
     defaultParams,
@@ -27,4 +29,5 @@ const inviteEmails: Template = {
     levels: templates,
     templateNames,
 } as const;
+export type templateVariables = typeof defaultParams;
 export default inviteEmails;

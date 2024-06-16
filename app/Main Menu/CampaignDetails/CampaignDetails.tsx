@@ -211,18 +211,18 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
                         <Typography>
                             Highlighted Events:
                             <br />
-                            {highlightQuery.data?.length ? (
-                                highlightQuery.data.map((x) => {
-                                    return (
-                                        <Typography key={x.id} color={x.color}>
-                                            {x.id}
-                                        </Typography>
-                                    );
-                                })
-                            ) : (
-                                <Typography> None</Typography>
-                            )}
                         </Typography>
+                        {highlightQuery.data?.length ? (
+                            highlightQuery.data.map((x) => {
+                                return (
+                                    <Typography key={x.id} color={x.color}>
+                                        {x.id}
+                                    </Typography>
+                                );
+                            })
+                        ) : (
+                            <Typography> None</Typography>
+                        )}
                     </Grid>
                     <Grid id="timeline" xs={1} columns={1}>
                         <CustomErrorBoundary message="Error loading timeline">

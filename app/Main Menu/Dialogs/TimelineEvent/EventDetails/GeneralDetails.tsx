@@ -3,10 +3,11 @@ import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import { DialogContent, MenuItem, SelectChangeEvent, TextField } from "@mui/material";
 import { AssignmentSelector } from "./AssignmentSelector";
 import { Nullable } from "@/app/Definitions/types";
+import TextFieldWithTooltip from "../../Components/TextFieldWithTooltip";
 
 const AssignmentSelectorCreator: {
     [key in TimelineEvent.eventType | "none"]: (
-        props: Parameters<typeof AssignmentSelector>[0]
+        props: Parameters<typeof AssignmentSelector>[0],
     ) => Nullable<JSX.Element>;
 } = {
     ImpulsVideo: (props) => <AssignmentSelector {...props} />,
@@ -31,7 +32,14 @@ interface EventTypeSelectorProps {
     onTypeChange: (e: SelectChangeEvent<unknown>) => void;
 }
 export function GeneralDetails(props: EventTypeSelectorProps) {
-    const { event: timelineEvent, onInfluencerChange, onTypeChange, editing, targetAssignment, campaignId } = props;
+    const {
+        event: timelineEvent,
+        onInfluencerChange,
+        onTypeChange,
+        editing,
+        targetAssignment,
+        campaignId,
+    } = props;
 
     const allowedTypes = getAllowedEventTypes(targetAssignment).toSorted((a, b) => {
         const displayNameA = TimelineEvent.getDisplayName(a);
@@ -39,8 +47,11 @@ export function GeneralDetails(props: EventTypeSelectorProps) {
         return displayNameA.localeCompare(displayNameB);
     });
     return (
-        <DialogContent dividers sx={{ "& .MuiFormControl-root": { flexBasis: "100%" } }}>
-            <TextField
+        <DialogContent
+            dividers
+            sx={{ "& .MuiFormControl-root": { flexBasis: "100%" } }}
+        >
+            <TextFieldWithTooltip
                 select
                 disabled={editing}
                 name="timelineEventType"
@@ -55,15 +66,21 @@ export function GeneralDetails(props: EventTypeSelectorProps) {
                 }}
                 error={timelineEvent.type === undefined}
                 variant="standard"
+                tooltipProps={{
+                    title: "Welches Ereignis soll erstellt werden?",
+                }}
             >
                 {allowedTypes.map((x, i) => {
                     return (
-                        <MenuItem key={`eventtype${i}`} value={x}>
+                        <MenuItem
+                            key={`eventtype${i}`}
+                            value={x}
+                        >
                             {TimelineEvent.getDisplayName(x)}
                         </MenuItem>
                     );
                 })}
-            </TextField>
+            </TextFieldWithTooltip>
             {AssignmentSelectorCreator[timelineEvent.type ?? "none"]({
                 timelineEvent,
                 targetAssignment,

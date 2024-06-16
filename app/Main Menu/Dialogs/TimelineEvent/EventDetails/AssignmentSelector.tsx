@@ -25,6 +25,7 @@ export function AssignmentSelector(props: AssignmentSelectorProps) {
         return <div>Undefined...</div>;
     return (
         <TextField
+            id="influencer"
             select
             disabled={targetAssignment !== undefined}
             name="influencer"
@@ -41,13 +42,19 @@ export function AssignmentSelector(props: AssignmentSelectorProps) {
                 // debugger;
                 if (assignment.isPlaceholder) {
                     return (
-                        <MenuItem key={`influencer${assignment.id}`} value={assignment.id}>
+                        <MenuItem
+                            key={`influencer${assignment.id}`}
+                            value={assignment.id}
+                        >
                             {`Influencer ${assignment.placeholderName}`}
                         </MenuItem>
                     );
                 }
                 return (
-                    <MenuItem key={`influencer${assignment.id}`} value={assignment.id}>
+                    <MenuItem
+                        key={`influencer${assignment.id}`}
+                        value={assignment.id}
+                    >
                         {`${assignment.influencer?.firstName} ${assignment.influencer?.lastName}`}
                     </MenuItem>
                 );

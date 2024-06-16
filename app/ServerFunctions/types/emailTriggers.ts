@@ -10,7 +10,9 @@ export namespace EmailTriggers {
     export type EmailTrigger = Prettify<
         GeneralInfo & EventInfo & ContactInfo & EmailOverrides & State & CustomerContext
     >;
-    export type EmailTriggerEventRef = Prettify<GeneralInfo & EventReference & ContactInfo & EmailOverrides & State>;
+    export type EmailTriggerEventRef = Prettify<
+        GeneralInfo & EventReference & ContactInfo & EmailOverrides & State
+    >;
 
     type GeneralInfo = {
         id?: string;
@@ -35,7 +37,6 @@ export namespace EmailTriggers {
         subjectLineOverride?: Nullable<string>;
         emailBodyOverride?: Nullable<string>;
     };
-
     type CustomerContext = {
         customer?: Customer.Customer;
     };
