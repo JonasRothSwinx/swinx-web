@@ -54,8 +54,8 @@
         "unique-names-generator": "^4.7.1"
     },
     "devDependencies": {
-        "@aws-amplify/backend": "^1.0.1",
-        "@aws-amplify/backend-cli": "^1.0.2",
+        "@aws-amplify/backend": "^1.0.3",
+        "@aws-amplify/backend-cli": "^1.0.4",
         "@simbathesailor/use-what-changed": "^2.0.0",
         "@tanstack/eslint-plugin-query": "^5.27.3",
         "@types/aws-lambda": "^8.10.136",

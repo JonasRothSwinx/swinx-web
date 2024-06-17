@@ -1,13 +1,5 @@
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
-import {
-    Button,
-    DialogContent,
-    MenuItem,
-    SelectChangeEvent,
-    TextField,
-    Tooltip,
-    Typography,
-} from "@mui/material";
+import { Button, DialogContent, MenuItem, SelectChangeEvent, TextField, Tooltip, Typography } from "@mui/material";
 import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
 import { Add as AddIcon, DeleteOutlined as DeleteIcon } from "@mui/icons-material";
 import { DatePicker, DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
@@ -53,19 +45,17 @@ interface DateSelectorProps {
     setTimelineEvent: Dispatch<SetStateAction<DateSelectorProps["timelineEvent"]>>;
     isEditing: boolean;
     eventType?: TimelineEvent.eventType;
-    dates: dates;
-    setDates: Dispatch<SetStateAction<dates>>;
+    updatedData: Partial<TimelineEvent.Event>[];
+    setUpdatedData: Dispatch<SetStateAction<DateSelectorProps["updatedData"]>>;
 }
-export function DateSelector(props: DateSelectorProps) {
-    const {
-        dates,
-        setDates,
-        isEditing,
-        timelineEvent,
-        setTimelineEvent,
-        eventType = "none",
-    } = props;
-
+export function DateSelector({
+    updatedData,
+    isEditing,
+    timelineEvent,
+    setTimelineEvent,
+    setUpdatedData,
+    eventType,
+}: DateSelectorProps) {
     // if (TimelineEvent.isEventReference(timelineEvent)) {
     //     //TODO resolve EventReference
     //     throw new Error("EventReference not implemented in DateSelector");
@@ -82,28 +72,24 @@ export function DateSelector(props: DateSelectorProps) {
 
     const EventHandlers = {
         handleAddDateClick: () => {
-            setDates((prev) => {
-                const lastDate = prev.dates[prev.dates.length - 1];
-                const newDate = lastDate ? dayjs(lastDate).add(1, "day") : dayjs();
-                return { number: prev.number + 1, dates: [...prev.dates, newDate] };
-            });
+            const lastDate = updatedData[updatedData.length - 1].date ?? dayjs().toISOString();
+            const newEvent = { ...timelineEvent };
+            const newDate = dayjs(lastDate).add(7, "day").toISOString();
+            setUpdatedData((prev) => [...prev, { ...newEvent, date: newDate }]);
         },
         handleDateChange: (index: number, newDate: Dayjs | null) => {
             console.log("handleDateChange", index, newDate?.toString());
             if (!newDate) return;
-            setDates((prev) => ({
-                ...prev,
-                dates: [...prev.dates.map((x, i) => (i === index ? newDate : x))],
-            }));
+            setUpdatedData((prev) => {
+                const newValue = [...prev];
+                newValue[index] = { ...newValue[index], date: newDate.toISOString() };
+                return newValue;
+            });
         },
         handleRemoveDateClick: (index: number) => {
             return function (e: MouseEvent<HTMLButtonElement>) {
-                setDates((prev) => {
-                    const newValue = {
-                        number: prev.number - 1,
-                        dates: [...prev.dates.filter((_x, index) => index !== index)],
-                    };
-                    console.log({ prev, newValue });
+                setUpdatedData((prev) => {
+                    const newValue = [...prev.filter((_x, i) => i !== index)];
                     return newValue;
                 });
             };
@@ -117,10 +103,11 @@ export function DateSelector(props: DateSelectorProps) {
     //         EventHandlers.handleDateChange(0, dayjs(parentEvent.data.date));
     //     }
     // }, [parentEvent.data]); //eslint-disable-line react-hooks/exhaustive-deps
-
+    if (!eventType) return null;
     function printVariables() {
-        console.log({ dates });
+        console.log({ updatedData });
         console.log({ parentEvent });
+        if (!eventType) return;
         console.log({
             isRepeatable: isRepeatable[eventType],
             isFixedDate: isFixedDate[eventType],
@@ -144,9 +131,7 @@ export function DateSelector(props: DateSelectorProps) {
         Webinar: () => null,
     };
     const hasParentEvent: {
-        [key in TimelineEvent.eventType | "none"]:
-            | { parentEventType: TimelineEvent.multiEventType }
-            | false;
+        [key in TimelineEvent.eventType | "none"]: { parentEventType: TimelineEvent.multiEventType } | false;
     } = {
         none: false,
 
@@ -165,16 +150,12 @@ export function DateSelector(props: DateSelectorProps) {
         <>
             {/*  */}
             <Button onClick={printVariables}>Print Variables</Button>
-            <DialogContent
-                dividers
-                sx={{ "& .MuiFormControl-root": { flexBasis: "100%", flex: 1 } }}
-            >
-                <LocalizationProvider
-                    dateAdapter={AdapterDayjs}
-                    adapterLocale="de"
-                >
+            <DialogContent dividers sx={{ "& .MuiFormControl-root": { flexBasis: "100%", flex: 1 } }}>
+                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
                     <div style={{ flexBasis: "100%" }}>
-                        {dates.dates.map((date, index) => {
+                        {updatedData.map((event, index) => {
+                            if (!event.date) return null;
+                            const date = dayjs(event.date);
                             return (
                                 <Date
                                     key={index}
@@ -185,7 +166,7 @@ export function DateSelector(props: DateSelectorProps) {
                                         isEditing,
                                         isFixedDate: isFixedDate[eventType],
                                         fixedDate: fixedDate[eventType](),
-                                        showDeleteButton: !isEditing && dates.number > 1,
+                                        showDeleteButton: !isEditing && updatedData.length > 1,
                                         removeDate: EventHandlers.handleRemoveDateClick,
                                         parentEvent: parentEvent.data ?? null,
                                     } satisfies DateProps)}
@@ -213,7 +194,7 @@ export function DateSelector(props: DateSelectorProps) {
                     parentEventType={hasParentEvent[eventType]}
                     timelineEvent={timelineEvent}
                     setTimelineEvent={setTimelineEvent}
-                    setDates={setDates}
+                    setUpdatedData={setUpdatedData}
                 />
             </DialogContent>
         </>
@@ -288,10 +269,7 @@ function Date(props: DateProps) {
                     }}
                 />
                 {showDeleteButton && (
-                    <Button
-                        key={`removeButton${index}`}
-                        onClick={() => removeDate(index)}
-                    >
+                    <Button key={`removeButton${index}`} onClick={() => removeDate(index)}>
                         <DeleteIcon />
                     </Button>
                 )}
@@ -305,14 +283,18 @@ interface ParentEventSelectorProps {
     parentEventType: { parentEventType: TimelineEvent.multiEventType } | false;
     timelineEvent: PartialWith<TimelineEvent.Event, "parentEvent" | "campaign">;
     setTimelineEvent: DateSelectorProps["setTimelineEvent"];
-    setDates: DateSelectorProps["setDates"];
+    setUpdatedData: DateSelectorProps["setUpdatedData"];
 }
-function ParentEventSelector(props: ParentEventSelectorProps) {
-    const { timelineEvent, setTimelineEvent, setDates } = props;
+function ParentEventSelector({
+    timelineEvent,
+    setTimelineEvent,
+    setUpdatedData,
+    parentEventType,
+}: ParentEventSelectorProps) {
     const { id: campaignId } = timelineEvent.campaign;
     const { type: eventType } = timelineEvent;
 
-    const parentEventType = props.parentEventType ? props.parentEventType.parentEventType : null;
+    const grandParentEventType = parentEventType ? parentEventType.parentEventType : null;
 
     //########################################
     //#region Queries
@@ -325,10 +307,8 @@ function ParentEventSelector(props: ParentEventSelectorProps) {
     });
 
     const parentEventChoices = useMemo(() => {
-        return (
-            events.data?.filter((event) => parentEventType && event.type === parentEventType) ?? []
-        );
-    }, [events.data, parentEventType]);
+        return events.data?.filter((event) => grandParentEventType && event.type === grandParentEventType) ?? [];
+    }, [events.data, grandParentEventType]);
     //#endregion
     //########################################
 
@@ -359,15 +339,15 @@ function ParentEventSelector(props: ParentEventSelectorProps) {
             }));
             //If event type has a fixed date, set the date to the parent event date
             if (eventType && isFixedDate[eventType]) {
-                setDates((prev) => ({
-                    ...prev,
-                    dates: prev.dates.map((x) => dayjs(selectedEvent.date)),
-                }));
+                setUpdatedData((prev) => {
+                    const newValue = prev.map((event) => ({ ...event, date: selectedEvent.date }));
+                    return newValue;
+                });
             }
         },
     };
 
-    if (!parentEventType) return null;
+    if (!grandParentEventType) return null;
     if (!parentEventChoices || parentEventChoices.length < 1)
         return (
             <Typography
@@ -377,7 +357,7 @@ function ParentEventSelector(props: ParentEventSelectorProps) {
                     textAlign: "center",
                 }}
             >
-                {NoParentsText[parentEventType]}
+                {NoParentsText[grandParentEventType]}
             </Typography>
         );
 
@@ -398,11 +378,8 @@ function ParentEventSelector(props: ParentEventSelectorProps) {
             {parentEventChoices.map((parentEvent) => {
                 if (!parentEvent.id) return null;
                 return (
-                    <MenuItem
-                        key={parentEvent.id}
-                        value={parentEvent.id}
-                    >
-                        {EntryName[parentEventType](parentEvent.id)}
+                    <MenuItem key={parentEvent.id} value={parentEvent.id}>
+                        {EntryName[grandParentEventType](parentEvent.id)}
                     </MenuItem>
                 );
             })}

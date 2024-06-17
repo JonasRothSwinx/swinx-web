@@ -9,15 +9,14 @@ import AudienceTargetFilter from "./AudienceTargetFilter";
 import TextFieldWithTooltip from "../../Components/TextFieldWithTooltip";
 
 interface DetailsProps {
-    applyDetailsChange: (data: Partial<TimelineEvent.Event>) => void;
+    applyDetailsChange: (data: Partial<TimelineEvent.Event>[]) => void;
     data: Partial<TimelineEvent.Event>;
     isEditing?: boolean;
-    updatedData: Prettify<Partial<TimelineEvent.Event>>;
-    setUpdatedData: Dispatch<SetStateAction<Partial<TimelineEvent.Event>>>;
+    updatedData: Partial<TimelineEvent.Event>[];
+    setUpdatedData: Dispatch<SetStateAction<DetailsProps["updatedData"]>>;
 }
 type relevantDetails = Prettify<
-    Pick<TimelineEvent.Event, "eventTitle" | "eventTaskAmount" | "eventAssignmentAmount"> &
-        TimelineEvent.EventInfo
+    Pick<TimelineEvent.Event, "eventTitle" | "eventTaskAmount" | "eventAssignmentAmount"> & TimelineEvent.EventInfo
 >;
 type relevantDetailsKey = Prettify<keyof relevantDetails>;
 type DetailsConfigEntry =
@@ -271,7 +270,7 @@ const AdditionalFields: {
 function getDataKey(
     key: relevantDetailsKey,
     data: Partial<TimelineEvent.Event>,
-    updatedData: Partial<TimelineEvent.Event>,
+    updatedData: Partial<TimelineEvent.Event>
 ): string | number | null | undefined {
     switch (key) {
         //in info
@@ -302,7 +301,7 @@ export default function EventDetails(props: DetailsProps): JSX.Element {
     const { applyDetailsChange, data, isEditing = false, setUpdatedData, updatedData } = props;
 
     function handleChange(key: relevantDetailsKey, value: string | number | Dayjs) {
-        const oldData = isEditing ? updatedData : data;
+        const oldData = isEditing ? updatedData[0] : data;
         const handler = isEditing ? setUpdatedData : applyDetailsChange;
         // debugger;
         switch (key) {
@@ -326,7 +325,7 @@ export default function EventDetails(props: DetailsProps): JSX.Element {
         }
     }
     const ChangeHandler = {
-        handleEventChange: (newData: Partial<TimelineEvent.Event>) => {
+        handleEventChange: (newData: Partial<TimelineEvent.Event>[]) => {
             setUpdatedData(newData);
         },
     };
@@ -363,10 +362,7 @@ export default function EventDetails(props: DetailsProps): JSX.Element {
     }
     if (!data.type) return <></>;
     return (
-        <DialogContent
-            dividers
-            sx={sxProps}
-        >
+        <DialogContent dividers sx={sxProps}>
             {/* <Button onClick={printData}>Print Data</Button> */}
             {Object.entries(EventTypeConfig[data.type]).map(([key, config]) => {
                 const keyName = key as relevantDetailsKey;
@@ -446,10 +442,7 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
             );
         case "date":
             return (
-                <Tooltip
-                    title={config.tooltipTitle ?? ""}
-                    placement="top-start"
-                >
+                <Tooltip title={config.tooltipTitle ?? ""} placement="top-start">
                     <Box
                         sx={{
                             "&": {
@@ -458,10 +451,7 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
                             },
                         }}
                     >
-                        <LocalizationProvider
-                            dateAdapter={AdapterDayjs}
-                            adapterLocale="de"
-                        >
+                        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
                             <DatePicker
                                 // closeOnSelect={false}
                                 label={label}

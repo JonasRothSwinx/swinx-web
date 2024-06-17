@@ -1,4 +1,4 @@
-import { DialogProps, PartialWith } from "@/app/Definitions/types";
+import { DialogProps, PartialWith, Prettify } from "@/app/Definitions/types";
 import Assignment from "@/app/ServerFunctions/types/assignment";
 import Campaign from "@/app/ServerFunctions/types/campaign";
 import Influencer from "@/app/ServerFunctions/types/influencer";
@@ -33,7 +33,6 @@ import validateFields from "./actions/validateFields";
 import { random, randomId } from "@mui/x-data-grid-generator";
 
 export const styles = stylesExporter.dialogs;
-type DialogType = TimelineEvent.Event;
 
 export type dates = {
     number: number;
@@ -42,7 +41,7 @@ export type dates = {
 type TimelineEventDialogProps = {
     onClose?: (hasChanged?: boolean) => void;
     editing?: boolean;
-    editingData?: DialogType;
+    editingData?: TimelineEvent.Event;
     campaignId: string;
     targetAssignment?: Assignment.AssignmentMin;
 };
@@ -116,7 +115,7 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
     //######################
     //#region States
     const [timelineEvent, setTimelineEvent] = useState<
-        PartialWith<DialogType, "campaign" | "parentEvent" | "childEvents">
+        PartialWith<TimelineEvent.Event, "campaign" | "parentEvent" | "childEvents">
     >(
         editingData ?? {
             campaign: { id: campaignId },
@@ -125,18 +124,18 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
             childEvents: [],
         }
     );
-    const [updatedData, setUpdatedData] = useState<Partial<DialogType>>({});
-    const [dates, setDates] = useState<{ number: number; dates: (Dayjs | null)[] }>({
-        number: 1,
-        dates: [editingData ? dayjs(editingData.date) : dayjs()],
-    });
+    const [updatedData, setUpdatedData] = useState<Partial<TimelineEvent.Event>[]>([{}]);
+    // const [dates, setDates] = useState<{ number: number; dates: (Dayjs | null)[] }>({
+    //     number: 1,
+    //     dates: [editingData ? dayjs(editingData.date) : dayjs()],
+    // });
 
-    const influencers = useQuery({
-        queryKey: ["influencers"],
-        queryFn: async () => {
-            return dataClient.influencer.list();
-        },
-    });
+    // const influencers = useQuery({
+    //     queryKey: ["influencers"],
+    //     queryFn: async () => {
+    //         return dataClient.influencer.list();
+    //     },
+    // });
 
     //#endregion States
     //######################
@@ -146,7 +145,7 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
     useEffect(() => {
         if (editingData) {
             setTimelineEvent(editingData);
-            setDates({ number: 1, dates: [dayjs(editingData.date)] });
+            // setDates({ number: 1, dates: [dayjs(editingData.date)] });
         }
 
         return () => {};
@@ -244,18 +243,22 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
         onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
             // debugger;
             event.preventDefault();
-            const combinedEvent = { ...timelineEvent, ...updatedData };
-            const type = combinedEvent.type;
+            const combinedEvents = updatedData.map((data) => ({ ...timelineEvent, ...data }));
+            const type = combinedEvents[0].type;
             if (!type || !TimelineEvent.isTimelineEventType(type)) throw new Error("No event type selected");
 
-            // if (!campaignId || !TimelineEvent.validate(combinedEvent) || !targetAssignment) return;
-            // if (!TimelineEvent.isTimelineEvent(combinedEvent)) throw new Error("Invalid event type");
             if (!editing) {
-                if (!validateFields(combinedEvent, type)) return;
-                DataChange.createEvent.mutate({ newEvent: combinedEvent, dates });
+                // if (!combinedEvents.every((event) => validateFields(event, type))) return;
+                combinedEvents.forEach((event) => {
+                    if (!validateFields(event, type)) return;
+                    DataChange.createEvent.mutate({ newEvent: event });
+                });
             } else {
                 if (!validateFields(timelineEvent, type)) return;
-                DataChange.updateEvent.mutate({ previousEvent: timelineEvent, updatedData });
+                updatedData.forEach((data) => {
+                    if (!validateFields(data, type)) return;
+                    DataChange.updateEvent.mutate({ previousEvent: timelineEvent, updatedData: data });
+                });
                 // submitEvent({
                 //     editing,
                 //     event: combinedEvent,
@@ -301,37 +304,23 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
             setTimelineEvent((prev) => ({ ...prev, assignment: value }));
         },
         createEvent: useMutation({
-            mutationFn: async (data: { newEvent: TimelineEvent.Event; dates: dates }) => {
-                const { newEvent, dates } = data;
-                const createdEvents = await submitEvent({ event: newEvent, dates, editing: false });
+            mutationFn: async (data: { newEvent: TimelineEvent.Event }) => {
+                const { newEvent } = data;
+                const createdEvents = await submitEvent({ event: newEvent, editing: false });
                 return createdEvents;
             },
-            onMutate: async (data: { newEvent: TimelineEvent.Event; dates: dates }) => {
-                const { newEvent, dates } = data;
-                const newEvents = dates.dates
-                    .map((date) => {
-                        if (date === null) return;
-                        const tempId = randomId();
-                        const event: TimelineEvent.Event = {
-                            ...newEvent,
-                            date: date.toISOString(),
-                            id: tempId,
-                        };
-                        return event;
-                    })
-                    .filter((x): x is TimelineEvent.Event => x !== undefined);
+            onMutate: async (data: { newEvent: TimelineEvent.Event }) => {
+                const { newEvent } = data;
                 await queryClient.cancelQueries({
                     queryKey: ["timelineEvents"],
                 });
                 const previousEvents = queryClient.getQueryData<TimelineEvent.Event[]>(["timelineEvents"]);
-                newEvents.forEach((event) => {
-                    queryClient.setQueryData<TimelineEvent.Event>(["timelineEvent", event.id], {
-                        ...event,
-                    });
+                queryClient.setQueryData<TimelineEvent.Event>(["timelineEvent", newEvent.id], {
+                    ...newEvent,
                 });
                 queryClient.setQueryData<TimelineEvent.Event[]>(
                     ["timelineEvents"],
-                    [...(previousEvents ?? []), ...newEvents]
+                    [...(previousEvents ?? []), newEvent]
                 );
                 const assignment = newEvent.assignments[0];
                 let previousAssignmentEvents: TimelineEvent.Event[] | undefined = [];
@@ -342,26 +331,22 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                     ]);
                     queryClient.setQueryData(
                         ["assignmentEvents", assignment.id],
-                        [...(previousAssignmentEvents ?? []), ...newEvents]
+                        [...(previousAssignmentEvents ?? []), newEvent]
                     );
                 }
-                return { previousEvents, previousAssignmentEvents, newEvents, assignment };
+                return { previousEvents, previousAssignmentEvents, newEvent, assignment };
             },
             onError(error, newData, context) {
                 console.error("Error updating record", { error, newData, context });
-                if (context?.previousEvents) {
-                    queryClient.setQueryData(["timelineEvents"], context.previousEvents);
+                const { newEvent, previousEvents, previousAssignmentEvents, assignment } = context ?? {};
+                if (previousEvents) {
+                    queryClient.setQueryData(["timelineEvents"], previousEvents);
                 }
-                if (context?.previousAssignmentEvents && context.assignment) {
-                    queryClient.setQueryData(
-                        ["assignmentEvents", context.assignment.id],
-                        context.previousAssignmentEvents
-                    );
+                if (previousAssignmentEvents && assignment) {
+                    queryClient.setQueryData(["assignmentEvents", assignment.id], previousAssignmentEvents);
                 }
-                if (context?.newEvents) {
-                    context.newEvents.forEach((event) => {
-                        queryClient.setQueryData(["timelineEvent", event.id], null);
-                    });
+                if (newEvent) {
+                    queryClient.setQueryData(["timelineEvent", newEvent.id], null);
                 }
             },
             onSettled(data, error, variables, context) {
@@ -370,20 +355,20 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                     { data, error, variables, context }
                     // data?.isCompleted,
                 );
-                if (context?.newEvents) {
-                    context.newEvents.forEach((event) => {
-                        queryClient.setQueryData(["timelineEvent", event.id], null);
-                        queryClient.invalidateQueries({
-                            queryKey: ["timelineEvent", event.id],
-                        });
+
+                const { newEvent: event, assignment } = context ?? {};
+                if (event) {
+                    queryClient.setQueryData(["timelineEvent", event.id], null);
+                    queryClient.invalidateQueries({
+                        queryKey: ["timelineEvent", event.id],
                     });
                 }
                 queryClient.invalidateQueries({
                     queryKey: ["timelineEvents"],
                 });
-                if (context?.assignment) {
+                if (assignment) {
                     queryClient.invalidateQueries({
-                        queryKey: ["assignmentEvents", context.assignment.id],
+                        queryKey: ["assignmentEvents", assignment.id],
                     });
                 }
             },
@@ -403,7 +388,6 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                     editing: true,
                     event: previousEvent,
                     updatedData,
-                    dates,
                 });
                 return updatedEvent;
             },
@@ -559,9 +543,9 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                         timelineEvent={timelineEvent}
                         isEditing={editing}
                         eventType={timelineEvent.type}
-                        dates={dates}
-                        setDates={setDates}
                         setTimelineEvent={setTimelineEvent}
+                        updatedData={updatedData}
+                        setUpdatedData={setUpdatedData}
                     />
 
                     {/* Details */}

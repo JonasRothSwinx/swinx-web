@@ -87,7 +87,11 @@ const schema = a.schema({
             candidatures: a.hasMany("InfluencerCandidate", "influencerId"),
             //##########################
         })
-        .authorization((allow) => [allow.publicApiKey().to(["read"]), allow.groups(["admin", "projektmanager"])]),
+        .authorization((allow) => [
+            allow.publicApiKey().to(["read"]),
+            allow.groups(["admin", "projektmanager"]),
+            allow.guest().to(["read"]),
+        ]),
 
     /**
      * InfluencerAssignment model - Represents the assignment of an influencer to a campaign

@@ -1,5 +1,6 @@
 import {
     AddIcon,
+    ArrowOutwardIcon,
     DeleteIcon,
     EuroSymbolIcon,
     PersonSearchIcon,
@@ -21,6 +22,8 @@ import { Confirm } from "@/app/Components/Popups";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import dataClient from "@/app/ServerFunctions/database";
 import { CandidatePickerTabs } from "../../../Candidate Picker/CandidatePicker";
+import encodeQueryParams from "@/app/utils/encodeQueryParams";
+import Link from "next/link";
 
 type openDialog =
     | "none"
@@ -44,15 +47,7 @@ interface InfluencerDetailsButtonProps {
     events: TimelineEvent.Event[];
 }
 export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
-    const {
-        isProcessing,
-        setIsProcessing,
-        campaign,
-        setCampaign,
-        assignment,
-        influencers,
-        events,
-    } = props;
+    const { isProcessing, setIsProcessing, campaign, setCampaign, assignment, influencers, events } = props;
     const [openDialog, setOpenDialog] = useState<openDialog>("none");
     const userGroups = useQuery({
         queryKey: ["userGroups"],
@@ -69,9 +64,7 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             database.assignment.delete(assignment);
             const newCampaign = {
                 ...campaign,
-                assignedInfluencers: campaign.assignedInfluencers.filter(
-                    (x) => x.id !== assignment.id,
-                ),
+                assignedInfluencers: campaign.assignedInfluencers.filter((x) => x.id !== assignment.id),
             };
             setCampaign(newCampaign);
         },
@@ -86,10 +79,7 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
         preventClickthrough: (e: MouseEvent) => {
             e.stopPropagation();
         },
-        setAssignment: (
-            targetAssignment: Assignment.Assignment,
-            updatedValues?: Partial<Assignment.Assignment>,
-        ) => {
+        setAssignment: (targetAssignment: Assignment.Assignment, updatedValues?: Partial<Assignment.Assignment>) => {
             // debugger;
             // console.log(targetAssignment);
             if (updatedValues) {
@@ -99,9 +89,7 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             const newCampaign: Campaign.Campaign = {
                 ...campaign,
                 assignedInfluencers: [
-                    ...campaign.assignedInfluencers.map((x) =>
-                        x.id === targetAssignment.id ? targetAssignment : x,
-                    ),
+                    ...campaign.assignedInfluencers.map((x) => (x.id === targetAssignment.id ? targetAssignment : x)),
                 ],
             };
             // console.log({ newCampaign, assignments: newCampaign.assignedInfluencers });
@@ -191,10 +179,7 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             {hasNecessaryData(assignment, events) && (
                 <Tooltip title="Kandidaten zuweisen" placement="top">
                     <span>
-                        <IconButton
-                            disabled={isProcessing}
-                            onClick={EventHandlers.openCandidates()}
-                        >
+                        <IconButton disabled={isProcessing} onClick={EventHandlers.openCandidates()}>
                             <PersonSearchIcon />
                         </IconButton>
                     </span>
@@ -209,23 +194,33 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             </Tooltip>
             <Tooltip title="Löschen" placement="top">
                 <span>
-                    <IconButton
-                        color="error"
-                        onClick={EventHandlers.confirmDelete()}
-                        disabled={isProcessing}
-                    >
+                    <IconButton color="error" onClick={EventHandlers.confirmDelete()} disabled={isProcessing}>
                         <DeleteIcon />
                     </IconButton>
                 </span>
             </Tooltip>
             {userGroups.data?.includes("admin") && (
-                <Tooltip title="Log assignment" placement="top">
-                    <span>
-                        <IconButton disabled={isProcessing} onClick={() => console.log(assignment)}>
-                            <PrintIcon />
-                        </IconButton>
-                    </span>
-                </Tooltip>
+                <>
+                    <Tooltip title="Log assignment" placement="top">
+                        <span>
+                            <IconButton disabled={isProcessing} onClick={() => console.log(assignment)}>
+                                <PrintIcon />
+                            </IconButton>
+                        </span>
+                    </Tooltip>
+                    <Tooltip title="Test task page" placement="top">
+                        <Link
+                            href={`/tasks/${campaign.id}/${assignment.id}/${
+                                assignment.influencer?.id ?? "placeholder"
+                            }`}
+                            target="_blank"
+                        >
+                            <IconButton>
+                                <ArrowOutwardIcon />
+                            </IconButton>
+                        </Link>
+                    </Tooltip>
+                </>
             )}
         </div>
     );

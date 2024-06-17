@@ -5,7 +5,7 @@ import { SendMailProps } from "../types";
 import { TemplateVariables } from "./CampaignInviteEmail";
 import { templates } from ".";
 import ProjectManagers from "@/app/ServerFunctions/types/projectManagers";
-import encodeQueryParams from "./encodeQueryParams";
+import encodeQueryParams from "@/app/utils/encodeQueryParams";
 import { getInviteBaseUrl } from "@/app/ServerFunctions/serverActions";
 
 /**
@@ -84,8 +84,8 @@ export default async function send(props: SendMailProps) {
                     campaignId,
                     candidateFullName: "Teapot",
                     candidateId: "1234-5678",
-                } satisfies CampaignInviteEncodedData),
-            ),
+                } satisfies CampaignInviteEncodedData)
+            )
         ),
         customerCompany: commonVariables.customerCompany,
     };
