@@ -1,4 +1,5 @@
 import { Candidates } from "@/app/ServerFunctions/types/candidates";
+import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
 import {
     Box,
     MenuItem,
@@ -18,11 +19,7 @@ interface EditorProps {
     setSelectedCandidate: (candidate: Candidates.Candidate) => void;
     candidates: Candidates.Candidate[];
 }
-export default function Editor({
-    candidates,
-    selectedCandidate,
-    setSelectedCandidate,
-}: EditorProps) {
+export default function Editor({ candidates, selectedCandidate, setSelectedCandidate }: EditorProps) {
     return (
         <Box flex={1} padding={"10px"}>
             <TextField
@@ -60,11 +57,6 @@ export default function Editor({
         </Box>
     );
 }
-const emailLevelDisplaNames: { [key: string]: string } = {
-    new: "Standard",
-    reduced: "Du-Form",
-    none: "Keine automatischen Emails",
-};
 
 interface RecipientTableProps {
     candidates: Candidates.Candidate[];
@@ -83,9 +75,7 @@ function RecipientTable({ candidates }: RecipientTableProps) {
                 </TableHead>
                 <TableBody>
                     {candidates.map((candidate) => {
-                        const emailLevel = candidate.influencer.emailLevel
-                            ? emailLevelDisplaNames[candidate.influencer.emailLevel]
-                            : "<Error>";
+                        const emailLevel = EmailTriggers.getDisplayName(candidate.influencer.emailLevel ?? "new");
                         return (
                             <TableRow key={candidate.id}>
                                 <TableCell>{`${candidate.influencer.firstName} ${candidate.influencer.lastName}`}</TableCell>

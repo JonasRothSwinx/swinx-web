@@ -19,6 +19,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
 import sxStyles from "./sxStyles";
 import { Unstable_Grid2 as Grid } from "@mui/material";
+import TextFieldWithTooltip from "./Components/TextFieldWithTooltip";
 
 const styles = stylesExporter.dialogs;
 type DialogType = Influencer.Full;
@@ -75,7 +76,7 @@ function InfluencerDialog(props: InfluencerDialogProps) {
             <Box>
                 <DialogTitle>{editing ? "Influencer bearbeiten" : "Neuer Influencer"}</DialogTitle>
                 {/* <button onClick={handleCloseModal}>x</button> */}
-                <FormInputGrid {...infoProps} />
+                <FormInputs {...infoProps} />
 
                 <DialogActions>
                     <Button onClick={EventHandlers.handleClose} color="secondary">
@@ -96,31 +97,13 @@ interface InfoProps {
     setChangedData: React.Dispatch<React.SetStateAction<Partial<Influencer.Full>>>;
 }
 
-function FormInputGrid(props: InfoProps) {
+function FormInputs(props: InfoProps) {
     return (
         <Box>
             <ContactInfo {...props} />
             <IndustryInfo {...props} />
             <SocialMediaInfo {...props} />
             <Notes {...props} />
-        </Box>
-    );
-    return (
-        <Box>
-            <Grid container direction={"column"}>
-                <Grid>
-                    <ContactInfo {...props} />
-                </Grid>
-                <Grid>
-                    <IndustryInfo {...props} />
-                </Grid>
-                <Grid>
-                    <SocialMediaInfo {...props} />
-                </Grid>
-                <Grid>
-                    <Notes {...props} />
-                </Grid>
-            </Grid>
         </Box>
     );
 }
@@ -200,7 +183,7 @@ function ContactInfo(props: InfoProps) {
                 required
             />
             {/* Email type Selector. Possible Values come from Influencers.emailTypeValues */}
-            <TextField
+            <TextFieldWithTooltip
                 select
                 id="emailType"
                 name="emailType"
@@ -211,13 +194,16 @@ function ContactInfo(props: InfoProps) {
                     value: changedData.emailLevel ?? editingData?.emailLevel ?? "new",
                     onChange: Eventhandlers.handleEmailTypeChange,
                 }}
+                tooltipProps={{
+                    title: "Welche Email Templates werden für diesen Kontakt verwendet?",
+                }}
             >
                 {EmailTriggers.emailLevels.map((option) => (
                     <MenuItem key={option} value={option}>
-                        {option}
+                        {EmailTriggers.getDisplayName(option)}
                     </MenuItem>
                 ))}
-            </TextField>
+            </TextFieldWithTooltip>
         </DialogContent>
     );
 }
@@ -302,7 +288,7 @@ function SocialMediaInfo(props: InfoProps) {
     return (
         <DialogContent>
             <DialogContentText textAlign={"center"}>LinkedIn</DialogContentText>
-            <TextField
+            <TextFieldWithTooltip
                 id="linkedin"
                 name="linkedin"
                 className={styles.TextField}
@@ -310,8 +296,11 @@ function SocialMediaInfo(props: InfoProps) {
                 type="text"
                 value={changedData.linkedinProfile ?? editingData?.linkedinProfile ?? ""}
                 onChange={Eventhandlers.handleLinkedinChange}
+                tooltipProps={{
+                    title: "LinkedIn Profil Link",
+                }}
             />
-            <TextField
+            <TextFieldWithTooltip
                 id="followers"
                 name="followers"
                 className={styles.TextField}
@@ -319,8 +308,11 @@ function SocialMediaInfo(props: InfoProps) {
                 type="number"
                 value={changedData.followers ?? editingData?.followers ?? 0}
                 onChange={Eventhandlers.handleFollowersChange}
+                tooltipProps={{
+                    title: "Anzahl der Followerzahl, ohne Trennzeichen",
+                }}
             />
-            <TextField
+            <TextFieldWithTooltip
                 id="topics"
                 name="topics"
                 className={styles.TextField}
@@ -328,6 +320,9 @@ function SocialMediaInfo(props: InfoProps) {
                 type="text"
                 value={(changedData.topic ?? editingData?.topic ?? []).join(",") ?? ""}
                 onChange={Eventhandlers.handleTopicsChange}
+                tooltipProps={{
+                    title: "Worüber postet der Influencer?\nMehrere Themen durch Komma getrennt eingeben.",
+                }}
             />
         </DialogContent>
     );
@@ -349,7 +344,7 @@ function Notes(props: InfoProps) {
     return (
         <DialogContent>
             {/* <DialogContentText textAlign={"center"}>Notizen</DialogContentText> */}
-            <TextField
+            <TextFieldWithTooltip
                 multiline
                 minRows={3}
                 id="notes"
@@ -359,6 +354,9 @@ function Notes(props: InfoProps) {
                 type="text"
                 value={changedData.notes ?? ""}
                 onChange={Eventhandlers.handleNotesChange}
+                tooltipProps={{
+                    title: "Notizen über den Influencer",
+                }}
             />
         </DialogContent>
     );

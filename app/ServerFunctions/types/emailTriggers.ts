@@ -10,9 +10,7 @@ export namespace EmailTriggers {
     export type EmailTrigger = Prettify<
         GeneralInfo & EventInfo & ContactInfo & EmailOverrides & State & CustomerContext
     >;
-    export type EmailTriggerEventRef = Prettify<
-        GeneralInfo & EventReference & ContactInfo & EmailOverrides & State
-    >;
+    export type EmailTriggerEventRef = Prettify<GeneralInfo & EventReference & ContactInfo & EmailOverrides & State>;
 
     type GeneralInfo = {
         id?: string;
@@ -54,7 +52,14 @@ export namespace EmailTriggers {
     type EmailLevelConfig = { [key in Exclude<emailLevel, "none">]: Nullable<EmailConfig> };
     type EmailTypeConfig = { [key in emailTriggerType]: Nullable<EmailLevelConfig> };
     type EventEmailConfig<Collection extends string> = { [key in Collection]: EmailTypeConfig };
-
+    const EmailLevelDisplayNames: { [key in emailLevel]: string } = {
+        new: "Standard",
+        reduced: "Du-Form",
+        none: "Keine automatischen Emails",
+    };
+    export function getDisplayName(level: emailLevel) {
+        return EmailLevelDisplayNames[level];
+    }
     // const SingleEventEmailConfig: EventEmailConfig<TimelineEvent.singleEventType> = {
     //     Invites: {
     //         actionReminder: {

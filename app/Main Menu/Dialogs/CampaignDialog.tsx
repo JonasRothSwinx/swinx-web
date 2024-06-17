@@ -25,6 +25,7 @@ import { deleteCustomer } from "@/app/ServerFunctions/database/dbOperations/cust
 import dataClient from "@/app/ServerFunctions/database";
 import sxStyles from "./sxStyles";
 import { useQuery } from "@tanstack/react-query";
+import TextFieldWithTooltip from "./Components/TextFieldWithTooltip";
 
 const styles = stylesExporter.dialogs;
 
@@ -302,16 +303,16 @@ function BillingAdressInfo(props: InfoProps) {
     };
     return (
         <DialogContent>
-            <TextField
+            <TextFieldWithTooltip
                 name="name"
-                label="Name"
+                label="Empfänger"
                 value={billingAdress.name}
                 onChange={handleChange}
                 // fullWidth
                 className={styles.TextField}
                 variant="standard"
             />
-            <TextField
+            <TextFieldWithTooltip
                 name="street"
                 label="Straße"
                 value={billingAdress.street}
@@ -320,7 +321,7 @@ function BillingAdressInfo(props: InfoProps) {
                 className={styles.TextField}
                 variant="standard"
             />
-            <TextField
+            <TextFieldWithTooltip
                 name="city"
                 label="Stadt"
                 value={billingAdress.city}
@@ -329,7 +330,7 @@ function BillingAdressInfo(props: InfoProps) {
                 className={styles.TextField}
                 variant="standard"
             />
-            <TextField
+            <TextFieldWithTooltip
                 name="zip"
                 label="PLZ"
                 value={billingAdress.zip}
@@ -360,7 +361,7 @@ function BudgetInfo(props: BudgetinfoProps) {
     };
     return (
         <DialogContent>
-            <TextField
+            <TextFieldWithTooltip
                 name="budget"
                 label="Budget"
                 type="number"
@@ -369,6 +370,14 @@ function BudgetInfo(props: BudgetinfoProps) {
                 // fullWidth
                 className={styles.TextField}
                 variant="standard"
+                InputProps={{
+                    inputProps: { min: 0, style: { textAlign: "right" } },
+                    endAdornment: "€",
+                    style: { textAlign: "right" },
+                }}
+                tooltipProps={{
+                    title: "Gesamtbudget für alle Webinare dieser Kampagne",
+                }}
             />
         </DialogContent>
     );

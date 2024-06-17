@@ -16,3 +16,4 @@ tsconfig.tsbuildinfo
 amplify_outputs.json
 
 *.csv
+.DS_Store
