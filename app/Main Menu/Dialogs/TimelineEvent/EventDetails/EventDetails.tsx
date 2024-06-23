@@ -8,15 +8,10 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import AudienceTargetFilter from "./AudienceTargetFilter";
 import TextFieldWithTooltip from "../../Components/TextFieldWithTooltip";
 
-interface DetailsProps {
-    applyDetailsChange: (data: Partial<TimelineEvent.Event>[]) => void;
-    data: Partial<TimelineEvent.Event>;
-    isEditing?: boolean;
-    updatedData: Partial<TimelineEvent.Event>[];
-    setUpdatedData: Dispatch<SetStateAction<DetailsProps["updatedData"]>>;
-}
+//#region Definitions
 type relevantDetails = Prettify<
-    Pick<TimelineEvent.Event, "eventTitle" | "eventTaskAmount" | "eventAssignmentAmount"> & TimelineEvent.EventInfo
+    Pick<TimelineEvent.Event, "eventTitle" | "eventTaskAmount" | "eventAssignmentAmount"> &
+        TimelineEvent.EventInfo
 >;
 type relevantDetailsKey = Prettify<keyof relevantDetails>;
 type DetailsConfigEntry =
@@ -259,7 +254,8 @@ const EventTypeConfig: { [key in TimelineEvent.eventType]: DetailsConfig } = {
 };
 interface AdditionalFieldsProps {
     event: Partial<TimelineEvent.Event>;
-    onChange: (data: Partial<TimelineEvent.Event>) => void;
+    updatedData: Partial<TimelineEvent.Event>[];
+    onChange: (data: Partial<TimelineEvent.Event>[]) => void;
 }
 const AdditionalFields: {
     [key in TimelineEvent.eventType]?: (props: AdditionalFieldsProps) => JSX.Element;
@@ -270,7 +266,7 @@ const AdditionalFields: {
 function getDataKey(
     key: relevantDetailsKey,
     data: Partial<TimelineEvent.Event>,
-    updatedData: Partial<TimelineEvent.Event>
+    updatedData: Partial<TimelineEvent.Event>,
 ): string | number | null | undefined {
     switch (key) {
         //in info
@@ -297,18 +293,30 @@ function getDataKey(
     }
 }
 
+//#endregion Definitions
+
+//MARK: - Component
+interface DetailsProps {
+    applyDetailsChange: (data: Partial<TimelineEvent.Event>[]) => void;
+    data: Partial<TimelineEvent.Event>;
+    isEditing?: boolean;
+    updatedData: Partial<TimelineEvent.Event>[];
+    setUpdatedData: Dispatch<SetStateAction<DetailsProps["updatedData"]>>;
+}
 export default function EventDetails(props: DetailsProps): JSX.Element {
     const { applyDetailsChange, data, isEditing = false, setUpdatedData, updatedData } = props;
 
     function handleChange(key: relevantDetailsKey, value: string | number | Dayjs) {
-        const oldData = isEditing ? updatedData[0] : data;
-        const handler = isEditing ? setUpdatedData : applyDetailsChange;
+        const oldData = updatedData;
+        const handler = setUpdatedData;
         // debugger;
         switch (key) {
             case "eventAssignmentAmount":
             case "eventTitle":
             case "eventTaskAmount": {
-                const newData = { ...oldData, [key]: value };
+                const newData = oldData.map((event) => {
+                    return { ...event, [key]: value };
+                });
                 handler(newData);
                 break;
             }
@@ -318,7 +326,15 @@ export default function EventDetails(props: DetailsProps): JSX.Element {
             case "instructions":
             case "maxDuration":
             case "eventLink": {
-                const newData = { ...oldData, info: { ...oldData.info, [key]: value } };
+                const newData = oldData.map((event) => {
+                    return {
+                        ...event,
+                        info: {
+                            ...event.info,
+                            [key]: value,
+                        },
+                    };
+                });
                 handler(newData);
                 break;
             }
@@ -356,17 +372,20 @@ export default function EventDetails(props: DetailsProps): JSX.Element {
         console.log({ data, updatedData });
         Object.keys(data).map((key) => {
             console.log({ key, value: data[key as keyof typeof data] });
-            console.log(getDataKey(key as relevantDetailsKey, data, updatedData));
+            console.log(getDataKey(key as relevantDetailsKey, data, updatedData[0]));
             console.log("----------");
         });
     }
     if (!data.type) return <></>;
     return (
-        <DialogContent dividers sx={sxProps}>
+        <DialogContent
+            dividers
+            sx={sxProps}
+        >
             {/* <Button onClick={printData}>Print Data</Button> */}
             {Object.entries(EventTypeConfig[data.type]).map(([key, config]) => {
                 const keyName = key as relevantDetailsKey;
-                const value = getDataKey(keyName, data, updatedData);
+                const value = getDataKey(keyName, data, updatedData[0]);
                 // console.log({ keyName, value });
                 if (!config) return <></>;
                 return (
@@ -382,12 +401,15 @@ export default function EventDetails(props: DetailsProps): JSX.Element {
                 );
             })}
             {AdditionalFields[data.type]?.({
-                event: { ...data, ...updatedData },
+                event: { ...data, ...updatedData[0] },
+                updatedData,
                 onChange: ChangeHandler.handleEventChange,
             }) ?? <></>}
         </DialogContent>
     );
 }
+
+//MARK: - Event Detail Field
 interface EventDetailFieldProps {
     id: string;
     event: Partial<TimelineEvent.Event>;
@@ -442,7 +464,10 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
             );
         case "date":
             return (
-                <Tooltip title={config.tooltipTitle ?? ""} placement="top-start">
+                <Tooltip
+                    title={config.tooltipTitle ?? ""}
+                    placement="top-start"
+                >
                     <Box
                         sx={{
                             "&": {
@@ -451,7 +476,10 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
                             },
                         }}
                     >
-                        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
+                        <LocalizationProvider
+                            dateAdapter={AdapterDayjs}
+                            adapterLocale="de"
+                        >
                             <DatePicker
                                 // closeOnSelect={false}
                                 label={label}

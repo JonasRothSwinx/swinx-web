@@ -4,21 +4,22 @@ import React, { useMemo } from "react";
 import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 interface filterProps {
     event: Partial<TimelineEvent.Event>;
-    onChange: (newData: Partial<TimelineEvent.Event>) => void;
+    updatedData: Partial<TimelineEvent.Event>[];
+    onChange: (newData: Partial<TimelineEvent.Event>[]) => void;
 }
 
-export default function Filter(props: filterProps) {
-    const {
-        event,
-        event: {
-            targetAudience = {
-                industry: [],
-                cities: [],
-                country: [],
-            },
+export default function Filter({
+    event,
+    event: {
+        targetAudience = {
+            industry: [],
+            cities: [],
+            country: [],
         },
-        onChange,
-    } = props;
+    },
+    onChange,
+    updatedData,
+}: filterProps) {
     const sxProps: SxProps = useMemo(
         () =>
             ({
@@ -59,20 +60,30 @@ export default function Filter(props: filterProps) {
     );
     const Changehandler = {
         targetIndustryChange: (newData: string[]) => {
-            onChange({
-                ...event,
-                targetAudience: { ...targetAudience, industry: newData },
+            const newEvents = updatedData.map((event) => {
+                return {
+                    ...event,
+                    targetAudience: { ...targetAudience, industry: newData },
+                };
             });
+
+            onChange(newEvents);
         },
         targetCountryChange: (newData: string[]) => {
-            onChange({
-                ...event,
-                targetAudience: { ...targetAudience, country: newData },
+            const newEvents = updatedData.map((event) => {
+                return {
+                    ...event,
+                    targetAudience: { ...targetAudience, country: newData },
+                };
             });
+            onChange(newEvents);
         },
     };
     return (
-        <Box id="AudienceFilterWrapper" sx={sxProps}>
+        <Box
+            id="AudienceFilterWrapper"
+            sx={sxProps}
+        >
             <IndustryFilter
                 industryTargets={targetAudience.industry}
                 onChange={Changehandler.targetIndustryChange}
@@ -109,11 +120,18 @@ function IndustryFilter(props: IndustryFilterProps) {
         >
             {Object.entries(industries).map(([category, items]) => {
                 return [
-                    <ListSubheader id="GroupHeader" key={category}>
+                    <ListSubheader
+                        id="GroupHeader"
+                        key={category}
+                    >
                         {category}
                     </ListSubheader>,
                     ...items.map((item) => (
-                        <MenuItem id="FilterItem" key={`${category}>${item}`} value={item}>
+                        <MenuItem
+                            id="FilterItem"
+                            key={`${category}>${item}`}
+                            value={item}
+                        >
                             {item}
                         </MenuItem>
                     )),
@@ -147,7 +165,11 @@ function CountryFilter(props: CountryFilterProps) {
         >
             {countries.map((country) => {
                 return (
-                    <MenuItem id="FilterItem" key={country} value={country}>
+                    <MenuItem
+                        id="FilterItem"
+                        key={country}
+                        value={country}
+                    >
                         {country}
                     </MenuItem>
                 );

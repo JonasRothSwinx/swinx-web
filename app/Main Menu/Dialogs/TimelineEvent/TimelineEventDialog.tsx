@@ -21,7 +21,7 @@ import { UseMutationResult, useMutation, useQuery, useQueryClient } from "@tanst
 import "dayjs/locale/de";
 import { useEffect, useMemo, useState } from "react";
 import stylesExporter, { timeline } from "../../styles/stylesExporter";
-import { DateSelector } from "./EventDetails/DateSelector";
+import DateSelector from "./EventDetails/DateSelector";
 import { submitEvent } from "./actions/submitEvent";
 import assignment from "@/app/ServerFunctions/database/dataClients/assignments";
 import EventDetails from "./EventDetails/EventDetails";
@@ -122,7 +122,7 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
             assignments: targetAssignment ? [targetAssignment] : [],
             parentEvent: null,
             childEvents: [],
-        }
+        },
     );
     const [updatedData, setUpdatedData] = useState<Partial<TimelineEvent.Event>[]>([{}]);
     // const [dates, setDates] = useState<{ number: number; dates: (Dayjs | null)[] }>({
@@ -191,19 +191,19 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                 },
 
                 "& #EmailTrigger": {
-                    position: "relative",
-                    border: "1px solid black",
-                    padding: "10px",
-                    borderRadius: "5px",
-                    marginBottom: "10px",
-                    maxWidth: "100%",
+                    "position": "relative",
+                    "border": "1px solid black",
+                    "padding": "10px",
+                    "borderRadius": "5px",
+                    "marginBottom": "10px",
+                    "maxWidth": "100%",
                     "#TriggerModifyButtonContainer": {
-                        position: "absolute",
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        right: 0,
-                        top: 0,
-                        animation: "fadeOut 0.3s ease-in-out forwards",
+                        "position": "absolute",
+                        "display": "flex",
+                        "justifyContent": "flex-end",
+                        "right": 0,
+                        "top": 0,
+                        "animation": "fadeOut 0.3s ease-in-out forwards",
                         "@keyframes fadeOut": {
                             from: {
                                 opacity: 1,
@@ -215,8 +215,8 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                         },
                     },
                     "&:hover > #TriggerModifyButtonContainer": {
-                        display: "flex",
-                        animation: "fadeIn 0.3s ease-in-out",
+                        "display": "flex",
+                        "animation": "fadeIn 0.3s ease-in-out",
                         "@keyframes fadeIn": {
                             from: {
                                 opacity: 0,
@@ -245,7 +245,8 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
             event.preventDefault();
             const combinedEvents = updatedData.map((data) => ({ ...timelineEvent, ...data }));
             const type = combinedEvents[0].type;
-            if (!type || !TimelineEvent.isTimelineEventType(type)) throw new Error("No event type selected");
+            if (!type || !TimelineEvent.isTimelineEventType(type))
+                throw new Error("No event type selected");
 
             if (!editing) {
                 // if (!combinedEvents.every((event) => validateFields(event, type))) return;
@@ -257,7 +258,10 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                 if (!validateFields(timelineEvent, type)) return;
                 updatedData.forEach((data) => {
                     if (!validateFields(data, type)) return;
-                    DataChange.updateEvent.mutate({ previousEvent: timelineEvent, updatedData: data });
+                    DataChange.updateEvent.mutate({
+                        previousEvent: timelineEvent,
+                        updatedData: data,
+                    });
                 });
                 // submitEvent({
                 //     editing,
@@ -296,7 +300,7 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                     ({
                         ...prev,
                         ...typeDefault[value],
-                    } satisfies Partial<TimelineEvent.Event>)
+                    } satisfies Partial<TimelineEvent.Event>),
             );
         },
         assignment: (e: SelectChangeEvent<unknown>) => {
@@ -314,13 +318,15 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                 await queryClient.cancelQueries({
                     queryKey: ["timelineEvents"],
                 });
-                const previousEvents = queryClient.getQueryData<TimelineEvent.Event[]>(["timelineEvents"]);
+                const previousEvents = queryClient.getQueryData<TimelineEvent.Event[]>([
+                    "timelineEvents",
+                ]);
                 queryClient.setQueryData<TimelineEvent.Event>(["timelineEvent", newEvent.id], {
                     ...newEvent,
                 });
                 queryClient.setQueryData<TimelineEvent.Event[]>(
                     ["timelineEvents"],
-                    [...(previousEvents ?? []), newEvent]
+                    [...(previousEvents ?? []), newEvent],
                 );
                 const assignment = newEvent.assignments[0];
                 let previousAssignmentEvents: TimelineEvent.Event[] | undefined = [];
@@ -331,19 +337,23 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                     ]);
                     queryClient.setQueryData(
                         ["assignmentEvents", assignment.id],
-                        [...(previousAssignmentEvents ?? []), newEvent]
+                        [...(previousAssignmentEvents ?? []), newEvent],
                     );
                 }
                 return { previousEvents, previousAssignmentEvents, newEvent, assignment };
             },
             onError(error, newData, context) {
                 console.error("Error updating record", { error, newData, context });
-                const { newEvent, previousEvents, previousAssignmentEvents, assignment } = context ?? {};
+                const { newEvent, previousEvents, previousAssignmentEvents, assignment } =
+                    context ?? {};
                 if (previousEvents) {
                     queryClient.setQueryData(["timelineEvents"], previousEvents);
                 }
                 if (previousAssignmentEvents && assignment) {
-                    queryClient.setQueryData(["assignmentEvents", assignment.id], previousAssignmentEvents);
+                    queryClient.setQueryData(
+                        ["assignmentEvents", assignment.id],
+                        previousAssignmentEvents,
+                    );
                 }
                 if (newEvent) {
                     queryClient.setQueryData(["timelineEvent", newEvent.id], null);
@@ -352,7 +362,7 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
             onSettled(data, error, variables, context) {
                 console.log(
                     "Events created",
-                    { data, error, variables, context }
+                    { data, error, variables, context },
                     // data?.isCompleted,
                 );
 
@@ -401,15 +411,20 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                 });
                 const newEvent = { ...previousEvent, ...updatedData };
                 newEvent.info = { ...previousEvent.info, ...updatedData.info };
-                const previousEvents = queryClient.getQueryData<TimelineEvent.Event[]>(["timelineEvents"]);
+                const previousEvents = queryClient.getQueryData<TimelineEvent.Event[]>([
+                    "timelineEvents",
+                ]);
                 queryClient.setQueryData<TimelineEvent.Event>(["timelineEvent", timelineEvent.id], {
                     ...newEvent,
                 });
-                queryClient.setQueryData<TimelineEvent.Event[]>(["timelineEvents", campaignId], (prev) => {
-                    // debugger;
-                    if (!prev) return [newEvent];
-                    return prev.map((event) => (event.id === newEvent.id ? newEvent : event));
-                });
+                queryClient.setQueryData<TimelineEvent.Event[]>(
+                    ["timelineEvents", campaignId],
+                    (prev) => {
+                        // debugger;
+                        if (!prev) return [newEvent];
+                        return prev.map((event) => (event.id === newEvent.id ? newEvent : event));
+                    },
+                );
 
                 const assignment = newEvent.assignments[0];
                 let previousAssignmentEvents: TimelineEvent.Event[] | undefined = [];
@@ -418,10 +433,15 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                         "assignmentEvents",
                         assignment.id,
                     ]);
-                    queryClient.setQueryData<TimelineEvent.Event[]>(["assignmentEvents", assignment.id], (prev) => {
-                        if (!prev) return [newEvent];
-                        return prev.map((event) => (event.id === newEvent.id ? newEvent : event));
-                    });
+                    queryClient.setQueryData<TimelineEvent.Event[]>(
+                        ["assignmentEvents", assignment.id],
+                        (prev) => {
+                            if (!prev) return [newEvent];
+                            return prev.map((event) =>
+                                event.id === newEvent.id ? newEvent : event,
+                            );
+                        },
+                    );
                 }
                 return {
                     previousEvent,
@@ -434,15 +454,21 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
             onError(error, newEvent, context) {
                 console.error("Error updating record", { error, newEvent, context });
                 if (context?.previousEvent) {
-                    queryClient.setQueryData(["timelineEvent", timelineEvent.id], context.previousEvent);
+                    queryClient.setQueryData(
+                        ["timelineEvent", timelineEvent.id],
+                        context.previousEvent,
+                    );
                 }
                 if (context?.previousEvents) {
-                    queryClient.setQueryData(["timelineEvents", campaignId], context.previousEvents);
+                    queryClient.setQueryData(
+                        ["timelineEvents", campaignId],
+                        context.previousEvents,
+                    );
                 }
                 if (context?.previousAssignmentEvents && context.assignment) {
                     queryClient.setQueryData(
                         ["assignmentEvents", context.assignment.id],
-                        context.previousAssignmentEvents
+                        context.previousAssignmentEvents,
                     );
                 }
             },
@@ -450,7 +476,7 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                 if (process.env.NODE_ENV === "development")
                     console.log(
                         "Event updated",
-                        { data, error, variables, context }
+                        { data, error, variables, context },
                         // data?.isCompleted,
                     );
                 queryClient.invalidateQueries({
@@ -494,11 +520,18 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
             onError(error, newEvent, context) {
                 console.error("Error updating record", { error, newEvent, context });
                 if (context?.previousEvent) {
-                    queryClient.setQueryData(["timelineEvent", timelineEvent.id], context.previousEvent);
+                    queryClient.setQueryData(
+                        ["timelineEvent", timelineEvent.id],
+                        context.previousEvent,
+                    );
                 }
             },
             onSettled(data, error, variables, context) {
-                console.log("Mutation Settled", { data, error, variables, context }, data?.isCompleted);
+                console.log(
+                    "Mutation Settled",
+                    { data, error, variables, context },
+                    data?.isCompleted,
+                );
                 queryClient.invalidateQueries({
                     queryKey: ["timelineEvent", timelineEvent.id],
                 });
@@ -524,7 +557,10 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
             }}
             sx={sxStyles.TimelineEventDialog}
         >
-            <Box id="EventTriggerSplit" sx={sxProps}>
+            <Box
+                id="EventTriggerSplit"
+                sx={sxProps}
+            >
                 <Box id="Event">
                     <DialogTitle>
                         {editing ? "Ereignis bearbeiten" : "Neues Ereignis"}
@@ -551,8 +587,8 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                     {/* Details */}
                     <EventDetails
                         key="EventDetails"
-                        applyDetailsChange={(data: Partial<TimelineEvent.Event>) =>
-                            setTimelineEvent((prev) => ({ ...prev, ...data }))
+                        applyDetailsChange={(data: Partial<TimelineEvent.Event>[]) =>
+                            setTimelineEvent((prev) => ({ ...prev, ...data[0] }))
                         }
                         data={timelineEvent}
                         isEditing={editing}
@@ -565,25 +601,36 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                             justifyContent: "space-between",
                         }}
                     >
-                        <Button onClick={EventHandlers.handleClose(false)} color="secondary">
+                        <Button
+                            onClick={EventHandlers.handleClose(false)}
+                            color="secondary"
+                        >
                             Abbrechen
                         </Button>
-                        <Button variant="contained" type="submit">
+                        <Button
+                            variant="contained"
+                            type="submit"
+                        >
                             Speichern
                         </Button>
                     </DialogActions>
                 </Box>
                 {editing && (
-                    <Box id="EventTriggerContainer" display="flex" flexDirection="column">
+                    <Box
+                        id="EventTriggerContainer"
+                        display="flex"
+                        flexDirection="column"
+                    >
                         <EventCompleteCheckbox
                             eventId={timelineEvent.id ?? "<Error>"}
                             changeEventComplete={DataChange.eventCompleted}
                         />
-                        {EventHasEmailTriggers[timelineEvent.type ?? "none"] && timelineEvent.id && (
-                            <Box id="Trigger">
-                                <EmailTriggerMenu eventId={timelineEvent.id} />
-                            </Box>
-                        )}
+                        {EventHasEmailTriggers[timelineEvent.type ?? "none"] &&
+                            timelineEvent.id && (
+                                <Box id="Trigger">
+                                    <EmailTriggerMenu eventId={timelineEvent.id} />
+                                </Box>
+                            )}
                     </Box>
                 )}
             </Box>

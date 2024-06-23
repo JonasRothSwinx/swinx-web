@@ -41,6 +41,9 @@ export type Nullable<T> = T | null;
 export type Prettify<T> = {
     [K in keyof T]: T[K];
 } & unknown;
+export type DeepPrettify<T> = {
+    [K in keyof T]: DeepPrettify<T[K]>;
+} & unknown;
 
 export type PartialWith<T, K extends keyof T> = Partial<T> & Pick<T, K>;
 
@@ -48,3 +51,5 @@ export type highlightData = {
     id: string;
     color: string;
 };
+
+export type DeepWriteable<T> = Prettify<{ -readonly [P in keyof T]: DeepWriteable<T[P]> }>;

@@ -10,6 +10,7 @@ const dataClient = {
     processResponse,
     getInfluencerDetails,
     getTaskDetails,
+    markEventFinished,
 };
 export default dataClient;
 
@@ -72,4 +73,12 @@ interface GetTaskDetailsParams {
 }
 async function getTaskDetails({ assignmentId, campaignId, influencerId }: GetTaskDetailsParams) {
     return await dbOperations.getTaskDetails({ assignmentId, campaignId, influencerId });
+}
+
+interface MarkEventFinishedParams {
+    eventId: string;
+    isCompleted: boolean;
+}
+async function markEventFinished({ eventId, isCompleted }: MarkEventFinishedParams) {
+    return await dbOperations.markEventFinished({ eventId, isCompleted: isCompleted });
 }

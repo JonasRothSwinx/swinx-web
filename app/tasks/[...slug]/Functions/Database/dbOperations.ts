@@ -5,14 +5,22 @@ import config from "@/amplify_outputs.json";
 import { cookies } from "next/headers";
 import { SelectionSet } from "aws-amplify/api";
 import { Candidates } from "@/app/ServerFunctions/types/candidates";
+import { DeepWriteable, Prettify } from "@/app/Definitions/types";
 
-const client = generateServerClientUsingCookies<Schema>({ config, cookies, authMode: "apiKey" });
+const client = generateServerClientUsingCookies<Schema>({
+    config,
+    cookies,
+    authMode: "apiKey",
+});
 
 interface GetCandidateParams {
     id: string;
 }
 export async function getCandidate({ id }: GetCandidateParams) {
-    const candidateResponse = await client.models.InfluencerCandidate.get({ id }, { selectionSet: ["id", "response"] });
+    const candidateResponse = await client.models.InfluencerCandidate.get(
+        { id },
+        { selectionSet: ["id", "response"] },
+    );
     if (candidateResponse.errors) {
         console.error(candidateResponse.errors);
         throw new Error("Error fetching candidate data");
@@ -33,7 +41,7 @@ interface GetAssignmentDataParams {
     id: string;
 }
 export async function getAssignmentData({ id }: GetAssignmentDataParams) {
-    const assignmentResponse = await client.models.InfluencerAssignment.get(
+    const { data, errors } = await client.models.InfluencerAssignment.get(
         { id },
         {
             selectionSet: [
@@ -43,13 +51,17 @@ export async function getAssignmentData({ id }: GetAssignmentDataParams) {
                 "campaignId",
                 "influencerId",
             ],
-        }
+        },
     );
-    // console.log({
-    //     data: JSON.stringify(assignmentResponse.data, null, 2),
-    //     error: JSON.stringify(assignmentResponse.errors, null, 2),
-    // });
-    return assignmentResponse.data;
+    if (errors) {
+        console.error(errors);
+        throw new Error("Error fetching assignment data");
+    }
+    if (!data) {
+        return null;
+    }
+    const writeable: DeepWriteable<typeof data> = data;
+    return writeable;
 }
 
 interface GetEventsByAssignmentParams {
@@ -66,12 +78,16 @@ export async function getEventsByAssignment({ id }: GetEventsByAssignmentParams)
                 // Information about Event
                 "timelineEvent.id",
             ],
-        }
+        },
     );
     if (errors) {
         console.error(errors);
         throw new Error("Error fetching events data");
     }
+    // console.log({
+    //     data: JSON.stringify(data, null, 2),
+    //     error: JSON.stringify(errors, null, 2),
+    // });
 
     const eventIds = data.map((event) => event.timelineEvent.id);
     const selectionSet = [
@@ -80,6 +96,7 @@ export async function getEventsByAssignment({ id }: GetEventsByAssignmentParams)
         "timelineEventType",
         "eventTitle",
         "date",
+        "isCompleted",
 
         "info.*",
         "eventTaskAmount",
@@ -90,7 +107,7 @@ export async function getEventsByAssignment({ id }: GetEventsByAssignmentParams)
             { id: eventId },
             {
                 selectionSet,
-            }
+            },
         );
         if (errors) {
             console.error(errors);
@@ -99,7 +116,11 @@ export async function getEventsByAssignment({ id }: GetEventsByAssignmentParams)
         return event;
     });
     const events = (await Promise.all(tasks)).filter(
-        (event): event is NonNullable<SelectionSet<Schema["TimelineEvent"]["type"], typeof selectionSet>> => !!event
+        (
+            event,
+        ): event is DeepWriteable<
+            NonNullable<SelectionSet<Schema["TimelineEvent"]["type"], typeof selectionSet>>
+        > => !!event,
     );
 
     return events;
@@ -117,7 +138,7 @@ export async function getCampaignInfo({ id }: GetCampaignInfoParams) {
                 "id",
                 "customers.company",
             ],
-        }
+        },
     );
     if (campaignResponse.errors) {
         console.error(campaignResponse.errors);
@@ -134,7 +155,7 @@ interface GetParentEventInfoParams {
     id: string;
 }
 export async function getParentEventInfo({ id }: GetParentEventInfoParams) {
-    const eventResponse = await client.models.TimelineEvent.get(
+    const { data, errors } = await client.models.TimelineEvent.get(
         { id },
         {
             selectionSet: [
@@ -144,13 +165,17 @@ export async function getParentEventInfo({ id }: GetParentEventInfoParams) {
                 "date",
                 "targetAudience.*",
             ],
-        }
+        },
     );
-    if (eventResponse.errors) {
-        console.error(eventResponse.errors);
+    if (errors) {
+        console.error(errors);
         throw new Error("Error fetching event data");
     }
-    return eventResponse.data;
+    if (!data) {
+        throw new Error("Event not found");
+    }
+    const writeable: DeepWriteable<typeof data> = data;
+    return writeable;
 }
 
 //MARK: - Process Response
@@ -187,7 +212,7 @@ export async function getProjectManagerEmails({ campaignId }: GetProjectManagerE
                 //
                 "projectManagers.projectManager.email",
             ],
-        }
+        },
     );
     if (errors) {
         console.error(errors);
@@ -214,13 +239,17 @@ export async function getInfluencerDetails({ id }: GetInfluencerDetailsParams) {
                 "firstName",
                 "lastName",
             ],
-        }
+        },
     );
     if (errors) {
         console.error(errors);
         throw new Error("Error fetching influencer details");
     }
-    return data;
+    if (!data) {
+        throw new Error("Influencer not found");
+    }
+    const writeable: DeepWriteable<typeof data> = data;
+    return writeable;
 }
 
 interface GetTaskDetailsParams {
@@ -228,7 +257,11 @@ interface GetTaskDetailsParams {
     campaignId: string;
     influencerId: string;
 }
-export async function getTaskDetails({ assignmentId, campaignId, influencerId }: GetTaskDetailsParams) {
+export async function getTaskDetails({
+    assignmentId,
+    campaignId,
+    influencerId,
+}: GetTaskDetailsParams) {
     const assignmentData = await getAssignmentData({ id: assignmentId });
     const events = await getEventsByAssignment({ id: assignmentId });
     const campaignInfo = await getCampaignInfo({ id: campaignId });
@@ -245,4 +278,20 @@ export async function getTaskDetails({ assignmentId, campaignId, influencerId }:
         campaignInfo,
         influencerInfo,
     };
+}
+
+interface MarkeEventFinisheedParams {
+    eventId: string;
+    isCompleted: boolean;
+}
+export async function markEventFinished({ eventId, isCompleted }: MarkeEventFinisheedParams) {
+    const { data, errors } = await client.models.TimelineEvent.update({
+        id: eventId,
+        isCompleted: true,
+    });
+    if (errors) {
+        console.error(errors);
+        throw new Error("Error marking event as finished");
+    }
+    return true;
 }

@@ -6,7 +6,11 @@ import { cookies } from "next/headers";
 import { SelectionSet } from "aws-amplify/api";
 import { Candidates } from "@/app/ServerFunctions/types/candidates";
 
-const client = generateServerClientUsingCookies<Schema>({ config, cookies, authMode: "apiKey" });
+const client = generateServerClientUsingCookies<Schema>({
+    config,
+    cookies,
+    authMode: "apiKey",
+});
 
 interface GetCandidateParams {
     id: string;

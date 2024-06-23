@@ -94,7 +94,7 @@ if (!(process.env.NODE_ENV === "development")) {
     // eslint-disable-next-line @typescript-eslint/ban-types -- Function is an aws-cdk-lib construct here
     const reminderTriggerLambda = backend.reminderTrigger.resources.lambda as Function;
     const rule = new eventBridge.Rule(stack, "ReminderTriggerRule", {
-        enabled: true,
+        enabled: false,
         schedule: eventBridge.Schedule.cron({
             // minute: "0/10",
             hour: "6",

@@ -13,7 +13,11 @@ interface TasksLandingProps {
     campaignId: string;
     influencerId: string;
 }
-export default function TasksLanding({ assignmentId, campaignId, influencerId }: TasksLandingProps) {
+export default function TasksLanding({
+    assignmentId,
+    campaignId,
+    influencerId,
+}: TasksLandingProps) {
     const params = useSearchParams();
     // const [received, setReceived] = useState(false);
     const queryClient = useQueryClient();
@@ -63,25 +67,25 @@ export default function TasksLanding({ assignmentId, campaignId, influencerId }:
     const styles: SxProps = useMemo(
         () => ({
             "&": {
-                position: "relative",
-                width: "calc(100vw - 40px)", // Account for left and right margins
-                height: "fit-content", // Account for top and bottom margins
-                maxHeight: "calc(100dvh - 40px)",
-                maxWidth: "100vw",
-                margin: "20px",
-                border: "1px solid gray",
-                borderRadius: "10px",
-                backgroundColor: "var(--background-color)",
-                display: "flex",
-                flexDirection: "column",
+                "position": "relative",
+                "width": "calc(100vw - 40px)", // Account for left and right margins
+                "height": "fit-content", // Account for top and bottom margins
+                "maxHeight": "calc(100dvh - 40px)",
+                "maxWidth": "100vw",
+                "margin": "20px",
+                "border": "1px solid gray",
+                "borderRadius": "10px",
+                "backgroundColor": "var(--background-color)",
+                "display": "flex",
+                "flexDirection": "column",
                 // overflowY: "auto",
                 "#ResponseLandingScrollableContent": {
-                    padding: "20px",
-                    paddingTop: "0",
-                    maxHeight: "-webkit-fill-available",
+                    "padding": "20px",
+                    "paddingTop": "0",
+                    // "maxHeight": "-webkit-fill-available",
                     // maxHeight: "calc(100dvh - 40px)",
-                    overflowY: "auto",
-                    flex: 1,
+                    "overflowY": "auto",
+                    // "flex": 1,
                     "@media (max-width: 600px)": {
                         overflowY: "auto",
                     },
@@ -97,16 +101,16 @@ export default function TasksLanding({ assignmentId, campaignId, influencerId }:
                 },
 
                 "#AssignmentDescriptionsContainer": {
-                    overflowY: "auto",
-                    border: "1px solid black",
-                    borderRadius: "5px",
-                    maxHeight: "80%",
+                    "overflowY": "auto",
+                    "border": "1px solid black",
+                    "borderRadius": "5px",
+                    "maxHeight": "80%",
                     "#DescriptionContainer": {
-                        display: "flex",
-                        flexDirection: "column",
-                        maxHeight: "400px",
+                        "display": "flex",
+                        "flexDirection": "column",
+                        "maxHeight": "400px",
 
-                        background: "var(--background-color)",
+                        "background": "var(--background-color)",
                         // padding: "2px",
                         // border: "1px solid black",
                         // borderRadius: "5px",
@@ -118,20 +122,20 @@ export default function TasksLanding({ assignmentId, campaignId, influencerId }:
                             backgroundColor: "var(--swinx-blue)",
                         },
                         "#SummaryContainer": {
-                            display: "flex",
-                            flexDirection: "row",
-                            paddingLeft: "10px",
+                            "display": "flex",
+                            "flexDirection": "row",
+                            "paddingLeft": "10px",
                             "#SummaryBox": {
                                 // float: "left",
                                 flex: 3,
                             },
                             "#InvitesTable": {
                                 // float: "right",
-                                overflowY: "auto",
-                                height: "fit-content",
-                                width: "fit-content",
-                                maxHeight: "fit-content",
-                                flex: 1,
+                                "overflowY": "auto",
+                                "height": "fit-content",
+                                "width": "fit-content",
+                                "maxHeight": "fit-content",
+                                "flex": 1,
                                 "& .MuiTableCell-head": {
                                     fontWeight: "bold",
                                     padding: "10px",
@@ -145,11 +149,11 @@ export default function TasksLanding({ assignmentId, campaignId, influencerId }:
                             },
                         },
                         "@media (max-width: 500px)": {
-                            maxHeight: "fit-content",
+                            "maxHeight": "fit-content",
 
                             "#SummaryContainer": {
-                                flexDirection: "column",
-                                alignItems: "center",
+                                "flexDirection": "column",
+                                "alignItems": "center",
                                 "#SummaryBox": {
                                     width: "100%",
                                 },
@@ -161,13 +165,13 @@ export default function TasksLanding({ assignmentId, campaignId, influencerId }:
                     },
                 },
                 "#AssignmentDescriptionGroup": {
-                    display: "flex",
-                    flexDirection: "column",
+                    "display": "flex",
+                    "flexDirection": "column",
                     // padding: "10px",
-                    borderBlock: "1px solid black",
-                    overflow: "auto",
+                    "borderBlock": "1px solid black",
+                    "overflow": "auto",
 
-                    borderBottom: "none",
+                    "borderBottom": "none",
                     "&:first-of-type": {
                         borderTop: "none",
                         // borderTopLeftRadius: "5px",
@@ -182,7 +186,7 @@ export default function TasksLanding({ assignmentId, campaignId, influencerId }:
                 },
             },
         }),
-        []
+        [],
     );
     //#endregion
     //MARK: - Event Handler
@@ -193,7 +197,12 @@ export default function TasksLanding({ assignmentId, campaignId, influencerId }:
         return <Typography id="ErrorText">Ungültige Daten empfangen</Typography>;
     }
     if (task.isLoading || parentEvent.isLoading) {
-        return <Loading textMessage="Kampagne wird geladen" spinnerSize={100} />;
+        return (
+            <Loading
+                textMessage="Kampagne wird geladen"
+                spinnerSize={100}
+            />
+        );
     }
     if (
         task.isError ||
@@ -214,15 +223,25 @@ export default function TasksLanding({ assignmentId, campaignId, influencerId }:
     //Temporary fix for the issue
 
     return (
-        <Box id="ResponseLandingContainer" sx={styles}>
-            <Title parentEvent={parentEvent.data} campaign={campaign} />
+        <Box
+            id="ResponseLandingContainer"
+            sx={styles}
+        >
+            <Title
+                parentEvent={parentEvent.data}
+                campaign={campaign}
+            />
             <Box id="ResponseLandingScrollableContent">
                 <Introduction
                     influencerFullName={`${influencer.firstName} ${influencer.lastName}`}
                     webinar={parentEvent.data}
                     CampaignData={campaign}
                 />
-                <TaskDisplay tasks={events} parentEvent={parentEvent.data} campaign={campaign} />
+                <TaskDisplay
+                    tasks={events}
+                    parentEvent={parentEvent.data}
+                    campaign={campaign}
+                />
             </Box>
             {/* <ResponseButtons processResponse={EventHandler.processResponse} /> */}
         </Box>
