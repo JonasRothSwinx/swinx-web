@@ -2,7 +2,7 @@
 import { EmailTriggerWithContext } from "../types";
 import getDbClient from "../../database";
 import { getTriggerContext } from "./getTriggerContext";
-import { Dayjs } from "@/app/utils/configuredDayJs";
+import { Dayjs } from "@/app/utils";
 
 // const DataCache: DataCache = {
 //     campaign: {},

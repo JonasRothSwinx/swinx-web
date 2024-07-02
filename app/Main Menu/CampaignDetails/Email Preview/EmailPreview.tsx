@@ -1,10 +1,10 @@
 import { Nullable } from "@/app/Definitions/types";
 import emailClient from "@/app/Emails/";
 import templateDefinitions, { templateName } from "@/app/Emails/templates";
-import dataClient from "@/app/ServerFunctions/database";
+import { dataClient } from "@/app/ServerFunctions/database";
 import { getInviteBaseUrl, getUserGroups } from "@/app/ServerFunctions/serverActions";
-import { Candidates } from "@/app/ServerFunctions/types/candidates";
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
+import { Candidates } from "@/app/ServerFunctions/types";
+import { EmailTriggers } from "@/app/ServerFunctions/types";
 import { Box, Button, ButtonGroup, CircularProgress, Dialog, Typography } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -222,7 +222,7 @@ export default function EmailPreview(props: EmailPreviewProps) {
                 onClose={onClose}
                 fullWidth
                 sx={{
-                    margin: "0",
+                    "margin": "0",
                     "& .MuiPaper-root": { maxWidth: "75%", height: "50vh", overflow: "hidden" },
                 }}
             >
@@ -246,11 +246,14 @@ export default function EmailPreview(props: EmailPreviewProps) {
             onClose={onClose}
             fullWidth
             sx={{
-                margin: "0",
+                "margin": "0",
                 "& .MuiPaper-root": { maxWidth: "75%", height: "50vh", overflow: "hidden" },
             }}
         >
-            <Grid container sx={{ width: "100%", height: "100%" }}>
+            <Grid
+                container
+                sx={{ width: "100%", height: "100%" }}
+            >
                 <Grid xs={4}>
                     {isLoading ? (
                         <Box
@@ -272,7 +275,11 @@ export default function EmailPreview(props: EmailPreviewProps) {
                         </>
                     )}
                 </Grid>
-                <Grid xs={8} display={"flex"} flexDirection={"column"}>
+                <Grid
+                    xs={8}
+                    display={"flex"}
+                    flexDirection={"column"}
+                >
                     <Editor
                         candidates={candidates}
                         selectedCandidate={selectedCandidate}
@@ -287,10 +294,16 @@ export default function EmailPreview(props: EmailPreviewProps) {
                             padding: "5px",
                         }}
                     >
-                        <Button onClick={EventHandlers.cancel} color="error">
+                        <Button
+                            onClick={EventHandlers.cancel}
+                            color="error"
+                        >
                             Abbrechen
                         </Button>
-                        <Button onClick={EventHandlers.sendEmail} disabled={!customer.isFetched}>
+                        <Button
+                            onClick={EventHandlers.sendEmail}
+                            disabled={!customer.isFetched}
+                        >
                             Emails verschicken
                         </Button>
                     </ButtonGroup>

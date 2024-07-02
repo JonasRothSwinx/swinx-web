@@ -1,17 +1,17 @@
 import emailClient from "@/app/Emails";
-import Assignment from "@/app/ServerFunctions/types/assignment";
-import { Candidates } from "@/app/ServerFunctions/types/candidates";
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
-import Customer from "@/app/ServerFunctions/types/customer";
+import {
+    Candidate,
+    Assignment,
+    EmailTriggers,
+    Customer,
+    Campaign,
+} from "@/app/ServerFunctions/types";
 import { QueryClient, useQueryClient } from "@tanstack/react-query";
-import Campaign from "@/app/ServerFunctions/types/campaign";
-import ProjectManagers from "@/app/ServerFunctions/types/projectManagers";
-import dataClient from "@/app/ServerFunctions/database";
 
 interface SendInvitesProps {
-    customer: Customer.Customer;
-    candidates: Candidates.Candidate[];
-    assignment: Assignment.Assignment;
+    customer: Customer;
+    candidates: Candidate[];
+    assignment: Assignment;
     campaignId: string;
     queryClient: QueryClient;
 }
@@ -24,7 +24,7 @@ export default async function sendInvites({
 }: SendInvitesProps) {
     console.log("Sending invites");
 
-    const campaign = queryClient.getQueryData<Campaign.Campaign>(["campaign", campaignId]);
+    const campaign = queryClient.getQueryData<Campaign>(["campaign", campaignId]);
     if (!campaign) {
         alert("Kampagnendaten nicht gefunden");
         return;
@@ -45,7 +45,7 @@ export default async function sendInvites({
             new: [],
             reduced: [],
             none: [],
-        } as { [key in EmailTriggers.emailLevel]: Candidates.Candidate[] },
+        } as { [key in EmailTriggers.emailLevel]: Candidate[] },
     );
     const responses = await Promise.all(
         Object.entries(groupedCandidates).map(async ([level, candidates]) => {

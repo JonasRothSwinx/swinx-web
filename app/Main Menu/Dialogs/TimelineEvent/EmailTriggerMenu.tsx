@@ -1,5 +1,4 @@
-import dataClient from "@/app/ServerFunctions/database";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+import { dataClient } from "@/app/ServerFunctions/database";
 import {
     Box,
     Checkbox,
@@ -12,8 +11,8 @@ import {
     Typography,
 } from "@mui/material";
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
-import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
+import { dayjs, Dayjs } from "@/app/utils";
+import { EmailTriggers, Event, Events } from "@/app/ServerFunctions/types";
 import { Nullable } from "@/app/Definitions/types";
 import { DatePicker, DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -26,7 +25,7 @@ interface EmailTriggerMenuProps {
 }
 
 const emailTypeDisplayNames: {
-    [key in TimelineEvent.eventType]: Nullable<{
+    [key in Events.eventType]: Nullable<{
         [key in EmailTriggers.emailTriggerType]: string | null;
     }>;
 } = {
@@ -82,7 +81,11 @@ export default function EmailTriggerMenu(props: EmailTriggerMenuProps) {
     return (
         <Box id="EmailTriggerMenu">
             {triggers.data?.map((trigger) => (
-                <EmailTrigger key={trigger.id} trigger={trigger} event={trigger.event} />
+                <EmailTrigger
+                    key={trigger.id}
+                    trigger={trigger}
+                    event={trigger.event}
+                />
             ))}
         </Box>
     );
@@ -91,7 +94,7 @@ export default function EmailTriggerMenu(props: EmailTriggerMenuProps) {
 //MARK: EmailTrigger
 interface EmailTriggerProps {
     trigger: EmailTriggers.EmailTrigger;
-    event: TimelineEvent.Event;
+    event: Event;
 }
 function EmailTrigger(props: EmailTriggerProps) {
     const { trigger, event } = props;
@@ -154,14 +157,20 @@ function EmailTrigger(props: EmailTriggerProps) {
         },
     };
     const influencer = trigger.influencer;
-    const emailLevel = changedData.emailLevelOverride ?? trigger.emailLevelOverride ?? influencer?.emailLevel ?? "new";
+    const emailLevel =
+        changedData.emailLevelOverride ??
+        trigger.emailLevelOverride ??
+        influencer?.emailLevel ??
+        "new";
     const emailBodyOverride = trigger.emailBodyOverride;
     const subjectLineOverride = trigger.subjectLineOverride;
     if (isPlaceholder)
         return (
             <Box id="EmailTrigger">
                 <Typography>{dayjs(trigger.date).format("DD.MM.YYYY")}</Typography>
-                <Typography>{emailTypeDisplayNames[event.type]?.[trigger.type] ?? trigger.type}</Typography>
+                <Typography>
+                    {emailTypeDisplayNames[event.type]?.[trigger.type] ?? trigger.type}
+                </Typography>
             </Box>
         );
     if (!influencer) return <Typography>Kein Influencer gefunden</Typography>;
@@ -172,17 +181,29 @@ function EmailTrigger(props: EmailTriggerProps) {
                 cancelChanges={EventHandler.cancelChanges}
                 printEvent={EventHandler.printEvent}
             />
-            <Typography variant="h5">{emailTypeDisplayNames[event.type]?.[trigger.type] ?? trigger.type}</Typography>
-            <TriggerDatePicker event={event} trigger={trigger} dateChange={ChangeHandler.dateChange} />
-            <EmailLevelSelector emailLevel={emailLevel} onChange={ChangeHandler.emailLevelChange} />
+            <Typography variant="h5">
+                {emailTypeDisplayNames[event.type]?.[trigger.type] ?? trigger.type}
+            </Typography>
+            <TriggerDatePicker
+                event={event}
+                trigger={trigger}
+                dateChange={ChangeHandler.dateChange}
+            />
+            <EmailLevelSelector
+                emailLevel={emailLevel}
+                onChange={ChangeHandler.emailLevelChange}
+            />
             {/* Overwrite Email */}
-            <ToggleActive isActive={changedData.active ?? trigger.active} toggle={ChangeHandler.ToggleActive} />
+            <ToggleActive
+                isActive={changedData.active ?? trigger.active}
+                toggle={ChangeHandler.ToggleActive}
+            />
         </Box>
     );
 }
 interface TriggerDatePickerProps {
     trigger: EmailTriggers.EmailTrigger;
-    event: TimelineEvent.Event;
+    event: Event;
     dateChange: (date: Dayjs) => void;
 }
 function TriggerDatePicker(props: TriggerDatePickerProps) {
@@ -191,7 +212,10 @@ function TriggerDatePicker(props: TriggerDatePickerProps) {
     const minDate = dayjs().add(1, "day").hour(9);
     const maxDate = dayjs(event.date).subtract(1, "day").startOf("day");
     return (
-        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
+        <LocalizationProvider
+            dateAdapter={AdapterDayjs}
+            adapterLocale="de"
+        >
             <DatePicker
                 value={date}
                 onChange={(date) => {
@@ -239,7 +263,10 @@ function EmailLevelSelector(props: EmailLevelSelectorProps) {
             }}
         >
             {EmailTriggers.emailLevels.map((level) => (
-                <MenuItem key={level} value={level}>
+                <MenuItem
+                    key={level}
+                    value={level}
+                >
                     {level}
                 </MenuItem>
             ))}
@@ -278,7 +305,13 @@ function ToggleActive(props: ToggleActiveProps) {
     const { isActive, toggle } = props;
     return (
         <FormControlLabel
-            control={<Checkbox checked={isActive} onChange={toggle} title="Trigger Aktiv?" />}
+            control={
+                <Checkbox
+                    checked={isActive}
+                    onChange={toggle}
+                    title="Trigger Aktiv?"
+                />
+            }
             label="Trigger aktiv?"
         />
     );

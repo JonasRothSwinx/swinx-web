@@ -1,7 +1,5 @@
-import Campaign from "@/app/ServerFunctions/types/campaign";
 import { Dispatch, SetStateAction, useState } from "react";
-import Influencer from "@/app/ServerFunctions/types/influencer";
-import { DialogConfig, DialogOptions } from "@/app/Definitions/types";
+import { Campaign, Influencer, Influencers } from "@/app/ServerFunctions/types/";
 import { Box, Button, MenuItem, TextField, Typography } from "@mui/material";
 import { groupBy } from "../Functions/groupEvents";
 import { AddIcon } from "@/app/Definitions/Icons";
@@ -9,11 +7,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import TimelineEventDialog from "../../Dialogs/TimelineEvent/TimelineEventDialog";
 
 interface TimelineControlsProps {
-    campaign: Campaign.Campaign;
-    setCampaign: (campaign: Campaign.Campaign) => void;
+    campaign: Campaign;
+    setCampaign: (campaign: Campaign) => void;
     groupBy: groupBy;
     setGroupBy: (value: groupBy) => void;
-    influencers: Influencer.Full[];
+    influencers: Influencers.Full[];
     onDataChange: () => void;
 }
 type openDialog = "None" | "Timeline";
@@ -29,14 +27,6 @@ export default function TimelineControls(props: TimelineControlsProps) {
         onDataChange,
     } = props;
     const [openDialog, setOpenDialog] = useState<openDialog>("None");
-    const DialogOptions: DialogOptions = {
-        campaignId: campaign.id,
-    };
-    const DialogConfig: DialogConfig<Campaign.Campaign> = {
-        onClose: onDialogClose,
-        parent: campaign,
-        setParent: setRows,
-    };
 
     const ClickHandlers = {
         addTimeline: () => () => {
@@ -66,7 +56,11 @@ export default function TimelineControls(props: TimelineControlsProps) {
     const Dialogs: { [key in openDialog]: JSX.Element | null } = {
         None: null,
         Timeline: (
-            <TimelineEventDialog onClose={onDialogClose} campaignId={campaign.id} editing={false} />
+            <TimelineEventDialog
+                onClose={onDialogClose}
+                campaignId={campaign.id}
+                editing={false}
+            />
         ),
     };
     return (

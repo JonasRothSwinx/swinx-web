@@ -1,7 +1,7 @@
 import { SendMailProps } from "@/app/Emails/templates/types";
 import { EmailTriggerWithContext } from "../types";
 import defineContext from "./defineContext";
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
+import { EmailTriggers } from "@/app/ServerFunctions/types";
 
 interface ProcessTriggersParams {
     triggers: EmailTriggerWithContext[];

@@ -1,5 +1,15 @@
-import dayjs from "@/app/utils/configuredDayJs";
-import { Box, List, SxProps, Table, TableBody, TableCell, TableHead, TableRow, Typography } from "@mui/material";
+import { dayjs } from "@/app/utils";
+import {
+    Box,
+    List,
+    SxProps,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
+    Typography,
+} from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { TimelineEvent, Webinar } from "../../Functions/Database/types";
@@ -20,18 +30,22 @@ export default function InvitesDescription({ events }: InvitesDescriptionProps) 
         return <Loading />;
     }
     return (
-        <Box id="DescriptionContainer" sx={style}>
+        <Box
+            id="DescriptionContainer"
+            sx={style}
+        >
             <Box id="DescriptionTitle">
                 <Typography id="SummaryTitle">Einladungen</Typography>
             </Box>
             <Box id="SummaryContainer">
                 <Box id="SummaryBox">
                     <Typography>
-                        An folgenden Terminen werden Sie Einladungen zum Event des Kunden an Ihre Follower*innen
-                        verschicken.
+                        An folgenden Terminen werden Sie Einladungen zum Event des Kunden an Ihre
+                        Follower*innen verschicken.
                         <br />
                         Zielgruppe für das Event sind Profile aus{" "}
-                        {displayCountryString(webinar.targetAudience?.country ?? [])} innerhalb der folgenden Branchen:
+                        {displayCountryString(webinar.targetAudience?.country ?? [])} innerhalb der
+                        folgenden Branchen:
                     </Typography>
                     <Box>
                         <List>

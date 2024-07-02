@@ -1,5 +1,5 @@
-import { Candidates } from "@/app/ServerFunctions/types/candidates";
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
+import { Candidates } from "@/app/ServerFunctions/types";
+import { EmailTriggers } from "@/app/ServerFunctions/types";
 import {
     Box,
     MenuItem,
@@ -19,9 +19,16 @@ interface EditorProps {
     setSelectedCandidate: (candidate: Candidates.Candidate) => void;
     candidates: Candidates.Candidate[];
 }
-export default function Editor({ candidates, selectedCandidate, setSelectedCandidate }: EditorProps) {
+export default function Editor({
+    candidates,
+    selectedCandidate,
+    setSelectedCandidate,
+}: EditorProps) {
     return (
-        <Box flex={1} padding={"10px"}>
+        <Box
+            flex={1}
+            padding={"10px"}
+        >
             <TextField
                 fullWidth
                 select
@@ -43,7 +50,10 @@ export default function Editor({ candidates, selectedCandidate, setSelectedCandi
             >
                 {candidates.map((candidate, i) => {
                     return (
-                        <MenuItem key={candidate.id ?? ""} value={candidate.id ?? ""}>
+                        <MenuItem
+                            key={candidate.id ?? ""}
+                            value={candidate.id ?? ""}
+                        >
                             {`${candidate.influencer.firstName} ${candidate.influencer.lastName}`}
                         </MenuItem>
                     );
@@ -67,7 +77,10 @@ function RecipientTable({ candidates }: RecipientTableProps) {
             <Table size="small">
                 <TableHead>
                     <TableRow>
-                        <TableCell colSpan={2} sx={{ textAlign: "center" }}>
+                        <TableCell
+                            colSpan={2}
+                            sx={{ textAlign: "center" }}
+                        >
                             {candidates.length} Empfänger
                         </TableCell>
                         <TableCell>template</TableCell>
@@ -75,7 +88,9 @@ function RecipientTable({ candidates }: RecipientTableProps) {
                 </TableHead>
                 <TableBody>
                     {candidates.map((candidate) => {
-                        const emailLevel = EmailTriggers.getDisplayName(candidate.influencer.emailLevel ?? "new");
+                        const emailLevel = EmailTriggers.getDisplayName(
+                            candidate.influencer.emailLevel ?? "new",
+                        );
                         return (
                             <TableRow key={candidate.id}>
                                 <TableCell>{`${candidate.influencer.firstName} ${candidate.influencer.lastName}`}</TableCell>

@@ -1,9 +1,8 @@
 "use server";
 import { SendMailProps } from "../types";
-import { sesHandlerSendEmailTemplateBulk } from "@/amplify/functions/sesHandler/types";
 import sesAPIClient from "../../sesAPI";
 import { defaultParams, TemplateVariables } from "./InvitesReminderMail";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+import { Event, Events } from "@/app/ServerFunctions/types";
 import ErrorLogger from "@/app/ServerFunctions/errorLog";
 import { inviteReminderTemplates } from ".";
 
@@ -26,7 +25,7 @@ export default async function send(props: SendMailProps) {
         if (!webinar) {
             throw new Error("No webinar found");
         }
-        if (!TimelineEvent.isMultiEvent(webinar)) {
+        if (!Events.isMultiEvent(webinar)) {
             throw new Error("Webinar is not a full Event");
         }
         const { eventTitle: eventName, info } = webinar;

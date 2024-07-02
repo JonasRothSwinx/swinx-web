@@ -1,7 +1,15 @@
-import Influencer from "../../types/influencer";
-import { Candidates } from "../../types/candidates";
+import { Candidate, Influencer, Influencers } from "../../types";
 import database from "../dbOperations";
-import config from "./config";
+import { config } from ".";
+
+/**
+ *
+ */
+export const candidate = {
+    create: createCandidate,
+    delete: deleteCandidate,
+    update: updateCandidate,
+};
 
 /**
  * Create new Candidate and update queryClient cache
@@ -11,11 +19,11 @@ import config from "./config";
  */
 
 async function createCandidate(
-    influencer: Influencer.Full,
+    influencer: Influencers.Full,
     assignmentId: string,
-): Promise<Candidates.Candidate> {
+): Promise<Candidate> {
     const queryClient = config.getQueryClient();
-    const newCandidate: Omit<Candidates.Candidate, "id"> = {
+    const newCandidate: Omit<Candidate, "id"> = {
         influencer: influencer,
         response: "pending",
         feedback: null,
@@ -26,9 +34,9 @@ async function createCandidate(
         candidateAssignmentId: assignmentId,
     });
     if (!id) throw new Error("Failed to create candidate");
-    const createdCandidate: Candidates.Candidate = { ...newCandidate, id };
+    const createdCandidate: Candidate = { ...newCandidate, id };
     queryClient.setQueryData(["candidate", id], createdCandidate);
-    queryClient.setQueryData(["candidates", assignmentId], (prev: Candidates.Candidate[]) => {
+    queryClient.setQueryData(["candidates", assignmentId], (prev: Candidate[]) => {
         if (!prev) {
             return [createdCandidate];
         }
@@ -52,7 +60,7 @@ async function deleteCandidate(candidateId: string, assignmentId: string): Promi
         console.error(errors);
         throw new Error(JSON.stringify(errors));
     }
-    queryClient.setQueryData(["candidates", assignmentId], (prev: Candidates.Candidate[]) => {
+    queryClient.setQueryData(["candidates", assignmentId], (prev: Candidate[]) => {
         if (!prev) {
             return [];
         }
@@ -64,8 +72,8 @@ async function deleteCandidate(candidateId: string, assignmentId: string): Promi
 
 interface UpdateCandidateParams {
     candidateId: string;
-    updatedValues: Partial<Candidates.Candidate>;
-    previousCandidate: Candidates.Candidate;
+    updatedValues: Partial<Candidate>;
+    previousCandidate: Candidate;
 }
 /**
  * Update a candidate
@@ -78,7 +86,7 @@ async function updateCandidate({
     candidateId,
     updatedValues,
     previousCandidate,
-}: UpdateCandidateParams): Promise<Candidates.Candidate> {
+}: UpdateCandidateParams): Promise<Candidate> {
     // const queryClient = config.getQueryClient();
     const updatedCandidate = { ...previousCandidate, ...updatedValues };
     const { errors } = await database.candidate.update({
@@ -100,14 +108,3 @@ async function updateCandidate({
     // queryClient.refetchQueries({ queryKey: ["candidate", candidateId] });
     return updatedCandidate;
 }
-
-/**
- *
- */
-const candidate = {
-    create: createCandidate,
-    delete: deleteCandidate,
-    update: updateCandidate,
-};
-
-export default candidate;

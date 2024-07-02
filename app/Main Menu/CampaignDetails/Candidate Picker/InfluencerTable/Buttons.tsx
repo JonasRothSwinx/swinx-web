@@ -1,7 +1,4 @@
 import { Button, CircularProgress } from "@mui/material";
-import { Candidates } from "@/app/ServerFunctions/types/candidates";
-import Influencer from "@/app/ServerFunctions/types/influencer";
-import { useState } from "react";
 
 interface ButtonProps {
     newCandidates: number;
@@ -24,7 +21,11 @@ export default function Buttons({
 
     if (processing)
         return (
-            <Button id="SendInvitations" variant="outlined" disabled>
+            <Button
+                id="SendInvitations"
+                variant="outlined"
+                disabled
+            >
                 {newCandidates > 0
                     ? `${newCandidates} Einladung${newCandidates > 1 ? "en" : ""} verschicken`
                     : "Einladungen verschicken"}

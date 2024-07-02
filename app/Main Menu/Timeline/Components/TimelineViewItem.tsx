@@ -1,6 +1,6 @@
 import { CancelIcon, EditIcon } from "@/app/Definitions/Icons";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
-import dayjs from "@/app/utils/configuredDayJs";
+import { Event } from "@/app/ServerFunctions/types";
+import { dayjs } from "@/app/utils";
 import { Box, Unstable_Grid2 as Grid, IconButton, SxProps } from "@mui/material";
 import { GridDeleteForeverIcon } from "@mui/x-data-grid";
 import { useMemo, useState } from "react";
@@ -18,7 +18,7 @@ interface TimelineViewItemProps {
     group: EventGroup;
     groupedBy: groupBy;
     editable: boolean;
-    editEvent: (event: TimelineEvent.Event) => void;
+    editEvent: (event: Event) => void;
 }
 export default function TimelineViewItem(props: TimelineViewItemProps) {
     const { keyValue, group, groupedBy, editEvent, editable } = props;
@@ -29,7 +29,10 @@ export default function TimelineViewItem(props: TimelineViewItemProps) {
             // xs={16}
             key={keyValue}
         >
-            <TimelineViewGroupTitle group={group} groupedBy={groupedBy} />
+            <TimelineViewGroupTitle
+                group={group}
+                groupedBy={groupedBy}
+            />
             {group.events.map((event, i) => {
                 return (
                     <TypedEventGroupDisplay

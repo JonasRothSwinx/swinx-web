@@ -1,4 +1,4 @@
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
+import { EmailTriggers } from "@/app/ServerFunctions/types";
 import { Html, Button, Text, Head, Preview, Container } from "@react-email/components";
 import styles from "../../styles";
 import { Placeholder } from "../../_components";
@@ -47,7 +47,10 @@ WebinarSpeakerDateReminder.PreviewProps = {
 function NewWebinarSpeakerDateReminder(props: DebugToggle) {
     const { name, time, webinarTitle, topic } = props.debug ? defaultParams : placeholders;
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
             <Preview>Erinnerung: Webinar</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
@@ -63,7 +66,10 @@ function NewWebinarSpeakerDateReminder(props: DebugToggle) {
 
 function ReducedWebinarSpeakerDateReminder(props: DebugToggle) {
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
             <Preview>Erinnerung: Webinar</Preview>
             <Text style={styles.text}>Hallo {placeholders.name}!</Text>
@@ -71,8 +77,14 @@ function ReducedWebinarSpeakerDateReminder(props: DebugToggle) {
                 Wir möchten dich daran erinnern, dass du heute als Speaker in einem Webinar
                 auftreten wirst.
             </Text>
-            <Container align="left" style={styles.buttonContainer}>
-                <Button style={styles.responseButton} href="https://www.swinx.de">
+            <Container
+                align="left"
+                style={styles.buttonContainer}
+            >
+                <Button
+                    style={styles.responseButton}
+                    href="https://www.swinx.de"
+                >
                     Zu Swinx
                 </Button>
             </Container>

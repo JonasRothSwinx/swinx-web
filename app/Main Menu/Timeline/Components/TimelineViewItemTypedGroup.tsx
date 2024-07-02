@@ -1,7 +1,7 @@
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+import { Event, Events } from "@/app/ServerFunctions/types";
 import stylesExporter from "../../styles/stylesExporter";
 import { TypedEventGroup as TypedEventGroup, groupBy } from "../Functions/groupEvents";
-import { Event } from "./EventDisplay";
+import { EventDisplay } from "./EventDisplay";
 import { randomId } from "@mui/x-data-grid-generator";
 import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { highlightData } from "@/app/Definitions/types";
@@ -15,7 +15,7 @@ interface TypedEventGroupDisplayProps {
     editable: boolean;
     campaignId: string;
 }
-const hiddenEventTypes: TimelineEvent.eventType[] = ["WebinarSpeaker"];
+const hiddenEventTypes: Events.eventType[] = ["WebinarSpeaker"];
 
 export default function TypedEventGroupDisplay(props: TypedEventGroupDisplayProps) {
     const { eventGroup, groupBy, editable, campaignId } = props;
@@ -51,7 +51,7 @@ function GroupTitle(props: GroupTitleProps) {
 }
 
 interface GroupContentProps {
-    events: TimelineEvent.Event[];
+    events: Event[];
     groupBy: groupBy;
     highlightedEventData: highlightData[];
     editable: boolean;
@@ -64,7 +64,7 @@ function GroupContent(props: GroupContentProps) {
         <>
             {events.map((event, index) => {
                 return (
-                    <Event
+                    <EventDisplay
                         key={event.id ?? randomId()}
                         event={event}
                         groupBy={groupBy}

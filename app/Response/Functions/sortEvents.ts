@@ -1,5 +1,5 @@
 import { TimelineEvent } from "./Database/types";
-import dayjs from "@/app/utils/configuredDayJs";
+import { dayjs } from "@/app/utils";
 
 interface sortEventsParams {
     events: TimelineEvent[];

@@ -4,7 +4,7 @@ import { generateServerClientUsingCookies } from "@aws-amplify/adapter-nextjs/ap
 import config from "@/amplify_outputs.json";
 import { cookies } from "next/headers";
 import { SelectionSet } from "aws-amplify/api";
-import { Candidates } from "@/app/ServerFunctions/types/candidates";
+import { Candidates } from "@/app/ServerFunctions/types";
 import { DeepWriteable, Prettify } from "@/app/Definitions/types";
 
 const client = generateServerClientUsingCookies<Schema>({

@@ -1,10 +1,10 @@
-import config from "./config";
+import { config } from ".";
 import database from "../dbOperations";
-import ProjectManagers from "../../types/projectManagers";
+import { ProjectManager } from "@/app/ServerFunctions/types";
 import { Nullable } from "@/app/Definitions/types";
 import { getUserAttributes } from "../../serverActions";
 
-const projectManagerClient = {
+export const projectManager = {
     create: createProjectManager,
     list: listProjectManagers,
     update: updateProjectManager,
@@ -13,7 +13,6 @@ const projectManagerClient = {
     getByCognitoId: getProjectManagerByCognitoId,
     getForUser: getProjectManagerForCurrentUser,
 };
-export default projectManagerClient;
 
 //#region Create
 /**
@@ -22,12 +21,12 @@ export default projectManagerClient;
  * @returns The created project manager object
  */
 interface CreateProjectManagerParams {
-    projectManager: Omit<ProjectManagers.ProjectManager, "id">;
+    projectManager: Omit<ProjectManager, "id">;
 }
 
 async function createProjectManager({
     projectManager,
-}: CreateProjectManagerParams): Promise<ProjectManagers.ProjectManager> {
+}: CreateProjectManagerParams): Promise<ProjectManager> {
     const queryClient = config.getQueryClient();
     const cognitoId = projectManager.cognitoId;
     const id = await database.projectManager.create({ projectManager });
@@ -44,7 +43,7 @@ async function createProjectManager({
  * List all project managers
  * @returns The list of project managers
  */
-async function listProjectManagers(): Promise<ProjectManagers.ProjectManager[]> {
+async function listProjectManagers(): Promise<ProjectManager[]> {
     const queryClient = config.getQueryClient();
     //Return cached data if available
     // const cachedData = queryClient.getQueryData<ProjectManagers.ProjectManager[]>(["projectManagers"]);
@@ -68,12 +67,9 @@ interface GetProjectManagerParams {
 }
 async function getProjectManager({
     id,
-}: GetProjectManagerParams): Promise<Nullable<ProjectManagers.ProjectManager>> {
+}: GetProjectManagerParams): Promise<Nullable<ProjectManager>> {
     const queryClient = config.getQueryClient();
-    const cachedData = queryClient.getQueryData<ProjectManagers.ProjectManager>([
-        "projectManager",
-        id,
-    ]);
+    const cachedData = queryClient.getQueryData<ProjectManager>(["projectManager", id]);
     if (cachedData) return cachedData;
 
     const projectManager = await database.projectManager.get({ id });
@@ -90,12 +86,9 @@ interface GetProjectManagerByCognitoIdParams {
 }
 async function getProjectManagerByCognitoId({
     cognitoId,
-}: GetProjectManagerByCognitoIdParams): Promise<Nullable<ProjectManagers.ProjectManager>> {
+}: GetProjectManagerByCognitoIdParams): Promise<Nullable<ProjectManager>> {
     const queryClient = config.getQueryClient();
-    const cachedData = queryClient.getQueryData<ProjectManagers.ProjectManager>([
-        "projectManager",
-        cognitoId,
-    ]);
+    const cachedData = queryClient.getQueryData<ProjectManager>(["projectManager", cognitoId]);
     if (cachedData) return cachedData;
 
     const projectManager = await database.projectManager.getByCognitoId({ cognitoId });
@@ -106,11 +99,9 @@ async function getProjectManagerByCognitoId({
 /**
  * Get associated Project Manager Object for current user
  */
-async function getProjectManagerForCurrentUser(): Promise<
-    Nullable<ProjectManagers.ProjectManager>
-> {
+async function getProjectManagerForCurrentUser(): Promise<Nullable<ProjectManager>> {
     const queryClient = config.getQueryClient();
-    const cachedData = queryClient.getQueryData<ProjectManagers.ProjectManager>(["projectManager"]);
+    const cachedData = queryClient.getQueryData<ProjectManager>(["projectManager"]);
     if (cachedData) return cachedData;
     const cognitoId = (
         await queryClient.fetchQuery({
@@ -138,17 +129,14 @@ async function getProjectManagerForCurrentUser(): Promise<
 
 interface UpdateProjectManagerParams {
     id: string;
-    updatedData: Partial<ProjectManagers.ProjectManager>;
+    updatedData: Partial<ProjectManager>;
 }
 async function updateProjectManager({
     id,
     updatedData,
-}: UpdateProjectManagerParams): Promise<ProjectManagers.ProjectManager> {
+}: UpdateProjectManagerParams): Promise<ProjectManager> {
     const queryClient = config.getQueryClient();
-    const previousProjectManager = queryClient.getQueryData<ProjectManagers.ProjectManager>([
-        "projectManager",
-        id,
-    ]);
+    const previousProjectManager = queryClient.getQueryData<ProjectManager>(["projectManager", id]);
     if (!previousProjectManager) throw new Error("Project Manager not found");
     database.projectManager.update({ id, updatedData });
     const updatedProjectManager = {
@@ -156,7 +144,7 @@ async function updateProjectManager({
         ...updatedData,
     };
     queryClient.setQueryData(["projectManager", id], updatedProjectManager);
-    queryClient.setQueryData(["projectManagers"], (prev: ProjectManagers.ProjectManager[]) => {
+    queryClient.setQueryData(["projectManagers"], (prev: ProjectManager[]) => {
         if (!prev) {
             return [updatedProjectManager];
         }
@@ -177,13 +165,10 @@ async function updateProjectManager({
  */
 async function deleteProjectManager(id: string): Promise<void> {
     const queryClient = config.getQueryClient();
-    const previousProjectManager = queryClient.getQueryData<ProjectManagers.ProjectManager>([
-        "projectManager",
-        id,
-    ]);
+    const previousProjectManager = queryClient.getQueryData<ProjectManager>(["projectManager", id]);
     if (!previousProjectManager) throw new Error("Project Manager not found");
     database.projectManager.delete({ id });
-    queryClient.setQueryData(["projectManagers"], (prev: ProjectManagers.ProjectManager[]) => {
+    queryClient.setQueryData(["projectManagers"], (prev: ProjectManager[]) => {
         if (!prev) {
             return [];
         }

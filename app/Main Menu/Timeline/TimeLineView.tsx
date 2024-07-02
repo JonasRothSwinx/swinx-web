@@ -1,6 +1,4 @@
-import Campaign from "@/app/ServerFunctions/types/campaign";
-import Influencer from "@/app/ServerFunctions/types/influencer";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+import { Campaign, Event, Influencer, Influencers } from "@/app/ServerFunctions/types";
 import { Box, CircularProgress, Unstable_Grid2 as Grid, SxProps, Typography } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import stylesExporter from "../styles/stylesExporter";
@@ -22,15 +20,15 @@ type orientation = "horizontal" | "vertical";
 type controlsPosition = "before" | "after" | "none";
 type openDialog = "none" | "editor";
 export interface TimelineViewProps {
-    campaign: Campaign.Campaign;
-    setCampaign: (data: Campaign.Campaign) => void;
+    campaign: Campaign;
+    setCampaign: (data: Campaign) => void;
     maxItems?: number;
     // eventDialogProps: TimelineEventDialogProps;
     orientation?: orientation;
     controlsPosition?: controlsPosition;
     groupBy?: groupBy;
     editable?: boolean;
-    influencers: Influencer.Full[];
+    influencers: Influencers.Full[];
 }
 
 export default function TimelineView(props: TimelineViewProps) {
@@ -47,10 +45,10 @@ export default function TimelineView(props: TimelineViewProps) {
     //#region States
     // const [groups, setGroups] = useState<EventGroup[]>([]);
     const [groupBy, setGroupBy] = useState<groupBy>(props.groupBy ?? "week");
-    const [editingEvent, setEditingEvent] = useState<TimelineEvent.Event>();
+    const [editingEvent, setEditingEvent] = useState<Event>();
     const [controlsPositionState, setControlsPosition] =
         useState<controlsPosition>(controlsPosition);
-    const [campaign, setCampaign] = useState<Campaign.Campaign>(props.campaign);
+    const [campaign, setCampaign] = useState<Campaign>(props.campaign);
     const [openDialog, setOpenDialog] = useState<openDialog>("none");
     //#endregion States
     //############################################
@@ -179,10 +177,10 @@ export default function TimelineView(props: TimelineViewProps) {
     const styles: SxProps = useMemo(() => {
         return {
             "&": {
-                display: "flex",
-                flexDirection: "column",
-                height: "100%",
-                width: "100%",
+                "display": "flex",
+                "flexDirection": "column",
+                "height": "100%",
+                "width": "100%",
 
                 "#StatusState": {
                     display: "flex",
@@ -193,7 +191,7 @@ export default function TimelineView(props: TimelineViewProps) {
                     width: "100%",
                 },
                 "#TimelineViewContent": {
-                    width: "100%",
+                    "width": "100%",
                     "& > .MuiGrid2-root": {
                         // display: "flex",
                         // flexDirection: "column",
@@ -205,13 +203,13 @@ export default function TimelineView(props: TimelineViewProps) {
                     },
                 },
                 "#TimelineViewGroup": {
-                    display: "flex",
-                    flexDirection: "column",
-                    border: "1px solid black",
-                    borderRadius: "10px",
-                    height: "fit-content",
-                    maxWidth: "100%",
-                    overflow: "hidden",
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "border": "1px solid black",
+                    "borderRadius": "10px",
+                    "height": "fit-content",
+                    "maxWidth": "100%",
+                    "overflow": "hidden",
 
                     ".MuiGrid2-container": {
                         alignItems: "center",
@@ -228,14 +226,14 @@ export default function TimelineView(props: TimelineViewProps) {
                     "#TimelineViewGroupContent": {
                         // padding: "2px",
 
-                        border: "solid black",
-                        borderTop: "none",
-                        borderWidth: "0 0 1px",
+                        "border": "solid black",
+                        "borderTop": "none",
+                        "borderWidth": "0 0 1px",
                         // borderLeft: "none",
                         // borderRadius: "10px",
-                        display: "flex",
-                        flexDirection: " column",
-                        overflow: "hidden",
+                        "display": "flex",
+                        "flexDirection": " column",
+                        "overflow": "hidden",
                         "&:first-of-type": {
                             borderTopLeftRadius: "10px",
                             borderTopRightRadius: "10px",
@@ -304,7 +302,10 @@ export default function TimelineView(props: TimelineViewProps) {
     // }
 
     return (
-        <Box sx={styles} id="TimelineViewContainer">
+        <Box
+            sx={styles}
+            id="TimelineViewContainer"
+        >
             {/* Dialogs */}
             {Dialogs[openDialog]()}
             {controlsPositionState === "before" && (
@@ -392,16 +393,16 @@ export default function TimelineView(props: TimelineViewProps) {
 }
 
 interface TimelineViewContentProps {
-    campaign: Campaign.Campaign;
+    campaign: Campaign;
     maxItems?: number;
     // eventDialogProps: TimelineEventDialogProps;
     orientation?: orientation;
     controlsPosition?: controlsPosition;
     groupBy?: groupBy;
     editable?: boolean;
-    influencers: Influencer.Full[];
+    influencers: Influencers.Full[];
     groups: EventGroup[];
-    setEditingEvent: (event: TimelineEvent.Event) => void;
+    setEditingEvent: (event: Event) => void;
     setDialog: (open: openDialog) => void;
 }
 function TimelineViewContent(props: TimelineViewContentProps) {
@@ -417,7 +418,7 @@ function TimelineViewContent(props: TimelineViewContentProps) {
     } = props;
 
     const EventHandlers = {
-        editEvent: (event: TimelineEvent.Event) => {
+        editEvent: (event: Event) => {
             setEditingEvent(event);
             setDialog("editor");
         },
@@ -470,49 +471,3 @@ function Placeholder(): JSX.Element {
         </div>
     );
 }
-
-// interface EditDialogProps {
-//     onClose: (hasChanged?: boolean) => void;
-//     editingEvent: TimelineEvent.Event | undefined;
-//     campaignId: string;
-//     setCampaign: (data: Campaign.Campaign) => void;
-//     influencers: Influencer.Full[];
-//     editable?: boolean;
-// }
-
-// function EditEventDialog(props: EditDialogProps): JSX.Element {
-//     const { editingEvent, editable = false } = props;
-//     if (!(editable && editingEvent)) return <></>;
-//     if (TimelineEvent.isSingleEvent(editingEvent)) {
-//         return <EditSingleEventDialog {...props} editingEvent={editingEvent} />;
-//     } else if (TimelineEvent.isMultiEvent(editingEvent)) {
-//         return <EditMultiEventDialog {...props} editingEvent={editingEvent} />;
-//     } else {
-//         throw new Error("Editing event type not recognized");
-//     }
-// }
-
-// interface EditSingleDialogProps extends EditDialogProps {
-//     editingEvent: TimelineEvent.SingleEvent;
-// }
-// function EditSingleEventDialog(props: EditSingleDialogProps): JSX.Element {
-//     const { campaignId, setCampaign, onClose, influencers, editingEvent } = props;
-//     const targetAssignment = editingEvent.assignments[0] ?? undefined;
-//     if (!targetAssignment) throw new Error("Editing event does not have an assignment");
-//     return (
-//         <TimelineEventDialog
-//             onClose={onClose}
-//             editing={true}
-//             editingData={editingEvent}
-//             targetAssignment={targetAssignment}
-//             campaignId={campaignId}
-//         />
-//     );
-// }
-
-// interface EditMultiDialogProps extends EditDialogProps {
-//     editingEvent: TimelineEvent.MultiEvent;
-// }
-// function EditMultiEventDialog(props: EditMultiDialogProps): JSX.Element {
-//     return <TimelineEventMultiDialog {...props} />;
-// }

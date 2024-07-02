@@ -1,17 +1,19 @@
 "use server";
 
 import client from "./.dbclient";
-import Campaign from "@/app/ServerFunctions/types/campaign";
-import Assignment from "@/app/ServerFunctions/types/assignment";
-import Influencer from "@/app/ServerFunctions/types/influencer";
+import {
+    Campaign,
+    Assignment,
+    Influencer,
+    Event,
+    Customer,
+    Campaigns,
+} from "@/app/ServerFunctions/types";
 import { SelectionSet } from "aws-amplify/api";
 import { Schema } from "@/amplify/data/resource";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import { Nullable, PartialWith } from "@/app/Definitions/types";
-import { Candidates } from "@/app/ServerFunctions/types/candidates";
+import { Candidate, ProjectManager } from "@/app/ServerFunctions/types";
 import AssignedInfluencer from "@/app/Main Menu/CampaignDetails/Components/OpenInfluencerDetails/AssignedInfluencer";
-import Customer from "../../types/customer";
-import ProjectManagers from "../../types/projectManagers";
 import database from ".";
 
 const selectionSet = [
@@ -75,7 +77,7 @@ export async function dummyListCampaigns() {
  * @returns The id of the created campaign
  */
 interface CreateNewCampaignParams {
-    campaign: Omit<Campaign.Campaign, "id">;
+    campaign: Omit<Campaign, "id">;
     projectManagerId: string;
 }
 export async function createNewCampaign({ campaign, projectManagerId }: CreateNewCampaignParams) {
@@ -108,7 +110,7 @@ export async function createNewCampaign({ campaign, projectManagerId }: CreateNe
 //#endregion create
 
 //#region get
-export async function getCampaign(id: string): Promise<Nullable<Campaign.CampaignMin>> {
+export async function getCampaign(id: string): Promise<Nullable<Campaigns.Min>> {
     const { data, errors } = await client.models.Campaign.get(
         { id },
         {
@@ -127,7 +129,7 @@ export async function getCampaign(id: string): Promise<Nullable<Campaign.Campaig
 //#endregion get
 
 //#region list
-export async function listCampaigns(): Promise<Campaign.CampaignMin[]> {
+export async function listCampaigns(): Promise<Campaigns.Min[]> {
     const { data, errors } = await client.models.Campaign.list({
         // ts-expect-error - This is a valid selectionSet
         selectionSet,
@@ -136,7 +138,7 @@ export async function listCampaigns(): Promise<Campaign.CampaignMin[]> {
         console.log({ errors });
         throw new Error(JSON.stringify({ errors }));
     }
-    const campaigns: Campaign.CampaignMin[] = validateCampaigns(data);
+    const campaigns: Campaigns.Min[] = validateCampaigns(data);
 
     return campaigns;
 }
@@ -144,7 +146,7 @@ export async function listCampaigns(): Promise<Campaign.CampaignMin[]> {
 
 //#region delete
 export async function deleteCampaign(
-    campaign: PartialWith<Campaign.Campaign, "id" | "customers" | "campaignTimelineEvents">,
+    campaign: PartialWith<Campaign, "id" | "customers" | "campaignTimelineEvents">,
 ) {
     if (!campaign.id) throw new Error("Missing Data");
 
@@ -179,12 +181,12 @@ export async function connectToManager({ campaignId, projectManagerId }: Connect
 //#endregion
 
 //region Validation
-function validateCampaign(rawCampaign: Nullable<RawCampaign>): Nullable<Campaign.CampaignMin> {
+function validateCampaign(rawCampaign: Nullable<RawCampaign>): Nullable<Campaigns.Min> {
     if (!rawCampaign) {
         return null;
     }
     try {
-        const customers: Customer.Customer[] = rawCampaign.customers.map((raw) => {
+        const customers: Customer[] = rawCampaign.customers.map((raw) => {
             return {
                 id: raw.id,
                 company: raw.company ?? "",
@@ -195,22 +197,20 @@ function validateCampaign(rawCampaign: Nullable<RawCampaign>): Nullable<Campaign
                 companyPosition: raw.companyPosition ?? "",
                 profileLink: raw.linkedinProfile ?? "",
                 notes: raw.notes ?? "",
-            } satisfies Customer.Customer;
+            } satisfies Customer;
         });
-        const projectManagers: ProjectManagers.ProjectManager[] = rawCampaign.projectManagers.map(
-            (raw) => {
-                return {
-                    id: raw.projectManager.id,
-                    email: raw.projectManager.email,
-                    firstName: raw.projectManager.firstName,
-                    lastName: raw.projectManager.lastName,
-                    phoneNumber: raw.projectManager.phoneNumber ?? undefined,
-                    notes: raw.projectManager.notes ?? undefined,
-                    cognitoId: raw.projectManager.cognitoId,
-                } satisfies ProjectManagers.ProjectManager;
-            },
-        );
-        const dataOut: Campaign.CampaignMin = {
+        const projectManagers: ProjectManager[] = rawCampaign.projectManagers.map((raw) => {
+            return {
+                id: raw.projectManager.id,
+                email: raw.projectManager.email,
+                firstName: raw.projectManager.firstName,
+                lastName: raw.projectManager.lastName,
+                phoneNumber: raw.projectManager.phoneNumber ?? undefined,
+                notes: raw.projectManager.notes ?? undefined,
+                cognitoId: raw.projectManager.cognitoId,
+            } satisfies ProjectManager;
+        });
+        const dataOut: Campaigns.Min = {
             id: rawCampaign.id,
             notes: rawCampaign.notes,
             customers,
@@ -225,6 +225,6 @@ function validateCampaign(rawCampaign: Nullable<RawCampaign>): Nullable<Campaign
     }
 }
 
-function validateCampaigns(rawCampaigns: RawCampaign[]): Campaign.CampaignMin[] {
-    return rawCampaigns.map(validateCampaign).filter((x): x is Campaign.CampaignMin => x !== null);
+function validateCampaigns(rawCampaigns: RawCampaign[]): Campaigns.Min[] {
+    return rawCampaigns.map(validateCampaign).filter((x): x is Campaigns.Min => x !== null);
 }

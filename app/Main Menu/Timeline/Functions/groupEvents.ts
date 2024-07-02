@@ -1,5 +1,5 @@
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
-import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
+import { Event, Events } from "@/app/ServerFunctions/types";
+import { dayjs, Dayjs } from "@/app/utils";
 
 export type groupBy = "day" | "week";
 
@@ -22,7 +22,7 @@ export type groupBy = "day" | "week";
 // };
 
 export type TypedEventGroup = {
-    type: TimelineEvent.eventType;
+    type: Events.eventType;
     events: groupableEvent[];
 };
 
@@ -31,7 +31,7 @@ export type EventGroup = {
     dateGroupEnd: Dayjs;
     events: TypedEventGroup[];
 };
-type groupableEvent = TimelineEvent.Event;
+type groupableEvent = Event;
 
 export function groupEvents(events: groupableEvent[], groupBy: groupBy = "week") {
     let eventGroups: EventGroup[] = [];
@@ -159,7 +159,7 @@ export function groupEvents(events: groupableEvent[], groupBy: groupBy = "week")
 // }
 function getEventType(event: groupableEvent) {
     switch (true) {
-        case TimelineEvent.isTimelineEvent(event):
+        case Events.isTimelineEvent(event):
             return event.type;
     }
 }

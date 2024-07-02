@@ -1,6 +1,5 @@
-import dataClient from "@/app/ServerFunctions/database";
-import { Candidates } from "@/app/ServerFunctions/types/candidates";
-import Influencer from "@/app/ServerFunctions/types/influencer";
+import { dataClient } from "@/app/ServerFunctions/database";
+import { Candidate, Influencers } from "@/app/ServerFunctions/types";
 import { Box, Skeleton, SxProps, Typography } from "@mui/material";
 import {
     GridRowSelectionModel,
@@ -17,8 +16,8 @@ import EmailPreview from "../../Email Preview";
 
 //#region Definitions
 type changedCandidates = {
-    removed: Candidates.Candidate[];
-    added: Influencer.Full[];
+    removed: Candidate[];
+    added: Influencers.Full[];
 };
 
 type openDialog = "none" | "emailPreview";
@@ -94,14 +93,14 @@ export default function InfluencerTable({
             minWidth: 150,
             type: "string",
             hideable: false,
-            valueGetter({ row }: { row: Influencer.Full }) {
+            valueGetter({ row }: { row: Influencers.Full }) {
                 // console.log(params);
                 return `${row.firstName} ${row.lastName}`;
             },
             renderCell({
                 row: { linkedinProfile, firstName, lastName },
             }: {
-                row: Influencer.Full;
+                row: Influencers.Full;
             }) {
                 if (linkedinProfile)
                     return <Link href={linkedinProfile}>{`${firstName} ${lastName}`}</Link>;
@@ -119,7 +118,7 @@ export default function InfluencerTable({
             flex: 1,
             minWidth: 100,
             type: "string",
-            valueGetter({ row }: { row: Influencer.Full }) {
+            valueGetter({ row }: { row: Influencers.Full }) {
                 return row.industry;
             },
         },
@@ -129,7 +128,7 @@ export default function InfluencerTable({
             flex: 1,
             minWidth: 100,
             type: "string",
-            valueGetter({ row }: { row: Influencer.Full }) {
+            valueGetter({ row }: { row: Influencers.Full }) {
                 return row.topic?.join(", ") ?? "";
             },
         },
@@ -140,7 +139,7 @@ export default function InfluencerTable({
             minWidth: 100,
             type: "number",
             align: "center",
-            valueGetter({ row }: { row: Influencer.Full }) {
+            valueGetter({ row }: { row: Influencers.Full }) {
                 return row.followers;
             },
         },
@@ -150,7 +149,10 @@ export default function InfluencerTable({
     const dialogs: { [state in openDialog]: () => JSX.Element | null } = {
         none: () => null,
         emailPreview: () => (
-            <EmailPreview onClose={EventHandlers.onEmailPreviewClose} assignmentId={assignmentId} />
+            <EmailPreview
+                onClose={EventHandlers.onEmailPreviewClose}
+                assignmentId={assignmentId}
+            />
         ),
     } as const;
 
@@ -160,11 +162,11 @@ export default function InfluencerTable({
             setRowSelectionModel(selected);
             const selectedInfluencers =
                 influencers.data?.filter((influencer) => selected.includes(influencer.id)) ?? [];
-            const removedInfluencers: Candidates.Candidate[] = candidates.filter(
+            const removedInfluencers: Candidate[] = candidates.filter(
                 (x) => !selectedInfluencers.find((influencer) => influencer.id === x.influencer.id),
             );
 
-            const addedInfluencers: Influencer.Full[] = selectedInfluencers.filter(
+            const addedInfluencers: Influencers.Full[] = selectedInfluencers.filter(
                 (x) => !candidates.find((candidate) => candidate.influencer.id === x.id),
             );
 
@@ -296,8 +298,8 @@ export default function InfluencerTable({
     };
     const styles: SxProps = {
         "&#InfluencerTableContainer": {
-            display: "flex",
-            flexDirection: "column",
+            "display": "flex",
+            "flexDirection": "column",
             "--DataGrid-overlayHeight": "200px",
             ".MuiDataGrid-root": {
                 ".MuiDataGrid-main": {
@@ -305,10 +307,10 @@ export default function InfluencerTable({
                 },
             },
             "#SendInvitations": {
-                position: "relative",
-                width: "fit-content",
-                marginTop: "20px",
-                marginLeft: "auto",
+                "position": "relative",
+                "width": "fit-content",
+                "marginTop": "20px",
+                "marginLeft": "auto",
                 "#ButtonProcessingOverlay": {
                     position: "absolute",
                     marginInline: "auto",
@@ -319,7 +321,10 @@ export default function InfluencerTable({
         },
     };
     return (
-        <Box id="InfluencerTableContainer" sx={styles}>
+        <Box
+            id="InfluencerTableContainer"
+            sx={styles}
+        >
             <>{dialogs[openDialog]()}</>
             <DataGrid
                 autoHeight

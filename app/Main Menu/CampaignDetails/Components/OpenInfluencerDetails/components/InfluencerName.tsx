@@ -1,7 +1,7 @@
-import Assignment from "@/app/ServerFunctions/types/assignment";
+import { Assignment } from "@/app/ServerFunctions/types";
 import { Typography } from "@mui/material";
 
-export function InfluencerName(props: { assignedInfluencer: Assignment.Assignment }) {
+export function InfluencerName(props: { assignedInfluencer: Assignment }) {
     const { assignedInfluencer } = props;
     return (
         <div

@@ -1,4 +1,4 @@
-import { Candidates } from "@/app/ServerFunctions/types/candidates";
+import { Candidates } from "@/app/ServerFunctions/types";
 import { Box, Button, CircularProgress, SxProps, Typography } from "@mui/material";
 import { useConfirm } from "material-ui-confirm";
 import { useEffect, useRef, useState } from "react";
@@ -16,7 +16,7 @@ export default function ResponseButtons({ processResponse }: ResponseButtonProps
     const confirm = useConfirm();
     const feedbackDialogStyles: SxProps = {
         "&": {
-            border: "1px solid black",
+            "border": "1px solid black",
             ".MuiDialogContent-root": {
                 padding: "0 20px",
             },
@@ -109,18 +109,18 @@ export default function ResponseButtons({ processResponse }: ResponseButtonProps
             // bottom: "0",
             // right: "0",
             // backgroundColor: "red",
-            float: "right",
-            alignSelf: "flex-end",
-            display: "flex",
-            flexWrap: "wrap",
+            "float": "right",
+            "alignSelf": "flex-end",
+            "display": "flex",
+            "flexWrap": "wrap",
             // flexDirection: "column",
-            justifyContent: "right",
-            alignItems: "end",
+            "justifyContent": "right",
+            "alignItems": "end",
             // width: "max-content",
-            width: "100%",
-            maxWidth: "100%",
-            flex: 1,
-            borderTop: "1px solid black",
+            "width": "100%",
+            "maxWidth": "100%",
+            "flex": 1,
+            "borderTop": "1px solid black",
 
             "& button": {
                 width: "fit-content",
@@ -149,7 +149,10 @@ export default function ResponseButtons({ processResponse }: ResponseButtonProps
         return <ResponseProcessing />;
     }
     return (
-        <Box id="ButtonContainer" sx={styles}>
+        <Box
+            id="ButtonContainer"
+            sx={styles}
+        >
             <Button
                 id="submitButton"
                 variant="contained"
@@ -181,18 +184,21 @@ export default function ResponseButtons({ processResponse }: ResponseButtonProps
 function ResponseProcessing() {
     const styles: SxProps = {
         "&": {
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            textAlign: "center",
+            "display": "flex",
+            "flexDirection": "column",
+            "justifyContent": "center",
+            "alignItems": "center",
+            "textAlign": "center",
             "& .MuiCircularProgress-root": {
                 margin: "5px",
             },
         },
     };
     return (
-        <Box id="responseProcessing" sx={styles}>
+        <Box
+            id="responseProcessing"
+            sx={styles}
+        >
             <Typography>
                 Bitte warten...
                 <br />

@@ -1,9 +1,7 @@
 import { Schema } from "@/amplify/data/resource";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import { generateClient } from "aws-amplify/api";
-import { fetchAuthSession } from "aws-amplify/auth";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { Subscription } from "rxjs";
 import {
     DataGrid,
     GridColDef,
@@ -37,18 +35,16 @@ import {
     Close as CancelIcon,
 } from "@mui/icons-material";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
-import Influencer from "@/app/ServerFunctions/types/influencer";
+import { Influencer, Influencers } from "@/app/ServerFunctions/types";
 import InfluencerDialog from "../Dialogs/InfluencerDialog";
 
 import { deDE } from "@mui/x-data-grid";
 import { deDE as pickersDeDE } from "@mui/x-date-pickers/locales";
 import { deDE as coreDeDE } from "@mui/material/locale";
-import { DialogOptions, DialogConfig } from "@/app/Definitions/types";
 import { range } from "@/app/Definitions/utility";
 import { uniqueNamesGenerator, Config, animals, names, colors } from "unique-names-generator";
 import { QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
-import { group } from "console";
-import dataClient from "@/app/ServerFunctions/database";
+import { dataClient } from "@/app/ServerFunctions/database";
 
 const client = generateClient<Schema>();
 const theme = createTheme({}, { deDE, pickersDeDE, coreDeDE });
@@ -67,7 +63,7 @@ function InitInfluencer(props: { id: string }) {
 interface EditToolbarProps {
     setIsOpen: Dispatch<SetStateAction<boolean>>;
     initiateUpdate: () => void;
-    setRows: (rows: Influencer.Full[]) => void;
+    setRows: (rows: Influencers.Full[]) => void;
     queryClient: QueryClient;
     isPending?: boolean;
 }
@@ -76,7 +72,7 @@ async function createRandomInfluencers(queryClient: QueryClient) {
     if (!amount) return;
     const promises: Promise<unknown>[] = [];
     for (const _ of range(amount)) {
-        const influencer: Influencer.Full = {
+        const influencer: Influencers.Full = {
             id: "null",
             firstName: uniqueNamesGenerator({ dictionaries: [names], length: 1 }),
             lastName: uniqueNamesGenerator({
@@ -98,7 +94,11 @@ function EditToolbar(props: EditToolbarProps) {
     }
     return (
         <GridToolbarContainer>
-            <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
+            <Button
+                color="primary"
+                startIcon={<AddIcon />}
+                onClick={handleClick}
+            >
                 Neuer Influencer
             </Button>
             {/* <Button
@@ -114,31 +114,32 @@ function EditToolbar(props: EditToolbarProps) {
 }
 // const selectionSet = ["id", "details.id", "details.email"] as const;
 interface updateInfluencerProps {
-    setInfluencers: (influencers: Influencer.Full[]) => void;
+    setInfluencers: (influencers: Influencers.Full[]) => void;
 }
 
 function InfluencerList() {
     // const [details, setDetails] = useState<Schema["InfluencerPrivate"][]>([]);
     const queryClient = useQueryClient();
-    const [rows, setRows] = useState<Influencer.Full[] | undefined>([]);
+    const [rows, setRows] = useState<Influencers.Full[]>([]);
     const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
     const [isOpen, setIsOpen] = useState(false);
-    const [editingData, setEditingData] = useState<Influencer.Full>();
+    const [editingData, setEditingData] = useState<Influencers.Full>();
+    const [editing, setEditing] = useState(false);
     const influencers = useQuery({
         queryKey: ["influencers"],
         queryFn: () => dataClient.influencer.list(),
     });
-    const [dialogOtions, setDialogOptions] = useState<DialogOptions>({});
+    // const [dialogOtions, setDialogOptions] = useState<DialogOptions>({});
 
-    const [dialogProps, setDialogProps] = useState<DialogConfig<Influencer.Full[]>>({
-        parent: rows ?? [],
-        setParent: setRows,
-        onClose: () => {
-            setIsOpen(false);
-            setEditingData(undefined);
-            influencers.refetch();
-        },
-    });
+    // const [dialogProps, setDialogProps] = useState<DialogConfig<Influencers.Full[]>>({
+    //     parent: rows ?? [],
+    //     setParent: setRows,
+    //     onClose: () => {
+    //         setIsOpen(false);
+    //         setEditingData(undefined);
+    //         influencers.refetch();
+    //     },
+    // });
 
     const { user, authStatus } = useAuthenticator((x) => [x.user, x.authStatus]);
     const groups = useQuery({ queryKey: ["groups"], queryFn: () => getUserGroups() });
@@ -149,14 +150,11 @@ function InfluencerList() {
     //     return () => {};
     // }, []);
 
-    useEffect(() => {
-        const dialogPropsNew = { ...dialogProps };
-        dialogPropsNew.parent = influencers.data ?? [];
-        setDialogProps(dialogPropsNew);
+    // useEffect(() => {
 
-        return () => {};
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [influencers.data]);
+    //     return () => {};
+    //     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, [influencers.data]);
 
     useEffect(() => {
         groups.refetch();
@@ -170,7 +168,7 @@ function InfluencerList() {
                 const editingData = influencers.data?.find((x) => x.id === id);
                 if (!editingData) return;
                 setIsOpen(true);
-                setDialogOptions({ editing: true });
+                setEditing(true);
                 setEditingData(editingData);
             };
         },
@@ -222,7 +220,7 @@ function InfluencerList() {
             headerAlign: "center",
             align: "center",
             valueGetter: ({ row }) => {
-                row = row as Influencer.Full;
+                row = row as Influencers.Full;
                 return row.email;
             },
         },
@@ -264,9 +262,15 @@ function InfluencerList() {
             )} */}
             {isOpen && (
                 <InfluencerDialog
-                    {...dialogOtions}
-                    {...dialogProps}
-                    // isOpen={true}
+                    isOpen={isOpen}
+                    parent={influencers.data ?? []}
+                    setParent={setRows}
+                    editing={editing}
+                    onClose={() => {
+                        setIsOpen(false);
+                        setEditingData(undefined);
+                        influencers.refetch();
+                    }}
                     editingData={editingData}
                 />
             )}
@@ -309,8 +313,8 @@ function InfluencerList() {
                         }}
                         autoHeight={true}
                         sx={{
-                            m: 2,
-                            background: "white",
+                            "m": 2,
+                            "background": "white",
                             "& .MuiDataGrid-cell": {
                                 // color: "primary.main",
                                 borderLeft: "1px solid black",

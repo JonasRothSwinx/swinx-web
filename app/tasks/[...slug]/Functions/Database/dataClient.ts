@@ -1,4 +1,4 @@
-import { Candidates } from "@/app/ServerFunctions/types/candidates";
+import { Candidates } from "@/app/ServerFunctions/types";
 import * as dbOperations from "./dbOperations";
 
 const dataClient = {

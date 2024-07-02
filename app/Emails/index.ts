@@ -10,6 +10,8 @@ const templates = {
 
 const email = {
     campaignInvites: templateDefinitions.mailTypes.campaignInvite.CampaignInvite,
+    campaignInvitesAccept: templateDefinitions.mailTypes.campaignInviteAccept.CampaignInviteAccept,
+    campaignInvitesReject: templateDefinitions.mailTypes.campaignInviteReject.CampaignInviteReject,
 } as const;
 
 const emailClient = { email, templates };

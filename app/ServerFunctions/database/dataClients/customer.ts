@@ -1,7 +1,14 @@
 import database from "../dbOperations";
-import Customer from "../../types/customer";
-import config from "./config";
+import { Customer } from "../../types/";
+import { config } from ".";
 import { Nullable } from "@/app/Definitions/types";
+
+export const customer = {
+    create,
+    update: updateCustomer,
+    get: getCustomer,
+    byCampaign: listCustomersByCampaign,
+};
 
 /**
  * Create a new customer and update cache
@@ -10,7 +17,10 @@ import { Nullable } from "@/app/Definitions/types";
  * @returns The created customer
  */
 
-export async function create(customer: Omit<Customer.Customer, "id">, campaignId: string): Promise<Customer.Customer> {
+export async function create(
+    customer: Omit<Customer, "id">,
+    campaignId: string,
+): Promise<Customer> {
     const queryClient = config.getQueryClient();
     const id = await database.customer.create(customer, campaignId);
     if (!id) throw new Error("Failed to create customer");
@@ -20,13 +30,17 @@ export async function create(customer: Omit<Customer.Customer, "id">, campaignId
 }
 interface UpdateCustomer {
     id: string;
-    updatedData: Partial<Customer.Customer>;
-    previousData: Customer.Customer;
+    updatedData: Partial<Customer>;
+    previousData: Customer;
 }
-export async function updateCustomer({ id, updatedData, previousData }: UpdateCustomer): Promise<Customer.Customer> {
+export async function updateCustomer({
+    id,
+    updatedData,
+    previousData,
+}: UpdateCustomer): Promise<Customer> {
     const queryClient = config.getQueryClient();
     // await database.customer.update(updatedData)
-    const updatedCustomer: Customer.Customer = {
+    const updatedCustomer: Customer = {
         ...previousData,
         ...updatedData,
     };
@@ -37,7 +51,7 @@ interface GetCustomer {
     id: string;
 }
 
-async function getCustomer({ id }: GetCustomer): Promise<Nullable<Customer.Customer>> {
+async function getCustomer({ id }: GetCustomer): Promise<Nullable<Customer>> {
     const queryClient = config.getQueryClient();
     const customer = await queryClient.fetchQuery({
         queryKey: ["customer", id],
@@ -46,7 +60,7 @@ async function getCustomer({ id }: GetCustomer): Promise<Nullable<Customer.Custo
     return customer;
 }
 
-async function listCustomersByCampaign(campaignId: string): Promise<Customer.Customer[]> {
+async function listCustomersByCampaign(campaignId: string): Promise<Customer[]> {
     const queryClient = config.getQueryClient();
     try {
         const customers = await queryClient.fetchQuery({
@@ -59,12 +73,3 @@ async function listCustomersByCampaign(campaignId: string): Promise<Customer.Cus
         return [];
     }
 }
-
-const customer = {
-    create,
-    update: updateCustomer,
-    get: getCustomer,
-    byCampaign: listCustomersByCampaign,
-};
-
-export default customer;

@@ -9,7 +9,7 @@ import { blue } from "@mui/material/colors";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { ConfirmProvider } from "material-ui-confirm";
-import dataClient from "./ServerFunctions/database";
+import { dataClient } from "@/app/ServerFunctions/database";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 const theme = createTheme({

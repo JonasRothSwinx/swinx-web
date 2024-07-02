@@ -1,12 +1,4 @@
 "use server";
-import { Schema } from "@/amplify/data/resource";
-import { GridColDef } from "@mui/x-data-grid";
-import { Dispatch, SetStateAction } from "react";
-import Campaign from "../ServerFunctions/types/campaign";
-import Customer from "../ServerFunctions/types/customer";
-import TimelineEvent from "../ServerFunctions/types/timelineEvent";
-import Influencer from "../ServerFunctions/types/influencer";
-import Assignment from "../ServerFunctions/types/assignment";
 // export type RowDataInfluencer = Schema["InfluencerPrivate"] & Schema["InfluencerPublic"];
 
 // export type Influencer = {
@@ -14,23 +6,23 @@ import Assignment from "../ServerFunctions/types/assignment";
 //     private?: InfluencerPrivate;
 // };
 
-export type DialogProps<
-    RowDataType,
-    DataType extends EditableDataTypes,
-> = DialogConfig<RowDataType> & DialogOptions & { isOpen?: boolean; editingData?: DataType };
+// export type DialogProps<
+//     RowDataType,
+//     DataType extends EditableDataTypes,
+// > = DialogConfig<RowDataType> & DialogOptions & { isOpen?: boolean; editingData?: DataType };
 
-export interface DialogOptions {
-    editing?: boolean;
-    campaignId?: string;
-}
+// export interface DialogOptions {
+//     editing?: boolean;
+//     campaignId?: string;
+// }
 
-type EditableDataTypes =
-    | Campaign.Campaign
-    | Customer.Customer
-    // | Webinar
-    | TimelineEvent.Event
-    | Influencer.Full
-    | Assignment.Assignment;
+// type EditableDataTypes =
+//     | Campaign.Campaign
+//     | Customer.Customer
+//     // | Webinar
+//     | TimelineEvent.Event
+//     | Influencer.Full
+//     | Assignment.Assignment;
 export interface DialogConfig<RowDataType> {
     onClose?: (hasChanged?: boolean) => void;
     parent: RowDataType;

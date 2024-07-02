@@ -1,8 +1,8 @@
-import dataClient from "@/app/ServerFunctions/database";
+import { dataClient } from "@/app/ServerFunctions/database";
 import emailClient from "@/app/Emails";
 import { Box, Button, SxProps } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
-import dayjs from "@/app/utils/configuredDayJs";
+import { dayjs } from "@/app/utils";
 import { useMemo } from "react";
 import printJson from "./json";
 // import filterCSV from "./filterCSV/filter";
@@ -12,15 +12,15 @@ export default function DebugButtons() {
     // const queryClient = useQueryClient();
     const styles: SxProps = useMemo(
         () => ({
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
+            "display": "flex",
+            "flexDirection": "column",
+            "gap": 2,
             "& .MuiButton-root": {
                 borderColor: "white",
                 color: "white",
             },
         }),
-        []
+        [],
     );
     return (
         <Box sx={styles}>
@@ -81,7 +81,12 @@ export default function DebugButtons() {
                         startDate: start,
                         endDate: end,
                     });
-                    console.log("Events in range", start.format("DD.MM"), end.format("DD.MM"), response);
+                    console.log(
+                        "Events in range",
+                        start.format("DD.MM"),
+                        end.format("DD.MM"),
+                        response,
+                    );
                 }}
             >
                 Test Email Triggers

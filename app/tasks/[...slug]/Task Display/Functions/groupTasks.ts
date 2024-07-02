@@ -1,4 +1,4 @@
-import dayjs from "@/app/utils/configuredDayJs";
+import { dayjs } from "@/app/utils";
 import { Campaign, ParentEvent, TimelineEvent } from "../../Functions/Database/types";
 
 interface GroupTaskParams {

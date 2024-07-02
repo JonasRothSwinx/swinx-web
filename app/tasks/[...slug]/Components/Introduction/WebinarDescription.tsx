@@ -1,4 +1,4 @@
-import dayjs from "@/app/utils/configuredDayJs";
+import { dayjs } from "@/app/utils";
 import { CircularProgress, Typography } from "@mui/material";
 import { Campaign, Webinar } from "../../Functions/Database/types";
 

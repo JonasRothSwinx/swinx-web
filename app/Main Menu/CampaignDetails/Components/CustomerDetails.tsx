@@ -1,6 +1,4 @@
-import { DialogConfig, DialogOptions } from "@/app/Definitions/types";
-import Campaign from "@/app/ServerFunctions/types/campaign";
-import Customer from "@/app/ServerFunctions/types/customer";
+import { Campaign, Customer, Customers } from "@/app/ServerFunctions/types";
 import { MouseEvent, SyntheticEvent, useEffect, useState } from "react";
 import CustomerDialog, { CustomerDialogContent } from "../../Dialogs/CustomerDialog";
 import { Accordion, AccordionDetails, AccordionSummary, Box, IconButton, Tab } from "@mui/material";
@@ -12,16 +10,16 @@ import { TabContext, TabList, TabPanel } from "@mui/lab";
 const styles = stylesExporter.campaignDetails;
 
 type CustomerDetailsProps = {
-    customers: Customer.Customer[];
-    campaign: Campaign.Campaign;
-    setCampaign: (data: Campaign.Campaign) => void;
+    customers: Customer[];
+    campaign: Campaign;
+    setCampaign: (data: Campaign) => void;
 };
 type CustomerData = (
     | { name: string; value: string; insertAfter?: JSX.Element; insertBefore?: JSX.Element }
     | "spacer"
     | null
 )[];
-function getCustomerData(customers: Customer.Customer[]): CustomerData[] {
+function getCustomerData(customers: Customer[]): CustomerData[] {
     const data = customers.map((customer) => {
         return [
             { name: "Firma", value: customer.company },
@@ -32,7 +30,11 @@ function getCustomerData(customers: Customer.Customer[]): CustomerData[] {
                 name: "",
                 value: customer.email,
                 insertBefore: (
-                    <a href={`mailto:${customer.email}`} rel="noreferrer" target="_blank">
+                    <a
+                        href={`mailto:${customer.email}`}
+                        rel="noreferrer"
+                        target="_blank"
+                    >
                         <MailIcon />
                     </a>
                 ),
@@ -47,7 +49,7 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
     const { campaign, setCampaign } = props;
     //######################
     //#region State
-    const [customers, setCustomers] = useState<Partial<Customer.Customer>[]>(props.customers);
+    const [customers, setCustomers] = useState<Partial<Customer>[]>(props.customers);
     const [customerData, setCustomerData] = useState<CustomerData[]>(
         getCustomerData(props.customers),
     );
@@ -77,10 +79,10 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
     };
 
     const DataHandler = {
-        setCustomers: (data: Partial<Customer.Customer>[]) => {
+        setCustomers: (data: Partial<Customer>[]) => {
             //verify data qualifies foor full object
             const verifiedData = data.map((x) => {
-                if (Customer.satisfies(x)) return x;
+                if (Customers.satisfies(x)) return x;
                 throw new Error("Invalid data");
             });
             setCampaign({ ...campaign, customers: verifiedData });
@@ -102,7 +104,11 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
     return (
         <>
             {Dialogs[openDialog]}
-            <Accordion defaultExpanded disableGutters variant="outlined">
+            <Accordion
+                defaultExpanded
+                disableGutters
+                variant="outlined"
+            >
                 <AccordionSummary
                     className={styles.summaryWithEdit}
                     expandIcon={<ExpandMoreIcon />}
@@ -141,7 +147,10 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
             </IconButton> */}
                         {customerData.map((dataSet, index) => {
                             return (
-                                <TabPanel key={index} value={index.toString()}>
+                                <TabPanel
+                                    key={index}
+                                    value={index.toString()}
+                                >
                                     {dataSet.map((data, i) => {
                                         if (!data) return null;
                                         if (data === "spacer") {
@@ -156,8 +165,16 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
                                             );
                                         }
                                         return (
-                                            <Grid key={i + data.name} container columnSpacing={8}>
-                                                <Grid xs={4} display="flex" justifyContent="left">
+                                            <Grid
+                                                key={i + data.name}
+                                                container
+                                                columnSpacing={8}
+                                            >
+                                                <Grid
+                                                    xs={4}
+                                                    display="flex"
+                                                    justifyContent="left"
+                                                >
                                                     {data.name}
                                                 </Grid>
                                                 <Grid

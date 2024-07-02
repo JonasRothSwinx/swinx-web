@@ -1,20 +1,20 @@
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+import { Event, Events } from "@/app/ServerFunctions/types";
 type necesaryKeyInfo = {
-    flat?: (keyof TimelineEvent.Event)[];
-    info?: (keyof TimelineEvent.Event["info"])[];
-    targetAudience?: (keyof TimelineEvent.Event["targetAudience"])[];
-    campaign?: (keyof TimelineEvent.Event["campaign"])[];
+    flat?: (keyof Event)[];
+    info?: (keyof Event["info"])[];
+    targetAudience?: (keyof Event["targetAudience"])[];
+    campaign?: (keyof Event["campaign"])[];
 };
-const necessaryKeys: { [key in TimelineEvent.eventType]?: necesaryKeyInfo } = {
+const necessaryKeys: { [key in Events.eventType]?: necesaryKeyInfo } = {
     Invites: {
         flat: ["type", "eventTaskAmount", "assignments", "parentEvent"],
         campaign: ["id"],
     },
 };
 export default function validateFields(
-    event: Partial<TimelineEvent.Event>,
-    type: TimelineEvent.eventType,
-): event is TimelineEvent.Event {
+    event: Partial<Event>,
+    type: Events.eventType,
+): event is Event {
     const keys = necessaryKeys[type];
     if (!keys) return true;
     if (keys.flat) {

@@ -1,4 +1,4 @@
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+import { Campaign, Event, Events } from "@/app/ServerFunctions/types";
 import {
     Box,
     CircularProgress,
@@ -10,15 +10,14 @@ import {
     Typography,
 } from "@mui/material";
 import { groupBy } from "../Functions/groupEvents";
-import dayjs from "@/app/utils/configuredDayJs";
+import { dayjs } from "@/app/utils";
 import { timelineEventTypesType } from "@/amplify/data/types";
 import EventContentSingle from "./EventContentSingle";
 import EventContentMulti from "./EventContentMulti";
 import { Query, QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AddIcon, DeleteIcon, EditIcon, RefreshIcon } from "@/app/Definitions/Icons";
-import Campaign from "@/app/ServerFunctions/types/campaign";
 import { Nullable, highlightData } from "@/app/Definitions/types";
-import dataClient from "@/app/ServerFunctions/database";
+import { dataClient } from "@/app/ServerFunctions/database";
 import { useMemo, useState } from "react";
 import { useConfirm } from "material-ui-confirm";
 import TimelineEventDialog from "../../Dialogs/TimelineEvent/TimelineEventDialog";
@@ -28,13 +27,13 @@ const config = {
 
 interface EventProps {
     campaignId: string;
-    event: TimelineEvent.Event;
+    event: Event;
     groupBy: groupBy;
     totalColumns?: number;
     highlightData?: highlightData;
     editable?: boolean;
 }
-export function Event(props: EventProps) {
+export function EventDisplay(props: EventProps) {
     const {
         campaignId,
         event: { id = "", tempId },
@@ -69,7 +68,7 @@ export function Event(props: EventProps) {
                 .then(() => console.log(`Deleted event ${event.data.id}`))
                 .catch((e) => console.error(e));
         },
-        setEvent: async (updatedData: Partial<TimelineEvent.Event>) => {
+        setEvent: async (updatedData: Partial<Event>) => {
             if (!event.data) return;
             if (!event.data.id) return console.error("Event has no id");
             console.log("Updating event", updatedData, event.data);
@@ -97,31 +96,35 @@ export function Event(props: EventProps) {
     const sxProps: SxProps = useMemo(() => {
         return {
             "&#EventContainer": {
-                position: "relative",
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
+                "position": "relative",
+                "display": "flex",
+                "flexDirection": "row",
+                "alignItems": "center",
                 // flexWrap: "wrap",
-                width: "100%",
-                padding: "0",
-                margin: "0",
-                backgroundColor: event.data?.isCompleted ? "green" : isOverdue ? "red" : "inherit",
+                "width": "100%",
+                "padding": "0",
+                "margin": "0",
+                "backgroundColor": event.data?.isCompleted
+                    ? "green"
+                    : isOverdue
+                    ? "red"
+                    : "inherit",
                 // backgroundColor: "green",
                 "& *": event.data?.isCompleted && {
                     textDecoration: "line-through",
                 },
                 "&:hover": {
-                    backgroundColor: "lightgrey",
+                    "backgroundColor": "lightgrey",
                     "#modifyButtonGroup": {
-                        display: editable ? "flex" : "none",
-                        width: "40px",
-                        backgroundColor: "lightgrey",
+                        "display": editable ? "flex" : "none",
+                        "width": "40px",
+                        "backgroundColor": "lightgrey",
 
                         "@keyframes fadeIn": {
                             from: { opacity: 0, width: 0 },
                             to: { opacity: 1, width: 40 },
                         },
-                        animation: "fadeIn linear 0.3s",
+                        "animation": "fadeIn linear 0.3s",
                     },
                 },
 
@@ -153,15 +156,15 @@ export function Event(props: EventProps) {
 
                 "&>#modifyButtonGroup": {
                     "&": {
-                        display: "none",
-                        justifyContent: "right",
-                        overflow: "hidden",
+                        "display": "none",
+                        "justifyContent": "right",
+                        "overflow": "hidden",
 
                         "@keyframes fadeOut": {
                             from: { opacity: 1, width: 40, display: "flex" },
                             to: { opacity: 0, width: 0 },
                         },
-                        animation: "fadeOut linear 0.3s",
+                        "animation": "fadeOut linear 0.3s",
                     },
 
                     "&>#editButton, &>#deleteButton": {
@@ -199,8 +202,15 @@ export function Event(props: EventProps) {
     //#endregion Data State
     //######################################################################################################################
     return (
-        <Box id="EventContainer" sx={sxProps}>
-            <Grid id="Event" container columns={totalColumns}>
+        <Box
+            id="EventContainer"
+            sx={sxProps}
+        >
+            <Grid
+                id="Event"
+                container
+                columns={totalColumns}
+            >
                 {dateColumns > 0 && (
                     <EventDate
                         date={event.data.date ?? ""}
@@ -208,7 +218,10 @@ export function Event(props: EventProps) {
                         columnSize={dateColumns}
                     />
                 )}
-                <EventContent event={event.data} columnSize={contentColumns} />
+                <EventContent
+                    event={event.data}
+                    columnSize={contentColumns}
+                />
             </Grid>
             <CircularProgress id="fetchIndicator" />
 
@@ -228,17 +241,27 @@ export function Event(props: EventProps) {
 //######################################################################################################################
 //#region EventContent
 interface EventContentProps {
-    event: TimelineEvent.Event;
+    event: Event;
     columnSize?: number | GridSize;
 }
 function EventContent(props: EventContentProps) {
     const { event, columnSize = 10 } = props;
     switch (true) {
-        case TimelineEvent.isSingleEvent(event): {
-            return <EventContentSingle event={event} columnSize={columnSize} />;
+        case Events.isSingleEvent(event): {
+            return (
+                <EventContentSingle
+                    event={event}
+                    columnSize={columnSize}
+                />
+            );
         }
-        case TimelineEvent.isMultiEvent(event): {
-            return <EventContentMulti event={event} columnSize={columnSize} />;
+        case Events.isMultiEvent(event): {
+            return (
+                <EventContentMulti
+                    event={event}
+                    columnSize={columnSize}
+                />
+            );
         }
         default: {
             return <>{"Error: Event Type not recognized"}</>;
@@ -253,9 +276,9 @@ function EventContent(props: EventContentProps) {
 //#region ModifyButtonGroup
 interface ModifyButtonGroupProps {
     deleteFunction: () => void;
-    campaign: Campaign.Campaign;
-    event: TimelineEvent.Event;
-    setEvent: (updatedData: Partial<TimelineEvent.Event>) => void;
+    campaign: Campaign;
+    event: Event;
+    setEvent: (updatedData: Partial<Event>) => void;
 }
 function ModifyButtonGroup(props: ModifyButtonGroupProps) {
     const { setEvent, event, deleteFunction, campaign } = props;
@@ -271,9 +294,9 @@ function ModifyButtonGroup(props: ModifyButtonGroupProps) {
     );
 }
 interface EditButtonProps {
-    setEvent: (updatedData: Partial<TimelineEvent.Event>) => void;
-    event: TimelineEvent.Event;
-    campaign: Campaign.Campaign;
+    setEvent: (updatedData: Partial<Event>) => void;
+    event: Event;
+    campaign: Campaign;
 }
 function EditButton(props: EditButtonProps) {
     const { event, campaign } = props;
@@ -329,7 +352,10 @@ function DeleteButton(props: DeleteButtonProps) {
         });
     };
     return (
-        <IconButton id="deleteButton" onClick={deleteHandler}>
+        <IconButton
+            id="deleteButton"
+            onClick={deleteHandler}
+        >
             <DeleteIcon color="error" />
         </IconButton>
     );
@@ -353,7 +379,10 @@ function EventDate(props: EventDateProps) {
     };
 
     return (
-        <Grid id="EventDate" xs={columnSize}>
+        <Grid
+            id="EventDate"
+            xs={columnSize}
+        >
             {dateDisplay[groupBy]}
         </Grid>
     );

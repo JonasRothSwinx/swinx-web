@@ -1,8 +1,7 @@
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
+import { EmailTriggers } from "@/app/ServerFunctions/types";
 import { Html, Button, Text, Head, Preview, Container, Hr } from "@react-email/components";
 import { Placeholder } from "../_components";
 import styles from "../styles";
-import PlaceholderList from "../_components/placeholderList";
 import { DebugToggle, EmailProps } from "../types";
 import React from "react";
 import DebugTemplates from "../../DebugTemplates";
@@ -49,7 +48,10 @@ function NewReminder(props: DebugToggle) {
     const { name, customerName, dueDate, topic } = props.debug ? defaultParams : placeholders;
 
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
             <Preview>Aufnahme für Impulsvideo</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
@@ -64,7 +66,10 @@ function ReducedReminder(props: DebugToggle) {
     const { name, customerName, dueDate, topic } = props.debug ? defaultParams : placeholders;
 
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
             <Preview>Aufnahme für Impulsvideo</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>

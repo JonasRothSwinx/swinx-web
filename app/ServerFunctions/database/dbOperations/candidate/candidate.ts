@@ -1,12 +1,11 @@
 "use server";
 
 import { Nullable, PartialWith } from "@/app/Definitions/types";
-import Influencer from "@/app/ServerFunctions/types/influencer";
+import { Influencer, Candidate } from "@/app/ServerFunctions/types";
 import client from "../.dbclient";
-import { Candidates } from "../../../types/candidates";
 
 interface CreateCandidateParams {
-    candidate: Omit<Candidates.Candidate, "id">;
+    candidate: Omit<Candidate, "id">;
     candidateAssignmentId: string;
 }
 export async function createCandidate({
@@ -21,7 +20,7 @@ export async function createCandidate({
 
     return data?.id ?? null;
 }
-export async function deleteCandidate(candidate: PartialWith<Candidates.Candidate, "id">) {
+export async function deleteCandidate(candidate: PartialWith<Candidate, "id">) {
     if (!candidate.id) throw new Error("Missing Id");
 
     // ts-ignore
@@ -32,7 +31,7 @@ export async function deleteCandidate(candidate: PartialWith<Candidates.Candidat
 
 interface UpdateCandidateParams {
     candidateId: string;
-    updatedValues: Partial<Omit<Candidates.Candidate, "id">>;
+    updatedValues: Partial<Omit<Candidate, "id">>;
 }
 /**
  * Update a candidate

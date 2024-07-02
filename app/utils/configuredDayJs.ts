@@ -19,5 +19,5 @@ dayjs.extend(duration);
 dayjs.extend(objectSupport);
 dayjs.locale("de");
 
-export default dayjs;
+export { dayjs };
 export { type Dayjs } from "dayjs";

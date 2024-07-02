@@ -1,11 +1,11 @@
 import { Box, ListSubheader, MenuItem, SxProps, TextField } from "@mui/material";
 import { industries, countries } from "./data";
 import React, { useMemo } from "react";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+import { Event } from "@/app/ServerFunctions/types";
 interface filterProps {
-    event: Partial<TimelineEvent.Event>;
-    updatedData: Partial<TimelineEvent.Event>[];
-    onChange: (newData: Partial<TimelineEvent.Event>[]) => void;
+    event: Partial<Event>;
+    updatedData: Partial<Event>[];
+    onChange: (newData: Partial<Event>[]) => void;
 }
 
 export default function Filter({

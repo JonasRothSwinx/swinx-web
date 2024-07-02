@@ -1,12 +1,12 @@
 import { CloseIcon, DeleteIcon, RefreshIcon } from "@/app/Definitions/Icons";
-import dataClient from "@/app/ServerFunctions/database";
-import Campaign from "@/app/ServerFunctions/types/campaign";
+import { dataClient } from "@/app/ServerFunctions/database";
+import { Campaign } from "@/app/ServerFunctions/types";
 import { Box, Button, IconButton, Skeleton, Typography } from "@mui/material";
 
 interface CampaignDetailsButtonsProps {
     updateCampaign: (background?: boolean) => void;
     handleClose: (hasChanged?: boolean) => void;
-    campaign?: Campaign.Campaign;
+    campaign?: Campaign;
     isLoading?: boolean;
 }
 export default function CampaignDetailsButtons(props: CampaignDetailsButtonsProps) {
@@ -30,7 +30,10 @@ export default function CampaignDetailsButtons(props: CampaignDetailsButtonsProp
                     onClick={ClickHandlers.deleteCampaign()}
                 >
                     <DeleteIcon color="error" />
-                    <Typography color="error" variant="body1">
+                    <Typography
+                        color="error"
+                        variant="body1"
+                    >
                         Löschen
                     </Typography>
                 </Button>
@@ -40,11 +43,11 @@ export default function CampaignDetailsButtons(props: CampaignDetailsButtonsProp
             <IconButton
                 onClick={() => updateCampaign(true)}
                 sx={{
-                    animationPlayState: "running",
-                    animationName: "spin",
-                    animationDuration: "500ms",
-                    animationIterationCount: `${isLoading ? "infinite" : "0"}`,
-                    animationTimingFunction: "linear",
+                    "animationPlayState": "running",
+                    "animationName": "spin",
+                    "animationDuration": "500ms",
+                    "animationIterationCount": `${isLoading ? "infinite" : "0"}`,
+                    "animationTimingFunction": "linear",
                     "@keyframes spin": {
                         "100%": { transform: `rotate(360deg)` },
                     },

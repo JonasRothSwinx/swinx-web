@@ -3,13 +3,16 @@ import { Schema } from "@/amplify/data/resource";
 import { generateServerClientUsingCookies } from "@aws-amplify/adapter-nextjs/api";
 import config from "@/amplify_outputs.json";
 import { cookies } from "next/headers";
-import Customer from "@/app/ServerFunctions/types/customer";
 import { SelectionSet } from "aws-amplify/api";
 import { Nullable } from "@/app/Definitions/types";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
-import Assignment from "@/app/ServerFunctions/types/assignment";
-import ProjectManagers from "@/app/ServerFunctions/types/projectManagers";
+import {
+    ProjectManager,
+    Customer,
+    Event,
+    Assignment,
+    EmailTriggers,
+    Events,
+} from "@/app/ServerFunctions/types";
 
 const client = generateServerClientUsingCookies<Schema>({ config, cookies, authMode: "apiKey" });
 
@@ -133,9 +136,9 @@ type RawEvent = SelectionSet<
 >;
 export async function getEventForEmailTrigger(eventId: string): Promise<
     Nullable<{
-        event: TimelineEvent.Event;
-        customer: Customer.Customer;
-        projectManagers: ProjectManagers.ProjectManager[];
+        event: Event;
+        customer: Customer;
+        projectManagers: ProjectManager[];
     }>
 > {
     const { data, errors } = await client.models.TimelineEvent.get(
@@ -152,7 +155,7 @@ export async function getEventForEmailTrigger(eventId: string): Promise<
     const event = validateEvent(data, parentEvent);
     const campaign = data.campaign;
     const rawCustomer = campaign.customers[0];
-    const customer: Customer.Customer = {
+    const customer: Customer = {
         id: rawCustomer.id,
         company: rawCustomer.company ?? "<Error>",
         firstName: rawCustomer.firstName ?? "<Error>",
@@ -161,8 +164,8 @@ export async function getEventForEmailTrigger(eventId: string): Promise<
         companyPosition: rawCustomer.companyPosition,
         notes: rawCustomer.notes,
     };
-    const projectManagers: ProjectManagers.ProjectManager[] = campaign.projectManagers.map((x) => {
-        const projectManager: ProjectManagers.ProjectManager = {
+    const projectManagers: ProjectManager[] = campaign.projectManagers.map((x) => {
+        const projectManager: ProjectManager = {
             id: x.projectManager.id,
             firstName: x.projectManager.firstName ?? "<Error>",
             lastName: x.projectManager.lastName ?? "<Error>",
@@ -202,9 +205,9 @@ export async function getEvent(eventId: string): Promise<Nullable<ParentEvent>> 
     if (data === null) return null;
     return data;
 }
-function validateEvent(data: RawEvent, rawParentEvent: Nullable<ParentEvent>): TimelineEvent.Event {
-    const assignments: Assignment.Assignment[] = [];
-    const targetAudience: TimelineEvent.Event["targetAudience"] = {
+function validateEvent(data: RawEvent, rawParentEvent: Nullable<ParentEvent>): Event {
+    const assignments: Assignment[] = [];
+    const targetAudience: Event["targetAudience"] = {
         cities:
             rawParentEvent?.targetAudience?.cities?.filter((x): x is string => x !== null) ?? [],
         country:
@@ -212,10 +215,10 @@ function validateEvent(data: RawEvent, rawParentEvent: Nullable<ParentEvent>): T
         industry:
             rawParentEvent?.targetAudience?.industry?.filter((x): x is string => x !== null) ?? [],
     };
-    const parentEvent: Nullable<TimelineEvent.Event> = rawParentEvent
+    const parentEvent: Nullable<Event> = rawParentEvent
         ? ({
               id: rawParentEvent.id,
-              type: rawParentEvent.timelineEventType as TimelineEvent.eventType,
+              type: rawParentEvent.timelineEventType as Events.eventType,
               info: rawParentEvent.info ?? { eventLink: "" },
               date: rawParentEvent.date,
               campaign: { id: data.campaign.id },
@@ -228,11 +231,11 @@ function validateEvent(data: RawEvent, rawParentEvent: Nullable<ParentEvent>): T
               emailTriggers: [],
               targetAudience,
               isCompleted: false,
-          } satisfies TimelineEvent.Event)
+          } satisfies Event)
         : null;
-    const event: TimelineEvent.Event = {
+    const event: Event = {
         id: data.id,
-        type: data.timelineEventType as TimelineEvent.eventType,
+        type: data.timelineEventType as Events.eventType,
         eventAssignmentAmount: data.eventAssignmentAmount ?? 0,
         eventTitle: data.eventTitle ?? "<Error: No Title>",
         eventTaskAmount: data.eventTaskAmount ?? 0,

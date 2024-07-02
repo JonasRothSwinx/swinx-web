@@ -1,26 +1,21 @@
 "use server";
 
 // import dataClient from "@/app/ServerFunctions/database";
-import dayjs from "@/app/utils/configuredDayJs";
+import { dayjs } from "@/app/utils";
 // import database from "@/app/ServerFunctions/database/dbOperations";
 import emailClient from "@/app/Emails";
 import { getEmailTriggers } from "./getEmailTriggers";
 import groupTriggers from "./groupTriggers";
 import handleTriggers from "./handleTriggers";
-// import dayjs from "@/app/utils/configuredDayJs";
-// const triggerHandlers: {
-//     [key in TimelineEvent.eventType]: (triggers: GroupedTrigger) => Promise<unknown>;
-// } = {
-//     Invites: handleInviteMails,
-//     Post: handlePostMails,
-//     Video: handleVideoMails,
-//     WebinarSpeaker: handleWebinarSpeakerMails,
-//     Webinar: handleWebinarMails,
-// };
+
 const devBranches = ["sandbox", "dev"];
 export default async function startReminderRoutine(): Promise<boolean> {
     console.log("Starting reminder routine");
-    console.log(`In environment ${process.env.NODE_ENV}. Current time: ${dayjs().format("YYYY-MM-DD HH:mm")}`);
+    console.log(
+        `In environment ${process.env.NODE_ENV}. Current time: ${dayjs().format(
+            "YYYY-MM-DD HH:mm",
+        )}`,
+    );
     // console.log(process.env);
 
     const awsBranch = process.env.AWS_BRANCH;

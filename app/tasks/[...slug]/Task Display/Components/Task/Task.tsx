@@ -7,7 +7,7 @@ import {
     Typography,
 } from "@mui/material";
 import { Campaign, ParentEvent, TimelineEvent } from "../../../Functions/Database/types";
-import dayjs from "@/app/utils/configuredDayJs";
+import { dayjs } from "@/app/utils";
 import { ExpandMoreIcon } from "@/app/Definitions/Icons";
 import { Actions, Description } from "./Components";
 

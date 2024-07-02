@@ -1,7 +1,7 @@
 import { PartialWith } from "@/app/Definitions/types";
 import TextFieldWithTooltip from "@/app/Main Menu/Dialogs/Components/TextFieldWithTooltip";
-import dataClient from "@/app/ServerFunctions/database";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+import { dataClient } from "@/app/ServerFunctions/database";
+import { Event, Events } from "@/app/ServerFunctions/types";
 import { SelectChangeEvent, Typography, MenuItem } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
@@ -10,8 +10,8 @@ import { isFixedDate } from "../config";
 
 //MARK: ParentEventSelector
 interface ParentEventSelectorProps {
-    parentEventType: { parentEventType: TimelineEvent.multiEventType } | false;
-    timelineEvent: PartialWith<TimelineEvent.Event, "parentEvent" | "campaign">;
+    parentEventType: { parentEventType: Events.multiEventType } | false;
+    timelineEvent: PartialWith<Event, "parentEvent" | "campaign">;
     setTimelineEvent: DateSelectorProps["setTimelineEvent"];
     setUpdatedData: DateSelectorProps["setUpdatedData"];
 }
@@ -46,14 +46,14 @@ export function ParentEventSelector({
     //#endregion
     //########################################
 
-    const EntryName: { [key in TimelineEvent.multiEventType]: (id: string) => string } = {
+    const EntryName: { [key in Events.multiEventType]: (id: string) => string } = {
         Webinar: (id) => {
             const event = parentEventChoices.find((x) => x.id === id);
             return event?.eventTitle ?? "Webinar";
         },
     };
 
-    const NoParentsText: { [key in TimelineEvent.multiEventType]: string } = {
+    const NoParentsText: { [key in Events.multiEventType]: string } = {
         Webinar: "Keine Webinare gefunden",
     };
 

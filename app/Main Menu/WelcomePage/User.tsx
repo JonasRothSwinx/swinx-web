@@ -5,7 +5,7 @@ import { getUserAttributes, getUserGroups } from "../../ServerFunctions/serverAc
 import { Button, Typography } from "@mui/material";
 import stylesExporter from "../styles/stylesExporter";
 import { useQuery } from "@tanstack/react-query";
-import dataClient from "@/app/ServerFunctions/database";
+import { dataClient } from "@/app/ServerFunctions/database";
 import ProjectManagerDialog from "../Dialogs/ProjectManagerDialog";
 
 const styles = stylesExporter.user;

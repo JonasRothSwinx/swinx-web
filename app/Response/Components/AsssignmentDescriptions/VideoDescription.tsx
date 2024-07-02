@@ -1,4 +1,4 @@
-import dayjs from "@/app/utils/configuredDayJs";
+import { dayjs } from "@/app/utils";
 import { Box, Typography } from "@mui/material";
 import { TimelineEvent } from "../../Functions/Database/types";
 import dateToRange from "../../Functions/dateToRange";
@@ -39,8 +39,10 @@ export default function VideoDescription({ events }: VideoDescriptionProps) {
                                 <>
                                     <br />
                                     Die Aufnahme muss dabei bis zum{" "}
-                                    <strong>{dayjs(event.info.draftDeadline).format("DD.MM")}</strong> bei uns
-                                    eingereicht werden.
+                                    <strong>
+                                        {dayjs(event.info.draftDeadline).format("DD.MM")}
+                                    </strong>{" "}
+                                    bei uns eingereicht werden.
                                 </>
                             )}
                         </Typography>

@@ -1,10 +1,17 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField } from "@mui/material";
-import { DialogProps } from "@/app/Definitions/types";
-import Campaign from "@/app/ServerFunctions/types/campaign";
-import Customer from "@/app/ServerFunctions/types/customer";
+import {
+    Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    IconButton,
+    TextField,
+} from "@mui/material";
+import { Customer, Customers } from "@/app/ServerFunctions/types";
 import React, { ChangeEvent, useEffect, useState } from "react";
 import stylesExporter from "../styles/stylesExporter";
-import dataClient from "@/app/ServerFunctions/database";
+import { dataClient } from "@/app/ServerFunctions/database";
 import { Tab } from "@mui/material";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { AddIcon } from "@/app/Definitions/Icons";
@@ -12,16 +19,16 @@ import sxStyles from "./sxStyles";
 
 const styles = stylesExporter.dialogs;
 interface InfoProps {
-    customer: Partial<Customer.Customer>;
-    setCustomer: (changedData: Partial<Customer.Customer>, index?: number) => void;
+    customer: Partial<Customer>;
+    setCustomer: (changedData: Partial<Customer>, index?: number) => void;
     deleteCustomer: () => void;
     index: number;
 }
 interface CustomerDialogProps {
-    customers: Partial<Customer.Customer>[];
+    customers: Partial<Customer>[];
     editing: boolean;
-    editingData?: Partial<Customer.Customer>[];
-    setCustomers: React.Dispatch<React.SetStateAction<Partial<Customer.Customer>[]>>;
+    editingData?: Partial<Customer>[];
+    setCustomers: React.Dispatch<React.SetStateAction<Partial<Customer>[]>>;
     onClose?: (hasChanged: boolean) => void;
 }
 
@@ -35,7 +42,7 @@ function CustomerDialog(props: CustomerDialogProps) {
 
     //##################
     //#region State
-    const [changedData, setChangedData] = useState<Partial<Customer.Customer>[]>(editingData ?? customers);
+    const [changedData, setChangedData] = useState<Partial<Customer>[]>(editingData ?? customers);
 
     //#endregion
     //##################
@@ -58,7 +65,7 @@ function CustomerDialog(props: CustomerDialogProps) {
                 dataClient.customer;
             } else {
                 //check required properties
-                Customer.satisfies(changedData);
+                Customers.satisfies(changedData);
                 // customers.create(changedData);
             }
             EventHandlers.handleClose(true)();
@@ -93,10 +100,16 @@ function CustomerDialog(props: CustomerDialogProps) {
                     justifyContent: "space-between",
                 }}
             >
-                <Button onClick={EventHandlers.handleClose(false)} color="secondary">
+                <Button
+                    onClick={EventHandlers.handleClose(false)}
+                    color="secondary"
+                >
                     Abbrechen
                 </Button>
-                <Button variant="contained" type="submit">
+                <Button
+                    variant="contained"
+                    type="submit"
+                >
                     Speichern
                 </Button>
             </DialogActions>
@@ -106,19 +119,19 @@ function CustomerDialog(props: CustomerDialogProps) {
 
 export default CustomerDialog;
 
-const initialSubstitute: Customer.Customer = {
+const initialSubstitute: Customer = {
     firstName: "",
     lastName: "",
     email: "",
     company: "",
 };
 interface FormContentProps {
-    customers: Partial<Customer.Customer>[];
-    setCustomers: React.Dispatch<React.SetStateAction<Partial<Customer.Customer>[]>>;
+    customers: Partial<Customer>[];
+    setCustomers: React.Dispatch<React.SetStateAction<Partial<Customer>[]>>;
     editing: boolean;
-    editingData?: Partial<Customer.Customer>[];
-    changedData: Partial<Customer.Customer>[];
-    setChangedData: React.Dispatch<React.SetStateAction<Partial<Customer.Customer>[]>>;
+    editingData?: Partial<Customer>[];
+    changedData: Partial<Customer>[];
+    setChangedData: React.Dispatch<React.SetStateAction<Partial<Customer>[]>>;
 }
 function FormContent(props: FormContentProps) {
     const { customers, setCustomers, editing, editingData, changedData, setChangedData } = props;
@@ -129,7 +142,7 @@ function FormContent(props: FormContentProps) {
         },
     };
     const StateChanges = {
-        handleCustomerChange: (changedData: Partial<Customer.Customer>, index = 0) => {
+        handleCustomerChange: (changedData: Partial<Customer>, index = 0) => {
             setCustomers((prevState) => {
                 const newCustomers = [...prevState];
                 const prevcustomer = newCustomers[index];
@@ -164,10 +177,15 @@ function FormContent(props: FormContentProps) {
             </IconButton> */}
                 {changedData.map((customer, index) => {
                     return (
-                        <TabPanel key={index} value={index.toString()}>
+                        <TabPanel
+                            key={index}
+                            value={index.toString()}
+                        >
                             <CustomerDialogContent
                                 customer={customer}
-                                setCustomer={(changedData) => StateChanges.handleCustomerChange(changedData, index)}
+                                setCustomer={(changedData) =>
+                                    StateChanges.handleCustomerChange(changedData, index)
+                                }
                                 deleteCustomer={() => StateChanges.deleteCustomer(index)}
                                 index={index}
                             />

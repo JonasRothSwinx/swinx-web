@@ -1,12 +1,11 @@
-import Assignment from "@/app/ServerFunctions/types/assignment";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+import { Assignment, Assignments, Event, Events } from "@/app/ServerFunctions/types";
 import { DialogContent, MenuItem, SelectChangeEvent, TextField } from "@mui/material";
 import { AssignmentSelector } from "./AssignmentSelector";
 import { Nullable } from "@/app/Definitions/types";
 import TextFieldWithTooltip from "../../Components/TextFieldWithTooltip";
 
 const AssignmentSelectorCreator: {
-    [key in TimelineEvent.eventType | "none"]: (
+    [key in Events.eventType | "none"]: (
         props: Parameters<typeof AssignmentSelector>[0],
     ) => Nullable<JSX.Element>;
 } = {
@@ -19,15 +18,15 @@ const AssignmentSelectorCreator: {
     none: (props) => null,
 };
 
-function getAllowedEventTypes(targetAssignment?: Assignment.AssignmentMin) {
-    if (!targetAssignment) return TimelineEvent.multiEventValues;
-    return TimelineEvent.singleEventValues;
+function getAllowedEventTypes(targetAssignment?: Assignments.Min) {
+    if (!targetAssignment) return Events.multiEventValues;
+    return Events.singleEventValues;
 }
 interface EventTypeSelectorProps {
-    event: Partial<TimelineEvent.Event>;
+    event: Partial<Event>;
     editing: boolean;
     campaignId: string;
-    targetAssignment?: Assignment.AssignmentMin;
+    targetAssignment?: Assignments.Min;
     onInfluencerChange: (e: SelectChangeEvent<unknown>) => void;
     onTypeChange: (e: SelectChangeEvent<unknown>) => void;
 }
@@ -42,8 +41,8 @@ export function GeneralDetails(props: EventTypeSelectorProps) {
     } = props;
 
     const allowedTypes = getAllowedEventTypes(targetAssignment).toSorted((a, b) => {
-        const displayNameA = TimelineEvent.getDisplayName(a);
-        const displayNameB = TimelineEvent.getDisplayName(b);
+        const displayNameA = Events.getDisplayName(a);
+        const displayNameB = Events.getDisplayName(b);
         return displayNameA.localeCompare(displayNameB);
     });
     return (
@@ -76,7 +75,7 @@ export function GeneralDetails(props: EventTypeSelectorProps) {
                             key={`eventtype${i}`}
                             value={x}
                         >
-                            {TimelineEvent.getDisplayName(x)}
+                            {Events.getDisplayName(x)}
                         </MenuItem>
                     );
                 })}

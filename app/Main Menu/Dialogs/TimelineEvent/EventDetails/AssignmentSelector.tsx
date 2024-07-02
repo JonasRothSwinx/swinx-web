@@ -1,13 +1,12 @@
-import Assignment from "@/app/ServerFunctions/types/assignment";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+import { Assignment, Assignments, Event, Events } from "@/app/ServerFunctions/types";
 import { MenuItem, SelectChangeEvent, TextField } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import dataClient from "@/app/ServerFunctions/database";
+import { dataClient } from "@/app/ServerFunctions/database";
 
 interface AssignmentSelectorProps {
-    timelineEvent: Partial<TimelineEvent.Event>;
+    timelineEvent: Partial<Event>;
     campaignId: string;
-    targetAssignment?: Assignment.AssignmentMin;
+    targetAssignment?: Assignments.Min;
     onAssignmentChange: (e: SelectChangeEvent<unknown>) => void;
 }
 

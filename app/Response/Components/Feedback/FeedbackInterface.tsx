@@ -1,4 +1,4 @@
-import { Candidates } from "@/app/ServerFunctions/types/candidates";
+import { Candidates } from "@/app/ServerFunctions/types";
 import { Box, TextField, Typography } from "@mui/material";
 
 interface FeedbackInterfaceProps {
@@ -6,7 +6,11 @@ interface FeedbackInterfaceProps {
     setFeedback: (feedback: string) => void;
     response: Candidates.candidateResponse;
 }
-export default function FeedbackInterface({ setFeedback, feedback, response }: FeedbackInterfaceProps) {
+export default function FeedbackInterface({
+    setFeedback,
+    feedback,
+    response,
+}: FeedbackInterfaceProps) {
     return (
         <Box id="feedbackInterface">
             {FeedbackDescription[response]()}
@@ -33,8 +37,8 @@ const FeedbackDescription: { [key in Candidates.candidateResponse]: () => JSX.El
         <Typography id="feedbackDescription">
             Vielen Dank für ihr Interesse.
             <br />
-            Wir würden uns freuen, wenn sie uns an dieser Stelle ein kurzes Feedback zu unserem neuen Einladungsprozess
-            geben würden.
+            Wir würden uns freuen, wenn sie uns an dieser Stelle ein kurzes Feedback zu unserem
+            neuen Einladungsprozess geben würden.
         </Typography>
     ),
     rejected: () => (
@@ -44,5 +48,7 @@ const FeedbackDescription: { [key in Candidates.candidateResponse]: () => JSX.El
             Wir würden uns freuen, wenn sie uns hier den Grund für ihre Absage mitteilen würden.
         </Typography>
     ),
-    pending: () => <Typography id="FeedbackDescription">Dieser Text sollte nie angezeigt werden</Typography>,
+    pending: () => (
+        <Typography id="FeedbackDescription">Dieser Text sollte nie angezeigt werden</Typography>
+    ),
 };

@@ -3,7 +3,7 @@
 import { Box, ThemeProvider, createTheme } from "@mui/material";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { blue } from "@mui/material/colors";
-import dataClient from "../ServerFunctions/database";
+import { dataClient } from "@/app/ServerFunctions/database";
 import ResponseLanding from "./ResponseLanding";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import styles from "./styles";
@@ -34,7 +34,10 @@ export default function Page() {
         <ThemeProvider theme={theme}>
             <QueryClientProvider client={queryClient}>
                 <ConfirmProvider defaultOptions={confirmOptions}>
-                    <Box id="ResponseLandingPage" sx={styles}>
+                    <Box
+                        id="ResponseLandingPage"
+                        sx={styles}
+                    >
                         <ResponseLanding />
                         <ReactQueryDevtools initialIsOpen={false} />
                     </Box>

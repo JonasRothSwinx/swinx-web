@@ -1,7 +1,13 @@
 import { timelineEventTypesType } from "@/amplify/data/types";
 import { CheckIcon, ExpandMoreIcon } from "@/app/Definitions/Icons";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
-import { Accordion, AccordionDetails, AccordionSummary, Unstable_Grid2 as Grid, Typography } from "@mui/material";
+import { Event, Events } from "@/app/ServerFunctions/types";
+import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
+    Unstable_Grid2 as Grid,
+    Typography,
+} from "@mui/material";
 import { EventCategory } from "./functions/categorizeEvents";
 import dayjs from "dayjs";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -11,7 +17,7 @@ interface EventCategoryDisplayProps {
     category: EventCategory;
 }
 
-type setHighlightedEventFunction = (event?: TimelineEvent.Event) => void;
+type setHighlightedEventFunction = (event?: Event) => void;
 
 export default function EventCategoryDisplay(props: EventCategoryDisplayProps) {
     const {
@@ -28,7 +34,7 @@ export default function EventCategoryDisplay(props: EventCategoryDisplayProps) {
         }
         return color;
     }
-    function setHighlightedEvent(event?: TimelineEvent.Event) {
+    function setHighlightedEvent(event?: Event) {
         const id = event?.id;
         if (!id) return;
 
@@ -55,14 +61,14 @@ export default function EventCategoryDisplay(props: EventCategoryDisplayProps) {
         placeholderData: [],
     });
     // console.log("EventCategoryDisplay", groupType, events);
-    const CategoryTitle: { [key in TimelineEvent.singleEventType]: JSX.Element } = {
+    const CategoryTitle: { [key in Events.singleEventType]: JSX.Element } = {
         Invites: <InviteEventsDisplayTitle events={events} />,
         Post: <PostEventsDisplayTitle events={events} />,
         Video: <VideoEventsDisplayTitle events={events} />,
         WebinarSpeaker: <WebinarSpeakerEventsDisplayTitle events={events} />,
         ImpulsVideo: <ImpulsVideoEventsDisplayTitle events={events} />,
     };
-    const CategoryDetails: { [key in TimelineEvent.singleEventType]: JSX.Element } = {
+    const CategoryDetails: { [key in Events.singleEventType]: JSX.Element } = {
         Invites: (
             <InviteEventsDetails
                 events={events}
@@ -102,8 +108,8 @@ export default function EventCategoryDisplay(props: EventCategoryDisplayProps) {
 
     return (
         <Accordion>
-            {CategoryTitle[groupType as TimelineEvent.singleEventType]}
-            {CategoryDetails[groupType as TimelineEvent.singleEventType]}
+            {CategoryTitle[groupType as Events.singleEventType]}
+            {CategoryDetails[groupType as Events.singleEventType]}
         </Accordion>
     );
 }
@@ -130,25 +136,35 @@ function EventFinished(props: { date: string }) {
     }
     return (
         <div style={{ maxHeight: ".8em", overflow: "visible" }}>
-            {date.isBefore(dayjs()) ? <CheckIcon color={"success"} sx={{ overflow: "hidden" }} /> : <></>}
+            {date.isBefore(dayjs()) ? (
+                <CheckIcon
+                    color={"success"}
+                    sx={{ overflow: "hidden" }}
+                />
+            ) : (
+                <></>
+            )}
         </div>
     );
 }
 const eventTypeColumnWidth = 5;
 //#region InviteEvents
-function InviteEventsDisplayTitle(props: { events: TimelineEvent.Event[] }) {
+function InviteEventsDisplayTitle(props: { events: Event[] }) {
     const { events } = props;
     const totalInvites = props.events.reduce((acc, event) => {
-        if (TimelineEvent.isInviteEvent(event) && event.eventTaskAmount) {
+        if (Events.isInviteEvent(event) && event.eventTaskAmount) {
             return acc + event.eventTaskAmount;
         }
         return acc;
     }, 0);
     return (
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Grid container sx={{ width: "100%" }}>
+            <Grid
+                container
+                sx={{ width: "100%" }}
+            >
                 <Grid xs={eventTypeColumnWidth}>
-                    {TimelineEvent.getDisplayName(events[0].type, events.length > 1 ? "plur" : "sing")}
+                    {Events.getDisplayName(events[0].type, events.length > 1 ? "plur" : "sing")}
                 </Grid>
                 <Grid xs>
                     {totalInvites} über {props.events.length} Termine
@@ -158,7 +174,7 @@ function InviteEventsDisplayTitle(props: { events: TimelineEvent.Event[] }) {
     );
 }
 function InviteEventsDetails(props: {
-    events: TimelineEvent.Event[];
+    events: Event[];
     setHighlightedEvent: setHighlightedEventFunction;
     highlightData?: highlightData[];
 }) {
@@ -179,16 +195,27 @@ function InviteEventsDetails(props: {
     );
 }
 function InviteEventItem(props: {
-    event: TimelineEvent.Event;
+    event: Event;
     setHighlightedEvent: setHighlightedEventFunction;
     highlightData?: highlightData;
 }) {
     const { event, setHighlightedEvent } = props;
-    if (!TimelineEvent.isInviteEvent(event)) return <>Error</>;
+    if (!Events.isInviteEvent(event)) return <>Error</>;
     return (
-        <div onClick={() => setHighlightedEvent(event)} style={{ backgroundColor: props.highlightData?.color }}>
-            <Grid container columnGap={"10px"}>
-                <Grid xs={4} paddingRight="5px" display={"flex"} justifyContent={"flex-end"}>
+        <div
+            onClick={() => setHighlightedEvent(event)}
+            style={{ backgroundColor: props.highlightData?.color }}
+        >
+            <Grid
+                container
+                columnGap={"10px"}
+            >
+                <Grid
+                    xs={4}
+                    paddingRight="5px"
+                    display={"flex"}
+                    justifyContent={"flex-end"}
+                >
                     <EventDate date={props.event.date ?? ""} />
                 </Grid>
                 <Grid xs={4}>
@@ -197,7 +224,10 @@ function InviteEventItem(props: {
                 <Grid xs>
                     <Typography>{event.eventTaskAmount}</Typography>
                 </Grid>
-                <Grid xs={1} sx={{ "& .MuiGrid2-root,&": { overflowY: "hidden!important" } }}>
+                <Grid
+                    xs={1}
+                    sx={{ "& .MuiGrid2-root,&": { overflowY: "hidden!important" } }}
+                >
                     <EventFinished date={props.event.date ?? ""} />
                 </Grid>
             </Grid>
@@ -207,13 +237,16 @@ function InviteEventItem(props: {
 //#endregion InviteEvents
 
 //#region PostEvents
-function PostEventsDisplayTitle(props: { events: TimelineEvent.Event[] }) {
+function PostEventsDisplayTitle(props: { events: Event[] }) {
     const { events } = props;
     return (
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Grid container sx={{ width: "100%" }}>
+            <Grid
+                container
+                sx={{ width: "100%" }}
+            >
                 <Grid xs={eventTypeColumnWidth}>
-                    {TimelineEvent.getDisplayName(events[0].type, events.length > 1 ? "plur" : "sing")}
+                    {Events.getDisplayName(events[0].type, events.length > 1 ? "plur" : "sing")}
                 </Grid>
                 <Grid xs>{props.events.length} Termine</Grid>
             </Grid>
@@ -221,7 +254,7 @@ function PostEventsDisplayTitle(props: { events: TimelineEvent.Event[] }) {
     );
 }
 function PostEventsDetails(props: {
-    events: TimelineEvent.Event[];
+    events: Event[];
     setHighlightedEvent: setHighlightedEventFunction;
     highlightData?: highlightData[];
 }) {
@@ -239,22 +272,36 @@ function PostEventsDetails(props: {
     );
 }
 function PostEventItem(props: {
-    event: TimelineEvent.Event;
+    event: Event;
     setHighlightedEvent: setHighlightedEventFunction;
     highlightData?: highlightData;
 }) {
     const { event, setHighlightedEvent } = props;
     return (
-        <div onClick={() => setHighlightedEvent(event)} style={{ backgroundColor: props.highlightData?.color }}>
-            <Grid container columnGap={"10px"}>
-                <Grid xs={4} paddingRight="5px" display={"flex"} justifyContent={"flex-end"}>
+        <div
+            onClick={() => setHighlightedEvent(event)}
+            style={{ backgroundColor: props.highlightData?.color }}
+        >
+            <Grid
+                container
+                columnGap={"10px"}
+            >
+                <Grid
+                    xs={4}
+                    paddingRight="5px"
+                    display={"flex"}
+                    justifyContent={"flex-end"}
+                >
                     <EventDate date={props.event.date ?? ""} />
                 </Grid>
                 <Grid xs={4}>
                     <EventDateRelative date={props.event.date ?? ""} />
                 </Grid>
                 <Grid xs />
-                <Grid xs={1} sx={{ "& .MuiGrid2-root,&": { overflowY: "hidden!important" } }}>
+                <Grid
+                    xs={1}
+                    sx={{ "& .MuiGrid2-root,&": { overflowY: "hidden!important" } }}
+                >
                     <EventFinished date={props.event.date ?? ""} />
                 </Grid>
             </Grid>
@@ -264,13 +311,16 @@ function PostEventItem(props: {
 //#endregion PostEvents
 
 //#region WebinarEvents
-function WebinarSpeakerEventsDisplayTitle(props: { events: TimelineEvent.Event[] }) {
+function WebinarSpeakerEventsDisplayTitle(props: { events: Event[] }) {
     const { events } = props;
     return (
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Grid container sx={{ width: "100%" }}>
+            <Grid
+                container
+                sx={{ width: "100%" }}
+            >
                 <Grid xs={eventTypeColumnWidth}>
-                    {TimelineEvent.getDisplayName(events[0].type, events.length > 1 ? "plur" : "sing")}
+                    {Events.getDisplayName(events[0].type, events.length > 1 ? "plur" : "sing")}
                 </Grid>
                 <Grid xs>{props.events.length} Termine</Grid>
             </Grid>
@@ -279,7 +329,7 @@ function WebinarSpeakerEventsDisplayTitle(props: { events: TimelineEvent.Event[]
 }
 
 function WebinarEventsDisplay(props: {
-    events: TimelineEvent.Event[];
+    events: Event[];
     setHighlightedEvent: setHighlightedEventFunction;
     highlightData?: highlightData[];
 }) {
@@ -298,22 +348,36 @@ function WebinarEventsDisplay(props: {
 }
 
 function WebinarEventItem(props: {
-    event: TimelineEvent.Event;
+    event: Event;
     setHighlightedEvent: setHighlightedEventFunction;
     highlightData?: highlightData;
 }) {
     const { event, setHighlightedEvent } = props;
     return (
-        <div onClick={() => setHighlightedEvent(event)} style={{ backgroundColor: props.highlightData?.color }}>
-            <Grid container columnGap={"10px"}>
-                <Grid xs={4} paddingRight="5px" display={"flex"} justifyContent={"flex-end"}>
+        <div
+            onClick={() => setHighlightedEvent(event)}
+            style={{ backgroundColor: props.highlightData?.color }}
+        >
+            <Grid
+                container
+                columnGap={"10px"}
+            >
+                <Grid
+                    xs={4}
+                    paddingRight="5px"
+                    display={"flex"}
+                    justifyContent={"flex-end"}
+                >
                     <EventDate date={props.event.date ?? ""} />
                 </Grid>
                 <Grid xs={4}>
                     <EventDateRelative date={props.event.date ?? ""} />
                 </Grid>
                 <Grid xs />
-                <Grid xs={1} sx={{ "& .MuiGrid2-root,&": { overflowY: "hidden!important" } }}>
+                <Grid
+                    xs={1}
+                    sx={{ "& .MuiGrid2-root,&": { overflowY: "hidden!important" } }}
+                >
                     <EventFinished date={props.event.date ?? ""} />
                 </Grid>
             </Grid>
@@ -323,13 +387,16 @@ function WebinarEventItem(props: {
 //#endregion WebinarEvents
 
 //#region VideoEvents
-function VideoEventsDisplayTitle(props: { events: TimelineEvent.Event[] }) {
+function VideoEventsDisplayTitle(props: { events: Event[] }) {
     const { events } = props;
     return (
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Grid container sx={{ width: "100%" }}>
+            <Grid
+                container
+                sx={{ width: "100%" }}
+            >
                 <Grid xs={eventTypeColumnWidth}>
-                    {TimelineEvent.getDisplayName(events[0].type, events.length > 1 ? "plur" : "sing")}
+                    {Events.getDisplayName(events[0].type, events.length > 1 ? "plur" : "sing")}
                 </Grid>
                 <Grid xs>{props.events.length} Termine</Grid>
             </Grid>
@@ -338,7 +405,7 @@ function VideoEventsDisplayTitle(props: { events: TimelineEvent.Event[] }) {
 }
 
 function VideoEventsDisplay(props: {
-    events: TimelineEvent.Event[];
+    events: Event[];
     setHighlightedEvent: setHighlightedEventFunction;
     highlightData?: highlightData[];
 }) {
@@ -357,22 +424,37 @@ function VideoEventsDisplay(props: {
 }
 
 function VideoEventItem(props: {
-    event: TimelineEvent.Event;
+    event: Event;
     setHighlightedEvent: setHighlightedEventFunction;
     highlightData?: highlightData;
 }) {
     const { event, setHighlightedEvent } = props;
     return (
-        <div onClick={() => setHighlightedEvent(event)} style={{ backgroundColor: props.highlightData?.color }}>
-            <Grid container columnGap={"10px"} width={"100%"}>
-                <Grid xs={4} paddingRight="5px" display={"flex"} justifyContent={"flex-end"}>
+        <div
+            onClick={() => setHighlightedEvent(event)}
+            style={{ backgroundColor: props.highlightData?.color }}
+        >
+            <Grid
+                container
+                columnGap={"10px"}
+                width={"100%"}
+            >
+                <Grid
+                    xs={4}
+                    paddingRight="5px"
+                    display={"flex"}
+                    justifyContent={"flex-end"}
+                >
                     <EventDate date={props.event.date ?? ""} />
                 </Grid>
                 <Grid xs={4}>
                     <EventDateRelative date={props.event.date ?? ""} />
                 </Grid>
                 <Grid xs />
-                <Grid xs={1} sx={{ "& .MuiGrid2-root,&": { overflowY: "hidden!important" } }}>
+                <Grid
+                    xs={1}
+                    sx={{ "& .MuiGrid2-root,&": { overflowY: "hidden!important" } }}
+                >
                     <EventFinished date={props.event.date ?? ""} />
                 </Grid>
             </Grid>
@@ -382,13 +464,16 @@ function VideoEventItem(props: {
 //#endregion VideoEvents
 
 //#region ImpulsVideoEvent
-function ImpulsVideoEventsDisplayTitle(props: { events: TimelineEvent.Event[] }) {
+function ImpulsVideoEventsDisplayTitle(props: { events: Event[] }) {
     const { events } = props;
     return (
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Grid container sx={{ width: "100%" }}>
+            <Grid
+                container
+                sx={{ width: "100%" }}
+            >
                 <Grid xs={eventTypeColumnWidth}>
-                    {TimelineEvent.getDisplayName(events[0].type, events.length > 1 ? "plur" : "sing")}
+                    {Events.getDisplayName(events[0].type, events.length > 1 ? "plur" : "sing")}
                 </Grid>
                 <Grid xs>{props.events.length} Termine</Grid>
             </Grid>
@@ -397,7 +482,7 @@ function ImpulsVideoEventsDisplayTitle(props: { events: TimelineEvent.Event[] })
 }
 
 function ImpulsVideoEventsDisplay(props: {
-    events: TimelineEvent.Event[];
+    events: Event[];
     setHighlightedEvent: setHighlightedEventFunction;
     highlightData?: highlightData[];
 }) {
@@ -416,22 +501,37 @@ function ImpulsVideoEventsDisplay(props: {
 }
 
 function ImpulsVideoEventItem(props: {
-    event: TimelineEvent.Event;
+    event: Event;
     setHighlightedEvent: setHighlightedEventFunction;
     highlightData?: highlightData;
 }) {
     const { event, setHighlightedEvent } = props;
     return (
-        <div onClick={() => setHighlightedEvent(event)} style={{ backgroundColor: props.highlightData?.color }}>
-            <Grid container columnGap={"10px"} width={"100%"}>
-                <Grid xs={4} paddingRight="5px" display={"flex"} justifyContent={"flex-end"}>
+        <div
+            onClick={() => setHighlightedEvent(event)}
+            style={{ backgroundColor: props.highlightData?.color }}
+        >
+            <Grid
+                container
+                columnGap={"10px"}
+                width={"100%"}
+            >
+                <Grid
+                    xs={4}
+                    paddingRight="5px"
+                    display={"flex"}
+                    justifyContent={"flex-end"}
+                >
                     <EventDate date={props.event.date ?? ""} />
                 </Grid>
                 <Grid xs={4}>
                     <EventDateRelative date={props.event.date ?? ""} />
                 </Grid>
                 <Grid xs />
-                <Grid xs={1} sx={{ "& .MuiGrid2-root,&": { overflowY: "hidden!important" } }}>
+                <Grid
+                    xs={1}
+                    sx={{ "& .MuiGrid2-root,&": { overflowY: "hidden!important" } }}
+                >
                     <EventFinished date={props.event.date ?? ""} />
                 </Grid>
             </Grid>

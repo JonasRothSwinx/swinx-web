@@ -1,4 +1,4 @@
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
+import { EmailTriggers } from "@/app/ServerFunctions/types";
 import { Html, Button, Text, Head, Preview, Container, Hr } from "@react-email/components";
 import { Placeholder } from "../_components";
 import styles from "../styles";
@@ -65,22 +65,32 @@ function NewCampaignInvite(props: DebugToggle) {
     //     : placeholders.assignments;
 
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
             <Preview>Anfrage für Kooperation</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
-                Wir würden Sie gerne als Speaker*in für eine Kampagne unseres Kunden {customerName} gewinnen.
+                Wir würden Sie gerne als Speaker*in für eine Kampagne unseres Kunden {customerName}{" "}
+                gewinnen.
             </Text>
             {/* <Text style={styles.text}>Sie wären dabei für folgende Aufgaben zuständig:</Text>
             {assignments} */}
             <Text style={styles.text}>
                 {/* Sie erhalten für ihren Aufwand ein Honorar in Höhe von {honorar} <br /> */}
-                Unter folgendem Link erhalten Sie genauere Informationen zu Ihren Aufgaben und können uns mitteilen, ob
-                Sie Interesse haben.
+                Unter folgendem Link erhalten Sie genauere Informationen zu Ihren Aufgaben und
+                können uns mitteilen, ob Sie Interesse haben.
             </Text>
-            <Container align="left" style={styles.buttonContainer}>
-                <Button style={styles.responseButton} href={`${linkBase}${linkData}`}>
+            <Container
+                align="left"
+                style={styles.buttonContainer}
+            >
+                <Button
+                    style={styles.responseButton}
+                    href={`${linkBase}${linkData}`}
+                >
                     Zur Kampagne
                 </Button>
             </Container>
@@ -100,22 +110,32 @@ function ReducedCampaignInvite(props: DebugToggle) {
     //     ? defaultParams.assignments.map((a) => a.assignmentDescription).join("\n")
     //     : placeholders.assignments;
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
             <Preview>Einladung zur Kampagne</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
-                Wir würden dich gerne als Speaker*in für eine Kampagne unseres Kunden {customerName} gewinnen.
+                Wir würden dich gerne als Speaker*in für eine Kampagne unseres Kunden {customerName}{" "}
+                gewinnen.
             </Text>
             {/* <Text style={styles.text}>Du wärst dabei für folgende Aufgaben zuständig:</Text>
             {assignments} */}
             <Text style={styles.text}>
                 {/* Du erhältst für deinen Aufwand ein Honorar in Höhe von {honorar} <br /> */}
-                Unter folgendem Link erhältst du genauere Informationen zu deinen Aufgaben und kannst uns mitteilen, ob
-                du Interesse hast.
+                Unter folgendem Link erhältst du genauere Informationen zu deinen Aufgaben und
+                kannst uns mitteilen, ob du Interesse hast.
             </Text>
-            <Container align="left" style={styles.buttonContainer}>
-                <Button style={styles.responseButton} href={`${linkBase}${linkData}`}>
+            <Container
+                align="left"
+                style={styles.buttonContainer}
+            >
+                <Button
+                    style={styles.responseButton}
+                    href={`${linkBase}${linkData}`}
+                >
                     Zur Kampagne
                 </Button>
             </Container>

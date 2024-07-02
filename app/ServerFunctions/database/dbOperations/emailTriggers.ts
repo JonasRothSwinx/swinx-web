@@ -1,12 +1,10 @@
 "use server";
 
 import { Nullable, PartialWith } from "@/app/Definitions/types";
-import { EmailTriggers } from "../../types/emailTriggers";
-import TimelineEvent from "../../types/timelineEvent";
+import { EmailTriggers, Event, Influencers } from "../../types";
 import client from "./.dbclient";
 import { SelectionSet } from "aws-amplify/api";
 import { Schema } from "@/amplify/data/resource";
-import Influencer from "../../types/influencer";
 
 const selectionSet = [
     //General Info
@@ -65,7 +63,9 @@ export async function listEmailTriggers(): Promise<EmailTriggers.EmailTriggerEve
         }
     });
 
-    return validated.filter((trigger): trigger is EmailTriggers.EmailTriggerEventRef => trigger !== null);
+    return validated.filter(
+        (trigger): trigger is EmailTriggers.EmailTriggerEventRef => trigger !== null,
+    );
 }
 
 //MARK: Delete
@@ -75,10 +75,11 @@ export async function listEmailTriggers(): Promise<EmailTriggers.EmailTriggerEve
  * @returns The ID of the created email trigger
  */
 export async function createEmailTrigger(
-    trigger: Omit<EmailTriggers.EmailTriggerEventRef, "id" | "influencer">
+    trigger: Omit<EmailTriggers.EmailTriggerEventRef, "id" | "influencer">,
 ): Promise<Nullable<string>> {
     console.log("Creating email trigger", trigger);
-    const { date, event, type, emailLevelOverride, emailBodyOverride, subjectLineOverride } = trigger;
+    const { date, event, type, emailLevelOverride, emailBodyOverride, subjectLineOverride } =
+        trigger;
     const { data, errors } = await client.models.EmailTrigger.create({
         date,
         type,
@@ -103,9 +104,19 @@ export async function createEmailTrigger(
  * @returns The ID of the updated email trigger
  */
 export async function updateEmailTrigger(
-    trigger: Partial<EmailTriggers.EmailTriggerEventRef> & { id: string }
+    trigger: Partial<EmailTriggers.EmailTriggerEventRef> & { id: string },
 ): Promise<Nullable<string>> {
-    const { id, date, event, active, emailBodyOverride, emailLevelOverride, type, sent, subjectLineOverride } = trigger;
+    const {
+        id,
+        date,
+        event,
+        active,
+        emailBodyOverride,
+        emailLevelOverride,
+        type,
+        sent,
+        subjectLineOverride,
+    } = trigger;
     const { data, errors } = await client.models.EmailTrigger.update({
         id,
         date: date,
@@ -139,7 +150,7 @@ export async function deleteEmailTrigger(trigger: { id: string }): Promise<void>
  * @returns The list of email triggers
  */
 export async function getEmailTriggersForEvent(
-    event: Pick<TimelineEvent.Event, "id">
+    event: Pick<Event, "id">,
 ): Promise<EmailTriggers.EmailTriggerEventRef[]> {
     const { id: eventId } = event;
     if (!eventId) throw new Error("Event ID is required");
@@ -147,7 +158,7 @@ export async function getEmailTriggersForEvent(
         { eventId },
         {
             selectionSet,
-        }
+        },
     );
     if (errors) {
         throw new Error(JSON.stringify(errors));
@@ -163,7 +174,7 @@ export async function getEmailTriggersForEvent(
  */
 export async function getEmailTriggersForDateRange(
     start: string,
-    end: string
+    end: string,
 ): Promise<EmailTriggers.EmailTriggerEventRef[]> {
     const { data, errors } = await client.models.EmailTrigger.list({
         filter: { date: { between: [start, end] } },
@@ -182,15 +193,27 @@ export async function getEmailTriggersForDateRange(
  * @param raw The raw data from the database
  * @returns The email trigger object
  */
-function validateEmailTrigger(raw: Nullable<RawEmailTrigger>): Nullable<EmailTriggers.EmailTriggerEventRef> {
+function validateEmailTrigger(
+    raw: Nullable<RawEmailTrigger>,
+): Nullable<EmailTriggers.EmailTriggerEventRef> {
     if (!raw) return null;
-    const { id, date, event, type, emailLevelOverride, emailBodyOverride, subjectLineOverride, active, sent } = raw;
+    const {
+        id,
+        date,
+        event,
+        type,
+        emailLevelOverride,
+        emailBodyOverride,
+        subjectLineOverride,
+        active,
+        sent,
+    } = raw;
     if (!id || !date || !event) {
         throw new Error("Invalid Email Trigger");
     }
     const assignment = event.assignments[0].assignment;
     const influencer = assignment.influencer;
-    let influencerWithContactInfo: Influencer.WithContactInfo | undefined = undefined;
+    let influencerWithContactInfo: Influencers.WithContactInfo | undefined = undefined;
     if (!assignment.isPlaceholder) {
         if (!influencer || !influencer.email || !influencer.emailType) {
             throw new Error("Invalid Email Trigger");
@@ -223,7 +246,9 @@ function validateEmailTrigger(raw: Nullable<RawEmailTrigger>): Nullable<EmailTri
     return trigger;
 }
 
-function validateArray(rawArray: Nullable<RawEmailTrigger>[]): EmailTriggers.EmailTriggerEventRef[] {
+function validateArray(
+    rawArray: Nullable<RawEmailTrigger>[],
+): EmailTriggers.EmailTriggerEventRef[] {
     return rawArray
         .map(validateEmailTrigger)
         .filter((trigger): trigger is EmailTriggers.EmailTriggerEventRef => trigger !== null);

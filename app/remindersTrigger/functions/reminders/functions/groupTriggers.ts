@@ -1,7 +1,6 @@
 "use server";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+
 import { EmailTriggerWithContext, TriggerGroup } from "../types";
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
 
 export default async function groupTriggers(
     triggers: EmailTriggerWithContext[],

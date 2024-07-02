@@ -3,7 +3,7 @@
 import { ThemeProvider, createTheme } from "@mui/material";
 import { blue } from "@mui/material/colors";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import dataClient from "../ServerFunctions/database";
+import { dataClient } from "@/app/ServerFunctions/database";
 import Processor from "./pages/Processor";
 
 const queryClient = new QueryClient();

@@ -1,17 +1,20 @@
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
-import { CircularProgress, Unstable_Grid2 as Grid, GridSize, Link, Typography } from "@mui/material";
-import { groupBy } from "../Functions/groupEvents";
-import dayjs from "@/app/utils/configuredDayJs";
-import { timelineEventTypesType } from "@/amplify/data/types";
+import { Event, Events } from "@/app/ServerFunctions/types";
+import {
+    CircularProgress,
+    Unstable_Grid2 as Grid,
+    GridSize,
+    Link,
+    Typography,
+} from "@mui/material";
 import { useMemo } from "react";
 import { useQueries } from "@tanstack/react-query";
-import dataClient from "@/app/ServerFunctions/database";
+import { dataClient } from "@/app/ServerFunctions/database";
 
 interface EventContentProps {
-    event: TimelineEvent.MultiEvent;
+    event: Events.MultiEvent;
     columnSize?: number | GridSize;
 }
-type eventType = TimelineEvent.multiEventType;
+type eventType = Events.multiEventType;
 export default function EventContentMulti(props: EventContentProps) {
     const { event, columnSize = 10 } = props;
     const EventElement: { [key in eventType]: JSX.Element } = {
@@ -19,7 +22,10 @@ export default function EventContentMulti(props: EventContentProps) {
     };
 
     return (
-        <Grid sx={{ paddingLeft: "10px" }} xs={columnSize}>
+        <Grid
+            sx={{ paddingLeft: "10px" }}
+            xs={columnSize}
+        >
             {EventElement[event.type as eventType] ?? <></>}
         </Grid>
     );
@@ -29,7 +35,7 @@ function WebinarEventContent(props: EventContentProps) {
     const { event } = props;
     const speakers = useMemo(
         () => event.childEvents.filter((childEvent) => childEvent.type === "WebinarSpeaker"),
-        [event]
+        [event],
     );
     const speakerEvents = useQueries({
         queries: speakers.map((speaker) => ({
@@ -55,7 +61,10 @@ function WebinarEventContent(props: EventContentProps) {
                         if (!data) return <CircularProgress key={index} />;
                         const assignment = data.assignments[0];
                         return (
-                            <Grid key={data.id} xs>
+                            <Grid
+                                key={data.id}
+                                xs
+                            >
                                 -{" "}
                                 {assignment.isPlaceholder
                                     ? `Influencer ${assignment.placeholderName}`
@@ -72,7 +81,10 @@ function WebinarEventContent(props: EventContentProps) {
             )}
             <Typography variant="body1">
                 {event.info?.eventLink ? (
-                    <Link href={event.info.eventLink} target="_blank">
+                    <Link
+                        href={event.info.eventLink}
+                        target="_blank"
+                    >
                         Zur Eventpage
                     </Link>
                 ) : (

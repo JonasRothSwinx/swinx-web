@@ -1,6 +1,6 @@
 import { CheckBoxIcon } from "@/app/Definitions/Icons";
 import { Nullable } from "@/app/Definitions/types";
-import { Candidates } from "@/app/ServerFunctions/types/candidates";
+import { Candidates } from "@/app/ServerFunctions/types";
 import {
     Grid,
     Typography,
@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 import stylesExporter from "@/app/Main Menu/styles/stylesExporter";
 import { useQuery } from "@tanstack/react-query";
-import dataClient from "@/app/ServerFunctions/database";
+import { dataClient } from "@/app/ServerFunctions/database";
 import { useMemo } from "react";
 import Components from "./Components";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
@@ -48,25 +48,25 @@ export default function CandidateResponses({
     });
     const styles: SxProps = {
         "&#CandidateResponsesContainer": {
-            display: "flex",
-            flexDirection: "row",
+            "display": "flex",
+            "flexDirection": "row",
             "#CandidateResponsesTable": {
-                border: "1px solid black",
-                borderRadius: "10px",
-                borderCollapse: "unset",
-                overflow: "hidden",
+                "border": "1px solid black",
+                "borderRadius": "10px",
+                "borderCollapse": "unset",
+                "overflow": "hidden",
                 "&:not(:first-child)": {
                     borderTopLeftRadius: "0px",
                     borderBottomLeftRadius: "0px",
                 },
             },
             "#CandidateResponsesHeader": {
-                backgroundColor: "var(--swinx-blue)",
+                "backgroundColor": "var(--swinx-blue)",
                 // border: "1px solid black",
                 // borderTopLeftRadius: "10px",
                 // borderTopRightRadius: "10px",
-                color: "white",
-                textAlign: "center",
+                "color": "white",
+                "textAlign": "center",
                 "*": {
                     color: "white",
                     textAlign: "center",
@@ -81,7 +81,10 @@ export default function CandidateResponses({
         },
     };
     return (
-        <Box id="CandidateResponsesContainer" sx={styles}>
+        <Box
+            id="CandidateResponsesContainer"
+            sx={styles}
+        >
             {userGroups.data?.includes("admin") && <AdminPanel candidates={candidates} />}
             <Table id="CandidateResponsesTable">
                 <colgroup>
@@ -152,15 +155,15 @@ function AdminPanel({ candidates }: AdminPanelProps) {
     };
     const styles: SxProps = {
         "&": {
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "stretch",
-            minWidth: "100px",
-            borderRadius: "10px 0px 0px 10px",
-            border: "1px solid black",
-            borderRight: "none",
-            overflow: "hidden",
+            "display": "flex",
+            "flexDirection": "column",
+            "alignItems": "center",
+            "justifyContent": "stretch",
+            "minWidth": "100px",
+            "borderRadius": "10px 0px 0px 10px",
+            "border": "1px solid black",
+            "borderRight": "none",
+            "overflow": "hidden",
 
             ".MuiTypography-root": {
                 backgroundColor: "var(--swinx-blue)",
@@ -191,7 +194,10 @@ function AdminPanel({ candidates }: AdminPanelProps) {
         <Box sx={styles}>
             <Typography>Admin Panel</Typography>
             <Box id="AdminPanelContent">
-                <Button onClick={() => EventHandler.printObjects()} variant="outlined">
+                <Button
+                    onClick={() => EventHandler.printObjects()}
+                    variant="outlined"
+                >
                     Print Objects
                 </Button>
             </Box>

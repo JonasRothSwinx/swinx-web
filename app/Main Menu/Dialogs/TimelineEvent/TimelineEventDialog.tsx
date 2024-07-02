@@ -1,8 +1,12 @@
-import { DialogProps, PartialWith, Prettify } from "@/app/Definitions/types";
-import Assignment from "@/app/ServerFunctions/types/assignment";
-import Campaign from "@/app/ServerFunctions/types/campaign";
-import Influencer from "@/app/ServerFunctions/types/influencer";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+import { PartialWith, Prettify } from "@/app/Definitions/types";
+import {
+    Assignment,
+    Assignments,
+    Campaign,
+    Influencer,
+    Event,
+    Events,
+} from "@/app/ServerFunctions/types";
 import {
     Box,
     Button,
@@ -16,16 +20,15 @@ import {
     Typography,
 } from "@mui/material";
 
-import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
+import { dayjs, Dayjs } from "@/app/utils";
 import { UseMutationResult, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import "dayjs/locale/de";
 import { useEffect, useMemo, useState } from "react";
 import stylesExporter, { timeline } from "../../styles/stylesExporter";
 import DateSelector from "./EventDetails/DateSelector";
 import { submitEvent } from "./actions/submitEvent";
-import assignment from "@/app/ServerFunctions/database/dataClients/assignments";
 import EventDetails from "./EventDetails/EventDetails";
-import dataClient from "@/app/ServerFunctions/database";
+import { dataClient } from "@/app/ServerFunctions/database";
 import sxStyles from "../sxStyles";
 import EmailTriggerMenu from "./EmailTriggerMenu";
 import { GeneralDetails } from "./EventDetails/GeneralDetails";
@@ -41,14 +44,14 @@ export type dates = {
 type TimelineEventDialogProps = {
     onClose?: (hasChanged?: boolean) => void;
     editing?: boolean;
-    editingData?: TimelineEvent.Event;
+    editingData?: Event;
     campaignId: string;
-    targetAssignment?: Assignment.AssignmentMin;
+    targetAssignment?: Assignments.Min;
 };
 //######################
 //#region DefaultValues
 const typeDefault: {
-    [key in TimelineEvent.eventType]: Partial<TimelineEvent.Event>;
+    [key in Events.eventType]: Partial<Event>;
 } = {
     ImpulsVideo: {
         type: "ImpulsVideo",
@@ -84,7 +87,7 @@ const typeDefault: {
         childEvents: [],
     },
 };
-const EventHasEmailTriggers: { [key in TimelineEvent.eventType | "none"]: boolean } = {
+const EventHasEmailTriggers: { [key in Events.eventType | "none"]: boolean } = {
     none: false,
 
     Invites: true,
@@ -115,7 +118,7 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
     //######################
     //#region States
     const [timelineEvent, setTimelineEvent] = useState<
-        PartialWith<TimelineEvent.Event, "campaign" | "parentEvent" | "childEvents">
+        PartialWith<Event, "campaign" | "parentEvent" | "childEvents">
     >(
         editingData ?? {
             campaign: { id: campaignId },
@@ -124,7 +127,7 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
             childEvents: [],
         },
     );
-    const [updatedData, setUpdatedData] = useState<Partial<TimelineEvent.Event>[]>([{}]);
+    const [updatedData, setUpdatedData] = useState<Partial<Event>[]>([{}]);
     // const [dates, setDates] = useState<{ number: number; dates: (Dayjs | null)[] }>({
     //     number: 1,
     //     dates: [editingData ? dayjs(editingData.date) : dayjs()],
@@ -245,7 +248,7 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
             event.preventDefault();
             const combinedEvents = updatedData.map((data) => ({ ...timelineEvent, ...data }));
             const type = combinedEvents[0].type;
-            if (!type || !TimelineEvent.isTimelineEventType(type))
+            if (!type || !Events.isTimelineEventType(type))
                 throw new Error("No event type selected");
 
             if (!editing) {
@@ -294,13 +297,13 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
 
     const DataChange = {
         type: (e: SelectChangeEvent<unknown>) => {
-            const value = e.target.value as TimelineEvent.singleEventType;
+            const value = e.target.value as Events.singleEventType;
             setTimelineEvent(
                 (prev) =>
                     ({
                         ...prev,
                         ...typeDefault[value],
-                    } satisfies Partial<TimelineEvent.Event>),
+                    } satisfies Partial<Event>),
             );
         },
         assignment: (e: SelectChangeEvent<unknown>) => {
@@ -308,30 +311,28 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
             setTimelineEvent((prev) => ({ ...prev, assignment: value }));
         },
         createEvent: useMutation({
-            mutationFn: async (data: { newEvent: TimelineEvent.Event }) => {
+            mutationFn: async (data: { newEvent: Event }) => {
                 const { newEvent } = data;
                 const createdEvents = await submitEvent({ event: newEvent, editing: false });
                 return createdEvents;
             },
-            onMutate: async (data: { newEvent: TimelineEvent.Event }) => {
+            onMutate: async (data: { newEvent: Event }) => {
                 const { newEvent } = data;
                 await queryClient.cancelQueries({
                     queryKey: ["timelineEvents"],
                 });
-                const previousEvents = queryClient.getQueryData<TimelineEvent.Event[]>([
-                    "timelineEvents",
-                ]);
-                queryClient.setQueryData<TimelineEvent.Event>(["timelineEvent", newEvent.id], {
+                const previousEvents = queryClient.getQueryData<Event[]>(["timelineEvents"]);
+                queryClient.setQueryData<Event>(["timelineEvent", newEvent.id], {
                     ...newEvent,
                 });
-                queryClient.setQueryData<TimelineEvent.Event[]>(
+                queryClient.setQueryData<Event[]>(
                     ["timelineEvents"],
                     [...(previousEvents ?? []), newEvent],
                 );
                 const assignment = newEvent.assignments[0];
-                let previousAssignmentEvents: TimelineEvent.Event[] | undefined = [];
+                let previousAssignmentEvents: Event[] | undefined = [];
                 if (assignment) {
-                    previousAssignmentEvents = queryClient.getQueryData<TimelineEvent.Event[]>([
+                    previousAssignmentEvents = queryClient.getQueryData<Event[]>([
                         "assignmentEvents",
                         assignment.id,
                     ]);
@@ -384,10 +385,7 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
             },
         }),
         updateEvent: useMutation({
-            mutationFn: async (input: {
-                previousEvent: TimelineEvent.Event;
-                updatedData: Partial<TimelineEvent.Event>;
-            }) => {
+            mutationFn: async (input: { previousEvent: Event; updatedData: Partial<Event> }) => {
                 // debugger;
                 const { previousEvent, updatedData } = input;
                 const id = previousEvent.id;
@@ -411,29 +409,24 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                 });
                 const newEvent = { ...previousEvent, ...updatedData };
                 newEvent.info = { ...previousEvent.info, ...updatedData.info };
-                const previousEvents = queryClient.getQueryData<TimelineEvent.Event[]>([
-                    "timelineEvents",
-                ]);
-                queryClient.setQueryData<TimelineEvent.Event>(["timelineEvent", timelineEvent.id], {
+                const previousEvents = queryClient.getQueryData<Event[]>(["timelineEvents"]);
+                queryClient.setQueryData<Event>(["timelineEvent", timelineEvent.id], {
                     ...newEvent,
                 });
-                queryClient.setQueryData<TimelineEvent.Event[]>(
-                    ["timelineEvents", campaignId],
-                    (prev) => {
-                        // debugger;
-                        if (!prev) return [newEvent];
-                        return prev.map((event) => (event.id === newEvent.id ? newEvent : event));
-                    },
-                );
+                queryClient.setQueryData<Event[]>(["timelineEvents", campaignId], (prev) => {
+                    // debugger;
+                    if (!prev) return [newEvent];
+                    return prev.map((event) => (event.id === newEvent.id ? newEvent : event));
+                });
 
                 const assignment = newEvent.assignments[0];
-                let previousAssignmentEvents: TimelineEvent.Event[] | undefined = [];
+                let previousAssignmentEvents: Event[] | undefined = [];
                 if (assignment) {
-                    previousAssignmentEvents = queryClient.getQueryData<TimelineEvent.Event[]>([
+                    previousAssignmentEvents = queryClient.getQueryData<Event[]>([
                         "assignmentEvents",
                         assignment.id,
                     ]);
-                    queryClient.setQueryData<TimelineEvent.Event[]>(
+                    queryClient.setQueryData<Event[]>(
                         ["assignmentEvents", assignment.id],
                         (prev) => {
                             if (!prev) return [newEvent];
@@ -506,13 +499,13 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                 await queryClient.cancelQueries({
                     queryKey: ["timelineEvent", timelineEvent.id],
                 });
-                const previousEvent = queryClient.getQueryData<TimelineEvent.Event>([
+                const previousEvent = queryClient.getQueryData<Event>([
                     "timelineEvent",
                     timelineEvent.id,
                 ]);
                 if (!previousEvent) return null;
                 const newEvent = { ...previousEvent, isCompleted };
-                queryClient.setQueryData<TimelineEvent.Event>(["timelineEvent", timelineEvent.id], {
+                queryClient.setQueryData<Event>(["timelineEvent", timelineEvent.id], {
                     ...newEvent,
                 });
                 return { previousEvent, newEvent };
@@ -587,7 +580,7 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                     {/* Details */}
                     <EventDetails
                         key="EventDetails"
-                        applyDetailsChange={(data: Partial<TimelineEvent.Event>[]) =>
+                        applyDetailsChange={(data: Partial<Event>[]) =>
                             setTimelineEvent((prev) => ({ ...prev, ...data[0] }))
                         }
                         data={timelineEvent}
@@ -640,7 +633,7 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
 //MARK: EventCompleteCheckbox
 interface EventCompleteCheckboxProps {
     eventId: string;
-    changeEventComplete: UseMutationResult<TimelineEvent.Event, Error, boolean, unknown>;
+    changeEventComplete: UseMutationResult<Event, Error, boolean, unknown>;
 }
 function EventCompleteCheckbox(props: EventCompleteCheckboxProps) {
     const { eventId, changeEventComplete } = props;

@@ -1,8 +1,8 @@
 import { Prettify } from "@/app/Definitions/types";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+import { Event, Events } from "@/app/ServerFunctions/types";
 import { Box, Button, DialogContent, SxProps, TextField, Tooltip } from "@mui/material";
 import React, { Dispatch, SetStateAction, useMemo, useState } from "react";
-import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
+import { dayjs, Dayjs } from "@/app/utils";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import AudienceTargetFilter from "./AudienceTargetFilter";
@@ -10,8 +10,7 @@ import TextFieldWithTooltip from "../../Components/TextFieldWithTooltip";
 
 //#region Definitions
 type relevantDetails = Prettify<
-    Pick<TimelineEvent.Event, "eventTitle" | "eventTaskAmount" | "eventAssignmentAmount"> &
-        TimelineEvent.EventInfo
+    Pick<Event, "eventTitle" | "eventTaskAmount" | "eventAssignmentAmount"> & Events.EventInfo
 >;
 type relevantDetailsKey = Prettify<keyof relevantDetails>;
 type DetailsConfigEntry =
@@ -33,7 +32,7 @@ type DetailsConfig = {
     [key in relevantDetailsKey]?: DetailsConfigEntry;
 };
 
-const EventTypeConfig: { [key in TimelineEvent.eventType]: DetailsConfig } = {
+const EventTypeConfig: { [key in Events.eventType]: DetailsConfig } = {
     Invites: {
         topic: {
             enabled: false,
@@ -253,20 +252,20 @@ const EventTypeConfig: { [key in TimelineEvent.eventType]: DetailsConfig } = {
     },
 };
 interface AdditionalFieldsProps {
-    event: Partial<TimelineEvent.Event>;
-    updatedData: Partial<TimelineEvent.Event>[];
-    onChange: (data: Partial<TimelineEvent.Event>[]) => void;
+    event: Partial<Event>;
+    updatedData: Partial<Event>[];
+    onChange: (data: Partial<Event>[]) => void;
 }
 const AdditionalFields: {
-    [key in TimelineEvent.eventType]?: (props: AdditionalFieldsProps) => JSX.Element;
+    [key in Events.eventType]?: (props: AdditionalFieldsProps) => JSX.Element;
 } = {
     Webinar: (props) => <AudienceTargetFilter {...props} />,
 };
 
 function getDataKey(
     key: relevantDetailsKey,
-    data: Partial<TimelineEvent.Event>,
-    updatedData: Partial<TimelineEvent.Event>,
+    data: Partial<Event>,
+    updatedData: Partial<Event>,
 ): string | number | null | undefined {
     switch (key) {
         //in info
@@ -297,10 +296,10 @@ function getDataKey(
 
 //MARK: - Component
 interface DetailsProps {
-    applyDetailsChange: (data: Partial<TimelineEvent.Event>[]) => void;
-    data: Partial<TimelineEvent.Event>;
+    applyDetailsChange: (data: Partial<Event>[]) => void;
+    data: Partial<Event>;
     isEditing?: boolean;
-    updatedData: Partial<TimelineEvent.Event>[];
+    updatedData: Partial<Event>[];
     setUpdatedData: Dispatch<SetStateAction<DetailsProps["updatedData"]>>;
 }
 export default function EventDetails(props: DetailsProps): JSX.Element {
@@ -341,7 +340,7 @@ export default function EventDetails(props: DetailsProps): JSX.Element {
         }
     }
     const ChangeHandler = {
-        handleEventChange: (newData: Partial<TimelineEvent.Event>[]) => {
+        handleEventChange: (newData: Partial<Event>[]) => {
             setUpdatedData(newData);
         },
     };
@@ -412,7 +411,7 @@ export default function EventDetails(props: DetailsProps): JSX.Element {
 //MARK: - Event Detail Field
 interface EventDetailFieldProps {
     id: string;
-    event: Partial<TimelineEvent.Event>;
+    event: Partial<Event>;
     name: keyof relevantDetails;
     value: string | number | null | undefined;
     config: DetailsConfigEntry;

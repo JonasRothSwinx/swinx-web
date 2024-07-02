@@ -1,4 +1,4 @@
-import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
+import { dayjs, Dayjs } from "@/app/utils";
 
 interface DateToRangeProps {
     date: string | Dayjs;

@@ -1,5 +1,3 @@
-import { DialogProps } from "@/app/Definitions/types";
-import Influencer from "@/app/ServerFunctions/types/influencer";
 import {
     Box,
     Button,
@@ -15,12 +13,11 @@ import {
 } from "@mui/material";
 import React, { useMemo, useState } from "react";
 import stylesExporter from "../styles/stylesExporter";
-import dataClient from "@/app/ServerFunctions/database";
+import { dataClient } from "@/app/ServerFunctions/database";
 import { useQueryClient } from "@tanstack/react-query";
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
 import sxStyles from "./sxStyles";
 import { Unstable_Grid2 as Grid } from "@mui/material";
-import ProjectManagers from "@/app/ServerFunctions/types/projectManagers";
+import { ProjectManager, ProjectManagers } from "@/app/ServerFunctions/types";
 
 const styles = stylesExporter.dialogs;
 interface ProjectManagerDialogProps {
@@ -36,7 +33,7 @@ function ProjectManagerDialog(props: ProjectManagerDialogProps) {
     // debugger;
     const { onClose, firstName, lastName, email, phoneNumber, cognitoId } = props;
     // const [isModalOpen, setIsModalOpen] = useState(open);
-    const [data, setData] = useState<Partial<ProjectManagers.ProjectManager>>({
+    const [data, setData] = useState<Partial<ProjectManager>>({
         firstName: firstName ?? "",
         lastName: lastName ?? "",
         email: email ?? "",
@@ -78,10 +75,10 @@ function ProjectManagerDialog(props: ProjectManagerDialogProps) {
     const styles: SxProps = useMemo(
         () => ({
             "&": {
-                margin: "auto",
+                "margin": "auto",
                 // minWidth: "max(50vw,500px)",
-                width: "80vw",
-                maxWidth: "80vw",
+                "width": "80vw",
+                "maxWidth": "80vw",
                 "#DialogTitle": {
                     width: "100%",
                     textAlign: "center",
@@ -97,18 +94,18 @@ function ProjectManagerDialog(props: ProjectManagerDialogProps) {
                     justifyContent: "center",
                 },
                 "#FormInputContainer": {
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    gap: "1rem",
-                    padding: "1rem",
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "justifyContent": "center",
+                    "gap": "1rem",
+                    "padding": "1rem",
                     "& .MuiTextField-root": {
                         width: "30em",
                     },
                 },
             },
         }),
-        []
+        [],
     );
 
     return (
@@ -126,12 +123,21 @@ function ProjectManagerDialog(props: ProjectManagerDialogProps) {
             <Box>
                 <DialogTitle id="DialogTitle">{"Projekt Manager Daten"}</DialogTitle>
                 {/* <button onClick={handleCloseModal}>x</button> */}
-                <FormInputs data={data} setData={setData} />
+                <FormInputs
+                    data={data}
+                    setData={setData}
+                />
                 <DialogActions>
-                    <Button onClick={EventHandlers.handleClose} color="secondary">
+                    <Button
+                        onClick={EventHandlers.handleClose}
+                        color="secondary"
+                    >
                         Abbrechen
                     </Button>
-                    <Button variant="contained" type="submit">
+                    <Button
+                        variant="contained"
+                        type="submit"
+                    >
                         Speichern
                     </Button>
                 </DialogActions>
@@ -142,8 +148,8 @@ function ProjectManagerDialog(props: ProjectManagerDialogProps) {
 export default ProjectManagerDialog;
 
 interface FormInputsProps {
-    data: Partial<ProjectManagers.ProjectManager>;
-    setData: React.Dispatch<React.SetStateAction<Partial<ProjectManagers.ProjectManager>>>;
+    data: Partial<ProjectManager>;
+    setData: React.Dispatch<React.SetStateAction<Partial<ProjectManager>>>;
 }
 function FormInputs(props: FormInputsProps) {
     const { data, setData } = props;
@@ -167,20 +173,38 @@ function FormInputs(props: FormInputsProps) {
             return email.endsWith("@swinx.de");
         },
     } as const;
-    const [isEmailValid, setIsEmailValid] = useState<boolean>(Validator.validateEmail(data.email ?? ""));
+    const [isEmailValid, setIsEmailValid] = useState<boolean>(
+        Validator.validateEmail(data.email ?? ""),
+    );
     return (
         <DialogContent id="FormInputWrapper">
             <Box id="FormInputContainer">
-                <TextField label="Cognito Id" value={data.cognitoId} disabled />
-                <TextField label="Vorname" value={data.firstName} onChange={ChangeHandler.firstName} required />
-                <TextField label="Nachname" value={data.lastName} onChange={ChangeHandler.lastName} required />
+                <TextField
+                    label="Cognito Id"
+                    value={data.cognitoId}
+                    disabled
+                />
+                <TextField
+                    label="Vorname"
+                    value={data.firstName}
+                    onChange={ChangeHandler.firstName}
+                    required
+                />
+                <TextField
+                    label="Nachname"
+                    value={data.lastName}
+                    onChange={ChangeHandler.lastName}
+                    required
+                />
                 <TextField
                     label="Email"
                     value={data.email}
                     onChange={ChangeHandler.email}
                     type="email"
                     error={!isEmailValid}
-                    helperText={isEmailValid ? "" : "Projektmanager Emails müssen auf @swinx.de enden"}
+                    helperText={
+                        isEmailValid ? "" : "Projektmanager Emails müssen auf @swinx.de enden"
+                    }
                     required
                 />
                 <TextField

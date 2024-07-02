@@ -1,9 +1,6 @@
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
-
+import { Events } from "@/app/ServerFunctions/types";
 export const hasParentEvent: {
-    [key in TimelineEvent.eventType | "none"]:
-        | { parentEventType: TimelineEvent.multiEventType }
-        | false;
+    [key in Events.eventType | "none"]: { parentEventType: Events.multiEventType } | false;
 } = {
     none: false,
 

@@ -1,5 +1,5 @@
-import { Candidates } from "@/app/ServerFunctions/types/candidates";
-import sleep from "@/app/utils/sleep";
+import { Candidates } from "@/app/ServerFunctions/types";
+import { sleep } from "@/app/utils";
 import { Box, Button, CircularProgress, SxProps, Typography } from "@mui/material";
 import { useState } from "react";
 
@@ -14,14 +14,14 @@ export function ResponseReceived({ response, resetResponse }: ResponseReceivedPr
         "&": {
             "&#ResponseReceivedContainer": {
                 // padding: "40px",
-                margin: "auto",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                backgroundColor: "#f0f0f0",
-                borderRadius: "10px",
-                border: "1px solid black",
+                "margin": "auto",
+                "display": "flex",
+                "flexDirection": "column",
+                "justifyContent": "center",
+                "alignItems": "center",
+                "backgroundColor": "#f0f0f0",
+                "borderRadius": "10px",
+                "border": "1px solid black",
 
                 //Text
                 ".MuiTypography-root": {
@@ -37,8 +37,8 @@ export function ResponseReceived({ response, resetResponse }: ResponseReceivedPr
 
                 //Confirm Reset Container
                 "#ConfirmResetContainer": {
-                    display: "flex",
-                    flexDirection: "row",
+                    "display": "flex",
+                    "flexDirection": "row",
                     "@media (max-width: 600px)": {
                         flexDirection: "column-reverse",
                     },
@@ -61,7 +61,10 @@ export function ResponseReceived({ response, resetResponse }: ResponseReceivedPr
     };
     if (resetting) {
         return (
-            <Box id="ResponseReceivedContainer" sx={styles}>
+            <Box
+                id="ResponseReceivedContainer"
+                sx={styles}
+            >
                 <Typography>
                     {" "}
                     Ihre Antwort wird zurückgesetzt.
@@ -73,7 +76,10 @@ export function ResponseReceived({ response, resetResponse }: ResponseReceivedPr
     }
 
     return (
-        <Box id="ResponseReceivedContainer" sx={styles}>
+        <Box
+            id="ResponseReceivedContainer"
+            sx={styles}
+        >
             <Content response={response} />
             <ResetButton resetResponse={EventHandlers.resetResponse} />
         </Box>
@@ -123,17 +129,28 @@ function ResetButton({ resetResponse }: ResetButtonProps) {
     if (confirmReset) {
         return (
             <Box id="ConfirmResetContainer">
-                <Button color="error" onClick={EventHandlers.cancelReset}>
+                <Button
+                    color="error"
+                    onClick={EventHandlers.cancelReset}
+                >
                     Abbrechen
                 </Button>
-                <Button id="ResetResponseButton" onClick={resetResponse} variant="contained">
+                <Button
+                    id="ResetResponseButton"
+                    onClick={resetResponse}
+                    variant="contained"
+                >
                     Entscheidung wirklich zurücksetzen?
                 </Button>
             </Box>
         );
     }
     return (
-        <Button id="ResetResponseButton" onClick={EventHandlers.confirmClick} variant="outlined">
+        <Button
+            id="ResetResponseButton"
+            onClick={EventHandlers.confirmClick}
+            variant="outlined"
+        >
             Ich möchte meine Entscheidung ändern
         </Button>
     );

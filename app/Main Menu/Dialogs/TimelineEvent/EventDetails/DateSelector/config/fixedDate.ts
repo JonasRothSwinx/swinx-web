@@ -1,12 +1,12 @@
 import { Nullable, Prettify } from "@/app/Definitions/types";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
-import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
+import { Event, Events } from "@/app/ServerFunctions/types";
+import { dayjs, Dayjs } from "@/app/utils";
 
 interface FixedDateParams {
-    parentEvent: Nullable<TimelineEvent.Event>;
+    parentEvent: Nullable<Event>;
 }
 export const getFixedDate: {
-    [key in TimelineEvent.eventType | "none"]: (params: Prettify<FixedDateParams>) => Dayjs | null;
+    [key in Events.eventType | "none"]: (params: Prettify<FixedDateParams>) => Dayjs | null;
 } = {
     none: () => null,
 
@@ -20,7 +20,7 @@ export const getFixedDate: {
 };
 
 export const isFixedDate: {
-    [key in TimelineEvent.eventType | "none"]: boolean;
+    [key in Events.eventType | "none"]: boolean;
 } = {
     none: false,
 

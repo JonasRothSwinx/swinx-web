@@ -1,4 +1,4 @@
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
+import { EmailTriggers } from "@/app/ServerFunctions/types";
 import { Html, Hr, Button, Text, Head, Preview, Container, Link } from "@react-email/components";
 import styles from "../../styles";
 import { Placeholder } from "../../_components";
@@ -51,7 +51,10 @@ function NewPostActionReminder(props: DebugToggle) {
         ? defaultParams
         : placeholders;
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
             <Preview>Erinnerung: Beitragsveröffentlichung</Preview>
             <Text style={styles.text}>Sehr geehrte/r {name}!</Text>
@@ -96,7 +99,10 @@ function ReducedPostActionReminder(props: DebugToggle) {
         ? defaultParams
         : placeholders;
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
             <Preview>Erinnerung: Beitragsveröffentlichung</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>

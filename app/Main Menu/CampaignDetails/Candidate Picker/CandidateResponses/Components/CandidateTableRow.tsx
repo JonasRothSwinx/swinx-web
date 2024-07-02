@@ -1,11 +1,10 @@
 import { CheckBoxIcon } from "@/app/Definitions/Icons";
-import { Candidates } from "@/app/ServerFunctions/types/candidates";
-import Influencer from "@/app/ServerFunctions/types/influencer";
+import { Candidate, Candidates, Influencers } from "@/app/ServerFunctions/types";
 import { IconButton, SxProps, TableCell, TableRow, Tooltip } from "@mui/material";
 import { useMemo } from "react";
 interface CandidateTableRowProps {
-    candidate: Candidates.Candidate;
-    assignInfluencer: (candidate: Candidates.Candidate) => void;
+    candidate: Candidate;
+    assignInfluencer: (candidate: Candidate) => void;
 }
 
 export default function CandidateTableRow({ candidate, assignInfluencer }: CandidateTableRowProps) {
@@ -20,7 +19,10 @@ export default function CandidateTableRow({ candidate, assignInfluencer }: Candi
                     borderRadius: "20px",
                     width: "fit-content",
                     textAlign: "center",
-                    backgroundColor: colorByResponse[(candidate.response as Candidates.candidateResponse) ?? "pending"],
+                    backgroundColor:
+                        colorByResponse[
+                            (candidate.response as Candidates.candidateResponse) ?? "pending"
+                        ],
                 },
                 "#assignIcon": {
                     color: "green",
@@ -33,11 +35,14 @@ export default function CandidateTableRow({ candidate, assignInfluencer }: Candi
                 },
             },
         }),
-        [candidate]
+        [candidate],
     );
     return (
-        <TableRow key={candidate.influencer.id} sx={styles}>
-            <TableCell id="name">{Influencer.getFullName(influencer)}</TableCell>
+        <TableRow
+            key={candidate.influencer.id}
+            sx={styles}
+        >
+            <TableCell id="name">{Influencers.getFullName(influencer)}</TableCell>
             <TableCell id="response">
                 {responseDisplayText[candidate.response as Candidates.candidateResponse]}
             </TableCell>

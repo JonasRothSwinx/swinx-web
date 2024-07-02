@@ -1,28 +1,33 @@
-import Assignment from "@/app/ServerFunctions/types/assignment";
-import Campaign from "@/app/ServerFunctions/types/campaign";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import { randomId } from "@mui/x-data-grid-generator";
 import { useQueryClient } from "@tanstack/react-query";
 import { dates } from "../TimelineEventDialog";
-import dataClient from "@/app/ServerFunctions/database";
+import { dataClient } from "@/app/ServerFunctions/database";
 import { Prettify } from "@/app/Definitions/types";
-import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
+import { dayjs, Dayjs } from "@/app/utils";
+import {
+    EmailTrigger,
+    Event,
+    Events,
+    Assignment,
+    Campaign,
+    Assignments,
+    EmailTriggers,
+} from "@/app/ServerFunctions/types";
 
 type updateEventProps = SubmitEventProps & {
     editing: true;
-    updatedData?: Partial<TimelineEvent.Event>;
+    updatedData?: Partial<Event>;
 };
 type createEventProps = SubmitEventProps & {
     editing: false;
 };
 type SubmitEventProps = {
-    event: TimelineEvent.Event;
+    event: Event;
     // dates: dates;
     editing: boolean;
 };
-export async function submitEvent(props: updateEventProps): Promise<TimelineEvent.Event>;
-export async function submitEvent(props: createEventProps): Promise<TimelineEvent.EventWithId>;
+export async function submitEvent(props: updateEventProps): Promise<Event>;
+export async function submitEvent(props: createEventProps): Promise<Events.EventWithId>;
 export async function submitEvent(props: createEventProps | updateEventProps) {
     const { editing } = props;
     try {
@@ -58,22 +63,22 @@ async function createEvent(props: createEventProps) {
     // const newEvents = dates.dates
     //     .map((date) => {
     //         if (date === null) return;
-    //         const event: TimelineEvent.Event = { ...newEvent, date: date.toISOString() };
+    //         const event: Event = { ...newEvent, date: date.toISOString() };
     //         return event;
     //     })
-    //     .filter((x): x is TimelineEvent.Event => x !== undefined);
+    //     .filter((x): x is Event => x !== undefined);
     const createdEvent = await dataClient.timelineEvent.create(newEvent);
     createdEvent.emailTriggers = applyEmailTriggerDefaults({ event: createdEvent });
     createEmailTriggers({ event: createdEvent });
     return createdEvent;
 }
 interface applyDefaultValuesProps {
-    event: TimelineEvent.Event;
-    assignment?: Assignment.AssignmentMin;
+    event: Event;
+    assignment?: Assignments.Min;
 }
 function applyDefaultValues(props: applyDefaultValuesProps) {
     const { event, assignment } = props;
-    const newEvent: TimelineEvent.Event = {
+    const newEvent: Event = {
         ...event,
         assignments: assignment ? [assignment] : [],
         eventAssignmentAmount: event.eventAssignmentAmount ?? 0,
@@ -87,10 +92,10 @@ function applyDefaultValues(props: applyDefaultValuesProps) {
     return newEvent;
 }
 function appendEventsToTimeline(
-    events: TimelineEvent.Event[],
-    campaign: Campaign.Campaign,
-    oldTimeline: TimelineEvent.Event[],
-    queryClient: ReturnType<typeof useQueryClient>
+    events: Event[],
+    campaign: Campaign,
+    oldTimeline: Event[],
+    queryClient: ReturnType<typeof useQueryClient>,
 ) {
     events.map((x) => queryClient.setQueryData(["event", x.id], x));
     const newTimeline = [...oldTimeline, ...events];
@@ -104,17 +109,20 @@ function appendEventsToTimeline(
     queryClient.refetchQueries({ queryKey: ["campaign", campaign.id] });
 
     //update events
-    queryClient.setQueryData(["events", campaign.id], (oldData: TimelineEvent.Event[]) => {
+    queryClient.setQueryData(["events", campaign.id], (oldData: Event[]) => {
         if (!oldData) return [];
         return [...oldTimeline, ...events];
     });
     queryClient.refetchQueries({ queryKey: ["events", campaign.id] });
 
     //update assignment events
-    queryClient.setQueryData(["assignmentEvents", events[0].assignments[0].id], (oldData: TimelineEvent.Event[]) => {
-        if (!oldData) return [];
-        return newTimeline;
-    });
+    queryClient.setQueryData(
+        ["assignmentEvents", events[0].assignments[0].id],
+        (oldData: Event[]) => {
+            if (!oldData) return [];
+            return newTimeline;
+        },
+    );
     queryClient.refetchQueries({ queryKey: ["assignmentEvents", events[0].assignments[0].id] });
 
     // queryClient.refetchQueries({ queryKey: ["events", campaign.id] });
@@ -123,7 +131,7 @@ function appendEventsToTimeline(
     // queryClient.refetchQueries({ queryKey: ["assignmentEvents"], exact: false });
 }
 
-function invalidateData(events: TimelineEvent.Event[], queryClient: ReturnType<typeof useQueryClient>) {
+function invalidateData(events: Event[], queryClient: ReturnType<typeof useQueryClient>) {
     events.map((x) => {
         queryClient.invalidateQueries({ queryKey: ["event", x.id] });
         queryClient.invalidateQueries({ queryKey: ["assignmentEvents", x.assignments[0].id] });
@@ -135,10 +143,10 @@ function invalidateData(events: TimelineEvent.Event[], queryClient: ReturnType<t
 }
 
 interface handleRelatedEventsProps {
-    event: TimelineEvent.Event;
-    parentEvent?: TimelineEvent.Event["parentEvent"];
-    childEvents?: TimelineEvent.Event["childEvents"];
-    assignment: Assignment.AssignmentMin;
+    event: Event;
+    parentEvent?: Event["parentEvent"];
+    childEvents?: Event["childEvents"];
+    assignment: Assignments.Min;
 }
 async function handleRelatedEvents(props: handleRelatedEventsProps) {
     const { event, parentEvent, childEvents, assignment } = props;
@@ -148,7 +156,7 @@ async function handleRelatedEvents(props: handleRelatedEventsProps) {
         await Promise.all(
             childEvents.map(async (x) => {
                 // dataClient.timelineEvent.
-            })
+            }),
         );
     }
     /** if new event has a parent, set the parent reference to the new event
@@ -163,7 +171,7 @@ async function handleRelatedEvents(props: handleRelatedEventsProps) {
     }
 }
 interface createEmailTriggersProps {
-    event: TimelineEvent.EventWithId;
+    event: Events.EventWithId;
 }
 async function createEmailTriggers({ event }: createEmailTriggersProps) {
     const triggers = event.emailTriggers;
@@ -179,7 +187,7 @@ async function createEmailTriggers({ event }: createEmailTriggersProps) {
                     console.log("Telling dataClient to create email trigger", trigger);
                     const createdTrigger = await dataClient.emailTrigger.create(trigger);
                     console.log("Created email trigger", createdTrigger);
-                })
+                }),
             );
         }
     } catch (error) {
@@ -188,7 +196,7 @@ async function createEmailTriggers({ event }: createEmailTriggersProps) {
 }
 
 interface applyEmailTriggerDefaultsProps {
-    event: TimelineEvent.EventWithId;
+    event: Events.EventWithId;
 }
 function applyEmailTriggerDefaults({ event }: applyEmailTriggerDefaultsProps) {
     const { emailTriggers, type } = event;

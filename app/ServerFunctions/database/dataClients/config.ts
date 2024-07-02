@@ -1,15 +1,17 @@
 import { QueryClient } from "@tanstack/react-query";
 
+export const config = { setQueryClient, getQueryClient };
+
 type dataClientConfig = {
     queryClient: QueryClient | null;
 };
 
-const config: dataClientConfig = {
+const datClientConfig: dataClientConfig = {
     queryClient: null,
 };
 
 function setQueryClient(queryClient: QueryClient) {
-    config.queryClient = queryClient;
+    datClientConfig.queryClient = queryClient;
 }
 
 /**
@@ -18,10 +20,8 @@ function setQueryClient(queryClient: QueryClient) {
  * @throws Error if the query client is not set
  */
 function getQueryClient() {
-    if (!config.queryClient) {
+    if (!datClientConfig.queryClient) {
         throw new Error("Query client not set");
     }
-    return config.queryClient;
+    return datClientConfig.queryClient;
 }
-
-export default { setQueryClient, getQueryClient };

@@ -1,4 +1,4 @@
-import dayjs from "@/app/utils/configuredDayJs";
+import { dayjs } from "@/app/utils";
 import { Box, Typography } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
 import { TimelineEvent, Webinar } from "../../Functions/Database/types";
@@ -32,7 +32,8 @@ export default function WebinarSpeakerDescription({ events }: WebinarSpeakerDesc
                             )}
                             als Speaker am Webinar des Kunden teilnehmen.
                             <br />
-                            Dort sollen Sie zum Thema <strong>{`"${event.eventTitle}"`}</strong> sprechen.
+                            Dort sollen Sie zum Thema <strong>{`"${event.eventTitle}"`}</strong>{" "}
+                            sprechen.
                         </Typography>
                     );
                 })}

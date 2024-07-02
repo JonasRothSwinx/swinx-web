@@ -1,4 +1,4 @@
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+import { Event, Events } from "@/app/ServerFunctions/types";
 import {
     Box,
     Button,
@@ -9,7 +9,7 @@ import {
     Tooltip,
     Typography,
 } from "@mui/material";
-import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
+import { dayjs, Dayjs } from "@/app/utils";
 import { Add as AddIcon, DeleteOutlined as DeleteIcon } from "@mui/icons-material";
 import { DatePicker, DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -17,7 +17,7 @@ import React, { Dispatch, MouseEvent, SetStateAction, useEffect, useMemo } from 
 import { dates, styles } from "../../TimelineEventDialog";
 import { PartialWith } from "@/app/Definitions/types";
 import { useQuery } from "@tanstack/react-query";
-import dataClient from "@/app/ServerFunctions/database";
+import { dataClient } from "@/app/ServerFunctions/database";
 import { EventType } from "@aws-sdk/client-sesv2";
 import TextFieldWithTooltip from "../../../Components/TextFieldWithTooltip";
 import { Date, DateProps, ParentEventSelector } from "./Components";
@@ -27,11 +27,11 @@ import { getFixedDate, hasParentEvent, isFixedDate, isRepeatable } from "./confi
 
 //#endregion
 export interface DateSelectorProps {
-    timelineEvent: PartialWith<TimelineEvent.Event, "parentEvent" | "childEvents" | "campaign">;
+    timelineEvent: PartialWith<Event, "parentEvent" | "childEvents" | "campaign">;
     setTimelineEvent: Dispatch<SetStateAction<DateSelectorProps["timelineEvent"]>>;
     isEditing: boolean;
-    eventType?: TimelineEvent.eventType;
-    updatedData: Partial<TimelineEvent.Event>[];
+    eventType?: Events.eventType;
+    updatedData: Partial<Event>[];
     setUpdatedData: Dispatch<SetStateAction<DateSelectorProps["updatedData"]>>;
 }
 export default function DateSelector({

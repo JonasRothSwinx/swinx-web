@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import TimelineEvent from "../ServerFunctions/types/timelineEvent";
+import { Events, Event } from "@/app/ServerFunctions/types";
 
 /**
  * Resolve event reference
@@ -10,9 +10,9 @@ import TimelineEvent from "../ServerFunctions/types/timelineEvent";
  */
 
 export function resolveEventReference(
-    event: TimelineEvent.EventReference,
+    event: Events.EventReference,
     queryClient: ReturnType<typeof useQueryClient>,
-): TimelineEvent.SingleEvent | TimelineEvent.MultiEvent {
+): Event {
     //TODO resolve EventReference
     throw new Error("EventReference not implemented in DateSelector");
 }

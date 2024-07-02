@@ -1,7 +1,7 @@
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+import { Events } from "@/app/ServerFunctions/types";
 
 export const isRepeatable: {
-    [key in TimelineEvent.eventType | "none"]: boolean;
+    [key in Events.eventType | "none"]: boolean;
 } = {
     none: false,
 

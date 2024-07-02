@@ -1,8 +1,7 @@
 import { CheckBoxIcon } from "@/app/Definitions/Icons";
 import { Nullable } from "@/app/Definitions/types";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
-import Assignment from "@/app/ServerFunctions/types/assignment";
-import Influencer from "@/app/ServerFunctions/types/influencer";
+import { Assignment, Influencers } from "@/app/ServerFunctions/types";
 import {
     Button,
     Dialog,
@@ -27,22 +26,21 @@ import {
 } from "@mui/x-data-grid";
 import { useEffect, useMemo, useState } from "react";
 import EmailPreview from "../Email Preview";
-import { Candidates } from "@/app/ServerFunctions/types/candidates";
-import dataClient from "@/app/ServerFunctions/database";
+import { Candidates } from "@/app/ServerFunctions/types";
+import { dataClient } from "@/app/ServerFunctions/database";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { InfluencerDetailsButtonsOpenDialog } from "../Components/OpenInfluencerDetails/components/InfluencerDetailsButtons";
 import InfluencerTable from "./InfluencerTable";
 import CandidateResponses from "./CandidateResponses";
 import { TransitionGroup } from "react-transition-group";
+import emailClient from "@/app/Emails";
+import { InfluencerTaskEncodedData } from "@/app/utils";
 
 // eslint-disable-next-line
 interface CandidatePickerProps {
-    influencers: Influencer.Full[];
+    influencers: Influencers.Full[];
     assignmentId: string;
-    setAssignment: (
-        assignment: Assignment.Assignment,
-        updatedValues?: Partial<Assignment.Assignment>,
-    ) => void;
+    setAssignment: (assignment: Assignment, updatedValues?: Partial<Assignment>) => void;
     onClose: (hasChanged?: boolean, newDialog?: InfluencerDetailsButtonsOpenDialog) => void;
 }
 
@@ -217,7 +215,7 @@ export function CandidatePickerTabs({
 
         assignInfluencer: (candidate: Candidates.Candidate) => {
             if (!assignment.data) return;
-            const newAssignment: Assignment.Assignment = {
+            const newAssignment: Assignment = {
                 ...assignment.data,
                 candidates: [...(assignment.data.candidates ?? []), candidate],
             };
@@ -230,6 +228,7 @@ export function CandidatePickerTabs({
                 },
                 assignment.data,
             );
+
             onClose();
             console.log("assignInfluencer");
         },
@@ -251,11 +250,12 @@ export function CandidatePickerTabs({
             setTabValue("invite");
         }
     }, [assignment.data, tabValue]);
+    //#endregion
 
     const styles: SxProps = {
         "&": {
-            margin: "0",
-            minHeight: "50vh",
+            "margin": "0",
+            "minHeight": "50vh",
             "& .MuiPaper-root": {
                 // width: "fit-content",
                 maxWidth: "75%",
@@ -278,7 +278,12 @@ export function CandidatePickerTabs({
     };
     if (!assignment.data) return <Loading />;
     return (
-        <Dialog open onClose={() => EventHandlers.onClose()} fullWidth sx={styles}>
+        <Dialog
+            open
+            onClose={() => EventHandlers.onClose()}
+            fullWidth
+            sx={styles}
+        >
             <TabContext value={tabValue}>
                 <Box id="TabListContainer">
                     <TabList
@@ -287,8 +292,14 @@ export function CandidatePickerTabs({
                         aria-label="tab list"
                         variant="fullWidth"
                     >
-                        <Tab label="Influencer einladen" value={"invite"} />
-                        <Tab label="Antworten" value={"response"} />
+                        <Tab
+                            label="Influencer einladen"
+                            value={"invite"}
+                        />
+                        <Tab
+                            label="Antworten"
+                            value={"response"}
+                        />
                     </TabList>
                 </Box>
                 <Grow in={tabValue === "invite"}>

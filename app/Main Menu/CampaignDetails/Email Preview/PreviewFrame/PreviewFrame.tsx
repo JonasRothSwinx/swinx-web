@@ -3,13 +3,16 @@ import { Nullable, Prettify } from "@/app/Definitions/types";
 import emailClient from "@/app/Emails";
 import templateDefinitions from "@/app/Emails/templates";
 import { templateVariables as inviteTemplateVariables } from "@/app/Emails/templates/campaignInvite";
-import dataClient from "@/app/ServerFunctions/database";
+import { dataClient } from "@/app/ServerFunctions/database";
 import { getInviteBaseUrl, getUserGroups } from "@/app/ServerFunctions/serverActions";
-import Assignment from "@/app/ServerFunctions/types/assignment";
-import { Candidates } from "@/app/ServerFunctions/types/candidates";
-import Customer from "@/app/ServerFunctions/types/customer";
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
-import Influencer from "@/app/ServerFunctions/types/influencer";
+import {
+    Assignment,
+    Candidate,
+    Customer,
+    EmailTriggers,
+    Influencer,
+    Influencers,
+} from "@/app/ServerFunctions/types";
 import { Box, CircularProgress, IconButton, SxProps, Typography } from "@mui/material";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { use, useMemo } from "react";
@@ -18,7 +21,7 @@ import { use, useMemo } from "react";
 
 //MARK: - Main Component
 interface PreviewFrameProps {
-    selectedCandidate?: Candidates.Candidate;
+    selectedCandidate?: Candidate;
     assignmentId: string;
 }
 export default function PreviewFrame({ selectedCandidate, assignmentId }: PreviewFrameProps) {
@@ -91,7 +94,7 @@ export default function PreviewFrame({ selectedCandidate, assignmentId }: Previe
 
     const variables: inviteTemplateVariables = useMemo(() => {
         const name = selectedCandidate?.influencer
-            ? Influencer.getFullName(selectedCandidate.influencer)
+            ? Influencers.getFullName(selectedCandidate.influencer)
             : "<Kein Name gefunden>";
         const linkBase = inviteBaseUrl.data ?? "<Kein Link gefunden>";
         return {
@@ -116,15 +119,15 @@ export default function PreviewFrame({ selectedCandidate, assignmentId }: Previe
         () =>
             ({
                 "&": {
-                    display: "flex",
-                    width: "100%",
-                    height: "100%",
+                    "display": "flex",
+                    "width": "100%",
+                    "height": "100%",
                     // margin: "10px",
-                    padding: "10px",
-                    alignContent: "center",
-                    alignItems: "stretch",
-                    justifyContent: "center",
-                    textAlign: "center",
+                    "padding": "10px",
+                    "alignContent": "center",
+                    "alignItems": "stretch",
+                    "justifyContent": "center",
+                    "textAlign": "center",
 
                     "& > *:not(button)": {
                         borderRadius: "10px",
@@ -132,8 +135,8 @@ export default function PreviewFrame({ selectedCandidate, assignmentId }: Previe
                         borderStyle: "inset",
                     },
                     "#EmailPreview": {
-                        display: "flex",
-                        flexDirection: "column",
+                        "display": "flex",
+                        "flexDirection": "column",
                         "#EmailSubjectLine": {
                             padding: "10px",
                             color: "white",
@@ -179,7 +182,10 @@ export default function PreviewFrame({ selectedCandidate, assignmentId }: Previe
                 isRefetching={templates.isFetching}
                 refreshTemplates={() => templates.original.forEach((x) => x.refetch())}
             />
-            <EmailPreview html={previewHtml} subjectLine={subjectLine} />
+            <EmailPreview
+                html={previewHtml}
+                subjectLine={subjectLine}
+            />
         </Box>
     );
 }
@@ -223,13 +229,13 @@ function AdminRefreshButton({ refreshTemplates, isRefetching }: AdminRefreshButt
     const style = useMemo(
         () =>
             ({
-                position: "absolute",
-                bottom: "10px",
-                animationPlayState: "running",
-                animationName: "spin",
-                animationDuration: "500ms",
-                animationIterationCount: `${isRefetching ? "infinite" : "0"}`,
-                animationTimingFunction: "linear",
+                "position": "absolute",
+                "bottom": "10px",
+                "animationPlayState": "running",
+                "animationName": "spin",
+                "animationDuration": "500ms",
+                "animationIterationCount": `${isRefetching ? "infinite" : "0"}`,
+                "animationTimingFunction": "linear",
                 "@keyframes spin": {
                     "100%": { transform: `rotate(360deg)` },
                 },
@@ -238,7 +244,10 @@ function AdminRefreshButton({ refreshTemplates, isRefetching }: AdminRefreshButt
     );
     if (!userGroups.data?.includes("admin")) return null;
     return (
-        <IconButton onClick={refreshTemplates} sx={style}>
+        <IconButton
+            onClick={refreshTemplates}
+            sx={style}
+        >
             <RefreshIcon />
         </IconButton>
     );
@@ -247,7 +256,10 @@ function AdminRefreshButton({ refreshTemplates, isRefetching }: AdminRefreshButt
 function Loading() {
     const styles: SxProps = {};
     return (
-        <Box id="LoadingContainer" sx={styles}>
+        <Box
+            id="LoadingContainer"
+            sx={styles}
+        >
             <Typography variant="h4">Emailvorschau wird geladen</Typography>
             <CircularProgress />
         </Box>
@@ -276,5 +288,11 @@ interface EmailBodyProps {
     html: string;
 }
 function EmailBody({ html }: EmailBodyProps) {
-    return <iframe id="previewFrame" title="Email Preview" srcDoc={html} />;
+    return (
+        <iframe
+            id="previewFrame"
+            title="Email Preview"
+            srcDoc={html}
+        />
+    );
 }

@@ -1,4 +1,4 @@
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
+import { EmailTriggers } from "@/app/ServerFunctions/types";
 import { Html, Button, Text, Head, Preview, Container, Hr } from "@react-email/components";
 import { Placeholder } from "../_components";
 import styles from "../styles";
@@ -38,7 +38,10 @@ function NewCampaignInvite(props: DebugToggle) {
     const {} = props.debug ? defaultParams : placeholders;
 
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
             {/* <Preview>Anfrage für Kooperation</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
@@ -66,7 +69,10 @@ function ReducedCampaignInvite(props: DebugToggle) {
     const assignments = props.debug;
 
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             {/* <Head />
             <Preview>Einladung zur Kampagne</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>

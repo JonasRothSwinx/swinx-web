@@ -1,6 +1,6 @@
 import { Button, Container, Head, Html, Preview, Text } from "@react-email/components";
 import styles from "../../../Emails/templates/styles";
-import { Candidates } from "@/app/ServerFunctions/types/candidates";
+import { Candidates } from "@/app/ServerFunctions/types";
 
 interface InfluencerResponseEmailProps {
     response: Candidates.candidateResponse;
@@ -33,7 +33,10 @@ function Accepted({
     feedback,
 }: Omit<InfluencerResponseEmailProps, "response">) {
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
             <Preview>{influencerName} möchte an der Kamapgne teilnehmen</Preview>
             <Text style={styles.text}>
@@ -55,7 +58,10 @@ function Declined({
     feedback,
 }: Omit<InfluencerResponseEmailProps, "response">) {
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
             <Preview>{InfluencerName} möchte nicht an der Kampagne teilnehmen</Preview>
             <Text style={styles.text}>
@@ -73,7 +79,10 @@ function Declined({
 
 function Pending(InfluencerName: string, customerCompany: string): JSX.Element {
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
             <Preview>{InfluencerName} hat seine Entscheidung geändert</Preview>
             <Text style={styles.text}>

@@ -1,7 +1,5 @@
-import { DialogProps } from "@/app/Definitions/types";
-import Campaign from "@/app/ServerFunctions/types/campaign";
-import Customer from "@/app/ServerFunctions/types/customer";
-import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
+import { Campaign, Campaigns, Customer } from "@/app/ServerFunctions/types";
+import { dayjs, Dayjs } from "@/app/utils";
 import {
     Box,
     Button,
@@ -22,21 +20,21 @@ import { Tab } from "@mui/material";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { AddIcon } from "@/app/Definitions/Icons";
 import { deleteCustomer } from "@/app/ServerFunctions/database/dbOperations/customers";
-import dataClient from "@/app/ServerFunctions/database";
+import { dataClient } from "@/app/ServerFunctions/database";
 import sxStyles from "./sxStyles";
 import { useQuery } from "@tanstack/react-query";
 import TextFieldWithTooltip from "./Components/TextFieldWithTooltip";
 
 const styles = stylesExporter.dialogs;
 
-const initialCustomer: Customer.Customer = {
+const initialCustomer: Customer = {
     firstName: "",
     lastName: "",
     company: "",
     email: "",
 };
 
-const initialData: Campaign.Campaign = {
+const initialData: Campaign = {
     id: "",
     campaignTimelineEvents: [],
     assignedInfluencers: [],
@@ -49,21 +47,35 @@ const initialData: Campaign.Campaign = {
     },
     projectManagers: [],
 } as const;
-type CampaignDialogProps = DialogProps<Campaign.Campaign[], Campaign.Campaign>;
 
+type CampaignDialogProps = {
+    onClose?: (hasChanged?: boolean) => void;
+    editing?: boolean;
+    editingData?: Campaign;
+    parent: Campaign[];
+    setParent: React.Dispatch<React.SetStateAction<Campaign[]>>;
+    isOpen?: boolean;
+};
 function CampaignDialog(props: CampaignDialogProps) {
     //##################
     //#region Prop Destructuring
-    const { isOpen = false, onClose, editing, editingData, parent: rows, setParent: setRows } = props;
+    const {
+        isOpen = false,
+        onClose,
+        editing,
+        editingData,
+        parent: rows,
+        setParent: setRows,
+    } = props;
     //#endregion Prop Destructuring
     //##################
 
     //##################
     //#region States
-    const [campaign, setCampaign] = useState<Campaign.Campaign>(initialData);
-    const [changedData, setChangedData] = useState<Partial<Campaign.Campaign>>(editingData ?? {});
-    const [customers, setCustomers] = useState<Partial<Customer.Customer>[]>(editingData?.customers ?? [{}]);
-    const [billingAdress, setBillingAdress] = useState<Campaign.BillingAdress>({
+    const [campaign, setCampaign] = useState<Campaign>(initialData);
+    const [changedData, setChangedData] = useState<Partial<Campaign>>(editingData ?? {});
+    const [customers, setCustomers] = useState<Partial<Customer>[]>(editingData?.customers ?? [{}]);
+    const [billingAdress, setBillingAdress] = useState<Campaigns.BillingAdress>({
         name: "",
         street: "",
         city: "",
@@ -114,21 +126,24 @@ function CampaignDialog(props: CampaignDialogProps) {
                 return;
             }
             //TODO Check if all customers are valid
-            const checkedCustomers = customers as Customer.Customer[];
+            const checkedCustomers = customers as Customer[];
 
             //Assemble Campaign Object
             const assembledCampaign = {
                 ...campaign,
                 billingAdress,
                 customers: checkedCustomers,
-            } satisfies Campaign.Campaign;
+            } satisfies Campaign;
             console.log(assembledCampaign);
 
             dataClient.campaign.create({ campaign: assembledCampaign, projectManagerId });
             EventHandlers.handleClose(true);
         },
 
-        handleDateChange: (newValue: Dayjs | null, context: PickerChangeHandlerContext<DateTimeValidationError>) => {
+        handleDateChange: (
+            newValue: Dayjs | null,
+            context: PickerChangeHandlerContext<DateTimeValidationError>,
+        ) => {
             // console.log("value", newValue);
             try {
                 const newDate = dayjs(newValue);
@@ -138,7 +153,7 @@ function CampaignDialog(props: CampaignDialogProps) {
                 setCampaign((prevState) => {
                     return {
                         ...prevState,
-                    } satisfies Campaign.Campaign;
+                    } satisfies Campaign;
                 });
             } catch (error) {
                 console.log(newValue, context);
@@ -183,10 +198,16 @@ function CampaignDialog(props: CampaignDialogProps) {
                     setBillingAdress={setBillingAdress}
                 />
                 <DialogActions>
-                    <Button onClick={() => EventHandlers.handleClose(false)} color="secondary">
+                    <Button
+                        onClick={() => EventHandlers.handleClose(false)}
+                        color="secondary"
+                    >
                         Abbrechen
                     </Button>
-                    <Button variant="contained" type="submit">
+                    <Button
+                        variant="contained"
+                        type="submit"
+                    >
                         Speichern
                     </Button>
                 </DialogActions>
@@ -197,16 +218,17 @@ function CampaignDialog(props: CampaignDialogProps) {
 export default CampaignDialog;
 
 interface FormContentProps {
-    customers: Partial<Customer.Customer>[];
-    setCustomers: React.Dispatch<React.SetStateAction<Partial<Customer.Customer>[]>>;
-    campaign: Campaign.Campaign;
-    setCampaign: React.Dispatch<React.SetStateAction<Campaign.Campaign>>;
-    billingAdress: Campaign.BillingAdress;
-    setBillingAdress: React.Dispatch<React.SetStateAction<Campaign.BillingAdress>>;
+    customers: Partial<Customer>[];
+    setCustomers: React.Dispatch<React.SetStateAction<Partial<Customer>[]>>;
+    campaign: Campaign;
+    setCampaign: React.Dispatch<React.SetStateAction<Campaign>>;
+    billingAdress: Campaigns.BillingAdress;
+    setBillingAdress: React.Dispatch<React.SetStateAction<Campaigns.BillingAdress>>;
 }
 
 function FormContent(props: FormContentProps) {
-    const { customers, setCustomers, campaign, setCampaign, billingAdress, setBillingAdress } = props;
+    const { customers, setCustomers, campaign, setCampaign, billingAdress, setBillingAdress } =
+        props;
 
     const [tab, setTab] = useState("0");
     const EventHandlers = {
@@ -221,7 +243,7 @@ function FormContent(props: FormContentProps) {
         },
     };
     const StateChanges = {
-        handleCustomerChange: (changedData: Partial<Customer.Customer>, index = 0) => {
+        handleCustomerChange: (changedData: Partial<Customer>, index = 0) => {
             setCustomers((prevState) => {
                 const newCustomers = [...prevState];
                 const prevcustomer = newCustomers[index];
@@ -263,10 +285,15 @@ function FormContent(props: FormContentProps) {
             </IconButton> */}
                     {customers.map((customer, index) => {
                         return (
-                            <TabPanel key={index} value={index.toString()}>
+                            <TabPanel
+                                key={index}
+                                value={index.toString()}
+                            >
                                 <CustomerDialogContent
                                     customer={customer}
-                                    setCustomer={(changedData) => StateChanges.handleCustomerChange(changedData, index)}
+                                    setCustomer={(changedData) =>
+                                        StateChanges.handleCustomerChange(changedData, index)
+                                    }
                                     deleteCustomer={() => StateChanges.deleteCustomer(index)}
                                     index={index}
                                 />
@@ -277,18 +304,24 @@ function FormContent(props: FormContentProps) {
             </DialogContent>
             <DialogContent>
                 <DialogContentText>Budget</DialogContentText>
-                <BudgetInfo campaign={campaign} setCampaign={setCampaign} />
+                <BudgetInfo
+                    campaign={campaign}
+                    setCampaign={setCampaign}
+                />
             </DialogContent>
             <DialogContent>
                 <DialogContentText>Rechnungsadresse</DialogContentText>
-                <BillingAdressInfo billingAdress={billingAdress} setBillingAdress={setBillingAdress} />
+                <BillingAdressInfo
+                    billingAdress={billingAdress}
+                    setBillingAdress={setBillingAdress}
+                />
             </DialogContent>
         </Box>
     );
 }
 interface InfoProps {
-    billingAdress: Campaign.BillingAdress;
-    setBillingAdress: React.Dispatch<React.SetStateAction<Campaign.BillingAdress>>;
+    billingAdress: Campaigns.BillingAdress;
+    setBillingAdress: React.Dispatch<React.SetStateAction<Campaigns.BillingAdress>>;
 }
 function BillingAdressInfo(props: InfoProps) {
     const { billingAdress, setBillingAdress } = props;
@@ -298,7 +331,7 @@ function BillingAdressInfo(props: InfoProps) {
             return {
                 ...prevState,
                 [name]: value,
-            } satisfies Campaign.BillingAdress;
+            } satisfies Campaigns.BillingAdress;
         });
     };
     return (
@@ -344,8 +377,8 @@ function BillingAdressInfo(props: InfoProps) {
 }
 
 interface BudgetinfoProps {
-    campaign: Campaign.Campaign;
-    setCampaign: React.Dispatch<React.SetStateAction<Campaign.Campaign>>;
+    campaign: Campaign;
+    setCampaign: React.Dispatch<React.SetStateAction<Campaign>>;
 }
 
 function BudgetInfo(props: BudgetinfoProps) {
@@ -356,7 +389,7 @@ function BudgetInfo(props: BudgetinfoProps) {
             return {
                 ...prevState,
                 [name]: value,
-            } satisfies Campaign.Campaign;
+            } satisfies Campaign;
         });
     };
     return (

@@ -1,12 +1,12 @@
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+import { Event, Events } from "@/app/ServerFunctions/types";
 
 export type EventCategory = {
     type: string;
-    events: TimelineEvent.Event[];
+    events: Event[];
 };
 
-export default function categorizeEvents(events: TimelineEvent.Event[]): EventCategory[] {
-    return events.reduce((categories: EventCategory[], event: TimelineEvent.Event) => {
+export default function categorizeEvents(events: Event[]): EventCategory[] {
+    return events.reduce((categories: EventCategory[], event: Event) => {
         const category = categories.find((category) => category.type === event.type);
         if (category) {
             category.events.push(event);
@@ -19,8 +19,8 @@ export default function categorizeEvents(events: TimelineEvent.Event[]): EventCa
                 events: [event],
             },
         ].sort((a, b) => {
-            const displayNameA = TimelineEvent.getDisplayName(a.type);
-            const displayNameB = TimelineEvent.getDisplayName(b.type);
+            const displayNameA = Events.getDisplayName(a.type);
+            const displayNameB = Events.getDisplayName(b.type);
             return displayNameA.localeCompare(displayNameB);
         });
     }, []);

@@ -2,10 +2,9 @@
 
 import InfluencerResponseEmail from "./InfluencerResponse";
 import sesAPIClient from "@/app/Emails/sesAPI";
-import ProjectManagers from "@/app/ServerFunctions/types/projectManagers";
+import { ProjectManager, Candidates } from "@/app/ServerFunctions/types";
 import { render, renderAsync } from "@react-email/render";
 import { getProjectManagerEmails } from "../Database/dbOperations";
-import { Candidates } from "@/app/ServerFunctions/types/candidates";
 import { Prettify } from "@/app/Definitions/types";
 
 interface NotifyResponseParams {

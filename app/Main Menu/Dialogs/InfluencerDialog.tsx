@@ -1,5 +1,4 @@
-import { DialogProps } from "@/app/Definitions/types";
-import Influencer from "@/app/ServerFunctions/types/influencer";
+import { Assignments, Influencers, EmailTriggers } from "@/app/ServerFunctions/types";
 import {
     Box,
     Button,
@@ -14,22 +13,36 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import stylesExporter from "../styles/stylesExporter";
-import dataClient from "@/app/ServerFunctions/database";
+import { dataClient } from "@/app/ServerFunctions/database";
 import { useQueryClient } from "@tanstack/react-query";
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
 import sxStyles from "./sxStyles";
 import { Unstable_Grid2 as Grid } from "@mui/material";
 import TextFieldWithTooltip from "./Components/TextFieldWithTooltip";
 
 const styles = stylesExporter.dialogs;
-type DialogType = Influencer.Full;
 
-type InfluencerDialogProps = DialogProps<Influencer.Full[], DialogType>;
+// type InfluencerDialogProps = DialogProps<Influencer.Full[], DialogType>;
+type InfluencerDialogProps = {
+    onClose?: (hasChanged?: boolean) => void;
+    editing?: boolean;
+    editingData?: Influencers.Full;
+    parent: Influencers.Full[];
+    setParent: React.Dispatch<React.SetStateAction<Influencers.Full[]>>;
+    isOpen?: boolean;
+};
+
 function InfluencerDialog(props: InfluencerDialogProps) {
     // debugger;
-    const { onClose, parent: rows, setParent: setRows, isOpen = true, editing, editingData } = props;
+    const {
+        onClose,
+        parent: rows,
+        setParent: setRows,
+        isOpen = true,
+        editing,
+        editingData,
+    } = props;
     // const [isModalOpen, setIsModalOpen] = useState(open);
-    const [changedData, setChangedData] = useState<Partial<Influencer.Full>>({});
+    const [changedData, setChangedData] = useState<Partial<Influencers.Full>>({});
 
     const queryClient = useQueryClient();
     const infoProps: InfoProps = { changedData, editingData, setChangedData };
@@ -54,7 +67,7 @@ function InfluencerDialog(props: InfluencerDialogProps) {
                 }
             } else {
                 // create
-                if (!Influencer.isFull(changedData, false)) return;
+                if (!Influencers.isFull(changedData, false)) return;
                 dataClient.influencer.create(changedData);
             }
             EventHandlers.handleClose();
@@ -79,10 +92,16 @@ function InfluencerDialog(props: InfluencerDialogProps) {
                 <FormInputs {...infoProps} />
 
                 <DialogActions>
-                    <Button onClick={EventHandlers.handleClose} color="secondary">
+                    <Button
+                        onClick={EventHandlers.handleClose}
+                        color="secondary"
+                    >
                         Abbrechen
                     </Button>
-                    <Button variant="contained" type="submit">
+                    <Button
+                        variant="contained"
+                        type="submit"
+                    >
                         Speichern
                     </Button>
                 </DialogActions>
@@ -92,9 +111,9 @@ function InfluencerDialog(props: InfluencerDialogProps) {
 }
 export default InfluencerDialog;
 interface InfoProps {
-    changedData: Partial<Influencer.Full>;
-    editingData?: Influencer.Full;
-    setChangedData: React.Dispatch<React.SetStateAction<Partial<Influencer.Full>>>;
+    changedData: Partial<Influencers.Full>;
+    editingData?: Influencers.Full;
+    setChangedData: React.Dispatch<React.SetStateAction<Partial<Influencers.Full>>>;
 }
 
 function FormInputs(props: InfoProps) {
@@ -148,7 +167,10 @@ function ContactInfo(props: InfoProps) {
                 "& .MuiFormControl-root:has(#email)": { flexBasis: "100%" },
             }}
         >
-            <DialogContentText margin={"10"} textAlign={"center"}>
+            <DialogContentText
+                margin={"10"}
+                textAlign={"center"}
+            >
                 Kontakt
             </DialogContentText>
             <TextField
@@ -199,7 +221,10 @@ function ContactInfo(props: InfoProps) {
                 }}
             >
                 {EmailTriggers.emailLevels.map((option) => (
-                    <MenuItem key={option} value={option}>
+                    <MenuItem
+                        key={option}
+                        value={option}
+                    >
                         {EmailTriggers.getDisplayName(option)}
                     </MenuItem>
                 ))}

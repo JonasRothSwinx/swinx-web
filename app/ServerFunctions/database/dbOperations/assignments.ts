@@ -1,21 +1,24 @@
 "use server";
 
 import { Nullable, PartialWith } from "@/app/Definitions/types";
-import Assignment from "@/app/ServerFunctions/types/assignment";
+import {
+    Assignment,
+    Assignments,
+    Influencer,
+    Influencers,
+    Event,
+    Events,
+    EmailTrigger,
+    EmailTriggers,
+} from "@/app/ServerFunctions/types";
 import client from "./.dbclient";
-import Influencer from "@/app/ServerFunctions/types/influencer";
 import { createCandidate, deleteCandidate } from "./candidate/candidate";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
-import { Candidates } from "../../types/candidates";
-import { EmailTriggers } from "../../types/emailTriggers";
+import { Candidate } from "../../types";
 import { SelectionSet } from "aws-amplify/api";
 import { Schema } from "@/amplify/data/resource";
 import database from ".";
 
-export async function createAssignment(
-    assignment: Omit<Assignment.AssignmentFull, "id">,
-    campaignId: string,
-) {
+export async function createAssignment(assignment: Omit<Assignment, "id">, campaignId: string) {
     const { placeholderName: name, budget, isPlaceholder = true } = assignment;
     if (!name) throw new Error("Missing Data");
 
@@ -95,7 +98,7 @@ export async function getAllCandidates(assignmentId: string) {
  * @param assignment - The assignment object to update.
  * @returns The ID of the updated assignment.
  */
-export async function updateAssignment(assignment: PartialWith<Assignment.AssignmentFull, "id">) {
+export async function updateAssignment(assignment: PartialWith<Assignment, "id">) {
     console.log(assignment);
     const { placeholderName: name, budget, isPlaceholder = true } = assignment;
     const promises: Promise<unknown>[] = [];
@@ -173,21 +176,21 @@ export async function getAssignment(assignmentId: string) {
 }
 
 //MARK: Validate
-function validateAssignment(rawData: RawAssignment): Assignment.AssignmentMin {
-    const influencer: Nullable<Influencer.InfluencerWithName> = rawData.influencer
+function validateAssignment(rawData: RawAssignment): Assignments.Min {
+    const influencer: Nullable<Influencers.InfluencerWithName> = rawData.influencer
         ? {
               id: rawData.influencer.id,
               firstName: rawData.influencer.firstName,
               lastName: rawData.influencer.lastName,
           }
         : null;
-    const candidates: Candidates.Candidate[] = rawData.candidates.map((x) => {
+    const candidates: Candidate[] = rawData.candidates.map((x) => {
         if (!x.influencer.email) throw new Error("Email is required");
         let emailType: EmailTriggers.emailLevel = "new";
         if (x.influencer.emailType && EmailTriggers.isValidEmailType(x.influencer.emailType)) {
             emailType = x.influencer.emailType;
         }
-        const candidate: Candidates.Candidate = {
+        const candidate: Candidate = {
             id: x.id,
             response: x.response,
             influencer: {
@@ -208,7 +211,7 @@ function validateAssignment(rawData: RawAssignment): Assignment.AssignmentMin {
     //         id: x.id,
     //     };
     // });
-    const dataOut: Assignment.AssignmentMin = {
+    const dataOut: Assignments.Min = {
         id: rawData.id,
         placeholderName: rawData.placeholderName ?? null,
         budget: rawData.budget,
@@ -221,7 +224,7 @@ function validateAssignment(rawData: RawAssignment): Assignment.AssignmentMin {
     return dataOut;
 }
 
-function validateAssignments(rawData: RawAssignment[]): Assignment.AssignmentMin[] {
+function validateAssignments(rawData: RawAssignment[]): Assignments.Min[] {
     return rawData.map(validateAssignment);
 }
 
@@ -229,7 +232,7 @@ const eventSelectionSet = [
     "timelineEvents.timelineEvent.*",
     "timelineEvents.timelineEvent.campaign.id",
 ] as const;
-export async function getAssignmentTimelineEvents(assignment: Assignment.AssignmentMin) {
+export async function getAssignmentTimelineEvents(assignment: Assignments.Min) {
     const fetchStart = performance.now();
     const { data, errors } = await client.models.InfluencerAssignment.get(
         { id: assignment.id },
@@ -241,7 +244,7 @@ export async function getAssignmentTimelineEvents(assignment: Assignment.Assignm
     console.log("Fetch Time", fetchEnd - fetchStart);
     if (data === null) return [];
     const validateStart = performance.now();
-    const dataOut: TimelineEvent.Event[] = await Promise.all(
+    const dataOut: Event[] = await Promise.all(
         data.timelineEvents.map((x) => {
             return validateTimelineEvent(x, assignment);
         }),
@@ -266,7 +269,7 @@ export async function listAssignmentsByCampaign(campaignId: string) {
     if (errors) {
         throw new Error(JSON.stringify(errors));
     }
-    const validatedAssignments: Assignment.AssignmentMin[] = data.map(validateAssignment);
+    const validatedAssignments: Assignments.Min[] = data.map(validateAssignment);
     return validatedAssignments;
 }
 
@@ -275,8 +278,8 @@ function validateTimelineEvent(
         Schema["InfluencerAssignment"]["type"],
         typeof eventSelectionSet
     >["timelineEvents"][number],
-    assignment: Assignment.AssignmentMin,
-): TimelineEvent.Event {
+    assignment: Assignments.Min,
+): Event {
     const {
         timelineEvent: {
             id,
@@ -289,10 +292,10 @@ function validateTimelineEvent(
             isCompleted = false,
         },
     } = rawData;
-    const validatedEvent: TimelineEvent.Event = {
+    const validatedEvent: Event = {
         id: id,
         date,
-        type: type as TimelineEvent.eventType,
+        type: type as Events.eventType,
         eventAssignmentAmount: 1,
         eventTaskAmount,
         eventTitle,

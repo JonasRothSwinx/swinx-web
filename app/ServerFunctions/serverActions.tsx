@@ -8,7 +8,7 @@ import { generateServerClientUsingCookies } from "@aws-amplify/adapter-nextjs/ap
 import dayjs from "dayjs";
 import "dayjs/locale/de";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import sanitize from "../utils/sanitize";
+import { sanitize } from "../utils";
 dayjs.extend(customParseFormat);
 
 // export default { getUserGroups, getUserAttributes };

@@ -1,9 +1,8 @@
 import CustomErrorBoundary from "@/app/Components/CustomErrorBoundary";
 import QueryDebugDisplay from "@/app/Components/QueryDebugDisplay";
 import { highlightData } from "@/app/Definitions/types";
-import dataClient from "@/app/ServerFunctions/database";
-import Assignment from "@/app/ServerFunctions/types/assignment";
-import Campaign from "@/app/ServerFunctions/types/campaign";
+import { dataClient } from "@/app/ServerFunctions/database";
+import { Assignment, Campaign } from "@/app/ServerFunctions/types";
 import { Placeholder } from "@aws-amplify/ui-react";
 import { Dialog, Unstable_Grid2 as Grid, SxProps, Typography } from "@mui/material";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -36,7 +35,7 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
         placeholderData: [],
         refetchOnWindowFocus: false,
     });
-    const [assignmentData, setAssignmentData] = useState<Assignment.Assignment[]>([]);
+    const [assignmentData, setAssignmentData] = useState<Assignment[]>([]);
     const highlightQuery = useQuery<highlightData[]>({
         queryKey: ["highlightedEvents"],
         queryFn: async () => {
@@ -71,7 +70,7 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
             queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
             campaign.refetch();
         },
-        setCampaign: (updatedCampaign: Campaign.Campaign) => {
+        setCampaign: (updatedCampaign: Campaign) => {
             console.log("setCampaign", updatedCampaign);
             queryClient.setQueryData(["campaign", campaignId], updatedCampaign);
             campaign.refetch();
@@ -80,20 +79,20 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
     const styles: SxProps = useMemo(() => {
         return {
             "&": {
-                padding: "10px",
+                "padding": "10px",
                 "#CampaignDetailsDialogPaper": {
-                    borderRadius: "20px",
+                    "borderRadius": "20px",
                     // padding: "10px",
                     "#CampaignDetailsButtons": {
-                        position: "relative",
-                        width: "100%",
-                        display: "flex",
+                        "position": "relative",
+                        "width": "100%",
+                        "display": "flex",
 
-                        justifyContent: "right",
-                        alignItems: "center",
-                        padding: "5px 10px ",
-                        backgroundColor: "var(--swinx-blue)",
-                        borderBottom: "1px solid black",
+                        "justifyContent": "right",
+                        "alignItems": "center",
+                        "padding": "5px 10px ",
+                        "backgroundColor": "var(--swinx-blue)",
+                        "borderBottom": "1px solid black",
                         "#DeleteButton": {
                             color: "error.main",
                             borderColor: "error.main",
@@ -103,19 +102,19 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
                         },
                     },
                     "#CampaignDetailsGrid": {
-                        padding: "5px 10px 10px",
-                        height: "100%",
-                        maxHeight: "100%",
+                        "padding": "5px 10px 10px",
+                        "height": "100%",
+                        "maxHeight": "100%",
                         "& .MuiGrid2-root": {
                             overflowY: "auto",
                             overflowX: "hidden",
                         },
                         "#CampaignDetailsDisplay": {
                             "& .MuiAccordion-root": {
-                                overflow: "hidden",
-                                borderRadius: "0px",
+                                "overflow": "hidden",
+                                "borderRadius": "0px",
 
-                                border: "1px solid black",
+                                "border": "1px solid black",
                                 "&:first-of-type": {
                                     borderTopLeftRadius: "20px",
                                     borderTopRightRadius: "20px",
@@ -176,7 +175,13 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
                     />
                 </CustomErrorBoundary>
 
-                <Grid id="CampaignDetailsGrid" container columns={3} sx={{}} maxHeight={"100%"}>
+                <Grid
+                    id="CampaignDetailsGrid"
+                    container
+                    columns={3}
+                    sx={{}}
+                    maxHeight={"100%"}
+                >
                     <Grid
                         id="CampaignDetailsDisplay"
                         xs={1}
@@ -200,7 +205,10 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
                             />
                         </CustomErrorBoundary>
                     </Grid>
-                    <Grid xs={1} maxHeight={"100%"}>
+                    <Grid
+                        xs={1}
+                        maxHeight={"100%"}
+                    >
                         <QueryDebugDisplay
                             data={[
                                 { ...campaign, name: "campaign" },
@@ -215,7 +223,10 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
                         {highlightQuery.data?.length ? (
                             highlightQuery.data.map((x) => {
                                 return (
-                                    <Typography key={x.id} color={x.color}>
+                                    <Typography
+                                        key={x.id}
+                                        color={x.color}
+                                    >
                                         {x.id}
                                     </Typography>
                                 );
@@ -224,7 +235,11 @@ export default function CampaignDetails(props: CampaignDetailsProps) {
                             <Typography> None</Typography>
                         )}
                     </Grid>
-                    <Grid id="timeline" xs={1} columns={1}>
+                    <Grid
+                        id="timeline"
+                        xs={1}
+                        columns={1}
+                    >
                         <CustomErrorBoundary message="Error loading timeline">
                             <TimelineView
                                 setCampaign={EventHandlers.setCampaign}

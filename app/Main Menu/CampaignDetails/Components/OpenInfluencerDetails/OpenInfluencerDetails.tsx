@@ -1,8 +1,12 @@
 import { AddIcon, ExpandMoreIcon } from "@/app/Definitions/Icons";
-import Assignment from "@/app/ServerFunctions/types/assignment";
-import Campaign from "@/app/ServerFunctions/types/campaign";
-import Influencer from "@/app/ServerFunctions/types/influencer";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+import {
+    Assignment,
+    Campaign,
+    Influencer,
+    Event,
+    Events,
+    Influencers,
+} from "@/app/ServerFunctions/types";
 import {
     Accordion,
     AccordionDetails,
@@ -15,17 +19,17 @@ import { randomDesk, randomId } from "@mui/x-data-grid-generator";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import AssignedInfluencer from "./AssignedInfluencer";
-import dataClient from "@/app/ServerFunctions/database";
+import { dataClient } from "@/app/ServerFunctions/database";
 
 type OpenInfluencerDetailsProps = {
-    influencers: Influencer.Full[];
+    influencers: Influencers.Full[];
     campaignId: string;
-    setCampaign: (campaign: Campaign.Campaign) => void;
-    placeholders: Assignment.Assignment[];
-    events: TimelineEvent.Event[];
+    setCampaign: (campaign: Campaign) => void;
+    placeholders: Assignment[];
+    events: Event[];
 };
 
-type eventDict = { [key: string]: TimelineEvent.Event[] };
+type eventDict = { [key: string]: Event[] };
 
 export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps) {
     const { campaignId, setCampaign, events, placeholders, influencers } = props;
@@ -34,19 +38,19 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
         queryKey: ["campaign", campaignId],
         queryFn: () => dataClient.campaign.get(campaignId),
     });
-    const [assignedInfluencers, setAssignedInfluencers] = useState<Assignment.Assignment[]>([]);
+    const [assignedInfluencers, setAssignedInfluencers] = useState<Assignment[]>([]);
     const [isProcessing, setIsProcessing] = useState(false);
-    const [targetAssignment, setTargetAssignment] = useState<Assignment.Assignment>();
+    const [targetAssignment, setTargetAssignment] = useState<Assignment>();
 
     useEffect(() => {
         function getInfluencers() {
             // debugger;
             // console.log(openInfluencers);
-            const assignments: Assignment.Assignment[] = campaign.data.assignedInfluencers ?? [];
+            const assignments: Assignment[] = campaign.data.assignedInfluencers ?? [];
 
             for (const event of events /* .filter((event) => event.assignment.isPlaceholder) */) {
                 switch (true) {
-                    case TimelineEvent.isSingleEvent(event): {
+                    case Events.isSingleEvent(event): {
                         const assignment = assignments.find(
                             (x) => x.id === event.assignments[0]?.id,
                         );
@@ -58,7 +62,7 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                         assignment.timelineEvents.push(event);
                         break;
                     }
-                    case TimelineEvent.isMultiEvent(event): {
+                    case Events.isMultiEvent(event): {
                         const assignment = assignments.find((x) =>
                             event.assignments?.find((y) => {
                                 y.id === x.id;
@@ -89,7 +93,7 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
         addAssignment: () => {
             setIsProcessing(true);
             const tempId = randomId();
-            const newPlaceholder: Assignment.Assignment = {
+            const newPlaceholder: Assignment = {
                 id: tempId,
                 placeholderName: `${randomDesk()}`,
                 budget: 0,
@@ -110,7 +114,7 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                 // console.log({ newPlaceholders });
                 setIsProcessing(false);
             });
-            const newCampaign: Campaign.Campaign = {
+            const newCampaign: Campaign = {
                 ...campaign.data,
                 assignedInfluencers: [...campaign.data.assignedInfluencers, newPlaceholder],
             };
@@ -120,7 +124,11 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
     return (
         <>
             <>{/* Dialogs */}</>
-            <Accordion defaultExpanded disableGutters variant="outlined">
+            <Accordion
+                defaultExpanded
+                disableGutters
+                variant="outlined"
+            >
                 <AccordionSummary
                     expandIcon={<ExpandMoreIcon />}
                     aria-controls="panel1-content"
@@ -146,7 +154,10 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                                     />
                                 );
                             })}
-                            <Button onClick={EventHandlers.addAssignment} disabled={isProcessing}>
+                            <Button
+                                onClick={EventHandlers.addAssignment}
+                                disabled={isProcessing}
+                            >
                                 <AddIcon />
                                 <Typography>Neuer Influencer</Typography>
                                 {isProcessing && <CircularProgress />}

@@ -1,8 +1,8 @@
 import { DeleteIcon } from "@/app/Definitions/Icons";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+import { Event, Events } from "@/app/ServerFunctions/types";
 import { Tooltip, Button } from "@mui/material";
 import { DateTimePicker } from "@mui/x-date-pickers";
-import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
+import { dayjs, Dayjs } from "@/app/utils";
 import { useMemo } from "react";
 import { styles } from "../../../TimelineEventDialog";
 
@@ -15,7 +15,7 @@ export interface DateProps {
     fixedDate: Dayjs | null;
     showDeleteButton?: boolean;
     removeDate: (index: number) => void;
-    parentEvent: TimelineEvent.Event | null;
+    parentEvent: Event | null;
 }
 export function Date(props: DateProps) {
     const {
