@@ -24,54 +24,54 @@ export const timelineEvent = {
 export async function createTimelineEvent(
     timelineEvent: Omit<Event, "id">,
 ): Promise<Events.EventWithId> {
-    const campaignId = timelineEvent.campaign.id;
-    const queryClient = config.getQueryClient();
-    const assignment = timelineEvent.assignments[0];
+    // const campaignId = timelineEvent.campaign.id;
+    // const queryClient = config.getQueryClient();
+    // const assignment = timelineEvent.assignments[0];
     //  const mutation = useMutation()
-    const tempId = randomId();
-    const tempEvent: Event = { ...timelineEvent, id: tempId };
-    queryClient.setQueryData(["timelineEvent", tempId], tempEvent);
-    queryClient.setQueryData(["timelineEvents", campaignId], (prev: Event[]) => {
-        if (!prev) {
-            return [tempEvent];
-        }
-        return [...prev, tempEvent];
-    });
-    queryClient.setQueryData(["timelineEvents"], (prev: Event[]) => {
-        if (!prev) {
-            return [tempEvent];
-        }
-        return [...prev, tempEvent];
-    });
-    if (assignment) {
-        queryClient.setQueryData(["assignmentEvents", assignment.id], (prev: Event[]) => {
-            if (!prev) {
-                return [tempEvent];
-            }
-            return [...prev, tempEvent];
-        });
-    }
+    // const tempId = randomId();
+    // const tempEvent: Event = { ...timelineEvent, id: tempId };
+    // queryClient.setQueryData(["timelineEvent", tempId], tempEvent);
+    // queryClient.setQueryData(["timelineEvents", campaignId], (prev: Event[]) => {
+    //     if (!prev) {
+    //         return [tempEvent];
+    //     }
+    //     return [...prev, tempEvent];
+    // });
+    // queryClient.setQueryData(["timelineEvents"], (prev: Event[]) => {
+    //     if (!prev) {
+    //         return [tempEvent];
+    //     }
+    //     return [...prev, tempEvent];
+    // });
+    // if (assignment) {
+    //     queryClient.setQueryData(["assignmentEvents", assignment.id], (prev: Event[]) => {
+    //         if (!prev) {
+    //             return [tempEvent];
+    //         }
+    //         return [...prev, tempEvent];
+    //     });
+    // }
 
     const id = await database.timelineEvent.create(simplify(timelineEvent));
-    const createdTimelineEvent: Events.EventWithId = { ...timelineEvent, id, info: {} };
+    const createdTimelineEvent: Events.EventWithId = { ...timelineEvent, id };
 
-    queryClient.invalidateQueries({
-        queryKey: ["timelineEvent", id],
-    });
-    queryClient.invalidateQueries({
-        queryKey: ["timelineEvents", campaignId],
-    });
-    queryClient.invalidateQueries({
-        queryKey: ["timelineEvents"],
-    });
-    if (assignment) {
-        queryClient.invalidateQueries({
-            queryKey: ["assignmentEvents", assignment.id],
-        });
-        queryClient.invalidateQueries({
-            queryKey: ["assignment", assignment.id],
-        });
-    }
+    // queryClient.invalidateQueries({
+    //     queryKey: ["timelineEvent", id],
+    // });
+    // queryClient.invalidateQueries({
+    //     queryKey: ["timelineEvents", campaignId],
+    // });
+    // queryClient.invalidateQueries({
+    //     queryKey: ["timelineEvents"],
+    // });
+    // if (assignment) {
+    //     queryClient.invalidateQueries({
+    //         queryKey: ["assignmentEvents", assignment.id],
+    //     });
+    //     queryClient.invalidateQueries({
+    //         queryKey: ["assignment", assignment.id],
+    //     });
+    // }
 
     // queryClient.refetchQueries({ queryKey: ["timelineEvents"] });
     // queryClient.refetchQueries({ queryKey: ["timelineEvent", id] });

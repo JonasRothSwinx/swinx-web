@@ -37,17 +37,17 @@ export default async function send(props: SendMailProps) {
                 to: influencer.email,
                 templateData: JSON.stringify({
                     influencerName: `${influencer.firstName} ${influencer.lastName}`,
-                    customerName: customer.company,
-                } satisfies TemplateVariables),
+                    // customerName: customer.company,
+                } satisfies Partial<TemplateVariables>),
             },
         ];
     }, [] as { to: string; templateData: string }[]);
-    const fromAdress = campaignManager.email;
+    const fromAdress = `${campaignManager.firstName} ${campaignManager.lastName} <${campaignManager.email}>`;
 
     const response = await sesAPIClient.sendBulk({
         from: fromAdress ?? "swinx GmbH <noreply@swinx.de>",
         templateName,
-        defaultTemplateData: JSON.stringify(defaultParams),
+        defaultTemplateData: JSON.stringify({ ...defaultParams, customer: customer.company }),
         bulkTemplateData: templateData,
     });
     return response;

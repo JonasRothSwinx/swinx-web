@@ -42,7 +42,7 @@ export default async function send(props: SendMailProps) {
             },
         ];
     }, [] as { to: string; templateData: string }[]);
-    const fromAdress = campaignManager.email;
+    const fromAdress = `${campaignManager.firstName} ${campaignManager.lastName} <${campaignManager.email}>`;
 
     const response = await sesAPIClient.sendBulk({
         from: fromAdress ?? "swinx GmbH <noreply@swinx.de>",

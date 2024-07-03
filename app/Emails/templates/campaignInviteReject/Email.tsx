@@ -36,7 +36,7 @@ Email.PreviewProps = {
     debug: true,
 } satisfies EmailProps;
 
-export const subjectLineBase = "Anfrage für Kooperation";
+export const subjectLineBase = "Unser Kunde hat sich leider nicht für sie entschieden!";
 function NewCampaignInvite(props: DebugToggle) {
     const { influencerName, customerName } = props.debug ? defaultParams : placeholders;
 

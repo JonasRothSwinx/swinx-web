@@ -139,32 +139,48 @@ type timeOffset = {
 type EmailTriggerDefinition = {
     offset: timeOffset;
 };
-type EmailTriggerTypeDefaults = { [key in emailTriggerType]: Nullable<EmailTriggerDefinition> };
+type EmailTriggerTypeDefaults = { [key in emailTriggerType]: EmailTriggerDefinition[] };
 type EventEmailTriggerDefault = { [key in Events.eventType]: EmailTriggerTypeDefaults };
 
 export const EventEmailTriggerDefaults: EventEmailTriggerDefault = {
     Invites: {
-        actionReminder: { offset: { days: -1 } },
-        deadlineReminder: null,
+        actionReminder: [
+            //
+            { offset: { days: 0 } },
+            { offset: { days: -1 } },
+        ],
+        deadlineReminder: [],
     },
     Post: {
-        actionReminder: { offset: { days: -1 } },
-        deadlineReminder: { offset: { days: -7 } },
+        actionReminder: [
+            //
+            { offset: { days: 0 } },
+            { offset: { days: -1 } },
+        ],
+        deadlineReminder: [{ offset: { days: -3 } }],
     },
     Video: {
-        actionReminder: { offset: { days: -1 } },
-        deadlineReminder: { offset: { days: -7 } },
+        actionReminder: [
+            //
+            { offset: { days: 0 } },
+            { offset: { days: -1 } },
+        ],
+        deadlineReminder: [{ offset: { days: -3 } }],
     },
     WebinarSpeaker: {
-        actionReminder: { offset: { days: -1 } },
-        deadlineReminder: { offset: { days: -7 } },
+        actionReminder: [
+            //
+            { offset: { days: 0 } },
+            { offset: { days: -1 } },
+        ],
+        deadlineReminder: [{ offset: { days: -3 } }],
     },
     Webinar: {
-        actionReminder: null,
-        deadlineReminder: null,
+        actionReminder: [],
+        deadlineReminder: [],
     },
     ImpulsVideo: {
-        actionReminder: null,
-        deadlineReminder: { offset: { days: -7 } },
+        actionReminder: [],
+        deadlineReminder: [{ offset: { days: -3 } }],
     },
 } as const;

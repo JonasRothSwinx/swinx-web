@@ -130,12 +130,13 @@ export async function deleteEmailTrigger(
  */
 export async function getEmailTriggersForEvent(event: Pick<Event, "id">): Promise<EmailTrigger[]> {
     const queryClient = config.getQueryClient();
-    const triggers = queryClient.getQueryData<EmailTrigger[]>(["emailTriggers"]);
-    if (triggers) {
-        return triggers.filter((trigger) => trigger.event.id === event.id);
-    }
+    // const triggers = queryClient.getQueryData<EmailTrigger[]>(["emailTriggers"]);
+    // if (triggers) {
+    //     return triggers.filter((trigger) => trigger.event.id === event.id);
+    // }
     const eventTriggers = await dbOperations.emailTrigger.byEvent(event);
     const validatedTriggers = await Promise.all(eventTriggers.map(validateEmailTrigger));
+    validatedTriggers.sort((a, b) => dayjs(a.date).diff(dayjs(b.date)));
     queryClient.setQueryData(["emailTriggers", event.id], validatedTriggers);
     return validatedTriggers;
 }

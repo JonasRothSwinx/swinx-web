@@ -13,11 +13,41 @@ import dayjs from "dayjs";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { highlightData } from "@/app/Definitions/types";
 
+//#region config
+interface CategoryTitleProps {
+    events: Event[];
+}
+const CategoryTitle: {
+    [key in Events.singleEventType]: (props: CategoryTitleProps) => JSX.Element;
+} = {
+    Invites: (props) => <InviteEventsDisplayTitle {...props} />,
+    Post: (props) => <PostEventsDisplayTitle {...props} />,
+    Video: (props) => <VideoEventsDisplayTitle {...props} />,
+    WebinarSpeaker: (props) => <WebinarSpeakerEventsDisplayTitle {...props} />,
+    ImpulsVideo: (props) => <ImpulsVideoEventsDisplayTitle {...props} />,
+};
+
+interface CategoryDetailsProps {
+    events: Event[];
+    setHighlightedEvent: setHighlightedEventFunction;
+    highlightData?: highlightData[];
+}
+const CategoryDetails: {
+    [key in Events.singleEventType]: (props: CategoryDetailsProps) => JSX.Element;
+} = {
+    Invites: (props) => <InviteEventsDetails {...props} />,
+    Post: (props) => <PostEventsDetails {...props} />,
+    Video: (props) => <VideoEventsDisplay {...props} />,
+    WebinarSpeaker: (props) => <WebinarEventsDisplay {...props} />,
+    ImpulsVideo: (props) => <ImpulsVideoEventsDisplay {...props} />,
+};
+//#endregion config
+
+type setHighlightedEventFunction = (event?: Event) => void;
+
 interface EventCategoryDisplayProps {
     category: EventCategory;
 }
-
-type setHighlightedEventFunction = (event?: Event) => void;
 
 export default function EventCategoryDisplay(props: EventCategoryDisplayProps) {
     const {
@@ -61,55 +91,15 @@ export default function EventCategoryDisplay(props: EventCategoryDisplayProps) {
         placeholderData: [],
     });
     // console.log("EventCategoryDisplay", groupType, events);
-    const CategoryTitle: { [key in Events.singleEventType]: JSX.Element } = {
-        Invites: <InviteEventsDisplayTitle events={events} />,
-        Post: <PostEventsDisplayTitle events={events} />,
-        Video: <VideoEventsDisplayTitle events={events} />,
-        WebinarSpeaker: <WebinarSpeakerEventsDisplayTitle events={events} />,
-        ImpulsVideo: <ImpulsVideoEventsDisplayTitle events={events} />,
-    };
-    const CategoryDetails: { [key in Events.singleEventType]: JSX.Element } = {
-        Invites: (
-            <InviteEventsDetails
-                events={events}
-                setHighlightedEvent={setHighlightedEvent}
-                highlightData={highlightData.data ?? []}
-            />
-        ),
-        Post: (
-            <PostEventsDetails
-                events={events}
-                setHighlightedEvent={setHighlightedEvent}
-                highlightData={highlightData.data ?? []}
-            />
-        ),
-        Video: (
-            <VideoEventsDisplay
-                events={events}
-                setHighlightedEvent={setHighlightedEvent}
-                highlightData={highlightData.data ?? []}
-            />
-        ),
-        WebinarSpeaker: (
-            <WebinarEventsDisplay
-                events={events}
-                setHighlightedEvent={setHighlightedEvent}
-                highlightData={highlightData.data ?? []}
-            />
-        ),
-        ImpulsVideo: (
-            <ImpulsVideoEventsDisplay
-                events={events}
-                setHighlightedEvent={setHighlightedEvent}
-                highlightData={highlightData.data ?? []}
-            />
-        ),
-    };
 
     return (
         <Accordion>
-            {CategoryTitle[groupType as Events.singleEventType]}
-            {CategoryDetails[groupType as Events.singleEventType]}
+            {CategoryTitle[groupType as Events.singleEventType]({ events })}
+            {CategoryDetails[groupType as Events.singleEventType]({
+                events,
+                setHighlightedEvent,
+                highlightData: highlightData.data,
+            })}
         </Accordion>
     );
 }

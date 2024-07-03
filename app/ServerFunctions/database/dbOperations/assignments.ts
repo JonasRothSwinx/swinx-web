@@ -147,15 +147,17 @@ export async function deletePlaceholder({ id }: DeleteAssignmentParams) {
         { id },
         { selectionSet: ["timelineEvents.timelineEvent.id", "timelineEvents.id"] },
     );
-
+    console.log("placeholder Events", events);
     if (events) {
         await Promise.all(
             events.timelineEvents.map(async (x) => {
+                console.log("deleting", x);
                 const {
                     id: eventAssignmentId,
                     timelineEvent: { id: eventId },
-                } = x;
-                if (eventId) await database.timelineEvent.delete({ id: eventId });
+                } = x ?? { id: undefined, timelineEvent: { id: undefined } };
+                console.log({ eventId, eventAssignmentId });
+                if (eventId) await database.timelineEvent.delete({ id: eventId, debug: true });
                 if (eventAssignmentId)
                     await client.models.InfluencerAssignment.delete({ id: eventAssignmentId });
             }),

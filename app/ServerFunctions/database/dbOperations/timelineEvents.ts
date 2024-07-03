@@ -258,13 +258,15 @@ export async function deleteTimelineEvent({ id, debug }: DeleteTimelineEventPara
         });
     if (debug) console.log(`Found ${childEventData.length} child events`);
 
-    const childEventDeleteResponse = await Promise.all(
-        childEventData.map(async (x) => {
-            const childEvent = x;
-            return deleteTimelineEvent({ id: childEvent.id });
-        }),
-    );
-    if (debug) console.log("Deleted Child Events:", { childEventDeleteResponse });
+    if (childEventData.length > 0) {
+        const childEventDeleteResponse = await Promise.all(
+            childEventData.map(async (x) => {
+                const childEvent = x;
+                return deleteTimelineEvent({ id: childEvent.id });
+            }),
+        );
+        if (debug) console.log("Deleted Child Events:", { childEventDeleteResponse });
+    }
 
     //find and delete all email triggers
     const { data: emailTriggerData, errors: emailTriggerErrors } =
@@ -274,19 +276,20 @@ export async function deleteTimelineEvent({ id, debug }: DeleteTimelineEventPara
         });
     if (debug) console.log(`Found ${emailTriggerData.length} email triggers`);
 
-    const emailTriggerDeleteResponse = await Promise.all(
-        emailTriggerData.map(async (x) => {
-            const emailTrigger = x;
-            return database.emailTrigger.delete({ id: emailTrigger.id });
-        }),
-    );
-    if (debug) console.log("Deleted Email Triggers:", { emailTriggerDeleteResponse });
+    if (emailTriggerData.length > 0) {
+        const emailTriggerDeleteResponse = await Promise.all(
+            emailTriggerData.map(async (x) => {
+                const emailTrigger = x;
+                return database.emailTrigger.delete({ id: emailTrigger.id });
+            }),
+        );
+        if (debug) console.log("Deleted Email Triggers:", { emailTriggerDeleteResponse });
+    }
 
     //delete the event
-    console.log("Deleting Event", { id });
-    const { errors } = await client.models.TimelineEvent.delete({ id });
-    if (errors) throw new Error(JSON.stringify(errors));
-    console.log(errors);
+    // console.log("Deleting Event", { id });
+    // const { errors } = await client.models.TimelineEvent.delete({ id });
+    // if (errors) throw new Error(JSON.stringify(errors));
     if (debug) {
         return {
             connections: connectionData.length,

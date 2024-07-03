@@ -1,5 +1,6 @@
 import { Event, Events } from "@/app/ServerFunctions/types";
 import {
+    Box,
     CircularProgress,
     Unstable_Grid2 as Grid,
     GridSize,
@@ -79,7 +80,7 @@ function WebinarEventContent(props: EventContentProps) {
                     )}
                 </>
             )}
-            <Typography variant="body1">
+            <Box>
                 {event.info?.eventLink ? (
                     <Link
                         href={event.info.eventLink}
@@ -100,7 +101,7 @@ function WebinarEventContent(props: EventContentProps) {
                         Eventpage Link fehlt
                     </Typography>
                 )}
-            </Typography>
+            </Box>
         </Grid>
     );
 }

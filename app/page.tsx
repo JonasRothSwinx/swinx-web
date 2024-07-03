@@ -43,6 +43,15 @@ function Home() {
                         confirmationText: "Ok",
                         cancellationText: "Abbrechen",
                         title: "Bestätigung",
+                        contentProps: {
+                            sx: {
+                                "&": {
+                                    ".MuiTypography-root": {
+                                        whiteSpace: "pre-wrap",
+                                    },
+                                },
+                            },
+                        },
                     }}
                 >
                     <QueryClientProvider client={queryClient}>

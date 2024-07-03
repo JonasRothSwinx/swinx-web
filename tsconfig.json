@@ -31,9 +31,9 @@
         "next-env.d.ts",
         "**/*.ts",
         "**/*.tsx",
-        ".next/types/**/*.ts"
-        // "app/ServerFunctions/database/dbOperations/.dbclient.ts",
-        // "app/ServerFunctions/database/dbOperations/index.ts"
+        ".next/types/**/*.ts",
+        "app/ServerFunctions/database/dbOperations/.dbclient.ts",
+        "app/ServerFunctions/database/dbOperations/index.ts"
     ],
     "exclude": ["node_modules"]
 }
