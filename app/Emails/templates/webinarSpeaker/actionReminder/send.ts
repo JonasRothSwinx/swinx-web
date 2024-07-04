@@ -1,10 +1,10 @@
 import { SendMailProps } from "../../types";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+import { Event, Events } from "@/app/ServerFunctions/types";
 import { sesHandlerSendEmailTemplateBulk } from "@/amplify/functions/sesHandler/types";
 import sesAPIClient from "../../../sesAPI";
 import { defaultParams, TemplateVariables } from "./WebinarSpeakerDateReminder";
 import ErrorLogger from "@/app/ServerFunctions/errorLog";
-import dayjs from "@/app/utils/configuredDayJs";
+import { dayjs } from "@/app/utils";
 import { WebinarSpeakerActionReminder } from ".";
 
 export default async function send(props: SendMailProps) {
@@ -18,7 +18,7 @@ export default async function send(props: SendMailProps) {
             ErrorLogger.log("Missing context");
             return acc;
         }
-        const webinar = event.parentEvent as TimelineEvent.Event;
+        const webinar = event.parentEvent as Event;
         if (!webinar || !webinar.date) {
             ErrorLogger.log("Missing webinar context");
             return acc;

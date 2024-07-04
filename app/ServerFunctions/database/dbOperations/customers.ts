@@ -1,6 +1,6 @@
 "use server";
 import { Nullable } from "@/app/Definitions/types";
-import Customer from "@/app/ServerFunctions/types/customer";
+import { Customer } from "@/app/ServerFunctions/types";
 import client from "./.dbclient";
 import { SelectionSet } from "aws-amplify/api";
 import { Schema } from "@/amplify/data/resource";
@@ -40,7 +40,7 @@ const selectionSet = [
 type RawCustomer = SelectionSet<Schema["Customer"]["type"], typeof selectionSet>;
 //#region Create
 export async function createCustomer(
-    customer: Omit<Customer.Customer, "id">,
+    customer: Omit<Customer, "id">,
     campaignId: string,
 ): Promise<Nullable<string>> {
     const { company, firstName, lastName, email, companyPosition, phoneNumber, notes } = customer;
@@ -67,7 +67,7 @@ export async function createCustomer(
 //#endregion
 
 //#region Update
-export async function updateCustomer(customer: Customer.Customer) {
+export async function updateCustomer(customer: Customer) {
     const { id, company, firstName, lastName, email, companyPosition, notes } = customer;
     if (!id) throw new Error("Missing Data");
 
@@ -85,7 +85,7 @@ export async function updateCustomer(customer: Customer.Customer) {
 //#endregion
 
 //#region Delete
-export async function deleteCustomer(customer: Customer.Customer) {
+export async function deleteCustomer(customer: Customer) {
     if (!customer.id) throw new Error("Missing Data");
 
     const { errors } = await client.models.Customer.delete({ id: customer.id });
@@ -94,13 +94,13 @@ export async function deleteCustomer(customer: Customer.Customer) {
 //#endregion
 
 //#region Read
-export async function getCustomer(id: string): Promise<Nullable<Customer.Customer>> {
+export async function getCustomer(id: string): Promise<Nullable<Customer>> {
     const { data: customer, errors } = await client.models.Customer.get({ id }, { selectionSet });
     if (errors) throw new Error(JSON.stringify(errors));
     return validateRawCustomer(customer);
 }
 
-export async function listCustomersByCampaign(campaignId: string): Promise<Customer.Customer[]> {
+export async function listCustomersByCampaign(campaignId: string): Promise<Customer[]> {
     const { data: customers, errors } = await client.models.Customer.listCustomersByCampaign(
         {
             campaignId,
@@ -114,11 +114,11 @@ export async function listCustomersByCampaign(campaignId: string): Promise<Custo
 //#endregion
 
 //#region Validation
-function validateRawCustomerArray(rawCustomers: RawCustomer[]): Customer.Customer[] {
+function validateRawCustomerArray(rawCustomers: RawCustomer[]): Customer[] {
     let invalidDataSets = 0;
-    const validatedCustomers: Customer.Customer[] = rawCustomers
+    const validatedCustomers: Customer[] = rawCustomers
         .map((rawCustomer) => validateRawCustomer(rawCustomer))
-        .filter((customer): customer is Customer.Customer => {
+        .filter((customer): customer is Customer => {
             if (customer === null) {
                 invalidDataSets++;
                 return false;
@@ -131,10 +131,10 @@ function validateRawCustomerArray(rawCustomers: RawCustomer[]): Customer.Custome
     return validatedCustomers;
 }
 
-function validateRawCustomer(rawCustomer: Nullable<RawCustomer>): Nullable<Customer.Customer> {
+function validateRawCustomer(rawCustomer: Nullable<RawCustomer>): Nullable<Customer> {
     if (!rawCustomer) return null;
     try {
-        const validatedCustomer: Customer.Customer = {
+        const validatedCustomer: Customer = {
             id: rawCustomer.id,
             company: rawCustomer.company ?? "",
             firstName: rawCustomer.firstName ?? "",

@@ -1,8 +1,21 @@
-import dataClient from "..";
-import Campaign from "../../types/campaign";
+import { dataClient } from "..";
+import { Campaign, Campaigns } from "../../types";
 import database from "../dbOperations";
 import { PartialWith } from "@/app/Definitions/types";
-import config from "./config";
+import { config } from ".";
+
+/**
+ * Campaign database operations
+ * @param create Create a new campaign
+ * @param list List all campaigns
+ */
+
+export const campaign = {
+    create: createCampaign,
+    list: listCampaigns,
+    get: getCampaign,
+    delete: deleteCampaign,
+};
 
 /**
  * Create a new campaign and update queryClient cache
@@ -10,16 +23,19 @@ import config from "./config";
  * @returns The created campaign object
  */
 interface CreateCampaignParams {
-    campaign: Omit<Campaign.CampaignFull, "id">;
+    campaign: Omit<Campaign, "id">;
     projectManagerId: string;
 }
-async function createCampaign({ campaign, projectManagerId }: CreateCampaignParams): Promise<Campaign.CampaignFull> {
+async function createCampaign({
+    campaign,
+    projectManagerId,
+}: CreateCampaignParams): Promise<Campaign> {
     const queryClient = config.getQueryClient();
     const id = await database.campaign.create({ campaign, projectManagerId });
     if (!id) throw new Error("Failed to create campaign");
     const createdCampaign = { ...campaign, id };
     queryClient.setQueryData(["campaign", id], { ...campaign, id });
-    queryClient.setQueryData(["campaigns"], (prev: Campaign.CampaignFull[]) => {
+    queryClient.setQueryData(["campaigns"], (prev: Campaign[]) => {
         if (!prev) {
             return [createdCampaign];
         }
@@ -34,10 +50,10 @@ async function createCampaign({ campaign, projectManagerId }: CreateCampaignPara
  * List all campaigns, resolve Data References and update queryClient cache
  * @returns The list of campaigns
  */
-async function listCampaigns(): Promise<Campaign.CampaignFull[]> {
+async function listCampaigns(): Promise<Campaign[]> {
     const queryClient = config.getQueryClient();
     //Return cached data if available
-    // const cachedData = queryClient.getQueryData<Campaign.CampaignFull[]>(["campaigns"]);
+    // const cachedData = queryClient.getQueryData<Campaign[]>(["campaigns"]);
     // if (cachedData) return cachedData;
 
     const campaigns = await database.campaign.list();
@@ -47,7 +63,7 @@ async function listCampaigns(): Promise<Campaign.CampaignFull[]> {
             queryClient.setQueryData(["campaign", campaign.id], resolvedCampaign);
             // queryClient.refetchQueries({ queryKey: ["campaign", campaign.id] });
             return resolvedCampaign;
-        })
+        }),
     );
 
     return resolvedCampaigns;
@@ -58,7 +74,7 @@ async function listCampaigns(): Promise<Campaign.CampaignFull[]> {
  * @param id The id of the campaign to get
  * @returns The campaign object
  */
-async function getCampaign(id: string): Promise<Campaign.CampaignFull> {
+async function getCampaign(id: string): Promise<Campaign> {
     const queryClient = config.getQueryClient();
     const campaign = await database.campaign.get(id);
     if (!campaign) throw new Error("Campaign not found");
@@ -71,12 +87,12 @@ async function getCampaign(id: string): Promise<Campaign.CampaignFull> {
  * @param campaign The campaign object. needs to contain id, customer and timelineEvents
  */
 async function deleteCampaign(
-    campaign: PartialWith<Campaign.CampaignFull, "id" | "customers" | "campaignTimelineEvents">
+    campaign: PartialWith<Campaign, "id" | "customers" | "campaignTimelineEvents">,
 ): Promise<void> {
     const queryClient = config.getQueryClient();
     const { id } = campaign;
     await database.campaign.delete(campaign);
-    queryClient.setQueryData(["campaigns"], (prev: Campaign.CampaignFull[]) => {
+    queryClient.setQueryData(["campaigns"], (prev: Campaign[]) => {
         if (!prev) return [];
         return prev.filter((campaign) => campaign.id !== id);
     });
@@ -89,29 +105,15 @@ async function deleteCampaign(
  * @returns The resolved campaign object
  */
 
-async function resolveCampaignReferences(campaign: Campaign.CampaignMin): Promise<Campaign.CampaignFull> {
+async function resolveCampaignReferences(campaign: Campaigns.Min): Promise<Campaign> {
     const queryClient = config.getQueryClient();
     const timelineEvents = dataClient.timelineEvent.byCampaign(campaign.id);
     const assignments = dataClient.assignment.byCampaign(campaign.id);
 
-    const resolvedCampaign: Campaign.CampaignFull = {
+    const resolvedCampaign: Campaign = {
         ...campaign,
         campaignTimelineEvents: await timelineEvents,
         assignedInfluencers: await assignments,
     };
     return resolvedCampaign;
 }
-
-/**
- * Campaign database operations
- * @param create Create a new campaign
- * @param list List all campaigns
- */
-
-const campaigns = {
-    create: createCampaign,
-    list: listCampaigns,
-    get: getCampaign,
-    delete: deleteCampaign,
-};
-export default campaigns;

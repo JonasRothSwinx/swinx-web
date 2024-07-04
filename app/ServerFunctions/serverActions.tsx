@@ -8,7 +8,7 @@ import { generateServerClientUsingCookies } from "@aws-amplify/adapter-nextjs/ap
 import dayjs from "dayjs";
 import "dayjs/locale/de";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import sanitize from "../utils/sanitize";
+import { sanitize } from "../utils";
 dayjs.extend(customParseFormat);
 
 // export default { getUserGroups, getUserAttributes };
@@ -47,17 +47,14 @@ export async function getUserAttributes() {
 }
 
 //#region Webinar
-interface WebinarNew {
-    title: string;
-    date: string;
-}
-interface WebinarUpdate {
-    id: string;
-    title?: string;
-    date?: string;
-}
 
 export async function getInviteBaseUrl() {
     const baseUrl = (process.env.BASE_URL ?? "www.google.com") + "/Response?data=";
     return baseUrl;
+}
+
+export async function getEnvironment() {
+    const nodeEnv = process.env.NODE_ENV;
+    const awsBranch = process.env.AWS_BRANCH;
+    return { nodeEnv, awsBranch };
 }

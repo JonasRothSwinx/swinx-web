@@ -1,12 +1,10 @@
 "use server";
 
 import { Nullable, PartialWith } from "@/app/Definitions/types";
-import { EmailTriggers } from "../../types/emailTriggers";
-import TimelineEvent from "../../types/timelineEvent";
+import { EmailTriggers, Event, Influencers } from "../../types";
 import client from "./.dbclient";
 import { SelectionSet } from "aws-amplify/api";
 import { Schema } from "@/amplify/data/resource";
-import Influencer from "../../types/influencer";
 
 const selectionSet = [
     //General Info
@@ -43,6 +41,8 @@ async function testDummy() {
         ],
     });
 }
+
+//MARK: List
 /**
  * List all email triggers
  * @returns The list of email triggers
@@ -68,6 +68,7 @@ export async function listEmailTriggers(): Promise<EmailTriggers.EmailTriggerEve
     );
 }
 
+//MARK: Delete
 /**
  * Create a new email trigger
  * @param trigger The email trigger object to create
@@ -95,6 +96,7 @@ export async function createEmailTrigger(
     return data?.id ?? null;
 }
 
+//MARK: Update
 /**
  * Update an existing email trigger
  * @param trigger - The email trigger object to update
@@ -132,6 +134,7 @@ export async function updateEmailTrigger(
     return data?.id ?? null;
 }
 
+//MARK: Delete
 /**
  * Delete an email trigger
  * @param trigger The email trigger object to delete
@@ -147,7 +150,7 @@ export async function deleteEmailTrigger(trigger: { id: string }): Promise<void>
  * @returns The list of email triggers
  */
 export async function getEmailTriggersForEvent(
-    event: Pick<TimelineEvent.Event, "id">,
+    event: Pick<Event, "id">,
 ): Promise<EmailTriggers.EmailTriggerEventRef[]> {
     const { id: eventId } = event;
     if (!eventId) throw new Error("Event ID is required");
@@ -210,7 +213,7 @@ function validateEmailTrigger(
     }
     const assignment = event.assignments[0].assignment;
     const influencer = assignment.influencer;
-    let influencerWithContactInfo: Influencer.WithContactInfo | undefined = undefined;
+    let influencerWithContactInfo: Influencers.WithContactInfo | undefined = undefined;
     if (!assignment.isPlaceholder) {
         if (!influencer || !influencer.email || !influencer.emailType) {
             throw new Error("Invalid Email Trigger");

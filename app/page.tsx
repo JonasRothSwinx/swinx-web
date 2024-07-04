@@ -2,14 +2,14 @@
 import { Authenticator, useAuthenticator, withAuthenticator } from "@aws-amplify/ui-react";
 import "@aws-amplify/ui-react/styles.css";
 import { ThemeProvider } from "@emotion/react";
-import WelcomePage from "./Pages/WelcomePage/WelcomePage";
+import WelcomePage from "./Main Menu/WelcomePage/WelcomePage";
 
 import { createTheme } from "@mui/material";
 import { blue } from "@mui/material/colors";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { ConfirmProvider } from "material-ui-confirm";
-import dataClient from "./ServerFunctions/database";
+import { dataClient } from "@/app/ServerFunctions/database";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 const theme = createTheme({
@@ -43,6 +43,15 @@ function Home() {
                         confirmationText: "Ok",
                         cancellationText: "Abbrechen",
                         title: "Bestätigung",
+                        contentProps: {
+                            sx: {
+                                "&": {
+                                    ".MuiTypography-root": {
+                                        whiteSpace: "pre-wrap",
+                                    },
+                                },
+                            },
+                        },
                     }}
                 >
                     <QueryClientProvider client={queryClient}>

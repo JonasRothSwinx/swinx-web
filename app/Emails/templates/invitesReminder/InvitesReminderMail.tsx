@@ -1,4 +1,4 @@
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
+import { EmailTriggers } from "@/app/ServerFunctions/types";
 import { Head, Hr, Html, Link, Preview, Text } from "@react-email/components";
 import React from "react";
 import { Placeholder } from "../_components";
@@ -71,7 +71,10 @@ function NewInvitesReminder(props: DebugToggle) {
         placeholders.filterJobGroups
     );
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
             <Preview>Erinnerung: Einladungen</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
@@ -109,7 +112,10 @@ function ReducedInvitesReminder(props: DebugToggle) {
         placeholders.filterJobGroups
     );
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
             <Preview>Erinnerung: Einladungen</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>

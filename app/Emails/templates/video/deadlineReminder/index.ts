@@ -1,5 +1,4 @@
 import { EmailLevelDefinition, MailTemplate, Template } from "../../types";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 import VideoDraftDeadlineReminderEmail, {
     subjectLineBase,
     defaultParams,

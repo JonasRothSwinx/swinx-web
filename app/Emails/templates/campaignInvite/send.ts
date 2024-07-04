@@ -4,8 +4,8 @@ import sesAPIClient from "../../sesAPI";
 import { SendMailProps } from "../types";
 import { TemplateVariables } from "./CampaignInviteEmail";
 import { templates } from ".";
-import ProjectManagers from "@/app/ServerFunctions/types/projectManagers";
-import encodeQueryParams from "./encodeQueryParams";
+import { ProjectManagers } from "@/app/ServerFunctions/types";
+import { encodeQueryParams } from "@/app/utils";
 import { getInviteBaseUrl } from "@/app/ServerFunctions/serverActions";
 
 /**

@@ -5,7 +5,7 @@ import PostActionReminderMail, {
     defaultParams,
 } from "./PostActionReminderMail";
 import { renderAsync } from "@react-email/render";
-import { Dayjs } from "@/app/utils/configuredDayJs";
+import { Dayjs } from "@/app/utils";
 import send from "./send";
 
 const templateBaseName = "PostReminder";

@@ -4,7 +4,7 @@
 // import config from "@/amplify_outputs.json";
 // import templateDefinitions, { templateName } from "../templates";
 // import dotenv from "dotenv";
-// import sleep from "@/app/utils/sleep";
+// import sleep from "@/app/utils";
 // import { Prettify } from "@/app/Definitions/types";
 // dotenv.config({ path: ".env.local" });
 // // eslint-disable-next-line @typescript-eslint/no-explicit-any

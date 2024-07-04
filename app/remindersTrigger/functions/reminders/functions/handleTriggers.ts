@@ -1,10 +1,9 @@
 "use server";
 
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
+import { EmailTriggers, Events } from "@/app/ServerFunctions/types/";
 import { TriggerGroup } from "../types";
 import getMailConfig from "./mailconfig";
 import sendMailBySender from "./sendMailBySender";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 
 interface HandleTriggerParams {
     triggers: TriggerGroup;
@@ -13,7 +12,7 @@ export default async function handleTriggers({ triggers }: HandleTriggerParams) 
     const mailConfig = await getMailConfig();
     console.log("Handling triggers");
     Object.entries(triggers).forEach(([eventTypeRaw, eventTriggers]) => {
-        const eventType = eventTypeRaw as TimelineEvent.eventType;
+        const eventType = eventTypeRaw as Events.eventType;
         console.log("Handling event type", eventType);
         Object.entries(eventTriggers).forEach(([emailTypeRaw, emailTypeTriggers]) => {
             const emailType = emailTypeRaw as EmailTriggers.emailTriggerType;

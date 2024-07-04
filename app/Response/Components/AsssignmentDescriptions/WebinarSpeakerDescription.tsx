@@ -1,4 +1,4 @@
-import dayjs from "@/app/utils/configuredDayJs";
+import { dayjs } from "@/app/utils";
 import { Box, Typography } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
 import { TimelineEvent, Webinar } from "../../Functions/Database/types";
@@ -8,7 +8,7 @@ import Loading from "../Loading";
 interface WebinarSpeakerDescriptionProps {
     events: TimelineEvent[];
 }
-export function WebinarSpeakerDescription({ events }: WebinarSpeakerDescriptionProps) {
+export default function WebinarSpeakerDescription({ events }: WebinarSpeakerDescriptionProps) {
     const queryClient = useQueryClient();
     const webinar = queryClient.getQueryData<Webinar>(["parentEvent"]);
     if (!events || !webinar) {

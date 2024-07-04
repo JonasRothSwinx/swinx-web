@@ -1,13 +1,21 @@
-import { Candidates } from "@/app/ServerFunctions/types/candidates";
-import { Box, Button, Icon, SxProps, Typography, useMediaQuery } from "@mui/material";
+import { Candidates } from "@/app/ServerFunctions/types";
+import {
+    Box,
+    Button,
+    CircularProgress,
+    Icon,
+    SxProps,
+    Typography,
+    useMediaQuery,
+} from "@mui/material";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { dataClient } from "./Functions/Database";
-import { Assignment } from "./Functions/Database/types";
+import { Assignment, Candidate } from "./Functions/Database/types";
 import sortEvents from "./Functions/sortEvents";
 import Loading from "./Components/Loading";
-import notifyResponse from "./Functions/notifyResponse";
+import notifyResponse from "./Functions/Notifications/notifyResponse";
 import { WebinarDescription } from "./Components/WebinarDescription";
 import { AssignmentDescription } from "./Components/AssignmentDescription";
 import { BudgetDescriptionText } from "./Components/BudgetDescriptionText";
@@ -17,6 +25,8 @@ import { SwinxLogo } from "./Components/SwinxLogo";
 import Title from "./Components/Title";
 import Introduction from "./Components/Introduction";
 import { Engineering } from "@mui/icons-material";
+import { sleep } from "../utils";
+import ResponseButtons from "./Components/ResponseButtons";
 
 export default function ResponseLanding() {
     const params = useSearchParams();
@@ -38,6 +48,7 @@ export default function ResponseLanding() {
     const { assignmentId, candidateId, candidateFullName, campaignId } = decodedParams;
     const isLowHeight = useMediaQuery("(max-height: 600px)");
     const isLowWidth = useMediaQuery("(max-width: 600px)");
+    const [responseClicked, setResponseClicked] = useState(false);
     //#region Queries
     const candidate = useQuery({
         enabled: !!candidateId,
@@ -101,25 +112,25 @@ export default function ResponseLanding() {
     const styles: SxProps = useMemo(
         () => ({
             "&": {
-                position: "relative",
-                width: "calc(100vw - 40px)", // Account for left and right margins
-                height: "fit-content", // Account for top and bottom margins
-                maxHeight: "calc(100dvh - 40px)",
-                maxWidth: "100vw",
-                margin: "20px",
-                border: "1px solid gray",
-                borderRadius: "10px",
-                backgroundColor: "var(--background-color)",
-                display: "flex",
-                flexDirection: "column",
+                "position": "relative",
+                "width": "calc(100vw - 40px)", // Account for left and right margins
+                "height": "fit-content", // Account for top and bottom margins
+                "maxHeight": "calc(100dvh - 40px)",
+                "maxWidth": "100vw",
+                "margin": "20px",
+                "border": "1px solid gray",
+                "borderRadius": "10px",
+                "backgroundColor": "var(--background-color)",
+                "display": "flex",
+                "flexDirection": "column",
                 // overflowY: "auto",
                 "#ResponseLandingScrollableContent": {
-                    padding: "20px",
-                    paddingTop: "0",
-                    maxHeight: "-webkit-fill-available",
+                    "padding": "20px",
+                    "paddingTop": "0",
+                    "maxHeight": "-webkit-fill-available",
                     // maxHeight: "calc(100dvh - 40px)",
-                    overflowY: "auto",
-                    flex: 1,
+                    "overflowY": "auto",
+                    "flex": 1,
                     "@media (max-width: 600px)": {
                         overflowY: "auto",
                     },
@@ -135,10 +146,10 @@ export default function ResponseLanding() {
                 },
                 "#Title": {
                     // position: "sticky",
-                    padding: "20px",
-                    paddingBottom: "0",
-                    width: "100%",
-                    textAlign: "center",
+                    "padding": "20px",
+                    "paddingBottom": "0",
+                    "width": "100%",
+                    "textAlign": "center",
                     "#SwinxLogo": {
                         float: "right",
                         width: "100px",
@@ -148,16 +159,16 @@ export default function ResponseLanding() {
                 },
 
                 "#AssignmentDescriptionsContainer": {
-                    overflowY: "auto",
-                    border: "1px solid black",
-                    borderRadius: "5px",
-                    maxHeight: "80%",
+                    "overflowY": "auto",
+                    "border": "1px solid black",
+                    "borderRadius": "5px",
+                    "maxHeight": "80%",
                     "#DescriptionContainer": {
-                        display: "flex",
-                        flexDirection: "column",
-                        maxHeight: "400px",
+                        "display": "flex",
+                        "flexDirection": "column",
+                        "maxHeight": "400px",
 
-                        background: "var(--background-color)",
+                        "background": "var(--background-color)",
                         // padding: "2px",
                         // border: "1px solid black",
                         // borderRadius: "5px",
@@ -169,20 +180,20 @@ export default function ResponseLanding() {
                             backgroundColor: "var(--swinx-blue)",
                         },
                         "#SummaryContainer": {
-                            display: "flex",
-                            flexDirection: "row",
-                            paddingLeft: "10px",
+                            "display": "flex",
+                            "flexDirection": "row",
+                            "paddingLeft": "10px",
                             "#SummaryBox": {
                                 // float: "left",
                                 flex: 3,
                             },
                             "#InvitesTable": {
                                 // float: "right",
-                                overflowY: "auto",
-                                height: "fit-content",
-                                width: "fit-content",
-                                maxHeight: "fit-content",
-                                flex: 1,
+                                "overflowY": "auto",
+                                "height": "fit-content",
+                                "width": "fit-content",
+                                "maxHeight": "fit-content",
+                                "flex": 1,
                                 "& .MuiTableCell-head": {
                                     fontWeight: "bold",
                                     padding: "10px",
@@ -196,11 +207,11 @@ export default function ResponseLanding() {
                             },
                         },
                         "@media (max-width: 500px)": {
-                            maxHeight: "fit-content",
+                            "maxHeight": "fit-content",
 
                             "#SummaryContainer": {
-                                flexDirection: "column",
-                                alignItems: "center",
+                                "flexDirection": "column",
+                                "alignItems": "center",
                                 "#SummaryBox": {
                                     width: "100%",
                                 },
@@ -212,13 +223,13 @@ export default function ResponseLanding() {
                     },
                 },
                 "#AssignmentDescriptionGroup": {
-                    display: "flex",
-                    flexDirection: "column",
+                    "display": "flex",
+                    "flexDirection": "column",
                     // padding: "10px",
-                    borderBlock: "1px solid black",
-                    overflow: "auto",
+                    "borderBlock": "1px solid black",
+                    "overflow": "auto",
 
-                    borderBottom: "none",
+                    "borderBottom": "none",
                     "&:first-of-type": {
                         borderTop: "none",
                         // borderTopLeftRadius: "5px",
@@ -231,80 +242,45 @@ export default function ResponseLanding() {
                         // borderBottomRightRadius: "5px",
                     },
                 },
-                "#ButtonContainer": {
-                    // boxSizing: "border-box",
-                    // position: "absolute",
-                    // bottom: "0",
-                    // right: "0",
-                    float: "right",
-                    alignSelf: "flex-end",
-                    display: "flex",
-                    flexWrap: "wrap",
-                    // flexDirection: "column",
-                    justifyContent: "right",
-                    alignItems: "end",
-                    width: "max-content",
-                    maxWidth: "100%",
-                    flex: 1,
-
-                    "& button": {
-                        width: "fit-content",
-                        margin: "10px",
-                    },
-                    "#submitButton": {
-                        backgroundColor: "primary",
-                    },
-                    "#rejectButton": {
-                        backgroundColor: "secondary",
-                    },
-                    "@media (max-width: 600px)": {
-                        width: "100%",
-                        justifyContent: "center",
-                        button: {
-                            // maxHeight: "20px",
-                            fontSize: "10px",
-                            width: "100%",
-                            // margin: "5px",
-                        },
-                    },
-                },
-                "#ResponseReceivedContainer": {
-                    padding: "40px",
-                    margin: "auto",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    backgroundColor: "#f0f0f0",
-                    borderRadius: "10px",
-                    border: "1px solid black",
-                    "& #ResponseReceivedText": {
-                        fontSize: "30px",
-                        margin: "10px",
-                    },
-                    "& #ResponseReceivedButton": {
-                        margin: "10px",
-                    },
-                },
             },
         }),
         [],
     );
     //#endregion
+    //MARK: - Event Handler
     const EventHandler = {
-        processResponse: async (response: boolean) => {
-            // queryClient.setQueryData(["candidate"], {
-            //     ...candidate.data,
-            //     response: response ? "accepted" : "rejected",
-            // });
+        processResponse: async (response: Candidates.candidateResponse, feedback?: string) => {
             if (!CampaignData.data) return;
-            const dataResponse = await dataClient.processResponse({ candidateId, response });
+            setResponseClicked(true);
+            // await sleep(5000);
+            console.log("preocessRespone", { response, feedback });
+            // return;
 
+            const dataResponse = await dataClient.processResponse({
+                candidateId,
+                response,
+                feedback,
+            });
+            queryClient.setQueryData(["candidate"], {
+                ...candidate.data,
+                feedback: feedback,
+                response: response,
+            });
+
+            setResponseClicked(false);
             await notifyResponse({
                 response,
-                candidateFullName,
+                influencerName: candidateFullName,
                 customerCompany: CampaignData.data.customerCompany,
                 campaignId,
+                feedback,
+            });
+        },
+        resetResponse: async () => {
+            await EventHandler.processResponse("pending");
+            queryClient.setQueryData(["candidate"], {
+                ...candidate.data,
+                response: "pending",
             });
         },
     };
@@ -346,7 +322,12 @@ export default function ResponseLanding() {
         CampaignData.isLoading ||
         parentEvent.isLoading
     ) {
-        return <Loading textMessage="Kampagne wird geladen" spinnerSize={100} />;
+        return (
+            <Loading
+                textMessage="Kampagne wird geladen"
+                spinnerSize={100}
+            />
+        );
     }
     if (queries.some((query) => query.isError) || !queries.every((query) => query.data)) {
         return <Typography id="ErrorText">Ein Fehler ist aufgetreten</Typography>;
@@ -363,14 +344,20 @@ export default function ResponseLanding() {
     }
     if (candidate.data.response && candidate.data.response !== "pending") {
         return (
-            <ResponseReceived response={candidate.data.response as Candidates.candidateResponse} />
+            <ResponseReceived
+                response={candidate.data.response as Candidates.candidateResponse}
+                resetResponse={EventHandler.resetResponse}
+            />
         );
     }
     //#endregion
     //Temporary fix for the issue
 
     return (
-        <Box id="ResponseLandingContainer" sx={styles}>
+        <Box
+            id="ResponseLandingContainer"
+            sx={styles}
+        >
             <Title />
             <Box id="ResponseLandingScrollableContent">
                 <Introduction
@@ -383,31 +370,7 @@ export default function ResponseLanding() {
                 <br />
                 <InterestDescriptionText />
             </Box>
-
-            <Box id="ButtonContainer">
-                <Button
-                    id="submitButton"
-                    variant="contained"
-                    color="primary"
-                    onClick={() => {
-                        EventHandler.processResponse(true);
-                        // setReceived(true);
-                    }}
-                >
-                    Ich möchte an der Kampagne teilnehmen
-                </Button>
-                <Button
-                    id="rejectButton"
-                    variant="outlined"
-                    color="info"
-                    onClick={() => {
-                        EventHandler.processResponse(false);
-                        // setReceived(true);
-                    }}
-                >
-                    Ich möchte nicht an der Kampagne teilnehmen
-                </Button>
-            </Box>
+            <ResponseButtons processResponse={EventHandler.processResponse} />
         </Box>
     );
 }

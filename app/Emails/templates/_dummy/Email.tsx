@@ -1,4 +1,4 @@
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
+import { EmailTriggers } from "@/app/ServerFunctions/types";
 import { Html, Button, Text, Head, Preview, Container, Hr } from "@react-email/components";
 import { Placeholder } from "../_components";
 import styles from "../styles";
@@ -8,32 +8,14 @@ import React from "react";
 import DebugTemplates from "../../DebugTemplates";
 
 export type TemplateVariables = {
-    name: string;
-    assignments: { assignmentDescription: string }[];
-    honorar: string;
-    linkBase: string;
-    linkData: string;
-    customerCompany: string;
+    lorem: string;
 };
 export const defaultParams: TemplateVariables = {
-    name: "testName",
-    assignments: [{ assignmentDescription: "Fliege zum Mars" }],
-    honorar: "0€",
-    linkBase: "http://localhost:3000/Response?",
-    linkData: "testData",
-    customerCompany: "TestCustomer",
+    lorem: "ipsum",
 };
 
 const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
-    name: Placeholder({ name: "name" }),
-    assignments: PlaceholderList({
-        parentName: "assignments",
-        listItemName: "assignmentDescription",
-    }),
-    honorar: Placeholder({ name: "honorar" }),
-    linkBase: Placeholder({ name: "linkBase" }),
-    linkData: Placeholder({ name: "linkData" }),
-    customerCompany: Placeholder({ name: "customerCompany" }),
+    lorem: Placeholder({ name: "lorem" }),
 };
 const EmailTemplates: {
     [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
@@ -53,21 +35,15 @@ Email.PreviewProps = {
 
 export const subjectLineBase = "Anfrage für Kooperation";
 function NewCampaignInvite(props: DebugToggle) {
-    const {
-        name,
-        honorar,
-        linkBase,
-        linkData,
-        customerCompany: customerName,
-    } = props.debug ? defaultParams : placeholders;
-    const assignments = props.debug
-        ? defaultParams.assignments.map((a) => a.assignmentDescription).join("\n")
-        : placeholders.assignments;
+    const {} = props.debug ? defaultParams : placeholders;
 
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
-            <Preview>Anfrage für Kooperation</Preview>
+            {/* <Preview>Anfrage für Kooperation</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
                 Wir würden sie gerne als Speaker für eine Kampagne unseres Kunden {customerName}{" "}
@@ -83,25 +59,21 @@ function NewCampaignInvite(props: DebugToggle) {
                 <Button style={styles.responseButton} href={`${linkBase}${linkData}`}>
                     Zur Kampagne
                 </Button>
-            </Container>
+            </Container> */}
         </Html>
     );
 }
 
 function ReducedCampaignInvite(props: DebugToggle) {
-    const {
-        name,
-        honorar,
-        linkBase,
-        linkData,
-        customerCompany: customerName,
-    } = props.debug ? defaultParams : placeholders;
-    const assignments = props.debug
-        ? defaultParams.assignments.map((a) => a.assignmentDescription).join("\n")
-        : placeholders.assignments;
+    const {} = props.debug ? defaultParams : placeholders;
+    const assignments = props.debug;
+
     return (
-        <Html dir="ltr" lang="de">
-            <Head />
+        <Html
+            dir="ltr"
+            lang="de"
+        >
+            {/* <Head />
             <Preview>Einladung zur Kampagne</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
@@ -118,7 +90,7 @@ function ReducedCampaignInvite(props: DebugToggle) {
                 <Button style={styles.responseButton} href={`${linkBase}${linkData}`}>
                     Zur Kampagne
                 </Button>
-            </Container>
+            </Container> */}
         </Html>
     );
 }

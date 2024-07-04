@@ -1,36 +1,31 @@
 import { Nullable, Prettify } from "@/app/Definitions/types";
-import Influencer from "./influencer";
-import TimelineEvent from "./timelineEvent";
-import { Candidates } from "./candidates";
+import { Influencers, Event, Events } from ".";
+import { Candidate, Candidates } from ".";
 
-export default Assignment;
+export type Assignment = Prettify<Full>;
 
-namespace Assignment {
-    export type Assignment = Prettify<AssignmentFull>;
-
-    export type AssignmentReference = {
-        id: string;
-    };
-    export type AssignmentMin = {
-        id: string;
-        isPlaceholder?: boolean;
-        budget?: Nullable<number>;
-        placeholderName: Nullable<string>;
-        campaign: { id: string };
-        influencer: Nullable<Influencer.InfluencerWithName>;
-        candidates?: Candidates.Candidate[];
-        timelineEvents: TimelineEvent.Event[];
-    };
-    export type AssignmentFull = Prettify<
-        AssignmentMin & {
-            // candidates?: Candidates.Candidate[];
-            // timelineEvents: TimelineEvent.Event[];
-            influencer: Nullable<Influencer.Full>;
-        }
-    >;
-    export type AssignmentWithReferences = AssignmentMin & {
-        influencer: Nullable<Influencer.Reference>;
-        candidates: Candidates.CandidateReference[];
-        timelineEvents: TimelineEvent.EventReference[];
-    };
-}
+export type AssignmentReference = {
+    id: string;
+};
+export type Min = {
+    id: string;
+    isPlaceholder?: boolean;
+    budget?: Nullable<number>;
+    placeholderName: Nullable<string>;
+    campaign: { id: string };
+    influencer: Nullable<Influencers.InfluencerWithName>;
+    candidates?: Candidate[];
+    timelineEvents: Event[];
+};
+export type Full = Prettify<
+    Min & {
+        // candidates?: Candidates.Candidate[];
+        // timelineEvents: TimelineEvent.Event[];
+        influencer: Nullable<Influencers.Full>;
+    }
+>;
+export type AssignmentWithReferences = Min & {
+    influencer: Nullable<Influencers.Reference>;
+    candidates: Candidates.CandidateReference[];
+    timelineEvents: Events.EventReference[];
+};

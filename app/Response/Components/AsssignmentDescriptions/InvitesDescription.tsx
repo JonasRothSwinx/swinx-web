@@ -1,9 +1,10 @@
-import dayjs from "@/app/utils/configuredDayJs";
+import { dayjs } from "@/app/utils";
 import {
     Box,
     List,
     SxProps,
     Table,
+    TableBody,
     TableCell,
     TableHead,
     TableRow,
@@ -20,7 +21,7 @@ import dateToRange from "../../Functions/dateToRange";
 interface InvitesDescriptionProps {
     events: TimelineEvent[];
 }
-export function InvitesDescription({ events }: InvitesDescriptionProps) {
+export default function InvitesDescription({ events }: InvitesDescriptionProps) {
     const queryClient = useQueryClient();
     const webinar = queryClient.getQueryData<Webinar>(["parentEvent"]);
     const style: SxProps = useMemo(() => ({}), []);
@@ -29,7 +30,10 @@ export function InvitesDescription({ events }: InvitesDescriptionProps) {
         return <Loading />;
     }
     return (
-        <Box id="DescriptionContainer" sx={style}>
+        <Box
+            id="DescriptionContainer"
+            sx={style}
+        >
             <Box id="DescriptionTitle">
                 <Typography id="SummaryTitle">Einladungen</Typography>
             </Box>
@@ -61,18 +65,20 @@ export function InvitesDescription({ events }: InvitesDescriptionProps) {
                             <TableCell>Einladungen</TableCell>
                         </TableRow>
                     </TableHead>
-                    {events.map((event) => {
-                        const { startDate, endDate } = dateToRange({
-                            date: event.date,
-                            format: "DD.MM",
-                        });
-                        return (
-                            <TableRow key={event.id}>
-                                <TableCell>{`${startDate} - ${endDate}`}</TableCell>
-                                <TableCell>{event.eventTaskAmount}</TableCell>
-                            </TableRow>
-                        );
-                    })}
+                    <TableBody>
+                        {events.map((event) => {
+                            const { startDate, endDate } = dateToRange({
+                                date: event.date,
+                                format: "DD.MM",
+                            });
+                            return (
+                                <TableRow key={event.id}>
+                                    <TableCell>{`${startDate} - ${endDate}`}</TableCell>
+                                    <TableCell>{event.eventTaskAmount}</TableCell>
+                                </TableRow>
+                            );
+                        })}
+                    </TableBody>
                 </Table>
             </Box>
         </Box>

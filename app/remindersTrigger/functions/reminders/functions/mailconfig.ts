@@ -2,12 +2,11 @@
 import { Nullable } from "@/app/Definitions/types";
 import templateDefinitions from "@/app/Emails/templates";
 import { SendMailProps } from "@/app/Emails/templates/types";
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
+import { EmailTriggers, Events } from "@/app/ServerFunctions/types";
 
 type SendFunction = (props: SendMailProps) => Promise<unknown>;
 type MailConfig = {
-    [key in TimelineEvent.eventType]: {
+    [key in Events.eventType]: {
         [key in EmailTriggers.emailTriggerType]: Nullable<SendFunction>;
     };
 };
@@ -16,6 +15,11 @@ const mailConfig: MailConfig = {
     Invites: {
         actionReminder: templateDefinitions.mailTypes.invites.InviteReminder.send,
         deadlineReminder: null,
+    },
+    ImpulsVideo: {
+        actionReminder: null,
+        deadlineReminder:
+            templateDefinitions.mailTypes.impulsVideo.ImpulsVideoDeadlineReminder.send,
     },
     Post: {
         actionReminder: templateDefinitions.mailTypes.post.PostActionReminder.send,

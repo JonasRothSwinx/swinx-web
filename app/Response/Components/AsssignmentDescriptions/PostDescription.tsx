@@ -1,4 +1,4 @@
-import dayjs from "@/app/utils/configuredDayJs";
+import { dayjs } from "@/app/utils";
 import { Box, Typography } from "@mui/material";
 import { TimelineEvent } from "../../Functions/Database/types";
 import dateToRange from "../../Functions/dateToRange";
@@ -7,7 +7,7 @@ import dateToRange from "../../Functions/dateToRange";
 interface PostDescriptionProps {
     events: TimelineEvent[];
 }
-export function PostDescription({ events }: PostDescriptionProps) {
+export default function PostDescription({ events }: PostDescriptionProps) {
     return (
         <Box id="DescriptionContainer">
             <Box id="DescriptionTitle">

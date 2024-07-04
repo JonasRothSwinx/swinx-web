@@ -1,5 +1,8 @@
 import { type ClientSchema } from "@aws-amplify/backend";
 import { a, defineData } from "@aws-amplify/backend";
+import dotenv from "dotenv";
+dotenv.config({ path: ".env.local" });
+const branch = process.env.AWS_BRANCH ?? "dev";
 type params = Parameters<typeof a.schema>[0][string];
 // const publicread = (allow) => allow.public().read();
 const schema = a.schema({
@@ -19,6 +22,11 @@ const schema = a.schema({
         industry: a.string().array(),
         country: a.string().array(),
         cities: a.string().array(),
+    }),
+    EventResources: a.customType({
+        textDraft: a.string(),
+        imageDraft: a.string(),
+        videoDraft: a.string(),
     }),
 
     //##############################################
@@ -151,6 +159,19 @@ const schema = a.schema({
             influencer: a.belongsTo("Influencer", "influencerId"),
             response: a
                 .string()
+                .authorization((allow) => [
+                    allow.publicApiKey().to(["read", "update"]),
+                    allow.groups(["admin", "projektmanager"]),
+                ]),
+            feedback: a
+                .string()
+                .authorization((allow) => [
+                    allow.publicApiKey(),
+                    allow.groups(["admin", "projektmanager"]),
+                ]),
+            invitationSent: a
+                .boolean()
+                .default(false)
                 .authorization((allow) => [
                     allow.publicApiKey().to(["read", "update"]),
                     allow.groups(["admin", "projektmanager"]),
@@ -354,7 +375,13 @@ const schema = a.schema({
             date: a.datetime().required(),
             notes: a.string(),
             info: a.ref("EventInfo"),
-            isCompleted: a.boolean().default(false),
+            isCompleted: a
+                .boolean()
+                .default(false)
+                .authorization((allow) => [
+                    allow.groups(["admin", "projektmanager"]),
+                    allow.publicApiKey().to(["read", "update"]),
+                ]),
 
             targetAudience: a.ref("FilterOptions"),
 
@@ -381,6 +408,13 @@ const schema = a.schema({
             //####################
 
             emailTriggers: a.hasMany("EmailTrigger", "eventId"),
+
+            eventResources: a
+                .ref("EventResources")
+                .authorization((allow) => [
+                    allow.groups(["admin", "projektmanager"]),
+                    allow.publicApiKey().to(["read", "update"]),
+                ]),
         })
         .secondaryIndexes((index) => [
             index("campaignId").queryField("listByCampaign").name("listByCampaign"),
@@ -451,6 +485,7 @@ const schema = a.schema({
 export type Schema = ClientSchema<typeof schema>;
 
 export const data = defineData({
+    name: `swinxWebData-${branch}`,
     schema,
     authorizationModes: {
         defaultAuthorizationMode: "userPool",

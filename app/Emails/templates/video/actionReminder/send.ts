@@ -2,7 +2,7 @@ import { SendMailProps } from "../../types";
 import { sesHandlerSendEmailTemplateBulk } from "@/amplify/functions/sesHandler/types";
 import sesAPIClient from "../../../sesAPI";
 import { TemplateVariables, defaultParams } from "./VideoActionReminderEmail";
-import dayjs from "@/app/utils/configuredDayJs";
+import { dayjs } from "@/app/utils";
 import ErrorLogger from "@/app/ServerFunctions/errorLog";
 import { VideoReminder } from ".";
 

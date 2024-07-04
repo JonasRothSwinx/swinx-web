@@ -1,7 +1,7 @@
 "use server";
 import * as SesHandlerTypes from "@/amplify/functions/sesHandler/types";
 import templateDefinitions, { templateName } from "../../templates";
-import sleep from "@/app/utils/sleep";
+import { sleep } from "@/app/utils";
 import { Prettify } from "@/app/Definitions/types";
 import getSESClient from "../client";
 import {

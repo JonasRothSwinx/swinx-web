@@ -1,8 +1,7 @@
 import { Prettify } from "@/app/Definitions/types";
 import { EmailContextProps } from "@/app/Emails/templates/types";
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
+import { EmailTriggers, Events } from "@/app/ServerFunctions/types";
 import { getTriggerContext } from "./functions/getTriggerContext";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
 
 export type EmailContextPropsByLevel = {
     [key in Exclude<EmailTriggers.emailLevel, "none">]?: EmailContextProps[];
@@ -16,4 +15,4 @@ type GroupedTriggerLevel = {
     [key in Exclude<EmailTriggers.emailLevel, "none">]?: EmailTriggerWithContext[];
 };
 export type GroupedTrigger = { [key in EmailTriggers.emailTriggerType]?: GroupedTriggerLevel };
-export type TriggerGroup = { [key in TimelineEvent.eventType]?: GroupedTrigger };
+export type TriggerGroup = { [key in Events.eventType]?: GroupedTrigger };

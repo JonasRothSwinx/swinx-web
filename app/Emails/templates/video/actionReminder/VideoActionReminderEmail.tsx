@@ -1,4 +1,4 @@
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
+import { EmailTriggers } from "@/app/ServerFunctions/types";
 import { Html, Button, Text, Head, Preview, Container, Link, Hr } from "@react-email/components";
 import styles from "../../styles";
 import { Placeholder } from "../../_components";
@@ -48,7 +48,10 @@ VideoPublishReminderEmail.PreviewProps = {
 
 function NewVideoActionReminder(props: DebugToggle) {
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
             <Preview>Erinnerung: Beitragsveröffentlichung</Preview>
             <Text style={styles.text}>Hallo {placeholders.name}!</Text>
@@ -90,7 +93,10 @@ function NewVideoActionReminder(props: DebugToggle) {
 
 function ReducedVideoActionReminder(props: DebugToggle) {
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
             <Preview>Erinnerung: Videoaktion</Preview>
             <Text style={styles.text}>Hallo {placeholders.name}!</Text>
@@ -98,8 +104,14 @@ function ReducedVideoActionReminder(props: DebugToggle) {
                 Wir möchten dich daran erinnern, dass du heute deinen Videobeitrag veröffentlichen
                 musst.
             </Text>
-            <Container align="left" style={styles.buttonContainer}>
-                <Button style={styles.responseButton} href="https://www.swinx.de">
+            <Container
+                align="left"
+                style={styles.buttonContainer}
+            >
+                <Button
+                    style={styles.responseButton}
+                    href="https://www.swinx.de"
+                >
                     Zu Swinx
                 </Button>
             </Container>

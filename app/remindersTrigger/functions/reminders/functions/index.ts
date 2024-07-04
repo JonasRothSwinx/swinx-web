@@ -1,33 +1,14 @@
 "use server";
 
 // import dataClient from "@/app/ServerFunctions/database";
-import dayjs, { Dayjs } from "@/app/utils/configuredDayJs";
+import { dayjs } from "@/app/utils";
 // import database from "@/app/ServerFunctions/database/dbOperations";
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
-import templateDefinitions from "@/app/Emails/templates";
-import Influencer from "@/app/ServerFunctions/types/influencer";
 import emailClient from "@/app/Emails";
-import { SendMailProps } from "@/app/Emails/templates/types";
-import { EmailContextPropsByLevel, EmailTriggerWithContext, GroupedTrigger } from "../types";
-import Campaign from "@/app/ServerFunctions/types/campaign";
-import Customer from "@/app/ServerFunctions/types/customer";
-import ErrorLogger from "@/app/ServerFunctions/errorLog";
-import { Prettify } from "@/app/Definitions/types";
 import { getEmailTriggers } from "./getEmailTriggers";
-import defineContext from "./defineContext";
 import groupTriggers from "./groupTriggers";
 import handleTriggers from "./handleTriggers";
-// import dayjs from "@/app/utils/configuredDayJs";
-// const triggerHandlers: {
-//     [key in TimelineEvent.eventType]: (triggers: GroupedTrigger) => Promise<unknown>;
-// } = {
-//     Invites: handleInviteMails,
-//     Post: handlePostMails,
-//     Video: handleVideoMails,
-//     WebinarSpeaker: handleWebinarSpeakerMails,
-//     Webinar: handleWebinarMails,
-// };
+
+const devBranches = ["sandbox", "dev"];
 export default async function startReminderRoutine(): Promise<boolean> {
     console.log("Starting reminder routine");
     console.log(
@@ -35,7 +16,14 @@ export default async function startReminderRoutine(): Promise<boolean> {
             "YYYY-MM-DD HH:mm",
         )}`,
     );
-    const isDev = process.env.NODE_ENV === "development";
+    // console.log(process.env);
+
+    const awsBranch = process.env.AWS_BRANCH;
+    if (!awsBranch || typeof awsBranch !== "string") {
+        console.error("No AWS_BRANCH found");
+        return false;
+    }
+    const isDev = devBranches.includes(awsBranch ?? "<error>");
     const [startTime, endTime] = isDev
         ? [dayjs().subtract(10, "year"), dayjs().add(10, "year")]
         : [dayjs(), dayjs().endOf("day").add(1, "day")];

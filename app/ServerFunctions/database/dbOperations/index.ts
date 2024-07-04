@@ -34,7 +34,7 @@ import {
     getAssignmentTimelineEvents,
     getEventForEmailTrigger,
 } from "./timelineEvents";
-import { createCandidate, deleteCandidate } from "./candidate";
+import candidate from "./candidate";
 import {
     createEmailTrigger,
     deleteEmailTrigger,
@@ -53,14 +53,14 @@ import {
     updateProjectManager,
 } from "./projectManagers";
 
-export const campaigns = {
+const campaigns = {
     create: createNewCampaign,
     get: getCampaign,
     delete: deleteCampaign,
     list: listCampaigns,
 };
 
-export const customers = {
+const customers = {
     create: createCustomer,
     update: updateCustomer,
     delete: deleteCustomer,
@@ -68,7 +68,7 @@ export const customers = {
     listByCampaign: listCustomersByCampaign,
 };
 
-export const influencers = {
+const influencers = {
     get: getInfluencer,
     create: createNewInfluencer,
     list: listInfluencers,
@@ -76,7 +76,7 @@ export const influencers = {
     delete: deleteInfluencer,
 };
 
-export const timelineEvents = {
+const timelineEvents = {
     create: createTimelineEvent,
     get: getTimelineEvent,
     update: updateTimelineEvent,
@@ -89,22 +89,23 @@ export const timelineEvents = {
     getForEmailTrigger: getEventForEmailTrigger,
 };
 
-export const assignments = {
+const assignments = {
     create: assignmentOps.createAssignment,
     list: assignmentOps.listAssignments,
-    delete: assignmentOps.deletePlaceholder,
+    delete: assignmentOps.deleteAssignment,
     update: assignmentOps.updateAssignment,
     get: assignmentOps.getAssignment,
     listByCampaign: assignmentOps.listAssignmentsByCampaign,
 };
 
-export const candidates = {
-    create: createCandidate,
-    delete: deleteCandidate,
+const candidates = {
+    create: candidate.createCandidate,
+    delete: candidate.deleteCandidate,
+    update: candidate.updateCandidate,
     // publicUpdate: publicProcessResponse,
 };
 
-export const emailTriggers = {
+const emailTriggers = {
     create: createEmailTrigger,
     list: listEmailTriggers,
     update: updateEmailTrigger,
@@ -113,7 +114,7 @@ export const emailTriggers = {
     byDateRange: getEmailTriggersForDateRange,
 };
 
-export const projectManagers = {
+const projectManagers = {
     create: createProjectManager,
     get: getProjectManager,
     list: listProjectManagers,
@@ -122,7 +123,7 @@ export const projectManagers = {
     getByCognitoId: getProjectManagerByCognitoId,
 };
 
-export const debug = {
+const debug = {
     debugEventList: dummy,
     debugCampaignList: dummyListCampaigns,
 };

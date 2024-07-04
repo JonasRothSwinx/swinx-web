@@ -2,7 +2,7 @@ import { sesHandlerSendEmailTemplateBulk } from "@/amplify/functions/sesHandler/
 import sesAPIClient from "../../../sesAPI";
 import { SendMailProps } from "../../types";
 import { TemplateVariables, defaultParams } from "./PostActionReminderMail";
-import dayjs from "@/app/utils/configuredDayJs";
+import { dayjs } from "@/app/utils";
 import ErrorLogger from "@/app/ServerFunctions/errorLog";
 import { PostReminder } from ".";
 
