@@ -4,6 +4,7 @@ import client from "./.dbclient";
 import { Schema } from "@/amplify/data/resource";
 import { ProjectManager } from "../../types";
 import { Nullable } from "@/app/Definitions/types";
+import { Project } from "next/dist/build/swc";
 
 const selectionSet = [
     //
@@ -14,6 +15,7 @@ const selectionSet = [
     "phoneNumber",
     "notes",
     "cognitoId",
+    "jobTitle",
 ] as const;
 
 type RawProjectManager = SelectionSet<Schema["ProjectManager"]["type"], typeof selectionSet>;
@@ -67,14 +69,7 @@ export async function listProjectManagers() {
 
 //#region Create
 interface CreateProjectManagerParams {
-    projectManager: {
-        firstName: string;
-        lastName: string;
-        email: string;
-        phoneNumber?: string;
-        notes?: string;
-        cognitoId: string;
-    };
+    projectManager: Omit<ProjectManager, "id">;
 }
 export async function createProjectManager({ projectManager }: CreateProjectManagerParams) {
     const { data, errors } = await client.models.ProjectManager.create({ ...projectManager });
@@ -151,6 +146,7 @@ function validateProjectManager(rawData: Nullable<RawProjectManager>): Nullable<
         phoneNumber: rawData.phoneNumber ?? undefined,
         notes: rawData.notes ?? undefined,
         cognitoId: rawData.cognitoId,
+        jobTitle: rawData.jobTitle,
     };
     return validatedProjectManager;
 }

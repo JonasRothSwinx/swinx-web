@@ -208,6 +208,7 @@ function validateCampaign(rawCampaign: Nullable<RawCampaign>): Nullable<Campaign
                 phoneNumber: raw.projectManager.phoneNumber ?? undefined,
                 notes: raw.projectManager.notes ?? undefined,
                 cognitoId: raw.projectManager.cognitoId,
+                jobTitle: raw.projectManager.jobTitle,
             } satisfies ProjectManager;
         });
         const dataOut: Campaigns.Min = {

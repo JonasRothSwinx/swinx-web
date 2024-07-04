@@ -6,6 +6,7 @@ export type ProjectManager = {
     phoneNumber?: string;
     notes?: string;
     cognitoId: string;
+    jobTitle: string;
 };
 
 export function getFullName(projectManager: ProjectManager): string {
@@ -16,6 +17,7 @@ export function validate(data: Partial<ProjectManager>): data is ProjectManager 
         typeof data.firstName === "string" &&
         typeof data.lastName === "string" &&
         typeof data.email === "string" &&
-        typeof data.cognitoId === "string"
+        typeof data.cognitoId === "string" &&
+        typeof data.jobTitle === "string"
     );
 }

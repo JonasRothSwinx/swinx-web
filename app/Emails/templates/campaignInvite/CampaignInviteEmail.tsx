@@ -1,6 +1,6 @@
 import { EmailTriggers } from "@/app/ServerFunctions/types";
 import { Html, Button, Text, Head, Preview, Container, Hr } from "@react-email/components";
-import { Placeholder } from "../_components";
+import { Placeholder, Signature } from "../_components";
 import styles from "../styles";
 import PlaceholderList from "../_components/placeholderList";
 import { DebugToggle, EmailProps } from "../types";
@@ -94,6 +94,7 @@ function NewCampaignInvite(props: DebugToggle) {
                     Zur Kampagne
                 </Button>
             </Container>
+            <Signature />
         </Html>
     );
 }

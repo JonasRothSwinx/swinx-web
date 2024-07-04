@@ -225,6 +225,7 @@ const schema = a.schema({
             phoneNumber: a.string(),
             notes: a.string(),
             cognitoId: a.string().required(),
+            jobTitle: a.string().required(),
 
             campaigns: a.hasMany("ProjectManagerCampaignAssignment", "projectManagerId"),
         })

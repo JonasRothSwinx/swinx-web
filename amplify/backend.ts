@@ -96,7 +96,7 @@ if (!(process.env.NODE_ENV === "development")) {
     const rule = new eventBridge.Rule(stack, "ReminderTriggerRule", {
         enabled: false,
         schedule: eventBridge.Schedule.cron({
-            // minute: "0/10",
+            minute: "0",
             hour: "6",
         }),
 
