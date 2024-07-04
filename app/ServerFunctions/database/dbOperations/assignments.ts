@@ -140,9 +140,10 @@ export async function updateAssignment(assignment: PartialWith<Assignment, "id">
 interface DeleteAssignmentParams {
     id: string;
 }
-export async function deletePlaceholder({ id }: DeleteAssignmentParams) {
+export async function deleteAssignment({ id }: DeleteAssignmentParams) {
     // const { id } = assignment;
     if (!id) throw new Error("Missing Data");
+    console.log("Deleting assignment", id);
     const { data: events, errors } = await client.models.InfluencerAssignment.get(
         { id },
         { selectionSet: ["timelineEvents.timelineEvent.id", "timelineEvents.id"] },
@@ -159,7 +160,11 @@ export async function deletePlaceholder({ id }: DeleteAssignmentParams) {
                 console.log({ eventId, eventAssignmentId });
                 if (eventId) await database.timelineEvent.delete({ id: eventId, debug: true });
                 if (eventAssignmentId)
-                    await client.models.InfluencerAssignment.delete({ id: eventAssignmentId });
+                    try {
+                        await client.models.InfluencerAssignment.delete({ id: eventAssignmentId });
+                    } catch (e) {
+                        console.log(e);
+                    }
             }),
         );
     }

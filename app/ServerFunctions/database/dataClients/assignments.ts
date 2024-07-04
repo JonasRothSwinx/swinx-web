@@ -1,4 +1,4 @@
-import { randomId } from "@mui/x-data-grid-generator";
+import { randomDesk, randomId } from "@mui/x-data-grid-generator";
 import { Assignment, Assignments } from "../../types";
 import { PartialWith } from "@/app/Definitions/types";
 import { config } from ".";
@@ -21,43 +21,31 @@ export const assignment = {
     // resolveFull: resolveAssignmentReference,
     // resolveMin: resolveAssignmentReferenceToMin,
 };
+
+//Mark: - Create
 /**
  * Create a new assignment and update queryClient cache
  * @param assignment The assignment object to create
  * @returns The created assignment object
  */
-async function createAssignment(assignment: Omit<Assignment, "id">): Promise<Assignment> {
-    const queryClient = config.getQueryClient();
+interface CreateAssignment {
+    campaignId: string;
+}
+async function createAssignment({ campaignId }: CreateAssignment): Promise<Assignment> {
     const tempId = randomId();
-    queryClient.setQueryData(["assignments", assignment.campaign.id], (prev: Assignment[]) => {
-        if (!prev) {
-            return [{ ...assignment, id: tempId }];
-        }
-        return [...prev, { ...assignment, id: tempId }];
-    });
-    queryClient.refetchQueries({ queryKey: ["assignments", assignment.campaign.id] });
-    const id = await database.assignment.create(assignment, assignment.campaign.id);
+
+    const assignment: Assignment = {
+        id: tempId,
+        placeholderName: `${randomDesk()}`,
+        budget: 0,
+        timelineEvents: [],
+        isPlaceholder: true,
+        influencer: null,
+        campaign: { id: campaignId },
+    };
+    const id = await database.assignment.create(assignment, campaignId);
     if (!id) throw new Error("Failed to create assignment");
     const createdAssignment = { ...assignment, id };
-    queryClient.setQueryData(["assignment", id], { ...assignment, id });
-    queryClient.setQueryData(["assignments"], (prev: Assignment[]) => {
-        if (!prev) {
-            return [createdAssignment];
-        }
-        return [...prev, createdAssignment];
-    });
-    //replace temp entry with real entry
-    queryClient.setQueryData(["assignments", assignment.campaign.id], (prev: Assignment[]) => {
-        if (!prev) {
-            return [createdAssignment];
-        }
-        return prev.map((assignment) =>
-            assignment.id === tempId ? createdAssignment : assignment,
-        );
-    });
-    queryClient.refetchQueries({ queryKey: ["assignments", assignment.campaign.id] });
-    queryClient.refetchQueries({ queryKey: ["assignments"] });
-    queryClient.refetchQueries({ queryKey: ["assignment", id] });
     return createdAssignment;
 }
 
@@ -68,10 +56,7 @@ async function createAssignment(assignment: Omit<Assignment, "id">): Promise<Ass
 async function listAssignments(): Promise<Assignment[]> {
     const queryClient = config.getQueryClient();
     //Return cached data if available
-    const cachedAssignments = queryClient.getQueryData(["assignments"]) as Assignment[];
-    if (cachedAssignments) {
-        return cachedAssignments;
-    }
+
     const assignments = await database.assignment.list();
     const resolvedAssignments = await Promise.all(
         assignments.map(async (assignment) => {
@@ -155,10 +140,10 @@ async function deleteAssignment(id: string): Promise<void> {
 async function byCampaign(campaignId: string): Promise<Assignment[]> {
     const queryClient = config.getQueryClient();
     //Return cached data if available
-    const cachedAssignments = queryClient.getQueryData(["assignments", campaignId]) as Assignment[];
-    if (cachedAssignments) {
-        return cachedAssignments;
-    }
+    // const cachedAssignments = queryClient.getQueryData(["assignments", campaignId]) as Assignment[];
+    // if (cachedAssignments) {
+    //     return cachedAssignments;
+    // }
     const assignments = await database.assignment.listByCampaign(campaignId);
     const resolvedAssignments = await Promise.all(
         assignments.map(async (assignment) => {

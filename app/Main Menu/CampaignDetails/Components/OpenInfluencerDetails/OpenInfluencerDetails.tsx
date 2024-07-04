@@ -16,7 +16,7 @@ import {
     Typography,
 } from "@mui/material";
 import { randomDesk, randomId } from "@mui/x-data-grid-generator";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import AssignedInfluencer from "./AssignedInfluencer";
 import { dataClient } from "@/app/ServerFunctions/database";
@@ -34,92 +34,112 @@ type eventDict = { [key: string]: Event[] };
 export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps) {
     const { campaignId, setCampaign, events, placeholders, influencers } = props;
     const queryClient = useQueryClient();
-    const campaign = useSuspenseQuery({
-        queryKey: ["campaign", campaignId],
-        queryFn: () => dataClient.campaign.get(campaignId),
+    // const campaign = useQuery({
+    //     queryKey: ["campaign", campaignId],
+    //     queryFn: () => dataClient.campaign.get(campaignId),
+    // });
+    const assignments = useQuery({
+        queryKey: ["assignments", campaignId],
+        queryFn: () => dataClient.assignment.byCampaign(campaignId),
     });
-    const [assignedInfluencers, setAssignedInfluencers] = useState<Assignment[]>([]);
+    // const [assignedInfluencers, setAssignedInfluencers] = useState<Assignment[]>([]);
     const [isProcessing, setIsProcessing] = useState(false);
-    const [targetAssignment, setTargetAssignment] = useState<Assignment>();
+    // const [targetAssignment, setTargetAssignment] = useState<Assignment>();
 
-    useEffect(() => {
-        function getInfluencers() {
-            // debugger;
-            // console.log(openInfluencers);
-            const assignments: Assignment[] = campaign.data.assignedInfluencers ?? [];
+    // useEffect(() => {
+    //     function getInfluencers() {
+    //         // debugger;
+    //         // console.log(openInfluencers);
+    //         const assignments: Assignment[] = campaign.data.assignedInfluencers ?? [];
 
-            for (const event of events /* .filter((event) => event.assignment.isPlaceholder) */) {
-                switch (true) {
-                    case Events.isSingleEvent(event): {
-                        const assignment = assignments.find(
-                            (x) => x.id === event.assignments[0]?.id,
-                        );
-                        if (!assignment) continue;
-                        if (assignment.timelineEvents.find((x) => x.id === event.id)) {
-                            continue;
-                        }
+    //         for (const event of events /* .filter((event) => event.assignment.isPlaceholder) */) {
+    //             switch (true) {
+    //                 case Events.isSingleEvent(event): {
+    //                     const assignment = assignments.find(
+    //                         (x) => x.id === event.assignments[0]?.id,
+    //                     );
+    //                     if (!assignment) continue;
+    //                     if (assignment.timelineEvents.find((x) => x.id === event.id)) {
+    //                         continue;
+    //                     }
 
-                        assignment.timelineEvents.push(event);
-                        break;
-                    }
-                    case Events.isMultiEvent(event): {
-                        const assignment = assignments.find((x) =>
-                            event.assignments?.find((y) => {
-                                y.id === x.id;
-                            }),
-                        );
-                        if (!assignment) continue;
-                        if (assignment.timelineEvents.find((x) => x.id === event.id)) {
-                            continue;
-                        }
+    //                     assignment.timelineEvents.push(event);
+    //                     break;
+    //                 }
+    //                 case Events.isMultiEvent(event): {
+    //                     const assignment = assignments.find((x) =>
+    //                         event.assignments?.find((y) => {
+    //                             y.id === x.id;
+    //                         }),
+    //                     );
+    //                     if (!assignment) continue;
+    //                     if (assignment.timelineEvents.find((x) => x.id === event.id)) {
+    //                         continue;
+    //                     }
 
-                        assignment.timelineEvents.push(event);
-                        break;
-                    }
-                }
-            }
+    //                     assignment.timelineEvents.push(event);
+    //                     break;
+    //                 }
+    //             }
+    //         }
 
-            for (const assignment of assignments) {
-                assignment.timelineEvents.sort((a, b) =>
-                    a.date && b.date ? a.date.localeCompare(b.date) : 0,
-                );
-            }
-            return assignments;
-        }
-        setAssignedInfluencers(getInfluencers());
-        return () => {};
-    }, [/* placeholders,  */ events, campaign.data]);
+    //         for (const assignment of assignments) {
+    //             assignment.timelineEvents.sort((a, b) =>
+    //                 a.date && b.date ? a.date.localeCompare(b.date) : 0,
+    //             );
+    //         }
+    //         return assignments;
+    //     }
+    //     setAssignedInfluencers(getInfluencers());
+    //     return () => {};
+    // }, [/* placeholders,  */ events, campaign.data]);
     const EventHandlers = {
-        addAssignment: () => {
-            setIsProcessing(true);
-            const tempId = randomId();
-            const newPlaceholder: Assignment = {
-                id: tempId,
-                placeholderName: `${randomDesk()}`,
-                budget: 0,
-                timelineEvents: [],
-                isPlaceholder: true,
-                influencer: null,
-                campaign: { id: campaignId },
-            };
-            dataClient.assignment.create(newPlaceholder).then((id) => {
-                // console.log("got id");
-                // const newPlaceholders = campaign.assignedInfluencers.map((x) =>
-                //     x.id === tempId ? { ...x, id: id } : x
-                // );
-                const newPlaceholders = [
-                    ...campaign.data.assignedInfluencers,
-                    { ...newPlaceholder, id },
-                ];
-                // console.log({ newPlaceholders });
-                setIsProcessing(false);
-            });
-            const newCampaign: Campaign = {
-                ...campaign.data,
-                assignedInfluencers: [...campaign.data.assignedInfluencers, newPlaceholder],
-            };
-            setCampaign(newCampaign);
-        },
+        // addAssignment: () => {
+        //     setIsProcessing(true);
+        //     const tempId = randomId();
+        //     const newPlaceholder: Assignment = {
+        //         id: tempId,
+        //         placeholderName: `${randomDesk()}`,
+        //         budget: 0,
+        //         timelineEvents: [],
+        //         isPlaceholder: true,
+        //         influencer: null,
+        //         campaign: { id: campaignId },
+        //     };
+        //     dataClient.assignment.create(newPlaceholder).then((id) => {
+        //         // console.log("got id");
+        //         // const newPlaceholders = campaign.assignedInfluencers.map((x) =>
+        //         //     x.id === tempId ? { ...x, id: id } : x
+        //         // );
+        //         const newPlaceholders = [
+        //             ...campaign.data.assignedInfluencers,
+        //             { ...newPlaceholder, id },
+        //         ];
+        //         // console.log({ newPlaceholders });
+        //         setIsProcessing(false);
+        //     });
+        //     const newCampaign: Campaign = {
+        //         ...campaign.data,
+        //         assignedInfluencers: [...campaign.data.assignedInfluencers, newPlaceholder],
+        //     };
+        //     setCampaign(newCampaign);
+        // },
+        addAssignment: useMutation({
+            mutationFn: async () => {
+                const createdEvent = await dataClient.assignment.create({ campaignId });
+                return createdEvent;
+            },
+            onSettled: (data, error) => {
+                queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
+                queryClient.invalidateQueries({ queryKey: ["assignments", campaignId] });
+                if (error) console.error(error);
+            },
+
+            onSuccess: (data, variables, context) => {
+                queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
+                queryClient.invalidateQueries({ queryKey: ["assignments", campaignId] });
+            },
+        }),
     };
     return (
         <>
@@ -137,14 +157,14 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                     Influencer
                 </AccordionSummary>
                 <AccordionDetails>
-                    {campaign.data && (
+                    {assignments.data && (
                         <>
-                            {campaign.data.assignedInfluencers.map((assignment) => {
+                            {assignments.data.map((assignment) => {
                                 // console.log(influencer);
                                 return (
                                     <AssignedInfluencer
                                         key={assignment.id}
-                                        campaignId={campaign.data.id}
+                                        campaignId={campaignId}
                                         assignedInfluencer={assignment}
                                         // campaign={campaign}
                                         // setCampaign={setCampaign}
@@ -155,8 +175,8 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                                 );
                             })}
                             <Button
-                                onClick={EventHandlers.addAssignment}
-                                disabled={isProcessing}
+                                onClick={() => EventHandlers.addAssignment.mutate()}
+                                disabled={EventHandlers.addAssignment.isPending}
                             >
                                 <AddIcon />
                                 <Typography>Neuer Influencer</Typography>

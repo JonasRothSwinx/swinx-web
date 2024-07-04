@@ -92,7 +92,7 @@ const timelineEvents = {
 const assignments = {
     create: assignmentOps.createAssignment,
     list: assignmentOps.listAssignments,
-    delete: assignmentOps.deletePlaceholder,
+    delete: assignmentOps.deleteAssignment,
     update: assignmentOps.updateAssignment,
     get: assignmentOps.getAssignment,
     listByCampaign: assignmentOps.listAssignmentsByCampaign,

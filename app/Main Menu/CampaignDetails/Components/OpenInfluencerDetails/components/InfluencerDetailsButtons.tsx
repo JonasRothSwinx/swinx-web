@@ -19,7 +19,7 @@ import { MouseEvent, useState } from "react";
 import database from "@/app/ServerFunctions/database/dbOperations";
 import TimelineEventDialog from "@/app/Main Menu/Dialogs/TimelineEvent/TimelineEventDialog";
 import BudgetDialog from "@/app/Main Menu/Dialogs/BudgetDialog";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import { Confirm } from "@/app/Components/Popups";
 import { dataClient } from "@/app/ServerFunctions/database";
@@ -57,6 +57,7 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
         influencers,
         events,
     } = props;
+    const queryClient = useQueryClient();
     const [openDialog, setOpenDialog] = useState<openDialog>("none");
     const userGroups = useQuery({
         queryKey: ["userGroups"],
@@ -68,17 +69,54 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
         onDialogClose: (hasChanged = false, newDialog: openDialog = "none") => {
             setOpenDialog(newDialog);
         },
-        deleteAssignment: () => {
-            if (!assignment) return;
-            database.assignment.delete(assignment);
-            const newCampaign = {
-                ...campaign,
-                assignedInfluencers: campaign.assignedInfluencers.filter(
-                    (x) => x.id !== assignment.id,
-                ),
-            };
-            setCampaign(newCampaign);
-        },
+        // deleteAssignment: () => {
+        //     if (!assignment) return;
+        //     database.assignment.delete(assignment);
+        //     const newCampaign = {
+        //         ...campaign,
+        //         assignedInfluencers: campaign.assignedInfluencers.filter(
+        //             (x) => x.id !== assignment.id,
+        //         ),
+        //     };
+        //     setCampaign(newCampaign);
+        // },
+        deleteAssignment: useMutation({
+            mutationFn: async () => {
+                if (!assignment) return;
+                await database.assignment.delete({ id: assignment.id });
+            },
+            onMutate: async () => {
+                await queryClient.cancelQueries({ queryKey: ["assignment", assignment.id] });
+                await queryClient.cancelQueries({ queryKey: ["assignments", campaign.id] });
+                await queryClient.cancelQueries({ queryKey: ["campaign", campaign.id] });
+                const prevCampaign = campaign;
+                const prevAssignments = campaign.assignedInfluencers;
+
+                queryClient.setQueryData(["assignment", assignment.id], undefined);
+                queryClient.setQueryData(
+                    ["assignments", campaign.id],
+                    prevAssignments.filter((x) => x.id !== assignment.id),
+                );
+                queryClient.setQueryData(["campaign", campaign.id], {
+                    ...prevCampaign,
+                    assignedInfluencers: prevAssignments.filter((x) => x.id !== assignment.id),
+                });
+                return { prevCampaign, prevAssignments };
+            },
+            onSettled: () => {
+                queryClient.invalidateQueries({ queryKey: ["assignments", campaign.id] });
+                queryClient.invalidateQueries({ queryKey: ["campaign", campaign.id] });
+            },
+            onError: (error, _, context) => {
+                console.error(error);
+                const { prevCampaign, prevAssignments } = context ?? {};
+                if (prevCampaign && prevAssignments) {
+                    queryClient.setQueryData(["assignment", assignment.id], assignment);
+                    queryClient.setQueryData(["assignments", campaign.id], prevAssignments);
+                    queryClient.setQueryData(["campaign", campaign.id], prevCampaign);
+                }
+            },
+        }),
         addEvents: () => (e: MouseEvent) => {
             e.stopPropagation();
             setOpenDialog("timelineEvent");
@@ -151,7 +189,7 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
                 title="Löschen"
                 message="Sind Sie sicher, dass Sie diese Zuweisung löschen möchten?"
                 onClose={EventHandlers.onDialogClose}
-                onConfirm={EventHandlers.deleteAssignment}
+                onConfirm={() => EventHandlers.deleteAssignment.mutate()}
                 onCancel={() => {}}
             />
         ),

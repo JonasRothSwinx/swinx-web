@@ -287,9 +287,9 @@ export async function deleteTimelineEvent({ id, debug }: DeleteTimelineEventPara
     }
 
     //delete the event
-    // console.log("Deleting Event", { id });
-    // const { errors } = await client.models.TimelineEvent.delete({ id });
-    // if (errors) throw new Error(JSON.stringify(errors));
+    console.log("Deleting Event", { id });
+    const { errors } = await client.models.TimelineEvent.delete({ id });
+    if (errors) throw new Error(JSON.stringify(errors));
     if (debug) {
         return {
             connections: connectionData.length,
