@@ -10,6 +10,7 @@ import styles from "./styles";
 import Head from "next/head";
 import { Metadata } from "next";
 import { ConfirmProvider, ConfirmProviderProps } from "material-ui-confirm";
+import { Suspense } from "react";
 
 const queryClient = new QueryClient();
 dataClient.config.setQueryClient(queryClient);
@@ -38,7 +39,9 @@ export default function Page() {
                         id="ResponseLandingPage"
                         sx={styles}
                     >
-                        <ResponseLanding />
+                        <Suspense>
+                            <ResponseLanding />
+                        </Suspense>
                         <ReactQueryDevtools initialIsOpen={false} />
                     </Box>
                 </ConfirmProvider>
