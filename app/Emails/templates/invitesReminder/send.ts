@@ -1,24 +1,23 @@
 "use server";
 import { SendMailProps } from "../types";
-import sesAPIClient from "../../sesAPI";
-import { defaultParams, TemplateVariables } from "./InvitesReminderMail";
+import { SESClientSendMail as sesAPIClient } from "../../sesAPI";
+// import { defaultParams } from "./InvitesReminderMail";
+import { TemplateVariables, templateNames } from "./TemplateVariables";
 import { Event, Events } from "@/app/ServerFunctions/types";
-import ErrorLogger from "@/app/ServerFunctions/errorLog";
-import { inviteReminderTemplates } from ".";
 
 export default async function send(props: SendMailProps) {
     const { level, fromAdress, individualContext } = props;
     if (level === "none") {
         return;
     }
-    const templateName = inviteReminderTemplates.levels[level].name;
+    const templateName = templateNames[level];
     const templateData = individualContext.reduce((acc, { event, influencer, customer }) => {
         if (!event || !influencer || !customer) {
-            ErrorLogger.log("Missing context");
+            console.log("Missing context");
             return acc;
         }
         if (!event.eventTaskAmount || event.eventTaskAmount === 0) {
-            ErrorLogger.log("No event task amount found");
+            console.log("No event task amount found");
             return acc;
         }
         const webinar = event.parentEvent;
@@ -40,7 +39,7 @@ export default async function send(props: SendMailProps) {
 
         const targetAudience = event.targetAudience;
         if (!targetAudience) {
-            ErrorLogger.log("No target audience found");
+            console.log("No target audience found");
             return acc;
         }
 
@@ -67,7 +66,19 @@ export default async function send(props: SendMailProps) {
     const response = await sesAPIClient.sendBulk({
         from: fromAdress ?? "swinx GmbH <noreply@swinx.de>",
         templateName: templateName,
-        defaultTemplateData: JSON.stringify(defaultParams),
+        defaultTemplateData: JSON.stringify({
+            customerName: "TestCustomer",
+            eventName: "TestEvent",
+            eventLink: "https://www.swinx.de",
+            filterJobGroups: [
+                { jobGroup: "TestJobGroup1" },
+                { jobGroup: "TestJobGroup2" },
+                { jobGroup: "TestJobGroup3" },
+            ],
+            filterCountries: "TestCountry",
+            name: "testName",
+            inviteAmount: "5 Millionen",
+        } satisfies TemplateVariables),
         bulkTemplateData: templateData,
     });
     return response;

@@ -5,12 +5,11 @@ import WebinarSpeakerActionReminderMail, {
     defaultParams,
 } from "./WebinarSpeakerDateReminder";
 import send from "./send";
-
-const templateBaseName = "WebinarSpeakerActionReminder";
+import { TemplateVariables, templateNames as templateLevelNames } from "./TemplateVariables";
 
 const templates: EmailLevelDefinition = {
     new: {
-        name: `${templateBaseName}New`,
+        name: `${templateLevelNames.new}`,
         subjectLine: subjectLineBase,
         html: renderAsync(WebinarSpeakerActionReminderMail({ emailLevel: "new" })),
         text: renderAsync(WebinarSpeakerActionReminderMail({ emailLevel: "new" }), {
@@ -18,7 +17,7 @@ const templates: EmailLevelDefinition = {
         }),
     },
     reduced: {
-        name: `${templateBaseName}Reduced`,
+        name: `${templateLevelNames.reduced}`,
         subjectLine: subjectLineBase,
         html: renderAsync(WebinarSpeakerActionReminderMail({ emailLevel: "reduced" })),
         text: renderAsync(WebinarSpeakerActionReminderMail({ emailLevel: "reduced" }), {

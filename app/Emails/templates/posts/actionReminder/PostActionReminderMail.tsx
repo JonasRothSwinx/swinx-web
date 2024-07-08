@@ -6,14 +6,8 @@ import { DebugToggle, EmailProps } from "../../types";
 import { json } from "stream/consumers";
 import React from "react";
 import DebugTemplates from "../../../DebugTemplates";
+import { TemplateVariables } from "./TemplateVariables";
 
-export type TemplateVariables = {
-    name: string;
-    postTime: string;
-    customerName: string;
-    customerProfileLink: string;
-    // postContent: string;
-};
 export const subjectLineBase = "Erinnerung: Beitragsveröffentlichung";
 export const defaultParams: TemplateVariables = {
     name: "testName",

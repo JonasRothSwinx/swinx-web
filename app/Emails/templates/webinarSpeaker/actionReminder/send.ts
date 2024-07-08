@@ -1,18 +1,16 @@
 import { SendMailProps } from "../../types";
 import { Event, Events } from "@/app/ServerFunctions/types";
-import { sesHandlerSendEmailTemplateBulk } from "@/amplify/functions/sesHandler/types";
-import sesAPIClient from "../../../sesAPI";
-import { defaultParams, TemplateVariables } from "./WebinarSpeakerDateReminder";
+import { SESClientSendMail as sesAPIClient } from "../../../sesAPI";
+import { TemplateVariables, templateNames } from "./TemplateVariables";
 import ErrorLogger from "@/app/ServerFunctions/errorLog";
 import { dayjs } from "@/app/utils";
-import { WebinarSpeakerActionReminder } from ".";
 
 export default async function send(props: SendMailProps) {
     const { level, fromAdress, individualContext } = props;
     if (level === "none") {
         return;
     }
-    const templateName = WebinarSpeakerActionReminder.levels[level].name;
+    const templateName = templateNames[level];
     const templateData = individualContext.reduce((acc, { event, customer, influencer }) => {
         if (!event || !customer || !influencer) {
             ErrorLogger.log("Missing context");
@@ -46,7 +44,12 @@ export default async function send(props: SendMailProps) {
     const response = await sesAPIClient.sendBulk({
         from: fromAdress ?? "swinx GmbH <noreply@swinx.de>",
         templateName,
-        defaultTemplateData: JSON.stringify(defaultParams),
+        defaultTemplateData: JSON.stringify({
+            name: "TestName",
+            webinarTitle: "TestWebinar",
+            topic: "TestTopic",
+            time: "00:00",
+        } satisfies TemplateVariables),
         bulkTemplateData: templateData,
     });
 }

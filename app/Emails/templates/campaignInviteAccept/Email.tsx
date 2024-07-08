@@ -6,11 +6,8 @@ import PlaceholderList from "../_components/placeholderList";
 import { DebugToggle, EmailProps } from "../types";
 import * as React from "react";
 import DebugTemplates from "../../DebugTemplates";
+import { TemplateVariables } from "./TemplateVariables";
 
-export type TemplateVariables = {
-    influencerName: string;
-    customerName: string;
-};
 export const defaultParams: TemplateVariables = {
     influencerName: "Max Mustermann",
     customerName: "Musterfirma",

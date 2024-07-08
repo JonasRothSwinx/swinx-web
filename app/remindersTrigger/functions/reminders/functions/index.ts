@@ -33,10 +33,10 @@ export default async function startReminderRoutine(): Promise<boolean> {
         console.log("No triggers found for today, stopping reminder routine");
         return true;
     }
-    console.log("Updating email templates");
-    await emailClient.templates.update().catch((error) => {
-        console.error("Error updating email templates", error);
-    });
+    // console.log("Updating email templates");
+    // await emailClient.templates.update().catch((error) => {
+    //     console.error("Error updating email templates", error);
+    // });
 
     const groupedTriggers = await groupTriggers(emailTriggers);
     console.log("Grouped triggers", groupedTriggers);

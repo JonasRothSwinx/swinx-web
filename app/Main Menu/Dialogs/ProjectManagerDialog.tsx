@@ -18,6 +18,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import sxStyles from "./sxStyles";
 import { Unstable_Grid2 as Grid } from "@mui/material";
 import { ProjectManager, ProjectManagers } from "@/app/ServerFunctions/types";
+import { randomJobTitle } from "@mui/x-data-grid-generator";
 
 const styles = stylesExporter.dialogs;
 interface ProjectManagerDialogProps {
@@ -39,6 +40,7 @@ function ProjectManagerDialog(props: ProjectManagerDialogProps) {
         email: email ?? "",
         phoneNumber: phoneNumber ?? "",
         cognitoId: cognitoId,
+        jobTitle: "Projektmanager*in",
     });
 
     const queryClient = useQueryClient();
@@ -167,6 +169,9 @@ function FormInputs(props: FormInputsProps) {
         phoneNumber: (event: React.ChangeEvent<HTMLInputElement>) => {
             setData((prev) => ({ ...prev, phoneNumber: event.target.value }));
         },
+        jobTitle: (event: React.ChangeEvent<HTMLInputElement>) => {
+            setData((prev) => ({ ...prev, jobTitle: event.target.value }));
+        },
     };
     const Validator = {
         validateEmail: (email: string): boolean => {
@@ -208,10 +213,16 @@ function FormInputs(props: FormInputsProps) {
                     required
                 />
                 <TextField
+                    label="Jobtitel"
+                    value={data.jobTitle}
+                    onChange={ChangeHandler.jobTitle}
+                    helperText="Wird in Emailsignatur angegeben"
+                />
+                <TextField
                     label="Telefonnummer"
                     value={data.phoneNumber}
                     onChange={ChangeHandler.phoneNumber}
-                    type="tel"
+                    helperText="Wird in Emailsignatur angegeben"
                 />
             </Box>
         </DialogContent>

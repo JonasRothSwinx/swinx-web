@@ -1,11 +1,10 @@
 "use server";
-import { sesHandlerSendEmailTemplateBulk } from "@/amplify/functions/sesHandler/types";
-import sesAPIClient from "../../sesAPI";
+import { SESClientSendMail as sesAPIClient } from "../../sesAPI";
 import { SendMailProps } from "../types";
-import { TemplateVariables } from "./CampaignInviteEmail";
-import { templates } from ".";
+import { TemplateVariables, templateNames } from "./TemplateVariables";
+
 import { ProjectManagers } from "@/app/ServerFunctions/types";
-import { encodeQueryParams } from "@/app/utils";
+import { CampaignInviteEncodedData, encodeQueryParams } from "@/app/utils";
 import { getInviteBaseUrl } from "@/app/ServerFunctions/serverActions";
 
 /**
@@ -56,7 +55,7 @@ export default async function send(props: SendMailProps) {
         throw new Error(`Missing email context: ${Object.keys(missingContext).join(", ")}`);
     }
 
-    const templateName = templates[level].name;
+    const templateName = templateNames[level];
 
     const commonVariables: commonVariables = {
         // assignments: taskDescriptions.map((assignmentDescription) => ({

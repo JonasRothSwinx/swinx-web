@@ -6,17 +6,9 @@ import styles from "../styles";
 import { DebugToggle, EmailProps } from "../types";
 import DebugTemplates from "../../DebugTemplates";
 import PlaceholderList from "../_components/placeholderList";
+import { TemplateVariables } from "./TemplateVariables";
 
 export const subjectLineBase = "Erinnerung: Einladungen";
-export type TemplateVariables = {
-    name: string;
-    inviteAmount: string;
-    customerName: string;
-    eventName: string;
-    eventLink: string;
-    filterJobGroups: { jobGroup: string }[];
-    filterCountries: string;
-};
 export const defaultParams: TemplateVariables = {
     name: "testName",
     inviteAmount: "5 Millionen",

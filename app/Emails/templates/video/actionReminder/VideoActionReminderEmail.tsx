@@ -3,16 +3,9 @@ import { Html, Button, Text, Head, Preview, Container, Link, Hr } from "@react-e
 import styles from "../../styles";
 import { Placeholder } from "../../_components";
 import { DebugToggle, EmailProps } from "../../types";
-import React from "react";
 import DebugTemplates from "../../../DebugTemplates";
+import { TemplateVariables } from "./TemplateVariables";
 
-export type TemplateVariables = {
-    name: string;
-    customerName: string;
-    customerLink: string;
-    // postContent: string;
-    postTime: string;
-};
 const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
     name: Placeholder({ name: "name" }),
     customerName: Placeholder({ name: "customerName" }),

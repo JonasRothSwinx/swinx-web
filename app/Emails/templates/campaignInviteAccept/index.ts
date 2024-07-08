@@ -2,17 +2,17 @@ import { renderAsync } from "@react-email/render";
 import { EmailLevelDefinition, Template } from "../types";
 import send from "./send";
 import Email, { subjectLineBase, defaultParams } from "./Email";
+import { templateNames as templateLevelNames } from "./TemplateVariables";
 
-const templateNameBase = "CampaignInviteAccept";
 export const templates: EmailLevelDefinition = {
     new: {
-        name: `${templateNameBase}New`,
+        name: `${templateLevelNames.new}`,
         subjectLine: subjectLineBase,
         html: renderAsync(Email({ emailLevel: "new" })),
         text: renderAsync(Email({ emailLevel: "new" }), { plainText: true }),
     },
     reduced: {
-        name: `${templateNameBase}Reduced`,
+        name: `${templateLevelNames.reduced}`,
         subjectLine: subjectLineBase,
         html: renderAsync(Email({ emailLevel: "reduced" })),
         text: renderAsync(Email({ emailLevel: "reduced" }), { plainText: true }),
@@ -23,7 +23,8 @@ export const templateNames = [
     ...Object.values(templates).map((template) => template.name),
 ] as const;
 
-export { type TemplateVariables, defaultParams } from "./Email";
+export { defaultParams } from "./Email";
+export { type TemplateVariables } from "./TemplateVariables";
 
 export const template: Template = {
     defaultParams,

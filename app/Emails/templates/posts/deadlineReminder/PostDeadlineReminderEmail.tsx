@@ -5,12 +5,8 @@ import { Placeholder } from "../../_components";
 import { DebugToggle, EmailProps } from "../../types";
 import React from "react";
 import DebugTemplates from "../../../DebugTemplates";
+import { TemplateVariables } from "./TemplateVariables";
 
-export type TemplateVariables = {
-    name: string;
-    customerName: string;
-    topic: string;
-};
 export const subjectLineBase = "Erinnerung: Entwurf für Beitrag";
 export const defaultParams: TemplateVariables = {
     name: "testName",

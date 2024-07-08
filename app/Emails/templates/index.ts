@@ -69,3 +69,5 @@ const templateDefinitions = {
 export { templateNames };
 export * as Types from "./types";
 export default templateDefinitions;
+
+export * as templateSender from "./templateSender";

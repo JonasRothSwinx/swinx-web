@@ -3,14 +3,9 @@ import { Html, Button, Text, Head, Preview, Container } from "@react-email/compo
 import styles from "../../styles";
 import { Placeholder } from "../../_components";
 import { DebugToggle, EmailProps } from "../../types";
-import DebugTemplates from "../../../DebugTemplates";
 
-export type TemplateVariables = {
-    name: string;
-    time: string;
-    webinarTitle: string;
-    topic: string;
-};
+import { TemplateVariables } from "./TemplateVariables";
+import DebugTemplates from "@/app/Emails/DebugTemplates";
 
 export const subjectLineBase = "Erinnerung: Webinar";
 
@@ -35,7 +30,8 @@ const EmailTemplates: {
 };
 
 export default function WebinarSpeakerDateReminder(props: EmailProps) {
-    if (props.debug) return <DebugTemplates templates={EmailTemplates} />;
+    if (props.debug) return <DebugTemplates
+     templates={EmailTemplates} />;
     return EmailTemplates[props.emailLevel]();
 }
 

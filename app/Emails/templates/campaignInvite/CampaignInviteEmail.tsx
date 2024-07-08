@@ -6,15 +6,8 @@ import PlaceholderList from "../_components/placeholderList";
 import { DebugToggle, EmailProps } from "../types";
 import React from "react";
 import DebugTemplates from "../../DebugTemplates";
+import { TemplateVariables } from "./TemplateVariables";
 
-export type TemplateVariables = {
-    name: string;
-    // assignments: { assignmentDescription: string }[];
-    // honorar: string;
-    linkBase: string;
-    linkData: string;
-    customerCompany: string;
-};
 export const defaultParams: TemplateVariables = {
     name: "testName",
     // assignments: [{ assignmentDescription: "Fliege zum Mars" }],

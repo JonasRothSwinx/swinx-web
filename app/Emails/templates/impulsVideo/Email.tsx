@@ -5,13 +5,8 @@ import styles from "../styles";
 import { DebugToggle, EmailProps } from "../types";
 import React from "react";
 import DebugTemplates from "../../DebugTemplates";
+import { TemplateVariables } from "./TemplateVariables";
 
-export type TemplateVariables = {
-    name: string;
-    customerName: string;
-    dueDate: string;
-    topic: string;
-};
 export const defaultParams: TemplateVariables = {
     name: "Max Mustermann",
     customerName: "Musterfirma",

@@ -5,18 +5,17 @@ import VideoPublishReminderEmail, {
 } from "./VideoActionReminderEmail";
 import { renderAsync } from "@react-email/render";
 import send from "./send";
-
-const templateBaseName = "VideoReminder";
+import { templateNames as templateLevelNames } from "./TemplateVariables";
 
 const templates: EmailLevelDefinition = {
     new: {
-        name: `${templateBaseName}New`,
+        name: `${templateLevelNames.new}`,
         subjectLine: subjectLineBase,
         html: renderAsync(VideoPublishReminderEmail({ emailLevel: "new" })),
         text: renderAsync(VideoPublishReminderEmail({ emailLevel: "new" }), { plainText: true }),
     },
     reduced: {
-        name: `${templateBaseName}Reduced`,
+        name: `${templateLevelNames.reduced}`,
         subjectLine: subjectLineBase,
         html: renderAsync(VideoPublishReminderEmail({ emailLevel: "reduced" })),
         text: renderAsync(VideoPublishReminderEmail({ emailLevel: "reduced" }), {
