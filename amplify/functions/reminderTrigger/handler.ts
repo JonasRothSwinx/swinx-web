@@ -31,7 +31,7 @@ Amplify.configure(
                 },
             },
         },
-    },
+    }
 );
 export const handler: Handler = async (event, context) => {
     const BASE_URL = process.env.BASE_URL;
@@ -42,6 +42,7 @@ export const handler: Handler = async (event, context) => {
         };
     }
     // console.log("env: ", process.env);
+    // await reminders.debug();
     await reminders.start();
     // await dataClient.graphql({
     //     query: listEmailTriggers,

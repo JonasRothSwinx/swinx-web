@@ -10,9 +10,13 @@ import {
     Assignment,
     EmailTriggers,
     Events,
+    Campaign,
+    Influencer,
 } from "@/app/ServerFunctions/types";
-import { listEmailTriggers } from "../../graphql/queries";
 import * as API from "@/amplify/functions/reminderTrigger/graphql/API";
+import { emailLevels } from "@/app/ServerFunctions/types/emailTriggers";
+import { parse } from "path";
+// import { listEmailTriggers } from "../../graphql/queries";
 
 const dataClient = generateClient<Schema>();
 
@@ -47,68 +51,441 @@ const getEmailTriggersForDateRangeSelectionSet = [
 //     Schema["EmailTrigger"]["type"],
 //     typeof getEmailTriggersForDateRangeSelectionSet
 // >;
-type EmailTrigger = NonNullable<API.GetEmailTriggerQuery["listEmailTriggers"]>["items"];
+
+type GeneratedQuery<InputType, OutputType> = string & {
+    __generatedQueryInput: InputType;
+    __generatedQueryOutput: OutputType;
+};
+
+const listEmailTriggers = /* GraphQL */ `query ListEmailTriggers(
+        $startDate: String!
+        $endDate: String!
+        $nextToken: String
+        $limit: Int
+) {
+    listEmailTriggers(filter: {date: {between: [$startDate, $endDate]}}, limit: $limit, nextToken: $nextToken) {
+        items{
+            id
+            date
+            type
+            active
+            sent
+            emailBodyOverride
+            emailLevelOverride
+            subjectLineOverride
+            event {
+                id
+                timelineEventType
+                isCompleted
+                eventTitle
+                eventTaskAmount
+                date
+                info {
+                    topic
+                    charLimit
+                    draftDeadline
+                    instructions
+                    maxDuration
+                    eventLink
+                    eventPostContent
+                }
+                campaign {
+                    customers(limit:1){
+                        items{
+                            id
+                            company
+                        }
+                    }
+                    projectManagers{
+                        items{
+                            projectManager{
+                                id
+                                firstName
+                                lastName
+                                email
+                                phoneNumber
+                                jobTitle
+                            }
+                        }
+                    }
+                }
+                assignments(limit:1){
+                    items{
+                        assignment{
+                            id
+                            isPlaceholder
+                            influencer{
+                                id
+                                firstName
+                                lastName
+                                email
+                                emailType
+                            }
+                        }
+                    }
+                }
+                parentEvent{
+                    id
+                    timelineEventType
+                    isCompleted
+                    eventTitle
+                    date
+                    info {
+                        topic
+                        charLimit
+                        draftDeadline
+                        instructions
+                        maxDuration
+                        eventLink
+                        eventPostContent
+                    }
+                }
+                eventResources{
+                    textDraft
+                    videoDraft
+                    imageDraft
+                }
+            }
+        }
+    }
+}
+` as GeneratedQuery<ListEmailTriggersQueryVariables, ListEmailTriggersQuery>;
+
+type ListEmailTriggersQueryVariables = {
+    startDate: string;
+    endDate: string;
+    nextToken?: string | null;
+    limit?: number | null | undefined;
+};
+type ListEmailTriggersQuery = {
+    listEmailTriggers?: {
+        items: Array<ListEmailTriggersQueryItem>;
+        nextToken?: string | null;
+    } | null;
+};
+type ListEmailTriggersQueryItem = RawEmailTrigger & {
+    event: RawEvent;
+};
+type RawEmailTrigger = {
+    id: string;
+    date: string;
+    type: string;
+    active: boolean;
+    sent: boolean;
+    emailBodyOverride: Nullable<string>;
+    emailLevelOverride: Nullable<string>;
+    subjectLineOverride: Nullable<string>;
+};
+
+type RawEvent = RawParentEvent & {
+    eventTaskAmount: number;
+    parentEvent: RawParentEvent;
+    campaign: RawCampaign;
+    assignments: {
+        items: RawAssignment[];
+    };
+    eventResources: {
+        textDraft?: string;
+        videoDraft?: string;
+        imageDraf: string;
+    };
+};
+type RawParentEvent = {
+    id: string;
+    timelineEventType: string;
+    isCompleted: boolean;
+    eventTitle: string;
+    date: string;
+    info: {
+        topic?: string;
+        charLimit?: number;
+        draftDeadline?: string;
+        instructions?: string;
+        maxDuration?: number;
+        eventLink?: string;
+        eventPostContent?: string;
+    };
+};
+type RawCampaign = {
+    id: string;
+    customers: {
+        items: RawCustomer[];
+    };
+    projectManagers: {
+        items: RawProjectManager[];
+    };
+};
+type RawCustomer = {
+    id: string;
+    company: string;
+};
+type RawProjectManager = {
+    projectManager: {
+        id: string;
+        firstName: string;
+        lastName: string;
+        email: string;
+        phoneNumber: string;
+        jobTitle: string;
+    };
+};
+type RawAssignment = {
+    assignment: {
+        id: string;
+        isPlaceholder: boolean;
+        influencer: RawInfluencer;
+    };
+};
+type RawInfluencer = {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    emailType: string;
+};
+type ListEmailTrigger = NonNullable<ListEmailTriggersQuery["listEmailTriggers"]>["items"];
+// type GetEmailTrigger = NonNullable<GetEmailTriggerQuery["getEmailTrigger"]>;
+// type GetEvent = NonNullable<GetTimelineEventQuery["getTimelineEvent"]>;
+// type EventAssignment = NonNullable<ListEmailTriggerQuery["listEmailTriggers"]>["items"];
+type EmailTriggerData = {
+    trigger: EmailTriggers.EmailTriggerPure;
+    Event: Event;
+    ParentEvent: Event;
+    Customer: Customer;
+    Influencer: Influencer;
+    ProjectManagers: ProjectManager[];
+};
 export async function getEmailTriggersForDateRange({
     start,
     end,
 }: GetEmailTriggersForDateRangeParams): Promise<EmailTriggers.EmailTriggerEventRef[]> {
-    console.log(JSON.stringify(dataClient));
-    // const { data, errors } = await dataClient.models.EmailTrigger.list({
-    //     filter: { date: { between: [start, end] } },
-    //     selectionSet: getEmailTriggersForDateRangeSelectionSet,
-    // });
-    let items: EmailTrigger = [];
-    let nextToken = undefined;
-    do {
-        const { data, errors } = await dataClient.graphql({
-            query: listEmailTriggers,
-            variables: { filter: { date: { between: [start, end] } } },
-        });
-        if (errors) {
-            throw new Error(JSON.stringify(errors));
-        }
-        const {
-            listEmailTriggers: { items: newItems, nextToken: newNextToken },
-        } = data;
-        items = items.concat(newItems);
-        nextToken = newNextToken;
-    } while (nextToken !== undefined);
+    // console.log(JSON.stringify(dataClient));
 
-    console.log({ data, errors });
-    console.log(data?.listEmailTriggers.items);
-    const triggers = validateTriggers(data);
+    let emailTriggers: ListEmailTrigger = [];
+    let nextToken: string | null | undefined;
+    try {
+        do {
+            const { data, errors } = await dataClient.graphql({
+                query: listEmailTriggers,
+                variables: {
+                    startDate: start,
+                    endDate: end,
+                    limit: 1000,
+                    nextToken: null,
+                    // nextToken: nextToken,
+                },
+            });
+            // console.log({ data, errors });
+            if (errors) {
+                throw new Error(JSON.stringify(errors));
+            }
+            if (!data || !data.listEmailTriggers) {
+                console.log("No data found");
+                return [];
+            }
+            const {
+                listEmailTriggers: { items: newItems },
+            } = data;
+            const newNextToken = data.listEmailTriggers.nextToken;
+            // console.log({
+            //     newItems: newItems.slice(0, 1).map((x) => JSON.stringify(x, null, 1))[0],
+            //     newNextToken,
+            // });
+            emailTriggers = emailTriggers.concat(newItems);
+            nextToken = newNextToken;
+        } while (nextToken !== null && nextToken !== undefined);
+    } catch (error) {
+        console.error(error);
+    }
+    const items: EmailTriggerData[] = parseEmailTriggers(emailTriggers);
+    console.log(JSON.stringify(items[0], null, 2));
+    // console.log({ items });
+
+    // console.log({ data, errors });
+    // console.log(data?.listEmailTriggers.items);
+    // const triggers = validateTriggers(data);
 
     return [];
 }
-function validateTrigger(data: EmailTrigger): EmailTriggers.EmailTriggerEventRef {
-    const influencer = {
-        ...data.event.assignments[0].assignment.influencer,
-        email: data.event.assignments[0].assignment.influencer.email ?? "<Error>",
-        emailType:
-            data.event.assignments[0].assignment.influencer.emailType ??
-            ("new" as EmailTriggers.emailLevel),
-    };
-    const event = {
-        id: data.event.id,
-        isCompleted: data.event.isCompleted ?? false,
-    };
-    const triggerOut: EmailTriggers.EmailTriggerEventRef = {
-        id: data.id,
-        date: data.date,
-        type: data.type as EmailTriggers.emailTriggerType,
-        active: data.active,
-        sent: data.sent,
-        emailLevelOverride: data.emailLevelOverride as EmailTriggers.emailLevel,
-        subjectLineOverride: data.subjectLineOverride,
-        emailBodyOverride: data.emailBodyOverride,
-        event,
-        influencer,
-    };
-    return triggerOut;
+const introspectionQuery = /* GraphQL */ ` query IntrospectionQuery {
+    # __schema {
+    #     types(filter: {name: "TimelineEvent"}) {
+    #         kind
+    #         name
+    #         fields {
+    #             name
+    #         }
+    #     }
+    # }
+    __type(name: "EmailTrigger") {
+        # kind
+        name
+        fields {
+            name
+            type {
+                # name
+                # kind
+                fields{
+                    name
+                    type {
+                        # name
+                        # kind
+                        fields{
+                            name
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
-function validateTriggers(data: EmailTrigger[]) {
-    return data.map(validateTrigger);
+` as string;
+export async function schemaIntrospection() {
+    console.log("Introspecting schema");
+    try {
+        const response = await dataClient.graphql({
+            query: introspectionQuery,
+        });
+        console.log({ response: JSON.stringify(response, null, 2) });
+    } catch (error) {
+        console.error(error);
+    }
 }
+
+function parseEmailTrigger(data: ListEmailTriggersQueryItem): EmailTriggerData {
+    const { event: rawEvent } = data;
+    const rawTrigger: RawEmailTrigger = data;
+    const rawCampaign = rawEvent.campaign;
+    const rawAssignment = rawEvent.assignments.items[0].assignment;
+    const rawInfluencer = rawAssignment.influencer;
+    const rawParentEvent = rawEvent.parentEvent;
+    const rawProjectManagers = rawCampaign.projectManagers.items.map((x) => x.projectManager);
+    const rawCustomer = rawCampaign.customers.items[0];
+
+    const parsedCustomer: Customer = {
+        id: rawCustomer.id,
+        company: rawCustomer.company,
+        firstName: "<redacted>",
+        lastName: "<redacted>",
+        email: "<redacted>",
+        companyPosition: "<redacted>",
+        notes: "",
+    };
+
+    const parsedProjectManagers: ProjectManager[] = rawProjectManagers.map((x) => ({
+        id: x.id,
+        firstName: x.firstName,
+        lastName: x.lastName,
+        email: x.email,
+        phoneNumber: x.phoneNumber,
+        jobTitle: x.jobTitle,
+        cognitoId: "",
+    }));
+
+    const parsedInfluencer: Influencer = {
+        id: rawInfluencer.id,
+        firstName: rawInfluencer.firstName,
+        lastName: rawInfluencer.lastName,
+        email: rawInfluencer.email,
+        emailLevel: rawInfluencer.emailType as EmailTriggers.emailLevel,
+    };
+
+    const parsedParentEvent: Event = {
+        id: rawParentEvent.id,
+        type: rawParentEvent.timelineEventType as Events.eventType,
+        info: rawParentEvent.info,
+        date: rawParentEvent.date,
+        campaign: { id: rawEvent.campaign.id },
+        eventAssignmentAmount: 0,
+        eventTaskAmount: 0,
+        eventTitle: rawParentEvent.eventTitle ?? "<Error: No Title>",
+        assignments: [],
+        childEvents: [],
+        parentEvent: null,
+        emailTriggers: [],
+        targetAudience: {
+            cities: [],
+            country: [],
+            industry: [],
+        },
+        isCompleted: false,
+    };
+
+    const parsedEvent: Events.EventWithId = {
+        id: rawEvent.id,
+        type: rawEvent.timelineEventType as Events.eventType,
+        info: rawEvent.info,
+        date: rawEvent.date,
+        campaign: { id: rawEvent.campaign.id },
+        eventAssignmentAmount: 0,
+        eventTaskAmount: rawEvent.eventTaskAmount ?? 0,
+        eventTitle: rawEvent.eventTitle ?? "<Error: No Title>",
+        assignments: [],
+        childEvents: [],
+        parentEvent: parsedParentEvent,
+        emailTriggers: [],
+        targetAudience: {
+            cities: [],
+            country: [],
+            industry: [],
+        },
+        isCompleted: false,
+    };
+
+    const parsedTrigger: EmailTriggers.EmailTriggerPure = {
+        id: rawTrigger.id,
+        date: rawTrigger.date,
+        type: rawTrigger.type as EmailTriggers.emailTriggerType,
+        active: rawTrigger.active,
+        sent: rawTrigger.sent,
+        emailLevelOverride: rawTrigger.emailLevelOverride as EmailTriggers.emailLevel,
+        subjectLineOverride: rawTrigger.subjectLineOverride,
+        emailBodyOverride: rawTrigger.emailBodyOverride,
+    };
+
+    const out: EmailTriggerData = {
+        trigger: parsedTrigger,
+        ProjectManagers: parsedProjectManagers,
+        Customer: parsedCustomer,
+        Influencer: parsedInfluencer,
+        Event: parsedEvent,
+        ParentEvent: parsedParentEvent,
+    };
+    return out;
+}
+function parseEmailTriggers(data: ListEmailTriggersQueryItem[]): EmailTriggerData[] {
+    return data.map(parseEmailTrigger);
+}
+
+// function validateTrigger(data: GetEmailTrigger): EmailTriggers.EmailTriggerEventRef {
+//     const influencer = {
+//         ...data.event.assignments[0].assignment.influencer,
+//         email: data.event.assignments[0].assignment.influencer.email ?? "<Error>",
+//         emailType: data.event.assignments[0].assignment.influencer.emailType ?? ("new" as EmailTriggers.emailLevel),
+//     };
+//     const event = {
+//         id: data.event.id,
+//         isCompleted: data.event.isCompleted ?? false,
+//     };
+//     const triggerOut: EmailTriggers.EmailTriggerEventRef = {
+//         id: data.id,
+//         date: data.date,
+//         type: data.type as EmailTriggers.emailTriggerType,
+//         active: data.active,
+//         sent: data.sent,
+//         emailLevelOverride: data.emailLevelOverride as EmailTriggers.emailLevel,
+//         subjectLineOverride: data.subjectLineOverride,
+//         emailBodyOverride: data.emailBodyOverride,
+//         event,
+//         influencer,
+//     };
+//     return triggerOut;
+// }
+
+// function validateTriggers(data: GetEmailTrigger[]) {
+//     return data.map(validateTrigger);
+// }
+
 const getEventForEmailTriggerSelectionSet = [
     //Event info
     "id",
@@ -148,10 +525,7 @@ const getEventForEmailTriggerSelectionSet = [
     "campaign.customers.*",
     "campaign.projectManagers.projectManager.*",
 ] as const;
-type RawEvent = SelectionSet<
-    Schema["TimelineEvent"]["type"],
-    typeof getEventForEmailTriggerSelectionSet
->;
+type RawEventOld = SelectionSet<Schema["TimelineEvent"]["type"], typeof getEventForEmailTriggerSelectionSet>;
 export async function getEventForEmailTrigger(eventId: string): Promise<
     Nullable<{
         event: Event;
@@ -165,7 +539,7 @@ export async function getEventForEmailTrigger(eventId: string): Promise<
         },
         {
             selectionSet: getEventForEmailTriggerSelectionSet,
-        },
+        }
     );
     if (errors) throw new Error(JSON.stringify(errors));
     if (data === null) return null;
@@ -218,21 +592,18 @@ export async function getEvent(eventId: string): Promise<Nullable<ParentEvent>> 
         },
         {
             selectionSet: getEventSelectionSet,
-        },
+        }
     );
     if (errors) throw new Error(JSON.stringify(errors));
     if (data === null) return null;
     return data;
 }
-function validateEvent(data: RawEvent, rawParentEvent: Nullable<ParentEvent>): Event {
+function validateEvent(data: RawEventOld, rawParentEvent: Nullable<ParentEvent>): Event {
     const assignments: Assignment[] = [];
     const targetAudience: Event["targetAudience"] = {
-        cities:
-            rawParentEvent?.targetAudience?.cities?.filter((x): x is string => x !== null) ?? [],
-        country:
-            rawParentEvent?.targetAudience?.country?.filter((x): x is string => x !== null) ?? [],
-        industry:
-            rawParentEvent?.targetAudience?.industry?.filter((x): x is string => x !== null) ?? [],
+        cities: rawParentEvent?.targetAudience?.cities?.filter((x): x is string => x !== null) ?? [],
+        country: rawParentEvent?.targetAudience?.country?.filter((x): x is string => x !== null) ?? [],
+        industry: rawParentEvent?.targetAudience?.industry?.filter((x): x is string => x !== null) ?? [],
     };
     const parentEvent: Nullable<Event> = rawParentEvent
         ? ({

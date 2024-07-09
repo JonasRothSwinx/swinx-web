@@ -11,5 +11,5 @@ export const reminderTrigger = defineFunction({
         REGION: "eu-west-1",
     },
     memoryMB: 4196,
-    timeoutSeconds: 300,
+    timeoutSeconds: 30,
 });

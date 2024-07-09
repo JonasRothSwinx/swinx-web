@@ -5,15 +5,12 @@ import { dayjs } from "@/app/utils";
 import { getEmailTriggers } from "./getEmailTriggers";
 import groupTriggers from "./groupTriggers";
 import handleTriggers from "./handleTriggers";
+import { schemaIntrospection } from "../../database/dbOperations";
 
 const devBranches = ["sandbox", "dev"];
 export default async function startReminderRoutine(): Promise<boolean> {
     console.log("Starting reminder routine");
-    console.log(
-        `In environment ${process.env.NODE_ENV}. Current time: ${dayjs().format(
-            "YYYY-MM-DD HH:mm",
-        )}`,
-    );
+    console.log(`In environment ${process.env.NODE_ENV}. Current time: ${dayjs().format("YYYY-MM-DD HH:mm")}`);
     // console.log(process.env);
     // return true;
     const awsBranch = process.env.AWS_BRANCH;
@@ -53,6 +50,9 @@ export default async function startReminderRoutine(): Promise<boolean> {
     // });
     console.log("Finished reminder routine");
     return true;
+}
+export async function introspection() {
+    await schemaIntrospection();
 }
 
 // type DataCache = {
