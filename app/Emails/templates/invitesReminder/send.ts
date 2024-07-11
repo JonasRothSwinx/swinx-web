@@ -58,6 +58,7 @@ export default async function send(props: SendMailProps) {
                     eventLink,
                     filterJobGroups,
                     filterCountries,
+                    actionTime: "am Ende aller Tage",
                 } satisfies TemplateVariables),
             },
         ];
@@ -78,6 +79,7 @@ export default async function send(props: SendMailProps) {
             filterCountries: "TestCountry",
             name: "testName",
             inviteAmount: "5 Millionen",
+            actionTime: "am Ende aller Tage",
         } satisfies TemplateVariables),
         bulkTemplateData: templateData,
     });

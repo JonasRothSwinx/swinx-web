@@ -177,54 +177,6 @@ export default function InfluencerTable({
                 removedInfluencers,
                 addedInfluencers,
             });
-            // const removedInfluencers = props.candidates.filter((x) => !selected.includes(x.influencer.id));
-
-            // removedInfluencers.map((x) => database.candidate.delete(x));
-
-            // const addedInfluencers = selected.filter(
-            //     (x) => !props.candidates.find((candidate) => candidate.influencer.id === x)
-            // );
-
-            // console.log({ selectedInfluencers, removedInfluencers, addedInfluencers });
-            // // return;
-            // const candidates: Candidates.Candidate[] = props.candidates.filter(
-            //     (candidate) =>
-            //         !removedInfluencers.find((influencer) => influencer.influencer.id === candidate.influencer.id)
-            // );
-
-            // const newCandidates = (influencers ?? [])
-            //     .filter((x) => addedInfluencers.includes(x.id))
-            //     .map((influencer) => {
-            //         const candidate: Candidates.Candidate = {
-            //             influencer,
-            //             id: "",
-            //             response: "pending",
-            //         };
-            //         return candidate;
-            //     });
-            // console.log({ remainingCandidates: candidates, newCandidates });
-            // if (removedInfluencers.length > 0) {
-            //     Promise.all(
-            //         removedInfluencers.map((candidate) => {
-            //             return database.candidate.delete(candidate);
-            //         })
-            //     );
-            // }
-            // if (addedInfluencers.length > 0) {
-            //     Promise.all(newCandidates.map((x) => database.candidate.create(x, props.assignmentId))).then((res) => {
-            //         const idPairs = res.map((data) => data.data);
-            //         const updatedCandidates = idPairs.map((x) => {
-            //             const updated = newCandidates.find((candidate) => candidate.influencer.id === x.influencerId);
-            //             return { ...updated, id: x.id };
-            //         }) as Candidates.Candidate[];
-            //         const newValues = [...candidates.filter((x) => x.id !== null), ...updatedCandidates];
-            //         console.log({ candidates, filtered: candidates.filter((x) => x.id !== null) });
-            //         console.log({ newValues });
-            //         props.setSelectedInfluencers(newValues);
-            //     });
-            // }
-            // console.log(newCandidates);
-            // props.setSelectedInfluencers([...candidates, ...newCandidates]);
         },
         submitCandidates: async () => {
             const tasks: Promise<unknown>[] = [];
@@ -290,9 +242,11 @@ export default function InfluencerTable({
         onEmailPreviewClose: ({ didSend }: { didSend: boolean }) => {
             if (didSend) {
                 console.log("Emails sent");
+                setOpenDialog("none");
                 setTab("response");
             } else {
                 console.log("Emails not sent");
+                setOpenDialog("none");
             }
         },
     };

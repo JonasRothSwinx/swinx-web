@@ -12,6 +12,9 @@ export type ProjectManager = {
 export function getFullName(projectManager: ProjectManager): string {
     return `${projectManager.firstName} ${projectManager.lastName}`;
 }
+export function getEmailString(projectManager: ProjectManager): string {
+    return `${projectManager.firstName} ${projectManager.lastName} <${projectManager.email}>`;
+}
 export function validate(data: Partial<ProjectManager>): data is ProjectManager {
     return (
         typeof data.firstName === "string" &&

@@ -3,8 +3,9 @@ import { Nullable } from "@/app/Definitions/types";
 import { sendMail } from "../../../sesClient";
 import { SendMailProps } from "@/app/Emails/templates/types";
 import { EmailTriggers, Events } from "@/app/ServerFunctions/types";
+import { SendBulkEmailResponse } from "@aws-sdk/client-sesv2";
 
-type SendFunction = (props: SendMailProps) => Promise<unknown>;
+type SendFunction = (props: SendMailProps) => Promise<SendBulkEmailResponse | void>;
 type MailConfig = {
     [key in Events.eventType]: {
         [key in EmailTriggers.emailTriggerType]: Nullable<SendFunction>;
@@ -13,8 +14,8 @@ type MailConfig = {
 
 const mailConfig: MailConfig = {
     Invites: {
-        // actionReminder: sendMail.invites.actionReminder,
-        actionReminder: null,
+        actionReminder: sendMail.invites.actionReminder,
+        // actionReminder: null,
         deadlineReminder: null,
     },
     ImpulsVideo: {

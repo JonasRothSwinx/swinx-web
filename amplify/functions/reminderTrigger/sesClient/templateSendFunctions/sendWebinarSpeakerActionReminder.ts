@@ -6,52 +6,63 @@ import {
 import { dayjs } from "@/app/utils";
 
 import { SendMailProps, sesAPIClient } from "..";
+import { grabSignatureProps, defaultSignatureProps } from "./functions";
+import { SignatureTemplateVariables } from "@/app/Emails/templates/_components/SignatureTemplateVariables";
 
 export async function sendWebinarSpeakerActionReminder(props: SendMailProps) {
-    const { level, fromAdress, individualContext } = props;
+    const { level, fromAdress, bcc, individualContext } = props;
     if (level === "none") {
         return;
     }
     const templateName = templateNames[level];
-    const templateData = individualContext.reduce((acc, { event, customer, influencer }) => {
-        if (!event || !customer || !influencer) {
-            console.log("Missing context");
-            return acc;
-        }
-        const webinar = event.parentEvent as Event;
-        if (!webinar || !webinar.date) {
-            console.log("Missing webinar context");
-            return acc;
-        }
-        const webinarTitle = webinar.eventTitle ?? "<Kein Webinartitel angegeben>";
-        const topic = event.info?.topic ?? "<Kein Thema angegeben>";
-        const time = dayjs(event.date).format("H:MM");
+    const templateData = individualContext.reduce(
+        (acc, { event, customer, influencer, projectManager }) => {
+            if (!event || !customer || !influencer || !projectManager) {
+                console.log("Missing context");
+                return acc;
+            }
+            const webinar = event.parentEvent as Event;
+            if (!webinar || !webinar.date) {
+                console.log("Missing webinar context");
+                return acc;
+            }
+            const webinarTitle = webinar.eventTitle ?? "<Kein Webinartitel angegeben>";
+            const topic = event.eventTitle ?? "<Kein Thema angegeben>";
+            const time = dayjs(event.date).format("H:MM");
 
-        const recipientName = `${influencer.firstName} ${influencer.lastName}`;
+            const recipientName = `${influencer.firstName} ${influencer.lastName}`;
 
-        return [
-            ...acc,
-            {
-                to: influencer.email,
-                templateData: JSON.stringify({
-                    name: `${influencer.firstName} ${influencer.lastName}`,
-                    webinarTitle,
-                    topic,
-                    time,
-                } satisfies TemplateVariables),
-            },
-        ];
-    }, [] as { to: string; templateData: string }[]);
+            const signatureProps = grabSignatureProps({ projectManager });
+
+            return [
+                ...acc,
+                {
+                    to: influencer.email,
+                    templateData: JSON.stringify({
+                        name: recipientName,
+                        webinarTitle,
+                        topic,
+                        time,
+                        ...signatureProps,
+                    } satisfies TemplateVariables & SignatureTemplateVariables),
+                },
+            ];
+        },
+        [] as { to: string; templateData: string }[],
+    );
 
     const response = await sesAPIClient.sendBulk({
         from: fromAdress ?? "swinx GmbH <noreply@swinx.de>",
+        bcc,
         templateName,
         defaultTemplateData: JSON.stringify({
             name: "TestName",
             webinarTitle: "TestWebinar",
             topic: "TestTopic",
             time: "00:00",
-        } satisfies TemplateVariables),
+            ...defaultSignatureProps,
+        } satisfies TemplateVariables & SignatureTemplateVariables),
         bulkTemplateData: templateData,
     });
+    return response;
 }

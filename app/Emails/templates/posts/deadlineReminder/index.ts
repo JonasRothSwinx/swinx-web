@@ -1,9 +1,10 @@
 import { EmailLevelDefinition, Template } from "../../types";
-import PostDraftDeadlineReminderEmail, {
+import PostDraftDeadlineReminderEmail from "./PostDeadlineReminderEmail";
+import {
+    templateNames as templateLevelNames,
     subjectLineBase,
     defaultParams,
-} from "./PostDeadlineReminderEmail";
-import { templateNames as templateLevelNames } from "./TemplateVariables";
+} from "./TemplateVariables";
 import { renderAsync } from "@react-email/render";
 import send from "./send";
 

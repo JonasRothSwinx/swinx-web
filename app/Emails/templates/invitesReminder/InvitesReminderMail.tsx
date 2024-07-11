@@ -1,27 +1,12 @@
 import { EmailTriggers } from "@/app/ServerFunctions/types";
 import { Head, Hr, Html, Link, Preview, Text } from "@react-email/components";
 import React from "react";
-import { Placeholder } from "../_components";
+import { Placeholder, Signature } from "../_components";
 import styles from "../styles";
 import { DebugToggle, EmailProps } from "../types";
 import DebugTemplates from "../../DebugTemplates";
 import PlaceholderList from "../_components/placeholderList";
-import { TemplateVariables } from "./TemplateVariables";
-
-export const subjectLineBase = "Erinnerung: Einladungen";
-export const defaultParams: TemplateVariables = {
-    name: "testName",
-    inviteAmount: "5 Millionen",
-    customerName: "TestCustomer",
-    eventName: "TestEvent",
-    eventLink: "https://www.swinx.de",
-    filterJobGroups: [
-        { jobGroup: "TestJobGroup1" },
-        { jobGroup: "TestJobGroup2" },
-        { jobGroup: "TestJobGroup3" },
-    ],
-    filterCountries: "TestCountry",
-};
+import { TemplateVariables, defaultParams } from "./TemplateVariables";
 
 const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
     name: Placeholder({ name: "name" }),
@@ -31,6 +16,7 @@ const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } =
     eventLink: Placeholder({ name: "eventLink" }),
     filterJobGroups: PlaceholderList({ parentName: "filterJobGroups", listItemName: "jobGroup" }),
     filterCountries: Placeholder({ name: "filterCountries" }),
+    actionTime: Placeholder({ name: "actionTime" }),
 };
 const EmailTemplates: {
     [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
@@ -50,9 +36,8 @@ InvitesReminderMail.PreviewProps = {
 } satisfies EmailProps;
 
 function NewInvitesReminder(props: DebugToggle) {
-    const { name, inviteAmount, customerName, eventName, eventLink, filterCountries } = props.debug
-        ? defaultParams
-        : placeholders;
+    const { name, inviteAmount, customerName, eventName, eventLink, filterCountries, actionTime } =
+        props.debug ? defaultParams : placeholders;
     const filterJobGroups = props.debug ? (
         <ul>
             {defaultParams.filterJobGroups.map((a, index) => (
@@ -71,16 +56,16 @@ function NewInvitesReminder(props: DebugToggle) {
             <Preview>Erinnerung: Einladungen</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
-                Wir möchten sie daran erinnern, dass sie heute {inviteAmount} Einladungen für das
-                Event <Link href={eventLink as string}>{eventName}</Link> von unserem Kunden{" "}
+                Wir möchten sie daran erinnern, dass sie {actionTime} {inviteAmount} Einladungen für
+                das Event <Link href={eventLink as string}>{eventName}</Link> von unserem Kunden{" "}
                 {customerName} versenden sollen.
                 <br />
-                Bitte schicken sie nur Einladungen an ihre Follower*innen aus {filterCountries}, die
-                folgenden Branchen tätig sind:
+                Bitte benutzen sie dafür unsere Browser Extension, mit ihrer personalisierten
+                Filter-Datei, die sie von uns erhalten haben.
                 <br />
-                {filterJobGroups}
                 Bitte teilen sie uns danach mit, ob alles funktioniert hat.
             </Text>
+            <Signature />
             {/* <Container align="left" style={styles.buttonContainer}>
                 <Button style={styles.responseButton} href="https://www.swinx.de">
                     Zu Swinx
@@ -91,9 +76,8 @@ function NewInvitesReminder(props: DebugToggle) {
 }
 
 function ReducedInvitesReminder(props: DebugToggle) {
-    const { name, inviteAmount, customerName, eventName, eventLink, filterCountries } = props.debug
-        ? defaultParams
-        : placeholders;
+    const { name, inviteAmount, customerName, eventName, eventLink, filterCountries, actionTime } =
+        props.debug ? defaultParams : placeholders;
     const filterJobGroups = props.debug ? (
         <ul>
             {defaultParams.filterJobGroups.map((a, index) => (
@@ -112,8 +96,8 @@ function ReducedInvitesReminder(props: DebugToggle) {
             <Preview>Erinnerung: Einladungen</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
-                Wir möchten dich daran erinnern, dass du heute {inviteAmount} Einladungen für das
-                Event <Link href={eventLink as string}>{eventName}</Link> von unserem Kunden{" "}
+                Wir möchten dich daran erinnern, dass du {actionTime} {inviteAmount} Einladungen für
+                das Event <Link href={eventLink as string}>{eventName}</Link> von unserem Kunden{" "}
                 {customerName} versenden sollst.
                 <br />
                 Bitte schicke nur Einladungen an deine Follower*innen aus {filterCountries}, die

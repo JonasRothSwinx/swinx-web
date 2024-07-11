@@ -1,7 +1,11 @@
 import { EmailLevelDefinition, Template } from "../../types";
-import PostActionReminderMail, { subjectLineBase, defaultParams } from "./PostActionReminderMail";
+import PostActionReminderMail from "./PostActionReminderMail";
 
-import { templateNames as templateLevelNames } from "./TemplateVariables";
+import {
+    templateNames as templateLevelNames,
+    defaultParams,
+    subjectLineBase,
+} from "./TemplateVariables";
 import { renderAsync } from "@react-email/render";
 import { Dayjs } from "@/app/utils";
 import send from "./send";

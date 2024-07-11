@@ -1,7 +1,7 @@
 import { EmailTriggers } from "@/app/ServerFunctions/types";
 import { Html, Button, Text, Head, Preview, Container } from "@react-email/components";
 import styles from "../../styles";
-import { Placeholder } from "../../_components";
+import { Placeholder, Signature } from "../../_components";
 import { DebugToggle, EmailProps } from "../../types";
 
 import { TemplateVariables } from "./TemplateVariables";
@@ -30,8 +30,7 @@ const EmailTemplates: {
 };
 
 export default function WebinarSpeakerDateReminder(props: EmailProps) {
-    if (props.debug) return <DebugTemplates
-     templates={EmailTemplates} />;
+    if (props.debug) return <DebugTemplates templates={EmailTemplates} />;
     return EmailTemplates[props.emailLevel]();
 }
 
@@ -56,6 +55,7 @@ function NewWebinarSpeakerDateReminder(props: DebugToggle) {
                 <br />
                 Sie werden dabei über {topic} sprechen.
             </Text>
+            <Signature />
         </Html>
     );
 }
@@ -84,6 +84,7 @@ function ReducedWebinarSpeakerDateReminder(props: DebugToggle) {
                     Zu Swinx
                 </Button>
             </Container>
+            <Signature />
         </Html>
     );
 }

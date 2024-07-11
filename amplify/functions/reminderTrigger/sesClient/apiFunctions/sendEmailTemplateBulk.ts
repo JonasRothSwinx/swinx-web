@@ -3,6 +3,7 @@ import { BulkEmailEntry, SendBulkEmailCommand } from "@aws-sdk/client-sesv2";
 
 interface SendEmailTemplateBulkParams {
     from: string;
+    bcc?: string[];
     templateName: string;
     defaultTemplateData: string;
     bulkTemplateData: {
@@ -20,11 +21,14 @@ interface SendEmailTemplateBulkParams {
  */
 export async function sendEmailTemplateBulk({
     from,
+    bcc = [],
     templateName,
     defaultTemplateData,
     bulkTemplateData,
 }: SendEmailTemplateBulkParams) {
-    const bcc = from.includes("noreply") ? [] : [from];
+    console.log("Sending bulk email", from, templateName, defaultTemplateData, bulkTemplateData);
+    // const bcc = from.includes("noreply") ? [] : [from];
+    if (from.includes("noreply")) bcc.push(from);
     const bulkEntries: BulkEmailEntry[] = bulkTemplateData.map((entry) => {
         return {
             Destination: {

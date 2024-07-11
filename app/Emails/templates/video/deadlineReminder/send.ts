@@ -1,5 +1,5 @@
 import { SendMailProps } from "../../types";
-import {SESClientSendMail as sesAPIClient} from "../../../sesAPI";
+import { SESClientSendMail as sesAPIClient } from "../../../sesAPI";
 // import { defaultParams } from "./VideoDraftDeadlineReminderEmail";
 import { TemplateVariables, templateNames } from "./TemplateVariables";
 
@@ -25,6 +25,7 @@ export default async function send(props: SendMailProps) {
                     name: recipientName,
                     customerName,
                     topic,
+                    actionTime: "am Ende aller Tage",
                 } satisfies TemplateVariables),
             },
         ];
@@ -36,6 +37,7 @@ export default async function send(props: SendMailProps) {
             name: "TestName",
             customerName: "TestCustomer",
             topic: "TestTopic",
+            actionTime: "am Ende aller Tage",
         } satisfies TemplateVariables),
         bulkTemplateData: templateData,
     });

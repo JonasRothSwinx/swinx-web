@@ -13,6 +13,7 @@ import {
     Influencer,
     Influencers,
 } from "@/app/ServerFunctions/types";
+import { encodeQueryParams } from "@/app/utils";
 import { Box, CircularProgress, IconButton, SxProps, Typography } from "@mui/material";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { use, useMemo } from "react";
@@ -97,13 +98,24 @@ export default function PreviewFrame({ selectedCandidate, assignmentId }: Previe
             ? Influencers.getFullName(selectedCandidate.influencer)
             : "<Kein Name gefunden>";
         const linkBase = inviteBaseUrl.data ?? "<Kein Link gefunden>";
+        const linkData = encodeQueryParams({
+            assignmentId: assignmentId,
+            campaignId: campaignId ?? "",
+            influencerId: selectedCandidate?.influencer?.id ?? "none",
+        });
         return {
             name,
-            linkBase: "http://localhost:3000/Response?",
-            linkData: "testData",
+            linkBase,
+            linkData,
             customerCompany: customer.data?.company ?? "<Kein Unternehmen gefunden>",
         };
-    }, [selectedCandidate, customer.data, inviteBaseUrl.data]);
+    }, [
+        selectedCandidate?.influencer,
+        inviteBaseUrl.data,
+        assignmentId,
+        campaignId,
+        customer.data?.company,
+    ]);
 
     const [previewHtml, subjectLine] = useMemo(() => {
         const template = templates[emailLevel];

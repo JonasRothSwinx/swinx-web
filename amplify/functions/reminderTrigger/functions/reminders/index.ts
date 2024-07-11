@@ -1,6 +1,6 @@
-import startReminderRoutine, { introspection } from "./functions";
+import { introspection, start } from "./functions";
 
 export const reminderProcessor = {
-    start: startReminderRoutine,
+    start: start,
     debug: introspection,
 };

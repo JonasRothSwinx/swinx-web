@@ -3,7 +3,7 @@ import { SESClientSendMail as sesAPIClient } from "../../../sesAPI";
 import {
     TemplateVariables,
     templateNames,
-} from "@/app/Emails/templates/video/deadlineReminder/TemplateVariables";
+} from "@/app/Emails/templates/posts/deadlineReminder/TemplateVariables";
 
 export default async function send(props: SendMailProps) {
     const { level, fromAdress, individualContext } = props;
@@ -27,6 +27,7 @@ export default async function send(props: SendMailProps) {
                     name: recipientName,
                     customerName,
                     topic,
+                    actionTime: "am Ende aller Tage",
                 } satisfies TemplateVariables),
             },
         ];
@@ -39,6 +40,7 @@ export default async function send(props: SendMailProps) {
             name: "TestName",
             customerName: "TestCustomer",
             topic: "TestTopic",
+            actionTime: "am Ende aller Tage",
         } satisfies TemplateVariables),
         bulkTemplateData: templateData,
     });

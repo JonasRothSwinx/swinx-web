@@ -219,6 +219,7 @@ export function CustomerDialogContent(props: InfoProps) {
     return (
         <DialogContent>
             <ContactInfo {...props} />
+            <Box />
             <JobInfo {...props} />
             {index > 0 && <Button onClick={() => deleteCustomer()}>Vertretung löschen</Button>}
         </DialogContent>
@@ -247,6 +248,9 @@ function ContactInfo(props: InfoProps) {
         },
         phone: (e: ChangeEvent<HTMLInputElement>) => {
             setCustomer({ phoneNumber: e.target.value }, index);
+        },
+        companyLink: (e: ChangeEvent<HTMLInputElement>) => {
+            setCustomer({ profileLink: e.target.value }, index);
         },
     };
 
@@ -301,6 +305,20 @@ function ContactInfo(props: InfoProps) {
                 // fullWidth
                 variant="standard"
             />
+            {index === 0 && (
+                <TextField
+                    id="customerCompanyLink"
+                    name="customerCompanyLink"
+                    className={styles.TextField}
+                    label="LinkedIn Company Link"
+                    type="url"
+                    value={customer.profileLink ?? ""}
+                    onChange={ChangeHandlers.companyLink}
+                    fullWidth
+                    variant="standard"
+                    required
+                />
+            )}
         </>
     );
 }

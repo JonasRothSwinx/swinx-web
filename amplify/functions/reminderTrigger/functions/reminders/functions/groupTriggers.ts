@@ -1,39 +1,41 @@
-import { EmailTriggerWithContext, TriggerGroup } from "../types";
+import { types as dbTypes } from "../../database";
+import { TriggerGroup } from "../types";
 
 export default async function groupTriggers(
-    triggers: EmailTriggerWithContext[],
+    triggers: dbTypes.EmailTriggerData[],
 ): Promise<TriggerGroup> {
     const grouped: TriggerGroup = {};
-    triggers.reduce((grouped, trigger) => {
+    triggers.reduce((grouped, triggerData) => {
         const {
             event: { type: eventType },
-            type: mailType,
+            trigger,
+            trigger: { type: mailType },
             influencer,
-        } = trigger;
+        } = triggerData;
         if (trigger.sent || !trigger.active) return grouped;
         if (!influencer) return grouped;
-        const level = trigger.emailLevelOverride ?? trigger.influencer?.emailLevel ?? "new";
+        const level = trigger.emailLevelOverride ?? influencer?.emailLevel ?? "new";
         if (!level || level === "none") return grouped;
         const eventTypeGroup = grouped[eventType];
         if (!eventTypeGroup) {
             grouped[eventType] = {
                 [mailType]: {
-                    [level]: [trigger],
+                    [level]: [triggerData],
                 },
             };
             return grouped;
         }
         const mailTypeGroup = eventTypeGroup[mailType];
         if (!mailTypeGroup) {
-            eventTypeGroup[mailType] = { [level]: [trigger] };
+            eventTypeGroup[mailType] = { [level]: [triggerData] };
             return grouped;
         }
         const levelGroup = mailTypeGroup[level];
         if (!levelGroup) {
-            mailTypeGroup[level] = [trigger];
+            mailTypeGroup[level] = [triggerData];
             return grouped;
         }
-        levelGroup.push(trigger);
+        levelGroup.push(triggerData);
 
         return grouped;
     }, grouped);

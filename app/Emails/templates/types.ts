@@ -41,7 +41,7 @@ export type EmailContextProps = {
     influencer: Influencers.WithContactInfo;
     customer: Customer;
     taskDescriptions: string[];
-    campaignManager: ProjectManager;
+    projectManager: ProjectManager;
 };
 
 export type Template = {

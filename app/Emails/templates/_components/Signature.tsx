@@ -1,26 +1,22 @@
 import { ProjectManager } from "@/app/ServerFunctions/types";
 import { Column, Font, Link, Markdown, Row, Section, Text } from "@react-email/components";
 import styles from "../styles";
+import { SignatureTemplateVariables } from "./SignatureTemplateVariables";
+import { Place } from "@mui/icons-material";
+import Placeholder from "./placeholder";
 
-export type TemplateVariables = {
-    projectManagerFullName: string;
-    projectManagerJobTitle: string;
-    projectManagerEmail: string;
-    projectManagerPhoneNumber?: string;
-};
-
-const defaultParams: TemplateVariables = {
+const defaultParams: SignatureTemplateVariables = {
     projectManagerFullName: "John Doe",
     projectManagerJobTitle: "Manager",
-    projectManagerEmail: " test@swinx.de",
+    projectManagerEmail: "Test <test@swinx.de>",
     projectManagerPhoneNumber: "123456789",
 };
 
-const placeholders: { [key in keyof TemplateVariables]: JSX.Element } = {
-    projectManagerFullName: <></>,
-    projectManagerJobTitle: <></>,
-    projectManagerEmail: <></>,
-    projectManagerPhoneNumber: <></>,
+const placeholders: { [key in keyof SignatureTemplateVariables]: string } = {
+    projectManagerFullName: Placeholder({ name: "projectManagerFullName" }),
+    projectManagerJobTitle: Placeholder({ name: "projectManagerJobTitle" }),
+    projectManagerEmail: Placeholder({ name: "projectManagerEmail" }),
+    projectManagerPhoneNumber: Placeholder({ name: "projectManagerPhoneNumber", isOptional: true }),
 };
 
 export function Signature() {
@@ -29,7 +25,7 @@ export function Signature() {
         projectManagerJobTitle,
         projectManagerEmail,
         projectManagerPhoneNumber,
-    } = defaultParams;
+    } = placeholders;
     return (
         <Section style={styles.signatureSection}>
             <Text style={styles.signatureText}>Liebe Grüße,</Text>

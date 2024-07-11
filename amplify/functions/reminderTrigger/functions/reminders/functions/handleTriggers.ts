@@ -1,7 +1,8 @@
 import { EmailTriggers, Events } from "@/app/ServerFunctions/types/";
 import { TriggerGroup } from "../types";
 import getMailConfig from "./mailconfig";
-import sendMailBySender from "./sendMailBySender";
+import { sendMailBySender } from "./sendMailBySender";
+import { SendBulkEmailResponse } from "@aws-sdk/client-sesv2";
 
 interface HandleTriggerParams {
     triggers: TriggerGroup;
@@ -9,12 +10,13 @@ interface HandleTriggerParams {
 export default async function handleTriggers({ triggers }: HandleTriggerParams) {
     const mailConfig = await getMailConfig();
     console.log("Handling triggers");
-    Object.entries(triggers).forEach(([eventTypeRaw, eventTriggers]) => {
+    const tasks: Promise<SendBulkEmailResponse | void>[] = [];
+    Object.entries(triggers).forEach(async ([eventTypeRaw, eventTriggers]) => {
         const eventType = eventTypeRaw as Events.eventType;
-        console.log("Handling event type", eventType);
-        Object.entries(eventTriggers).forEach(([emailTypeRaw, emailTypeTriggers]) => {
+        // console.log("Handling event type", eventType);
+        Object.entries(eventTriggers).forEach(async ([emailTypeRaw, emailTypeTriggers]) => {
             const emailType = emailTypeRaw as EmailTriggers.emailTriggerType;
-            console.log("Handling email type", emailType);
+            // console.log("Handling email type", emailType);
             Object.entries(emailTypeTriggers).forEach(async ([emailLevelRaw, triggers]) => {
                 const emailLevel = emailLevelRaw as EmailTriggers.emailLevel;
                 const sendFunction = mailConfig[eventType][emailType];
@@ -23,8 +25,15 @@ export default async function handleTriggers({ triggers }: HandleTriggerParams) 
                     return;
                 }
                 console.log("Sending", eventType, emailType, emailLevel);
-                await sendMailBySender({ triggers, level: emailLevel, send: sendFunction });
+                tasks.push(
+                    ...(await sendMailBySender({
+                        triggers,
+                        level: emailLevel,
+                        send: sendFunction,
+                    })),
+                );
             });
         });
     });
+    return tasks;
 }

@@ -31,7 +31,7 @@ Amplify.configure(
                 },
             },
         },
-    }
+    },
 );
 export const handler: Handler = async (event, context) => {
     const BASE_URL = process.env.BASE_URL;
@@ -41,12 +41,8 @@ export const handler: Handler = async (event, context) => {
             body: JSON.stringify("BASE_URL not found"),
         };
     }
-    // console.log("env: ", process.env);
     // await reminders.debug();
     await reminders.start();
-    // await dataClient.graphql({
-    //     query: listEmailTriggers,
-    // });
 
     return {
         statusCode: 200,

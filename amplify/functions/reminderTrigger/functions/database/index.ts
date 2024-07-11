@@ -3,9 +3,10 @@ import * as dbOperations from "./dbOperations";
 
 const dbClient = {
     getEmailTriggers: dbOperations.getEmailTriggersForDateRange,
-    getEvent: dbOperations.getEventForEmailTrigger,
 };
 
-export default async function getDbClient() {
+export async function getDbClient() {
     return dbClient;
 }
+
+export * as types from "./types";

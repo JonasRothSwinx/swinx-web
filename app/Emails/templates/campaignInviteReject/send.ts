@@ -6,7 +6,7 @@ import { SendMailProps } from "../types";
 export default async function send(props: SendMailProps) {
     const {
         level,
-        commonContext: { customer, campaignManager },
+        commonContext: { customer, projectManager: campaignManager },
         individualContext,
     } = props;
     console.log("Sending invites for level", level, props);

@@ -32,7 +32,7 @@ export default async function send(props: SendMailProps) {
             // taskDescriptions,
             customer,
             // campaign,
-            campaignManager,
+            projectManager: campaignManager,
         },
     } = props;
     console.log("Sending invites for level", level, props);

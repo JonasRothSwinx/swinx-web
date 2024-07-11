@@ -1,7 +1,9 @@
-import { EmailTriggerWithContext } from "../types";
-import getDbClient from "../../database";
-import { getTriggerContext } from "./getTriggerContext";
+// import { EmailTriggerWithContext } from "../types";
+import { getDbClient, types } from "../../database";
+// import { getTriggerContext } from "./getTriggerContext";
 import { Dayjs } from "@/app/utils";
+import { EmailContextProps } from "@/app/Emails/templates/types";
+// import defineContext from "./defineContext";
 
 // const DataCache: DataCache = {
 //     campaign: {},
@@ -13,7 +15,9 @@ export interface GetEmailTriggerProps {
     startDate: Dayjs;
     endDate: Dayjs;
 }
-export async function getEmailTriggers(props: GetEmailTriggerProps) {
+export async function getEmailTriggers(
+    props: GetEmailTriggerProps,
+): Promise<types.EmailTriggerData[]> {
     const { startDate, endDate } = props;
     const dbClient = await getDbClient();
     console.log("Getting email triggers", startDate.toString(), endDate.toString());
@@ -21,13 +25,9 @@ export async function getEmailTriggers(props: GetEmailTriggerProps) {
         start: startDate.toISOString(),
         end: endDate.toISOString(),
     });
-    const fullTriggers = (
-        await Promise.all(
-            triggers.map(async (trigger) => {
-                if (!trigger.event || !trigger.event.id || trigger.event.isCompleted) return null;
-                return await getTriggerContext(trigger);
-            }),
-        )
-    ).filter((trigger): trigger is EmailTriggerWithContext => trigger !== null);
-    return fullTriggers;
+    // const contextProps = await defineContext(triggers);
+    // const triggersWithContext = await Promise.all(
+    //     triggers.map(async (trigger) => {
+    //         const triggerWithContext = await getTriggerContext(trigger);
+    return triggers;
 }

@@ -1,11 +1,12 @@
 import { EmailLevelDefinition, MailTemplate, Template } from "../../types";
-import VideoDraftDeadlineReminderEmail, {
-    subjectLineBase,
-    defaultParams,
-} from "./VideoDraftDeadlineReminderEmail";
+import VideoDraftDeadlineReminderEmail from "./VideoDraftDeadlineReminderEmail";
 import { renderAsync } from "@react-email/render";
 import send from "./send";
-import { templateNames as templateLevelNames } from "./TemplateVariables";
+import {
+    templateNames as templateLevelNames,
+    subjectLineBase,
+    defaultParams,
+} from "./TemplateVariables";
 
 const templates: EmailLevelDefinition = {
     new: {

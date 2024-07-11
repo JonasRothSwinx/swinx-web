@@ -1,22 +1,16 @@
 import { EmailTriggers } from "@/app/ServerFunctions/types";
 import { Html, Button, Text, Head, Preview, Container, Link } from "@react-email/components";
 import styles from "../../styles";
-import { Placeholder } from "../../_components";
+import { Placeholder, Signature } from "../../_components";
 import { DebugToggle, EmailProps } from "../../types";
 import DebugTemplates from "../../../DebugTemplates";
-import { TemplateVariables } from "./TemplateVariables";
-
-export const subjectLineBase = "Erinnerung: Entwurf für Video";
-export const defaultParams: TemplateVariables = {
-    name: "testName",
-    customerName: "TestCustomer",
-    topic: "TestTopic",
-};
+import { TemplateVariables, defaultParams } from "./TemplateVariables";
 
 const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
     name: Placeholder({ name: "name" }),
     customerName: Placeholder({ name: "customerName" }),
     topic: Placeholder({ name: "topic" }),
+    actionTime: Placeholder({ name: "actionTime" }),
 };
 const EmailTemplates: {
     [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
@@ -34,7 +28,7 @@ VideoDraftDeadlineReminderEmail.PreviewProps = {
 } satisfies EmailProps;
 
 function NewVideoDraftDeadlineReminder(props: DebugToggle) {
-    const { name, customerName, topic } = props.debug ? defaultParams : placeholders;
+    const { name, customerName, topic, actionTime } = props.debug ? defaultParams : placeholders;
     return (
         <Html
             dir="ltr"
@@ -44,9 +38,10 @@ function NewVideoDraftDeadlineReminder(props: DebugToggle) {
             <Preview>Erinnerung: Deadline für Video</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
-                Wir möchten sie daran erinnern, dass sie noch Video für den Kunden {customerName}{" "}
-                zum Thema {topic} bei uns einreichen müssen.
+                Wir möchten sie daran erinnern, dass sie bis {actionTime} noch ein Video für den
+                Kunden {customerName} zum Thema {topic} bei uns einreichen müssen.
             </Text>
+            <Signature />
         </Html>
     );
 }
@@ -65,6 +60,7 @@ function ReducedVideoDraftDeadlineReminder(props: DebugToggle) {
                 Wir möchten dich daran erinnern, dass du noch ein Video für den Kunden{" "}
                 {customerName} zum Thema {topic} bei uns einreichen musst.
             </Text>
+            <Signature />
         </Html>
     );
 }

@@ -1,8 +1,9 @@
 import { MailTemplate, Template } from "../types";
 import { EmailTriggers } from "@/app/ServerFunctions/types";
-import InvitesReminderMail, { subjectLineBase, defaultParams } from "./InvitesReminderMail";
+import InvitesReminderMail from "./InvitesReminderMail";
 import { renderAsync } from "@react-email/render";
 import send from "./send";
+import { defaultParams, subjectLineBase } from "./TemplateVariables";
 
 import { templateNames as templateLevelNames } from "./TemplateVariables";
 
