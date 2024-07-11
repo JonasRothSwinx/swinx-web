@@ -1,6 +1,5 @@
 import { Nullable, Prettify } from "@/app/Definitions/types";
 import { Assignments, EmailTriggers } from ".";
-import database from "../database/dbOperations";
 import { Schema } from "@/amplify/data/resource";
 
 export type Event = Prettify<SingleEvent | MultiEvent>;
@@ -32,17 +31,6 @@ export function isEventReference(event: unknown): event is EventReference {
         typeof testEvent.type === "string" &&
         eventValues.includes(testEvent.type as eventType)
     );
-}
-
-export async function resolveEventReference(
-    event: Nullable<EventOrReference>,
-): Promise<Nullable<Event>> {
-    if (event === null) return null;
-    else if (!isEventReference(event)) return event;
-    else {
-        const resolvedEvent = database.timelineEvent.get(event.id);
-        return resolvedEvent;
-    }
 }
 
 export function isTimelineEvent(event: unknown): event is Event {

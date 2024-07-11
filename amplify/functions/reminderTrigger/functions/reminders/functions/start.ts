@@ -1,6 +1,4 @@
-// import dataClient from "@/app/ServerFunctions/database";
 import { dayjs } from "@/app/utils";
-// import database from "@/app/ServerFunctions/database/dbOperations";
 
 import { getEmailTriggers } from "./getEmailTriggers";
 import groupTriggers from "./groupTriggers";
