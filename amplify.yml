@@ -8,8 +8,7 @@ backend:
                 - nvm use 20
                 - npm ci
                 - env | grep -e ADMIN_API_KEY -e BASE_URL -e SES_ACCESS_KEY -e SES_SECRET_ACCESS_KEY -e AWS_BRANCH >> .env
-                - npx ampx generate config  --branch $AWS_BRANCH --app-id $AWS_APP_ID
-                - npx ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID
+                - npx ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID --debug true
 
 frontend:
     phases:
