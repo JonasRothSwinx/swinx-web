@@ -9,9 +9,6 @@ import { Function } from "aws-cdk-lib/aws-lambda";
 import { sesHandler } from "./functions/sesHandler/resource.js";
 import { reminderTrigger } from "./functions/reminderTrigger/resource.js";
 import { PolicyStatement, Effect } from "aws-cdk-lib/aws-iam";
-import { Duration } from "aws-cdk-lib/core";
-import { UsagePlan } from "aws-cdk-lib/aws-apigateway";
-import { randomUUID } from "crypto";
 import dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
 export const backend = defineBackend({
