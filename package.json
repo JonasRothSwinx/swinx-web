@@ -12,7 +12,10 @@
         "sandbox debug": "npx ampx sandbox --debug --identifier sharedSandBox",
         "update amplify packages": "npm i --save-dev @aws-amplify/backend-cli@latest @aws-amplify/backend@latest",
         "delete sandbox": "npx ampx sandbox delete --identifier sharedSandBox",
-        "react email": " email dev --dir ./app/Emails/templates --port 4000"
+        "react email": " email dev --dir ./app/Emails/templates --port 4000",
+        "build": "next build",
+        "start": "next start",
+        "lint": "next lint"
     },
     "dependencies": {
         "@aws-amplify/adapter-nextjs": "^1.1.6",
