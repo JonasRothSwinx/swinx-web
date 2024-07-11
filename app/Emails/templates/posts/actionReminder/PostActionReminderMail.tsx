@@ -1,27 +1,11 @@
 import { EmailTriggers } from "@/app/ServerFunctions/types";
 import { Html, Hr, Button, Text, Head, Preview, Container, Link } from "@react-email/components";
 import styles from "../../styles";
-import { Placeholder } from "../../_components";
+import { Placeholder, Signature } from "../../_components";
 import { DebugToggle, EmailProps } from "../../types";
-import { json } from "stream/consumers";
 import React from "react";
 import DebugTemplates from "../../../DebugTemplates";
-
-export type TemplateVariables = {
-    name: string;
-    postTime: string;
-    customerName: string;
-    customerProfileLink: string;
-    // postContent: string;
-};
-export const subjectLineBase = "Erinnerung: Beitragsveröffentlichung";
-export const defaultParams: TemplateVariables = {
-    name: "testName",
-    postTime: "00:00",
-    customerName: "TestCustomer",
-    customerProfileLink: "https://www.swinx.de",
-    // postContent: Array(10).fill("blablabla").join("\n"),
-};
+import { TemplateVariables, defaultParams } from "./TemplateVariables";
 
 const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
     name: Placeholder({ name: "name" }),
@@ -59,8 +43,8 @@ function NewPostActionReminder(props: DebugToggle) {
             <Preview>Erinnerung: Beitragsveröffentlichung</Preview>
             <Text style={styles.text}>Sehr geehrte/r {name}!</Text>
             <Text style={styles.text}>
-                Wir möchten Sie daran erinnern, dass Sie heute um {postTime} einen Beitrag für{" "}
-                {customerName} veröffentlichen sollen.
+                Wir möchten Sie daran erinnern, dass Sie {postTime} einen Beitrag für {customerName}{" "}
+                veröffentlichen sollen.
             </Text>
             <Text style={styles.text}>
                 Wichtig: <br />
@@ -85,11 +69,13 @@ function NewPostActionReminder(props: DebugToggle) {
             <Text style={styles.text}>
                 Bitte teilen Sie uns danach mit, ob alles funktioniert hat.
             </Text>
+
             {/* <Container align="left" style={styles.buttonContainer}>
                 <Button style={styles.responseButton} href="https://www.swinx.de">
                     Zu Swinx
                 </Button>
             </Container> */}
+            <Signature />
         </Html>
     );
 }
@@ -137,6 +123,7 @@ function ReducedPostActionReminder(props: DebugToggle) {
                     Zu Swinx
                 </Button>
             </Container> */}
+            <Signature />
         </Html>
     );
 }

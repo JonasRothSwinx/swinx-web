@@ -23,6 +23,15 @@ export const backend = defineBackend({
 
 const stack = backend.createStack("SwinxWebResources");
 
+// eslint-disable-next-line @typescript-eslint/ban-types -- this is a valid use case
+const reminderTriggerFunction = backend.reminderTrigger.resources.lambda as Function;
+const allowSes = new PolicyStatement({
+    effect: Effect.ALLOW,
+    actions: ["ses:*"],
+    resources: ["*"],
+});
+reminderTriggerFunction.addToRolePolicy(allowSes);
+
 //#region SES Handler Lambda & API Gateway
 // // eslint-disable-next-line @typescript-eslint/ban-types -- this is a valid use case
 // const sesHandlerLambda = backend.sesHandler.resources.lambda as Function;
@@ -96,7 +105,7 @@ if (!(process.env.NODE_ENV === "development")) {
     const rule = new eventBridge.Rule(stack, "ReminderTriggerRule", {
         enabled: false,
         schedule: eventBridge.Schedule.cron({
-            // minute: "0/10",
+            minute: "0",
             hour: "6",
         }),
 

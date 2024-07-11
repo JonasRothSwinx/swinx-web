@@ -1,20 +1,13 @@
 import { EmailTriggers } from "@/app/ServerFunctions/types";
 import { Html, Button, Text, Head, Preview, Container, Hr } from "@react-email/components";
-import { Placeholder } from "../_components";
+import { Placeholder, Signature } from "../_components";
 import styles from "../styles";
 import PlaceholderList from "../_components/placeholderList";
 import { DebugToggle, EmailProps } from "../types";
 import React from "react";
 import DebugTemplates from "../../DebugTemplates";
+import { TemplateVariables } from "./TemplateVariables";
 
-export type TemplateVariables = {
-    name: string;
-    // assignments: { assignmentDescription: string }[];
-    // honorar: string;
-    linkBase: string;
-    linkData: string;
-    customerCompany: string;
-};
 export const defaultParams: TemplateVariables = {
     name: "testName",
     // assignments: [{ assignmentDescription: "Fliege zum Mars" }],
@@ -94,6 +87,7 @@ function NewCampaignInvite(props: DebugToggle) {
                     Zur Kampagne
                 </Button>
             </Container>
+            {/* <Signature /> */}
         </Html>
     );
 }

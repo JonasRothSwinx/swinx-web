@@ -60,7 +60,7 @@ export default async function sendInvites({
                     assignment,
                     customer,
                     campaign,
-                    campaignManager,
+                    projectManager: campaignManager,
                 },
                 individualContext: [],
             });

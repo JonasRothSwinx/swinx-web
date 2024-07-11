@@ -23,7 +23,7 @@ export async function sendDecisionNotification({
     const primaryProjectManager = projectManagers[0];
     const commonContext: Partial<EmailContextProps> = {
         customer,
-        campaignManager: primaryProjectManager,
+        projectManager: primaryProjectManager,
     };
 
     const rejectedCandidatesByEmailLevel: { [key in EmailTriggers.emailLevel]: Candidate[] } = {

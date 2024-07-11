@@ -7,6 +7,9 @@ export const reminderTrigger = defineFunction({
     entry: "handler.ts",
     environment: {
         BASE_URL: process.env.BASE_URL ?? "null",
+        AWS_BRANCH: process.env.AWS_BRANCH ?? "null",
         REGION: "eu-west-1",
     },
+    memoryMB: 4196,
+    timeoutSeconds: 30,
 });

@@ -1,17 +1,12 @@
 import { EmailTriggers } from "@/app/ServerFunctions/types";
 import { Html, Button, Text, Head, Preview, Container, Hr } from "@react-email/components";
-import { Placeholder } from "../_components";
+import { Placeholder, Signature } from "../_components";
 import styles from "../styles";
 import { DebugToggle, EmailProps } from "../types";
 import React from "react";
 import DebugTemplates from "../../DebugTemplates";
+import { TemplateVariables } from "./TemplateVariables";
 
-export type TemplateVariables = {
-    name: string;
-    customerName: string;
-    dueDate: string;
-    topic: string;
-};
 export const defaultParams: TemplateVariables = {
     name: "Max Mustermann",
     customerName: "Musterfirma",
@@ -58,6 +53,7 @@ function NewReminder(props: DebugToggle) {
             <Text style={styles.text}>
                 {`Wir möchten sie daran erinnern, dass sie uns bis spätestens ${dueDate} ihre Aufnahme für den Kunden ${customerName} zum Thema ${topic} zuschicken sollen.`}
             </Text>
+            <Signature />
         </Html>
     );
 }

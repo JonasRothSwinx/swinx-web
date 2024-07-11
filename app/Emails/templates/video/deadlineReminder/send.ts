@@ -1,19 +1,17 @@
 import { SendMailProps } from "../../types";
-import { sesHandlerSendEmailTemplateBulk } from "@/amplify/functions/sesHandler/types";
-import sesAPIClient from "../../../sesAPI";
-import { TemplateVariables, defaultParams } from "./VideoDraftDeadlineReminderEmail";
-import ErrorLogger from "@/app/ServerFunctions/errorLog";
-import { PostReminder } from ".";
+import { SESClientSendMail as sesAPIClient } from "../../../sesAPI";
+// import { defaultParams } from "./VideoDraftDeadlineReminderEmail";
+import { TemplateVariables, templateNames } from "./TemplateVariables";
 
 export default async function send(props: SendMailProps) {
     const { level, fromAdress, individualContext } = props;
     if (level === "none") {
         return;
     }
-    const templateName = PostReminder.levels[level].name;
+    const templateName = templateNames[level];
     const templateData = individualContext.reduce((acc, { event, influencer, customer }) => {
         if (!event || !influencer || !customer) {
-            ErrorLogger.log("Missing context");
+            console.log("Missing context");
             return acc;
         }
         const recipientName = `${influencer.firstName} ${influencer.lastName}`;
@@ -27,6 +25,7 @@ export default async function send(props: SendMailProps) {
                     name: recipientName,
                     customerName,
                     topic,
+                    actionTime: "am Ende aller Tage",
                 } satisfies TemplateVariables),
             },
         ];
@@ -34,7 +33,12 @@ export default async function send(props: SendMailProps) {
     const response = await sesAPIClient.sendBulk({
         from: fromAdress ?? "swinx GmbH <noreply@swinx.de>",
         templateName,
-        defaultTemplateData: JSON.stringify(defaultParams),
+        defaultTemplateData: JSON.stringify({
+            name: "TestName",
+            customerName: "TestCustomer",
+            topic: "TestTopic",
+            actionTime: "am Ende aller Tage",
+        } satisfies TemplateVariables),
         bulkTemplateData: templateData,
     });
 }

@@ -1,20 +1,21 @@
 import { MailTemplate, Template } from "../types";
 import { EmailTriggers } from "@/app/ServerFunctions/types";
-import InvitesReminderMail, { subjectLineBase, defaultParams } from "./InvitesReminderMail";
+import InvitesReminderMail from "./InvitesReminderMail";
 import { renderAsync } from "@react-email/render";
 import send from "./send";
+import { defaultParams, subjectLineBase } from "./TemplateVariables";
 
-const templateBaseName = "InvitesReminder";
+import { templateNames as templateLevelNames } from "./TemplateVariables";
 
 const templates: { [key in Exclude<EmailTriggers.emailLevel, "none">]: MailTemplate } = {
     new: {
-        name: `${templateBaseName}New`,
+        name: `${templateLevelNames.new}`,
         subjectLine: subjectLineBase,
         html: renderAsync(InvitesReminderMail({ emailLevel: "new" })),
         text: renderAsync(InvitesReminderMail({ emailLevel: "new" }), { plainText: true }),
     },
     reduced: {
-        name: `${templateBaseName}Reduced`,
+        name: `${templateLevelNames.reduced}`,
         subjectLine: subjectLineBase,
         html: renderAsync(InvitesReminderMail({ emailLevel: "reduced" })),
         text: renderAsync(InvitesReminderMail({ emailLevel: "reduced" }), { plainText: true }),

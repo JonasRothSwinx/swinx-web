@@ -19,6 +19,7 @@ const theme = createTheme({
 });
 
 export default function Page() {
+    return null;
     return (
         <ThemeProvider theme={theme}>
             <QueryClientProvider client={queryClient}>

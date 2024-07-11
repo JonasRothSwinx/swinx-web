@@ -1,9 +1,9 @@
 "use server";
 
-import sesAPIClient from "../../sesAPI";
+import { satisfies } from "@/app/ServerFunctions/types/customer";
+import { SESClientSendMail as sesAPIClient } from "../../sesAPI";
 import { SendMailProps } from "../types";
-import { TemplateVariables } from "./Email";
-import template from ".";
+import { TemplateVariables, templateNames } from "./TemplateVariables";
 
 /**
  * Send campaign invites to candidates
@@ -21,7 +21,7 @@ export default async function send(props: SendMailProps) {
 
     if (level === "none") return;
 
-    const templateName = template.levels[level].name;
+    const templateName = templateNames[level];
     const templateData = individualContext.reduce((acc, { event, influencer, customer }) => {
         if (!event || !influencer || !customer) {
             console.error("Error: Missing context", { event, influencer, customer });
@@ -53,7 +53,12 @@ export default async function send(props: SendMailProps) {
     const response = await sesAPIClient.sendBulk({
         from: fromAdress ?? "swinx GmbH <noreply@swinx.de>",
         templateName: templateName,
-        defaultTemplateData: JSON.stringify(template.defaultParams),
+        defaultTemplateData: JSON.stringify({
+            name: "TestName",
+            customerName: "TestCustomer",
+            dueDate: "TestDate",
+            topic: "TestTopic",
+        } satisfies TemplateVariables),
         bulkTemplateData: templateData,
     });
     return response;

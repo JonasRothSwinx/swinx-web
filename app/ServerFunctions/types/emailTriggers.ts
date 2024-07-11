@@ -1,12 +1,9 @@
 import { Nullable, Prettify } from "@/app/Definitions/types";
 import { Event, Events, Customer, Influencers } from ".";
 
-export type EmailTrigger = Prettify<
-    GeneralInfo & EventInfo & ContactInfo & EmailOverrides & State & CustomerContext
->;
-export type EmailTriggerEventRef = Prettify<
-    GeneralInfo & EventReference & ContactInfo & EmailOverrides & State
->;
+export type EmailTrigger = Prettify<GeneralInfo & EventInfo & ContactInfo & EmailOverrides & State & CustomerContext>;
+export type EmailTriggerEventRef = Prettify<GeneralInfo & EventReference & ContactInfo & EmailOverrides & State>;
+export type EmailTriggerPure = Prettify<GeneralInfo & EmailOverrides & State>;
 
 type GeneralInfo = {
     id?: string;

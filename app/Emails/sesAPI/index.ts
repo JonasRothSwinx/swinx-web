@@ -15,4 +15,12 @@ const sesAPIClient = {
     getTemplate,
     deleteTemplates,
 };
+
+export const SESClientSendMail = {
+    send: sendMail,
+    sendTemplate: sendEmailTemplate,
+    sendBulk: sendEmailTemplateBulk,
+};
 export default sesAPIClient;
+
+export { templateSender } from "../templates";

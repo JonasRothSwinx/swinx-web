@@ -15,7 +15,7 @@ export default async function defineContext(
             event,
             influencer,
             customer,
-            campaignManager: projectManagers[0],
+            projectManager: projectManagers[0],
         });
         return context;
     }, [] as Partial<EmailContextProps>[]);

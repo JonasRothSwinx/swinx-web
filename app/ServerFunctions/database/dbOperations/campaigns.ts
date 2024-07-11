@@ -13,7 +13,6 @@ import { SelectionSet } from "aws-amplify/api";
 import { Schema } from "@/amplify/data/resource";
 import { Nullable, PartialWith } from "@/app/Definitions/types";
 import { Candidate, ProjectManager } from "@/app/ServerFunctions/types";
-import AssignedInfluencer from "@/app/Main Menu/CampaignDetails/Components/OpenInfluencerDetails/AssignedInfluencer";
 import database from ".";
 
 const selectionSet = [
@@ -208,6 +207,7 @@ function validateCampaign(rawCampaign: Nullable<RawCampaign>): Nullable<Campaign
                 phoneNumber: raw.projectManager.phoneNumber ?? undefined,
                 notes: raw.projectManager.notes ?? undefined,
                 cognitoId: raw.projectManager.cognitoId,
+                jobTitle: raw.projectManager.jobTitle,
             } satisfies ProjectManager;
         });
         const dataOut: Campaigns.Min = {

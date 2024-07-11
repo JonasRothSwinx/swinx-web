@@ -173,6 +173,7 @@ export async function getEventForEmailTrigger(eventId: string): Promise<
             phoneNumber: x.projectManager.phoneNumber ?? undefined,
             notes: x.projectManager.notes ?? undefined,
             cognitoId: x.projectManager.cognitoId,
+            jobTitle: x.projectManager.jobTitle,
         };
         return projectManager;
     });
