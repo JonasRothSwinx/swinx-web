@@ -2,6 +2,7 @@ import { CheckBoxIcon } from "@/app/Definitions/Icons";
 import { Candidate, Candidates, Influencers } from "@/app/ServerFunctions/types";
 import { IconButton, SxProps, TableCell, TableRow, Tooltip } from "@mui/material";
 import { useMemo } from "react";
+import { AssignButton } from "./AssignButton";
 interface CandidateTableRowProps {
     candidate: Candidate;
     assignInfluencer: (candidate: Candidate) => void;
@@ -48,11 +49,15 @@ export default function CandidateTableRow({ candidate, assignInfluencer }: Candi
             </TableCell>
             <TableCell id="feedback">{candidate.feedback}</TableCell>
             <TableCell>
-                <IconButton onClick={() => assignInfluencer(candidate)}>
+                {/* <IconButton onClick={() => assignInfluencer(candidate)}>
                     <Tooltip title="Zuweisen">
                         <CheckBoxIcon id="assignIcon" />
                     </Tooltip>
-                </IconButton>
+                </IconButton> */}
+                <AssignButton
+                    assignInfluencer={assignInfluencer}
+                    candidate={candidate}
+                />
             </TableCell>
         </TableRow>
     );

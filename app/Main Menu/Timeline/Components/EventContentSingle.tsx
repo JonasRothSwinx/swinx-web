@@ -1,5 +1,12 @@
 import { Event, Events } from "@/app/ServerFunctions/types";
-import { Box, Unstable_Grid2 as Grid, GridSize, IconButton } from "@mui/material";
+import {
+    Box,
+    Unstable_Grid2 as Grid,
+    GridSize,
+    IconButton,
+    TableCell,
+    Typography,
+} from "@mui/material";
 import { groupBy } from "../Functions/groupEvents";
 import { dayjs } from "@/app/utils";
 import { timelineEventTypesType } from "@/amplify/data/types";
@@ -23,12 +30,17 @@ export default function EventContentSingle(props: EventContentProps) {
     };
 
     return (
-        <Grid
-            id="EventContentSingle"
-            xs={columnSize}
+        // <Grid
+        //     id="EventContentSingle"
+        //     xs={columnSize}
+        // >
+        <TableCell
+            className="EventContentCell"
+            width={"100%"}
         >
-            {EventElement[event.type as eventType] ?? <></>}
-        </Grid>
+            <Box className="EventContent">{EventElement[event.type as eventType] ?? <></>}</Box>
+        </TableCell>
+        // </Grid>
     );
 }
 
@@ -36,50 +48,25 @@ function InviteEventContent(props: EventContentProps) {
     const { event } = props;
     if (!Events.isInviteEvent(event)) return <></>;
     return (
-        <Grid container>
-            <Grid xs>
-                <ItemName event={event} />
-            </Grid>
-            <Grid
-                xs={2}
-                sx={{ textAlign: "end", paddingInlineEnd: "2px" }}
-            >
-                <div>{event.eventTaskAmount}</div>
-            </Grid>
-        </Grid>
+        <>
+            <ItemName event={event} />
+            <Typography>{event.eventTaskAmount}</Typography>
+        </>
     );
 }
 
 function PostEventContent(props: EventContentProps) {
     const { event } = props;
-    return (
-        <Grid xs>
-            <ItemName event={event} />
-        </Grid>
-    );
+    return <ItemName event={event} />;
 }
 
 function VideoEventContent(props: EventContentProps) {
     const { event } = props;
-    return (
-        <Grid
-            id="EventContent"
-            xs
-        >
-            <ItemName event={event} />
-        </Grid>
-    );
+    return <ItemName event={event} />;
 }
 function ImpulsVideoEventContent(props: EventContentProps) {
     const { event } = props;
-    return (
-        <Grid
-            id="EventContent"
-            xs
-        >
-            <ItemName event={event} />
-        </Grid>
-    );
+    return <ItemName event={event} />;
 }
 
 interface ItemNameProps {
@@ -89,14 +76,11 @@ function ItemName(props: ItemNameProps) {
     const { event } = props;
     const assignment = event.assignments[0];
     return (
-        <Grid
-            id="AssignmentName"
-            xs
-        >
+        <Box id="AssignmentName">
             {assignment.isPlaceholder
                 ? `Influencer ${assignment.placeholderName}`
                 : `${assignment.influencer?.firstName} ${assignment.influencer?.lastName}`}
             {/* {event.assignment.influencer?.firstName} {event.assignment.influencer?.lastName} */}
-        </Grid>
+        </Box>
     );
 }

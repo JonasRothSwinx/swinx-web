@@ -7,6 +7,8 @@ import {
     IconButton,
     Skeleton,
     SxProps,
+    TableCell,
+    TableRow,
     Typography,
 } from "@mui/material";
 import { groupBy } from "../Functions/groupEvents";
@@ -81,7 +83,7 @@ export function EventDisplay(props: EventProps) {
     };
     //######################################################################################################################
     //#region Styles
-    const dateColumns = useMemo(() => (groupBy === "day" ? 2 : 1), [groupBy]);
+    const dateColumns = useMemo(() => (groupBy === "day" ? 2 : 3), [groupBy]);
     const contentColumns = useMemo(
         () => totalColumns - dateColumns /* - modifyColumns */,
         [totalColumns, dateColumns],
@@ -95,10 +97,10 @@ export function EventDisplay(props: EventProps) {
 
     const sxProps: SxProps = useMemo(() => {
         return {
-            "&#EventContainer": {
+            "&#EventRow": {
                 "position": "relative",
-                "display": "flex",
-                "flexDirection": "row",
+                // "display": "flex",
+                // "flexDirection": "row",
                 "alignItems": "center",
                 // flexWrap: "wrap",
                 "width": "100%",
@@ -128,10 +130,33 @@ export function EventDisplay(props: EventProps) {
                     },
                 },
 
+                ".MuiTableCell-root": {
+                    "padding": "0",
+                    "minWidth": "max-content",
+                    "paddingRight": "3px",
+                    "paddingLeft": "3px",
+                    "&:first-of-type": {
+                        paddingLeft: "5px",
+                    },
+
+                    "&.date": {
+                        // paddingLeft: "5px",
+                        paddingRight: "5px",
+                        borderRight: "1px solid rgba(224, 224, 224, 1)",
+                    },
+                    "&.EventContentCell": {
+                        ".EventContent": {
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "space-between",
+                        },
+                    },
+                    // border: "1px solid black",
+                },
                 "&>#Event": {
                     "&": {
                         position: "relative",
-                        paddingLeft: "10px",
+                        paddingLeft: "5px",
                         flex: 1,
                         backgroundColor: highlightData?.color ?? "inherit",
                         // transition: "width 3s",
@@ -202,27 +227,27 @@ export function EventDisplay(props: EventProps) {
     //#endregion Data State
     //######################################################################################################################
     return (
-        <Box
-            id="EventContainer"
+        <TableRow
+            id="EventRow"
             sx={sxProps}
         >
-            <Grid
+            {/* <Grid
                 id="Event"
                 container
                 columns={totalColumns}
-            >
-                {dateColumns > 0 && (
-                    <EventDate
-                        date={event.data.date ?? ""}
-                        groupBy={groupBy}
-                        columnSize={dateColumns}
-                    />
-                )}
-                <EventContent
-                    event={event.data}
-                    columnSize={contentColumns}
+            > */}
+            {dateColumns > 0 && (
+                <EventDate
+                    date={event.data.date ?? ""}
+                    groupBy={groupBy}
+                    columnSize={dateColumns}
                 />
-            </Grid>
+            )}
+            <EventContent
+                event={event.data}
+                columnSize={contentColumns}
+            />
+            {/* </Grid> */}
             <CircularProgress id="fetchIndicator" />
 
             {editable && (
@@ -235,7 +260,7 @@ export function EventDisplay(props: EventProps) {
                     } satisfies ModifyButtonGroupProps)}
                 />
             )}
-        </Box>
+        </TableRow>
     );
 }
 //######################################################################################################################
@@ -373,18 +398,35 @@ interface EventDateProps {
 function EventDate(props: EventDateProps) {
     const { date, groupBy, columnSize = 2 } = props;
     const processedDate = dayjs(date);
+    const sxProps: SxProps = {
+        "&": {
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            gap: "1cw",
+        },
+    };
     const dateDisplay: { [key in groupBy]: JSX.Element } = {
         day: <>{processedDate.format("h:mm")}</>,
-        week: <>{processedDate.format("ddd")}</>,
+        week: (
+            // <Box sx={sxProps}>
+            <>
+                <TableCell>
+                    <Typography className="dayName">{processedDate.format("ddd")}</Typography>
+                </TableCell>
+                <TableCell className="date">{processedDate.format("DD.MM.")}</TableCell>
+            </>
+            // </Box>
+        ),
     };
 
     return (
-        <Grid
-            id="EventDate"
-            xs={columnSize}
-        >
-            {dateDisplay[groupBy]}
-        </Grid>
+        // <TableCell
+        //     id="EventDate"
+        //     xs={columnSize}
+        // >
+        <>{dateDisplay[groupBy]}</>
+        // </TableCell>
     );
 }
 //#endregion EventDate

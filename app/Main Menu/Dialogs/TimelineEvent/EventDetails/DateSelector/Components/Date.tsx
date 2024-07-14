@@ -77,7 +77,10 @@ export function Date(props: DateProps) {
                 {showDeleteButton && (
                     <Button
                         key={`removeButton${index}`}
-                        onClick={() => removeDate(index)}
+                        onClick={() => {
+                            console.log("removeDate", index);
+                            // removeDate(index);
+                        }}
                     >
                         <DeleteIcon />
                     </Button>

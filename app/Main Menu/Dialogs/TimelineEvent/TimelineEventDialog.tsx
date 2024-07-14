@@ -34,13 +34,16 @@ import EmailTriggerMenu from "./EmailTriggerMenu";
 import { GeneralDetails } from "./EventDetails/GeneralDetails";
 import validateFields from "./actions/validateFields";
 import { random, randomId } from "@mui/x-data-grid-generator";
+import { createEventAssignment } from "@/amplify/functions/reminderTrigger/graphql/mutations";
+import { validate } from "@/app/ServerFunctions/types/projectManagers";
+import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 
 export const styles = stylesExporter.dialogs;
 
-export type dates = {
-    number: number;
-    dates: (Dayjs | null)[];
-};
+// export type dates = {
+//     number: number;
+//     dates: (Dayjs | null)[];
+// };
 type TimelineEventDialogProps = {
     onClose?: (hasChanged?: boolean) => void;
     editing?: boolean;
@@ -128,6 +131,12 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
         },
     );
     const [updatedData, setUpdatedData] = useState<Partial<Event>[]>([{}]);
+    const { data: userGroups } = useQuery({
+        queryKey: ["userGroups"],
+        queryFn: async () => {
+            return getUserGroups();
+        },
+    });
     // const [dates, setDates] = useState<{ number: number; dates: (Dayjs | null)[] }>({
     //     number: 1,
     //     dates: [editingData ? dayjs(editingData.date) : dayjs()],
@@ -253,10 +262,10 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
 
             if (!editing) {
                 // if (!combinedEvents.every((event) => validateFields(event, type))) return;
-                combinedEvents.forEach((event) => {
-                    if (!validateFields(event, type)) return;
-                    DataChange.createEvent.mutate({ newEvent: event });
-                });
+                const validatedNewEvents = combinedEvents.filter((event): event is Event =>
+                    validateFields(event, type),
+                );
+                DataChange.createEvents.mutate({ newEvents: validatedNewEvents });
             } else {
                 if (!validateFields(timelineEvent, type)) return;
                 updatedData.forEach((data) => {
@@ -310,26 +319,30 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
             const value = e.target.value;
             setTimelineEvent((prev) => ({ ...prev, assignment: value }));
         },
-        createEvent: useMutation({
-            mutationFn: async (data: { newEvent: Event }) => {
-                const { newEvent } = data;
-                const createdEvents = await submitEvent({ event: newEvent, editing: false });
+        createEvents: useMutation({
+            mutationFn: async (data: { newEvents: Event[] }) => {
+                const { newEvents } = data;
+                const createdEvents = await Promise.all(
+                    newEvents.map((newEvent) => submitEvent({ event: newEvent, editing: false })),
+                );
                 return createdEvents;
             },
-            onMutate: async (data: { newEvent: Event }) => {
-                const { newEvent } = data;
+            onMutate: async (data: { newEvents: Event[] }) => {
+                const { newEvents } = data;
                 await queryClient.cancelQueries({
                     queryKey: ["timelineEvents"],
                 });
                 const previousEvents = queryClient.getQueryData<Event[]>(["timelineEvents"]);
-                queryClient.setQueryData<Event>(["timelineEvent", newEvent.id], {
-                    ...newEvent,
-                });
+                newEvents.map((newEvent) =>
+                    queryClient.setQueryData<Event>(["timelineEvent", newEvent.id], {
+                        ...newEvent,
+                    }),
+                );
                 queryClient.setQueryData<Event[]>(
                     ["timelineEvents"],
-                    [...(previousEvents ?? []), newEvent],
+                    [...(previousEvents ?? []), ...newEvents],
                 );
-                const assignment = newEvent.assignments[0];
+                const assignment = newEvents[0].assignments[0];
                 let previousAssignmentEvents: Event[] | undefined = [];
                 if (assignment) {
                     previousAssignmentEvents = queryClient.getQueryData<Event[]>([
@@ -338,14 +351,14 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                     ]);
                     queryClient.setQueryData(
                         ["assignmentEvents", assignment.id],
-                        [...(previousAssignmentEvents ?? []), newEvent],
+                        [...(previousAssignmentEvents ?? []), ...newEvents],
                     );
                 }
-                return { previousEvents, previousAssignmentEvents, newEvent, assignment };
+                return { previousEvents, previousAssignmentEvents, newEvents, assignment };
             },
             onError(error, newData, context) {
                 console.error("Error updating record", { error, newData, context });
-                const { newEvent, previousEvents, previousAssignmentEvents, assignment } =
+                const { newEvents, previousEvents, previousAssignmentEvents, assignment } =
                     context ?? {};
                 if (previousEvents) {
                     queryClient.setQueryData(["timelineEvents"], previousEvents);
@@ -356,8 +369,10 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                         previousAssignmentEvents,
                     );
                 }
-                if (newEvent) {
-                    queryClient.setQueryData(["timelineEvent", newEvent.id], null);
+                if (newEvents && newEvents.length > 0) {
+                    newEvents.forEach((newEvent) => {
+                        queryClient.setQueryData(["timelineEvent", newEvent.id], null);
+                    });
                 }
             },
             onSettled(data, error, variables, context) {
@@ -367,11 +382,12 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                     // data?.isCompleted,
                 );
 
-                const { newEvent: event, assignment } = context ?? {};
-                if (event) {
-                    queryClient.setQueryData(["timelineEvent", event.id], null);
-                    queryClient.invalidateQueries({
-                        queryKey: ["timelineEvent", event.id],
+                const { newEvents, assignment } = context ?? {};
+                if (newEvents && newEvents.length > 0) {
+                    newEvents.forEach((newEvent) => {
+                        queryClient.invalidateQueries({
+                            queryKey: ["timelineEvent", newEvent.id],
+                        });
                     });
                 }
                 queryClient.invalidateQueries({
@@ -557,7 +573,9 @@ export default function TimelineEventDialog(props: TimelineEventDialogProps) {
                 <Box id="Event">
                     <DialogTitle>
                         {editing ? "Ereignis bearbeiten" : "Neues Ereignis"}
-                        <Button onClick={EventHandlers.printEvent}>Print Event</Button>
+                        {userGroups?.includes("admin") && (
+                            <Button onClick={EventHandlers.printEvent}>Print Event</Button>
+                        )}
                     </DialogTitle>
                     {/* <button onClick={handleCloseModal}>x</button> */}
                     <GeneralDetails
