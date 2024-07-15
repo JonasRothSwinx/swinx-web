@@ -5,7 +5,7 @@ import { EventDisplay } from "./EventDisplay";
 import { randomId } from "@mui/x-data-grid-generator";
 import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { highlightData } from "@/app/Definitions/types";
-import { Box, SxProps, Typography } from "@mui/material";
+import { Box, SxProps, Table, TableBody, TableHead, TableRow, Typography } from "@mui/material";
 import { margin } from "@mui/system";
 import { useMemo } from "react";
 
@@ -27,10 +27,42 @@ export default function TypedEventGroupDisplay(props: TypedEventGroupDisplayProp
         },
         placeholderData: [],
     });
+    const sx: SxProps = useMemo(
+        () => ({
+            "&": {
+                "&#TimelineViewGroupContent": {
+                    // padding: "2px",
+
+                    "border": "solid black",
+                    "borderTop": "none",
+                    "borderWidth": "0 0 1px",
+                    // borderLeft: "none",
+                    // borderRadius: "10px",
+                    "display": "flex",
+                    "flexDirection": " column",
+                    "overflow": "hidden",
+                    // "&:first-of-type": {
+                    //     borderTopLeftRadius: "10px",
+                    //     borderTopRightRadius: "10px",
+                    // },
+                    "&:last-of-type": {
+                        borderBottomLeftRadius: "10px",
+                        borderBottomRightRadius: "10px",
+                        borderBottom: "none",
+                        marginBottom: "0",
+                    },
+                },
+            },
+        }),
+        [],
+    );
 
     if (hiddenEventTypes.includes(eventGroup.type)) return <></>;
     return (
-        <Box id="TimelineViewGroupContent">
+        <Table
+            id="TimelineViewGroupContent"
+            sx={sx}
+        >
             <GroupTitle type={eventGroup.type} />
             <GroupContent
                 events={eventGroup.events}
@@ -39,7 +71,7 @@ export default function TypedEventGroupDisplay(props: TypedEventGroupDisplayProp
                 editable={editable}
                 campaignId={campaignId}
             />
-        </Box>
+        </Table>
     );
 }
 
@@ -47,7 +79,33 @@ interface GroupTitleProps {
     type: string;
 }
 function GroupTitle(props: GroupTitleProps) {
-    return <Typography id="GroupTitle">{props.type}</Typography>;
+    const sx: SxProps = useMemo(
+        () => ({
+            "&": {
+                "display": "flex",
+                "width": "100%",
+                ".TitleRow": {
+                    width: "100%",
+                },
+
+                "#GroupTitle": {
+                    width: "100%",
+                    paddingLeft: "5px",
+                    color: "white",
+                    backgroundColor: "var(--swinx-blue-light)",
+                    borderBottom: "1px solid black",
+                },
+            },
+        }),
+        [],
+    );
+    return (
+        <TableHead sx={sx}>
+            <TableRow className="TitleRow">
+                <Typography id="GroupTitle">{props.type}</Typography>
+            </TableRow>
+        </TableHead>
+    );
 }
 
 interface GroupContentProps {
@@ -61,7 +119,7 @@ interface GroupContentProps {
 function GroupContent(props: GroupContentProps) {
     const { events, groupBy, highlightedEventData, editable, campaignId } = props;
     return (
-        <>
+        <TableBody>
             {events.map((event, index) => {
                 return (
                     <EventDisplay
@@ -74,6 +132,6 @@ function GroupContent(props: GroupContentProps) {
                     />
                 );
             })}
-        </>
+        </TableBody>
     );
 }

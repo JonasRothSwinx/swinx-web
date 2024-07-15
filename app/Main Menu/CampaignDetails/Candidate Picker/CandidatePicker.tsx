@@ -196,13 +196,19 @@ export function CandidatePickerTabs({
             "#TabList": {
                 // backgroundColor: "var(--swinx-blue)",
                 ".MuiTab-root": {
-                    // color: "white",
+                    "color": "white",
+                    "backgroundColor": "var(--swinx-blue-light)",
+                    "transition": "all 0.5s",
                     "&.Mui-selected": {
-                        color: "white",
-                        backgroundColor: "var(--swinx-blue-light)",
+                        color: "var(--swinx-blue)",
+                        // backgroundColor: "var(--swinx-blue-light)",
+                        backgroundColor: "white",
+                        flex: 2,
+                        // transform: "scaleX(1.4)",
                     },
                 },
                 ".MuiTabs-indicator": {
+                    transition: "all 0.5s",
                     backgroundColor: "var(--swinx-blue)",
                 },
             },

@@ -80,12 +80,12 @@ export function GeneralDetails(props: EventTypeSelectorProps) {
                     );
                 })}
             </TextFieldWithTooltip>
-            {AssignmentSelectorCreator[timelineEvent.type ?? "none"]({
+            {/* {AssignmentSelectorCreator[timelineEvent.type ?? "none"]({
                 timelineEvent,
                 targetAssignment,
                 campaignId,
                 onAssignmentChange: onInfluencerChange,
-            })}
+            })} */}
         </DialogContent>
     );
 }

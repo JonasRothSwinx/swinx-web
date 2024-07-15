@@ -12,6 +12,7 @@ import { EventCategory } from "./functions/categorizeEvents";
 import dayjs from "dayjs";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { highlightData } from "@/app/Definitions/types";
+import { randomId } from "@mui/x-data-grid-generator";
 
 //#region config
 interface CategoryTitleProps {
@@ -174,7 +175,7 @@ function InviteEventsDetails(props: {
             {events.map((event) => {
                 return (
                     <InviteEventItem
-                        key={event.id}
+                        key={event.id ?? randomId()}
                         event={event}
                         setHighlightedEvent={setHighlightedEvent}
                         highlightData={props.highlightData?.find((x) => x.id === event.id)}

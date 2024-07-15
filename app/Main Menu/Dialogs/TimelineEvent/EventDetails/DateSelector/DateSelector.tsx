@@ -14,14 +14,13 @@ import { Add as AddIcon, DeleteOutlined as DeleteIcon } from "@mui/icons-materia
 import { DatePicker, DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import React, { Dispatch, MouseEvent, SetStateAction, useEffect, useMemo } from "react";
-import { dates, styles } from "../../TimelineEventDialog";
 import { PartialWith } from "@/app/Definitions/types";
 import { useQuery } from "@tanstack/react-query";
 import { dataClient } from "@/app/ServerFunctions/database";
-import { EventType } from "@aws-sdk/client-sesv2";
 import TextFieldWithTooltip from "../../../Components/TextFieldWithTooltip";
 import { Date, DateProps, ParentEventSelector } from "./Components";
 import { getFixedDate, hasParentEvent, isFixedDate, isRepeatable } from "./config";
+import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 
 //#region config
 
@@ -56,6 +55,13 @@ export default function DateSelector({
         },
     });
 
+    const { data: userGroups } = useQuery({
+        queryKey: ["userGroups"],
+        queryFn: async () => {
+            return getUserGroups();
+        },
+    });
+
     const EventHandlers = {
         handleAddDateClick: () => {
             const lastDate = updatedData[updatedData.length - 1].date ?? dayjs().toISOString();
@@ -73,12 +79,11 @@ export default function DateSelector({
             });
         },
         handleRemoveDateClick: (index: number) => {
-            return function (e: MouseEvent<HTMLButtonElement>) {
-                setUpdatedData((prev) => {
-                    const newValue = [...prev.filter((_x, i) => i !== index)];
-                    return newValue;
-                });
-            };
+            setUpdatedData((prev) => {
+                const newValue = [...prev.filter((_x, i) => i !== index)];
+                // console.log("handleRemoveDateClick", { newValue, prev });
+                return newValue;
+            });
         },
     };
 
@@ -103,8 +108,9 @@ export default function DateSelector({
 
     return (
         <>
-            {/*  */}
-            <Button onClick={printVariables}>Print Variables</Button>
+            {userGroups?.includes("admin") && (
+                <Button onClick={printVariables}>Print Variables</Button>
+            )}
             <DialogContent
                 dividers
                 sx={{ "& .MuiFormControl-root": { flexBasis: "100%", flex: 1 } }}

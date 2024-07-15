@@ -1,7 +1,15 @@
 import { CancelIcon, EditIcon } from "@/app/Definitions/Icons";
 import { Event } from "@/app/ServerFunctions/types";
 import { dayjs } from "@/app/utils";
-import { Box, Unstable_Grid2 as Grid, IconButton, SxProps } from "@mui/material";
+import {
+    Box,
+    Unstable_Grid2 as Grid,
+    IconButton,
+    SxProps,
+    Table,
+    TableHead,
+    Typography,
+} from "@mui/material";
 import { GridDeleteForeverIcon } from "@mui/x-data-grid";
 import { useMemo, useState } from "react";
 import stylesExporter from "../../styles/stylesExporter";
@@ -22,12 +30,32 @@ interface TimelineViewItemProps {
 }
 export default function TimelineViewItem(props: TimelineViewItemProps) {
     const { keyValue, group, groupedBy, editEvent, editable } = props;
+    const sx: SxProps = useMemo(
+        () => ({
+            "&": {
+                "&#TimelineViewGroup": {
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "border": "1px solid black",
+                    "borderRadius": "10px",
+                    "height": "fit-content",
+                    "maxWidth": "100%",
+                    "overflow": "hidden",
 
+                    ".MuiGrid2-container": {
+                        alignItems: "center",
+                    },
+                },
+            },
+        }),
+        [],
+    );
     return (
-        <Grid
+        <Table
             id="TimelineViewGroup"
             // xs={16}
             key={keyValue}
+            sx={sx}
         >
             <TimelineViewGroupTitle
                 group={group}
@@ -44,7 +72,7 @@ export default function TimelineViewItem(props: TimelineViewItemProps) {
                     />
                 );
             })}
-        </Grid>
+        </Table>
     );
 }
 interface TimelineViewGroupTitleProps {
@@ -68,12 +96,30 @@ function TimelineViewGroupTitle(props: TimelineViewGroupTitleProps) {
             </>
         ),
     };
+    const sx: SxProps = {
+        "&": {
+            "&#TimelineViewGroupTitle": {
+                width: "100%",
+                display: "flex",
+                padding: "5px",
+                paddingBlockEnd: "10px",
+                borderBottom: "1px solid black",
+                backgroundColor: "var(--swinx-blue)",
+                color: "white",
+            },
+        },
+    };
     return (
-        <Box id="TimelineViewGroupTitle">
-            <div className={dialogStyles.cellActionSplit}>
-                <div>{titleContentByGroupType[groupedBy]()}</div>
-                {/* <TimelineViewEditButton editable={editable} editing={editing} setEditing={setEditing} /> */}
-            </div>
-        </Box>
+        <TableHead
+            id="TimelineViewGroupTitle"
+            sx={sx}
+        >
+            {/* <div className={dialogStyles.cellActionSplit}> */}
+            <Typography className={"tableHeaderText"}>
+                {titleContentByGroupType[groupedBy]()}
+            </Typography>
+            {/* <TimelineViewEditButton editable={editable} editing={editing} setEditing={setEditing} /> */}
+            {/* </div> */}
+        </TableHead>
     );
 }

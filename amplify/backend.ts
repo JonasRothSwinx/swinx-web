@@ -29,6 +29,12 @@ const allowSes = new PolicyStatement({
 });
 reminderTriggerFunction.addToRolePolicy(allowSes);
 
+const dataResources = backend.data.resources;
+
+Object.values(dataResources.cfnResources.amplifyDynamoDbTables).forEach((table) => {
+    table.pointInTimeRecoveryEnabled = true;
+});
+
 //#region SES Handler Lambda & API Gateway
 // // eslint-disable-next-line @typescript-eslint/ban-types -- this is a valid use case
 // const sesHandlerLambda = backend.sesHandler.resources.lambda as Function;
