@@ -17,7 +17,7 @@ export default function TaskDisplay({ tasks, parentEvent, campaign }: TaskDispla
             id: `${task.id}-draft`,
             date: task.info?.draftDeadline ?? "",
             timelineEventType: `Draft-${task.timelineEventType}`,
-            eventTitle: `Entwurf für ${task.eventTitle}`,
+            eventTitle: `${task.eventTitle}`,
         }));
         return [...tasks, ...pseudoTasks];
     }, [tasks]);
@@ -48,10 +48,7 @@ export default function TaskDisplay({ tasks, parentEvent, campaign }: TaskDispla
         },
     };
     return (
-        <Box
-            id="TaskDisplay"
-            sx={sx}
-        >
+        <Box id="TaskDisplay" sx={sx}>
             <TaskGroup
                 tasks={groupedTasks.pastDueTasks}
                 groupTitle="Überfällig"

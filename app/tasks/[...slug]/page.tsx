@@ -31,19 +31,17 @@ const confirmOptions: ConfirmProviderProps["defaultOptions"] = {
 
 export default function Page({ params }: { params: { slug: string[] } }) {
     // console.log("Page", params);
-    const [campaignId, assignmentId, influencerId] = params.slug;
+    const [campaignId, assignmentId, influencerId, openedEvent] = params.slug;
     return (
         <ThemeProvider theme={theme}>
             <QueryClientProvider client={queryClient}>
                 <ConfirmProvider defaultOptions={confirmOptions}>
-                    <Box
-                        id="ResponseLandingPage"
-                        sx={styles}
-                    >
+                    <Box id="ResponseLandingPage" sx={styles}>
                         <TasksLanding
                             assignmentId={assignmentId}
                             campaignId={campaignId}
                             influencerId={influencerId}
+                            openedEvent={openedEvent}
                         />
                         <ReactQueryDevtools initialIsOpen={false} />
                     </Box>

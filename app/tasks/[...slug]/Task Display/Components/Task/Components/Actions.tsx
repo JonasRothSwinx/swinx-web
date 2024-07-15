@@ -1,7 +1,9 @@
 import { dataClient } from "@/app/tasks/[...slug]/Functions/Database";
 import { Task, TimelineEvent } from "@/app/tasks/[...slug]/Functions/Database/types";
 import { Box, Button, SxProps } from "@mui/material";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { UseMutationResult, useMutation, useQueryClient } from "@tanstack/react-query";
+import { config } from "..";
+import { useMemo } from "react";
 
 //#region Definitions
 const ActionNames = [
@@ -46,45 +48,110 @@ export default function Actions({ task }: ActionProps) {
     };
     const sx: SxProps = {
         "&": {
-            "flexGrow": 0,
-            "display": "flex",
-            "flexDirection": "column",
-            "paddingLeft": "5px",
-            "gap": "2px",
-            "width": "min-content",
+            flexGrow: 0,
+            display: "flex",
+            flexDirection: "column",
+            paddingLeft: "5px",
+            gap: "2px",
+            width: "min-content",
             ".actionButton": {
                 // "backgroundColor": "red",
                 // "color": "white",
-                "lineHeight": "1.2",
-                "textTransform": "none",
+                lineHeight: "1.2",
+                textTransform: "none",
                 "&:hover": {
                     // backgroundColor: "darkred",
                 },
             },
         },
     };
+    const actionConfig = useMemo(() => {
+        let possibleActions: config.ActionConfig = {
+            markFinished: false,
+            uploadText: false,
+            uploadImage: false,
+            uploadVideo: false,
+            uploadLink: false,
+        };
+        if (!task) return possibleActions;
+        else if (!task.timelineEventType) return possibleActions;
+        else if (!config.eventTypes.includes(task.timelineEventType as config.eventType)) return possibleActions;
+        else {
+            const taskType: config.eventType = task.timelineEventType as config.eventType;
+            possibleActions = { ...possibleActions, ...config.possibleAction[taskType] };
+        }
+        return possibleActions;
+    }, [task]);
     return (
         <Box sx={sx}>
-            <Button
-                className="actionButton"
-                variant="contained"
-                onClick={() => DataChanges.markFinished.mutate({ isCompleted: !task.isCompleted })}
-                disabled={DataChanges.markFinished.isPending}
-            >
-                Aufgabe erledigt
-            </Button>
-            {Array.from({ length: 4 }, (_, i) => {
-                return (
-                    <Button
-                        id="actionButton"
-                        className="actionButton"
-                        key={i}
-                        variant="contained"
-                    >
-                        {ActionNames[i] ?? `Action ${i + 1}`}
-                    </Button>
-                );
-            })}
+            {actionConfig.markFinished && <FinishButton task={task} markFinished={DataChanges.markFinished} />}
+            {actionConfig.uploadText && <UploadTextButton task={task} />}
+            {actionConfig.uploadImage && <UploadImageButton task={task} />}
+            {actionConfig.uploadVideo && <UploadVideoButton task={task} />}
+            {actionConfig.uploadLink && <UploadLinkButton task={task} />}
         </Box>
+    );
+}
+interface FinishButtonProps {
+    task: TimelineEvent;
+    markFinished: UseMutationResult<boolean, Error, { isCompleted: boolean }, unknown>;
+}
+function FinishButton({ task, markFinished }: FinishButtonProps) {
+    const isCompleted = task.isCompleted ?? false;
+    return (
+        <Button
+            className="actionButton"
+            variant="contained"
+            onClick={() => markFinished.mutate({ isCompleted: !task.isCompleted })}
+            disabled={markFinished.isPending || isCompleted}
+        >
+            Aufgabe erledigt
+        </Button>
+    );
+}
+
+interface UploaTextButtonProps {
+    task: TimelineEvent;
+}
+function UploadTextButton({ task }: UploaTextButtonProps) {
+    return (
+        <Button className="actionButton" variant="contained">
+            Text hochladen
+        </Button>
+    );
+}
+
+interface UploadImageButtonProps {
+    task: TimelineEvent;
+}
+function UploadImageButton({ task }: UploadImageButtonProps) {
+    return (
+        <Button className="actionButton" variant="contained">
+            Bild hochladen
+        </Button>
+    );
+}
+
+interface UploadVideoButtonProps {
+    task: TimelineEvent;
+}
+
+function UploadVideoButton({ task }: UploadVideoButtonProps) {
+    return (
+        <Button className="actionButton" variant="contained">
+            Video hochladen
+        </Button>
+    );
+}
+
+interface UploadLinkButtonProps {
+    task: TimelineEvent;
+}
+
+function UploadLinkButton({ task }: UploadLinkButtonProps) {
+    return (
+        <Button className="actionButton" variant="contained">
+            Link einfügen
+        </Button>
     );
 }
