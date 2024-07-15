@@ -141,28 +141,28 @@ export async function schemaIntrospection() {
     }
 }
 
-function parseEmailTrigger(data: ListEmailTriggersQueryItem): EmailTriggerData {
-    const { event: rawEvent } = data;
-    const rawTrigger: RawEmailTrigger = data;
-    const rawCampaign = rawEvent.campaign;
-    const rawAssignment = rawEvent.assignments.items[0].assignment;
-    const rawInfluencer = rawAssignment.influencer;
-    const rawParentEvent = rawEvent.parentEvent;
-    const rawProjectManagers = rawCampaign.projectManagers.items.map((x) => x.projectManager);
-    const rawCustomer = rawCampaign.customers.items[0];
+function parseEmailTrigger(data: ListEmailTriggersQueryItem): EmailTriggerData | null {
+    try {
+        const { event: rawEvent } = data;
+        const rawTrigger: RawEmailTrigger = data;
+        const rawCampaign = rawEvent.campaign;
+        const rawAssignment = rawEvent.assignments.items[0].assignment;
+        const rawInfluencer = rawAssignment.influencer;
+        const rawParentEvent = rawEvent.parentEvent;
+        const rawProjectManagers = rawCampaign.projectManagers.items.map((x) => x.projectManager);
+        const rawCustomer = rawCampaign.customers.items[0];
 
-    const parsedCustomer: EmailTriggerData["customer"] = {
-        id: rawCustomer.id,
-        company: rawCustomer.company,
-        firstName: "<redacted>",
-        lastName: "<redacted>",
-        email: "<redacted>",
-        companyPosition: "<redacted>",
-        notes: "",
-    };
+        const parsedCustomer: EmailTriggerData["customer"] = {
+            id: rawCustomer.id,
+            company: rawCustomer.company,
+            firstName: "<redacted>",
+            lastName: "<redacted>",
+            email: "<redacted>",
+            companyPosition: "<redacted>",
+            notes: "",
+        };
 
-    const parsedProjectManagers: EmailTriggerData["projectManagers"] = rawProjectManagers.map(
-        (x) => ({
+        const parsedProjectManagers: EmailTriggerData["projectManagers"] = rawProjectManagers.map((x) => ({
             id: x.id,
             firstName: x.firstName,
             lastName: x.lastName,
@@ -170,82 +170,85 @@ function parseEmailTrigger(data: ListEmailTriggersQueryItem): EmailTriggerData {
             phoneNumber: x.phoneNumber,
             jobTitle: x.jobTitle,
             cognitoId: "",
-        }),
-    );
+        }));
 
-    const parsedInfluencer: EmailTriggerData["influencer"] = {
-        id: rawInfluencer.id,
-        firstName: rawInfluencer.firstName,
-        lastName: rawInfluencer.lastName,
-        email: rawInfluencer.email,
-        emailLevel: rawInfluencer.emailType as EmailTriggers.emailLevel,
-    };
+        const parsedInfluencer: EmailTriggerData["influencer"] = {
+            id: rawInfluencer.id,
+            firstName: rawInfluencer.firstName,
+            lastName: rawInfluencer.lastName,
+            email: rawInfluencer.email,
+            emailLevel: rawInfluencer.emailType as EmailTriggers.emailLevel,
+        };
 
-    const parsedParentEvent: EmailTriggerData["parentEvent"] = {
-        id: rawParentEvent.id,
-        type: rawParentEvent.timelineEventType as Events.eventType,
-        info: rawParentEvent.info,
-        date: rawParentEvent.date,
-        campaign: { id: rawEvent.campaign.id },
-        eventAssignmentAmount: 0,
-        eventTaskAmount: 0,
-        eventTitle: rawParentEvent.eventTitle ?? "<Error: No Title>",
-        assignments: [],
-        childEvents: [],
-        parentEvent: null,
-        emailTriggers: [],
-        targetAudience: {
-            cities: [],
-            country: [],
-            industry: [],
-        },
-        isCompleted: false,
-    };
+        const parsedParentEvent: EmailTriggerData["parentEvent"] = {
+            id: rawParentEvent.id,
+            type: rawParentEvent.timelineEventType as Events.eventType,
+            info: rawParentEvent.info,
+            date: rawParentEvent.date,
+            campaign: { id: rawEvent.campaign.id },
+            eventAssignmentAmount: 0,
+            eventTaskAmount: 0,
+            eventTitle: rawParentEvent.eventTitle ?? "<Error: No Title>",
+            assignments: [],
+            childEvents: [],
+            parentEvent: null,
+            emailTriggers: [],
+            targetAudience: {
+                cities: [],
+                country: [],
+                industry: [],
+            },
+            isCompleted: false,
+        };
 
-    const parsedEvent: EmailTriggerData["event"] = {
-        id: rawEvent.id,
-        type: rawEvent.timelineEventType as Events.eventType,
-        info: rawEvent.info,
-        date: rawEvent.date,
-        campaign: { id: rawEvent.campaign.id },
-        eventAssignmentAmount: 0,
-        eventTaskAmount: rawEvent.eventTaskAmount ?? 0,
-        eventTitle: rawEvent.eventTitle ?? "<Error: No Title>",
-        assignments: [],
-        childEvents: [],
-        parentEvent: parsedParentEvent,
-        emailTriggers: [],
-        targetAudience: {
-            cities: [],
-            country: [],
-            industry: [],
-        },
-        isCompleted: false,
-    };
+        const parsedEvent: EmailTriggerData["event"] = {
+            id: rawEvent.id,
+            type: rawEvent.timelineEventType as Events.eventType,
+            info: rawEvent.info,
+            date: rawEvent.date,
+            campaign: { id: rawEvent.campaign.id },
+            eventAssignmentAmount: 0,
+            eventTaskAmount: rawEvent.eventTaskAmount ?? 0,
+            eventTitle: rawEvent.eventTitle ?? "<Error: No Title>",
+            assignments: [],
+            childEvents: [],
+            parentEvent: parsedParentEvent,
+            emailTriggers: [],
+            targetAudience: {
+                cities: [],
+                country: [],
+                industry: [],
+            },
+            isCompleted: false,
+        };
 
-    const parsedTrigger: EmailTriggerData["trigger"] = {
-        id: rawTrigger.id,
-        date: rawTrigger.date,
-        type: rawTrigger.type as EmailTriggers.emailTriggerType,
-        active: rawTrigger.active,
-        sent: rawTrigger.sent,
-        emailLevelOverride: rawTrigger.emailLevelOverride as EmailTriggers.emailLevel,
-        subjectLineOverride: rawTrigger.subjectLineOverride,
-        emailBodyOverride: rawTrigger.emailBodyOverride,
-    };
+        const parsedTrigger: EmailTriggerData["trigger"] = {
+            id: rawTrigger.id,
+            date: rawTrigger.date,
+            type: rawTrigger.type as EmailTriggers.emailTriggerType,
+            active: rawTrigger.active,
+            sent: rawTrigger.sent,
+            emailLevelOverride: rawTrigger.emailLevelOverride as EmailTriggers.emailLevel,
+            subjectLineOverride: rawTrigger.subjectLineOverride,
+            emailBodyOverride: rawTrigger.emailBodyOverride,
+        };
 
-    const out: EmailTriggerData = {
-        trigger: parsedTrigger,
-        projectManagers: parsedProjectManagers,
-        customer: parsedCustomer,
-        influencer: parsedInfluencer,
-        event: parsedEvent,
-        parentEvent: parsedParentEvent,
-    };
-    return out;
+        const out: EmailTriggerData = {
+            trigger: parsedTrigger,
+            projectManagers: parsedProjectManagers,
+            customer: parsedCustomer,
+            influencer: parsedInfluencer,
+            event: parsedEvent,
+            parentEvent: parsedParentEvent,
+        };
+        return out;
+    } catch (error) {
+        console.log("Error parsing email trigger", error);
+        return null;
+    }
 }
 function parseEmailTriggers(data: ListEmailTriggersQueryItem[]): EmailTriggerData[] {
-    return data.map(parseEmailTrigger);
+    return data.map(parseEmailTrigger).filter((x): x is EmailTriggerData => x !== null);
 }
 
 export async function markTriggerAsSent(triggerId: string): Promise<void> {
