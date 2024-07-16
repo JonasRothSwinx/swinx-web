@@ -35,5 +35,5 @@
         "app/ServerFunctions/database/dbOperations/.dbclient.ts",
         "app/ServerFunctions/database/dbOperations/index.ts"
     ],
-    "exclude": ["node_modules"]
+    "exclude": ["node_modules", "amplify"]
 }

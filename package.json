@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "next dev",
+        "dev": "next dev -p 8080",
         "dev:debug": "cross-env NODE_OPTIONS='--inspect' next dev",
         "update lambda graphql": "npx ampx generate graphql-client-code --stack arn:aws:cloudformation:eu-west-1:698370298205:stack/amplify-swinxweb-sharedSandBox-sandbox-a4a23f139b/327ab940-2d72-11ef-b462-0242926dbc7b --out ./amplify/functions/reminderTrigger/graphql",
         "sandbox once": "npx ampx sandbox --identifier sharedSandBox --once",
