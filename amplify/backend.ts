@@ -1,6 +1,7 @@
 import { defineBackend } from "@aws-amplify/backend";
 import { auth } from "./auth/resource.js";
 import { data } from "./data/resource.js";
+import { storage } from "./storage/resource.js";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as eventBridge from "aws-cdk-lib/aws-events";
@@ -14,6 +15,7 @@ dotenv.config({ path: ".env.local" });
 export const backend = defineBackend({
     auth,
     data,
+    storage,
     sesHandler,
     reminderTrigger,
 });

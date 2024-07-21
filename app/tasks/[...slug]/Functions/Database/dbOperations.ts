@@ -145,6 +145,7 @@ export async function getCampaignInfo({ id }: GetCampaignInfoParams) {
         throw new Error("Error fetching campaign data");
     }
     const dataOut = {
+        id: campaignResponse.data?.id ?? "<Error>",
         customerCompany: campaignResponse.data?.customers?.[0]?.company ?? "<Error>",
     };
     return dataOut;

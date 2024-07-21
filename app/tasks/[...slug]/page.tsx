@@ -10,6 +10,7 @@ import styles from "./styles";
 import Head from "next/head";
 import { Metadata } from "next";
 import { ConfirmProvider, ConfirmProviderProps } from "material-ui-confirm";
+import "@aws-amplify/ui-react/styles.css";
 
 const queryClient = new QueryClient();
 dataClient.config.setQueryClient(queryClient);
@@ -36,7 +37,10 @@ export default function Page({ params }: { params: { slug: string[] } }) {
         <ThemeProvider theme={theme}>
             <QueryClientProvider client={queryClient}>
                 <ConfirmProvider defaultOptions={confirmOptions}>
-                    <Box id="ResponseLandingPage" sx={styles}>
+                    <Box
+                        id="ResponseLandingPage"
+                        sx={styles}
+                    >
                         <TasksLanding
                             assignmentId={assignmentId}
                             campaignId={campaignId}

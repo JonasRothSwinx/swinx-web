@@ -9,7 +9,7 @@ interface DescriptionProps {
 export default function Description({ task }: DescriptionProps) {
     const sx: SxProps = {
         "&": {
-            flex: 1,
+            "flex": 1,
             ".text": {
                 whiteSpace: "pre-wrap",
             },
@@ -17,16 +17,14 @@ export default function Description({ task }: DescriptionProps) {
     };
     return (
         <Box sx={sx}>
-            <Typography className="text">
-                <Table>
-                    <TableBody>
-                        <Topic task={task} />
-                        <ContentLength task={task} />
-                        <Instructions task={task} />
-                    </TableBody>
-                </Table>
-                {/* {JSON.stringify(task, null, 2)} */}
-            </Typography>
+            <Table>
+                <TableBody>
+                    <Topic task={task} />
+                    <ContentLength task={task} />
+                    <Instructions task={task} />
+                </TableBody>
+            </Table>
+            {/* {JSON.stringify(task, null, 2)} */}
         </Box>
     );
 }

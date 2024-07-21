@@ -93,15 +93,20 @@ export default function TaskGroup({
                 />
             </AccordionSummary>
             <AccordionDetails id="AccordionContent">
-                {sortedTasks.map((task, index) => (
-                    <Task
-                        key={task.id}
-                        task={task}
-                        campaign={campaign}
-                        parentEvent={parentEvent}
-                        defaultExpanded={startOpen && index === 0}
-                    />
-                ))}
+                {sortedTasks.map((task, index) => {
+                    const key = task.timelineEventType.startsWith("Draft-")
+                        ? task.id
+                        : `Draft-${task.id}`;
+                    return (
+                        <Task
+                            key={key}
+                            task={task}
+                            campaign={campaign}
+                            parentEvent={parentEvent}
+                            defaultExpanded={startOpen && index === 0}
+                        />
+                    );
+                })}
             </AccordionDetails>
         </Accordion>
     );

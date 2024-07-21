@@ -1,4 +1,11 @@
-import { Accordion, AccordionDetails, AccordionSummary, Box, SxProps, Typography } from "@mui/material";
+import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
+    Box,
+    SxProps,
+    Typography,
+} from "@mui/material";
 import { Campaign, ParentEvent, TimelineEvent } from "../../../Functions/Database/types";
 import { dayjs } from "@/app/utils";
 import { ExpandMoreIcon } from "@/app/Definitions/Icons";
@@ -20,11 +27,11 @@ export default function Task({ campaign, parentEvent, task, defaultExpanded = fa
     const sx: SxProps = {
         "&": {
             // ".MuiAccordion-root": {
-            backgroundColor: "var(--swinx-blue)",
+            "backgroundColor": "var(--swinx-blue)",
             // "borderRadius": "20px",
-            border: "1px solid black",
-            borderTopStyle: "none",
-            overflow: "auto",
+            "border": "1px solid black",
+            "borderTopStyle": "none",
+            "overflow": "auto",
             "&:first-of-type": {
                 borderTopLeftRadius: "20px",
                 borderTopRightRadius: "20px",
@@ -46,11 +53,11 @@ export default function Task({ campaign, parentEvent, task, defaultExpanded = fa
                 // },
             },
             "#TaskContent": {
-                display: "flex",
-                flexDirection: "row",
-                width: "100%",
+                "display": "flex",
+                "flexDirection": "row",
+                "width": "100%",
                 "&>*": {
-                    borderRight: "1px solid black",
+                    "borderRight": "1px solid black",
                     ":last-child": {
                         borderRight: "none",
                     },
@@ -68,7 +75,10 @@ export default function Task({ campaign, parentEvent, task, defaultExpanded = fa
             sx={sx}
             defaultExpanded={defaultExpanded}
         >
-            <AccordionSummary id="AccordionTitle" expandIcon={<ExpandMoreIcon id="Expand" />}>
+            <AccordionSummary
+                id="AccordionTitle"
+                expandIcon={<ExpandMoreIcon id="Expand" />}
+            >
                 <Typography>
                     {dateString} - {dateDiffText}: {task.timelineEventType}
                 </Typography>
@@ -79,7 +89,11 @@ export default function Task({ campaign, parentEvent, task, defaultExpanded = fa
                         <NextSteps task={task} />
                         <Description task={task} />
                     </Box>
-                    <Actions task={task} />
+                    <Actions
+                        task={task}
+                        campaignId={campaign.id}
+                        eventId={task.id}
+                    />
                 </Box>
                 {/* <Typography>{task.eventTitle}</Typography> */}
             </AccordionDetails>
@@ -102,7 +116,7 @@ function NextSteps({ task }: NextSteps) {
     }
     const sx: SxProps = {
         "&": {
-            padding: "10px",
+            "padding": "10px",
             "&> p": {
                 // fontSize: "1.5em",
                 fontWeight: "bold",
@@ -110,7 +124,10 @@ function NextSteps({ task }: NextSteps) {
         },
     };
     return (
-        <Box id="NextSteps" sx={sx}>
+        <Box
+            id="NextSteps"
+            sx={sx}
+        >
             <Typography>Nächste Schritte:</Typography>
             <Typography>{textContent}</Typography>
         </Box>

@@ -14,7 +14,7 @@ export default function TaskDisplay({ tasks, parentEvent, campaign }: TaskDispla
         const multipartTasks = tasks.filter((task) => task.info?.draftDeadline);
         const pseudoTasks: TimelineEvent[] = multipartTasks.map((task) => ({
             ...task,
-            id: `${task.id}-draft`,
+            id: `${task.id}`,
             date: task.info?.draftDeadline ?? "",
             timelineEventType: `Draft-${task.timelineEventType}`,
             eventTitle: `${task.eventTitle}`,
@@ -48,7 +48,10 @@ export default function TaskDisplay({ tasks, parentEvent, campaign }: TaskDispla
         },
     };
     return (
-        <Box id="TaskDisplay" sx={sx}>
+        <Box
+            id="TaskDisplay"
+            sx={sx}
+        >
             <TaskGroup
                 tasks={groupedTasks.pastDueTasks}
                 groupTitle="Überfällig"
