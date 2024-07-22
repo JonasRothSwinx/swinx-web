@@ -1,3 +1,4 @@
+"use client";
 import { Box, SxProps, Typography } from "@mui/material";
 import React, { useState, useEffect, Component, ErrorInfo, ReactNode } from "react";
 
@@ -18,7 +19,7 @@ const BoxStyle: SxProps = {
     maxWidth: "100%",
     padding: "10px",
 };
-export default function CustomErrorBoundary(props: ErrorBoundaryProps) {
+export function CustomErrorBoundary(props: ErrorBoundaryProps) {
     const { children } = props;
     // console.log("ErrorBoundary", props);
     return <ErrorBoundary message={props.message}>{children}</ErrorBoundary>;

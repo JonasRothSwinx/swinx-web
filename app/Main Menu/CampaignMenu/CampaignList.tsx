@@ -14,16 +14,15 @@ import {
 } from "@mui/x-data-grid";
 import { generateClient } from "aws-amplify/api";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import CampaignDialog from "../Dialogs/CampaignDialog";
-// import WebinarDialog from "../Dialogs/WebinarDialog";
-import CustomErrorBoundary from "@/app/Components/CustomErrorBoundary";
+import { CampaignDialog, CustomErrorBoundary } from "@/app/Components";
 import { dataClient } from "@/app/ServerFunctions/database";
 import database from "@/app/ServerFunctions/database/dbOperations";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import CampaignDetails from "../CampaignDetails/CampaignDetails";
+import CampaignDetails from "../../campaign/[campaignId]/CampaignDetails";
 import { groupBy } from "../Timeline/Functions/groupEvents";
 import TimelineView from "../Timeline/TimeLineView";
 import stylesExporter from "../styles/stylesExporter";
+import { redirect, useRouter } from "next/navigation";
 const styles = stylesExporter.dialogs;
 
 const client = generateClient<Schema>();
@@ -49,11 +48,7 @@ function EditToolbar(props: EditToolbarProps) {
     return (
         <GridToolbarContainer sx={{ justifyContent: "space-between" }}>
             <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
-                <Button
-                    color="primary"
-                    startIcon={<AddIcon />}
-                    onClick={handleClick}
-                >
+                <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
                     Neue Kampagne
                 </Button>
                 {isLoading && <CircularProgress sx={{ height: "20px", widtth: "20px" }} />}
@@ -63,7 +58,7 @@ function EditToolbar(props: EditToolbarProps) {
         </GridToolbarContainer>
     );
 }
-type DialogState = "none" | "customer" | "campaign" | "webinar" | "timelineEvent" | "details";
+type DialogState = "none" | "customer" | "campaign" | "webinar" | "timelineEvent";
 // type DialogState = {
 //     campaign: boolean;
 //     customer: boolean;
@@ -75,6 +70,7 @@ type DialogState = "none" | "customer" | "campaign" | "webinar" | "timelineEvent
 // type EditableDataTypes = Campaign | Customer | TimelineEvent.Event;
 
 function CampaignList() {
+    const router = useRouter();
     const queryClient = useQueryClient();
     const [editingData, setEditingData] = useState<Campaign>();
     const [campaignsState, setCampaigns] = useState<Campaign[]>([]);
@@ -109,10 +105,10 @@ function CampaignList() {
 
         showDetails: (id: GridRowId) => {
             return () => {
-                const campaign = campaigns.data?.find((campaign) => campaign.id === id);
-                if (!campaign) return;
-                setIsOpen("details");
-                setEditingData(campaign);
+                console.log("Redirecting to /campaign/" + id);
+                router.push(`/campaign/${id}`);
+                // window.history.pushState({}, "", `/campaign/${id}`);
+                // redirect(`/campaign/${id}`);
             };
         },
         // addTimeline: (id: GridRowId) => {
@@ -162,11 +158,7 @@ function CampaignList() {
                         <Typography>{customer?.company}</Typography>
                         <br />
                         <Typography>{params.value}</Typography>
-                        {customer?.companyPosition ? (
-                            <Typography>({customer?.companyPosition})</Typography>
-                        ) : (
-                            <></>
-                        )}
+                        {customer?.companyPosition ? <Typography>({customer?.companyPosition})</Typography> : <></>}
                     </div>
                 );
             },
@@ -358,13 +350,6 @@ function CampaignList() {
         customer: () => <></>,
         webinar: () => <></>,
         timelineEvent: () => <></>,
-        details: () => (
-            <CampaignDetails
-                onClose={onDialogClose}
-                campaignId={editingData?.id ?? ""}
-                isOpen={true}
-            />
-        ),
     };
 
     if (campaigns.isLoading) {
@@ -404,9 +389,7 @@ function CampaignList() {
                 }}
             >
                 <Typography variant="h3">Fehler beim Laden der Kampagnen</Typography>
-                <Typography>
-                    {ErrorMessages[campaigns.error.message] ?? campaigns.error.message}
-                </Typography>
+                <Typography>{ErrorMessages[campaigns.error.message] ?? campaigns.error.message}</Typography>
             </div>
         );
     }
@@ -444,8 +427,8 @@ function CampaignList() {
                 }}
                 autoHeight={true}
                 sx={{
-                    "m": 2,
-                    "background": "white",
+                    m: 2,
+                    background: "white",
                     "& .MuiDataGrid-columnHeaderTitleContainerContent": {
                         overflow: "visible",
                     },

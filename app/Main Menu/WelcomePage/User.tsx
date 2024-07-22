@@ -6,15 +6,12 @@ import { Button, Typography } from "@mui/material";
 import stylesExporter from "../styles/stylesExporter";
 import { useQuery } from "@tanstack/react-query";
 import { dataClient } from "@/app/ServerFunctions/database";
-import ProjectManagerDialog from "../Dialogs/ProjectManagerDialog";
+import { ProjectManagerDialog } from "@/app/Components";
 
 const styles = stylesExporter.user;
 
 function UserView() {
-    const { user, signOut, authStatus } = useAuthenticator((context) => [
-        context.user,
-        context.authStatus,
-    ]);
+    const { user, signOut, authStatus } = useAuthenticator((context) => [context.user, context.authStatus]);
     const attributes = useQuery({
         queryKey: ["userAttributes"],
         queryFn: async () => {
@@ -67,11 +64,7 @@ function UserView() {
             )}
             <div className={styles.user}>
                 <h1>Hello {attributes?.data.given_name ?? ""}</h1>
-                <Button
-                    sx={{ background: "darkgray", color: "white" }}
-                    variant="outlined"
-                    onClick={signOut}
-                >
+                <Button sx={{ background: "darkgray", color: "white" }} variant="outlined" onClick={signOut}>
                     Abmelden
                 </Button>
                 <Typography variant="h6">Gruppen:</Typography>

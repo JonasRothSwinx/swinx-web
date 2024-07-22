@@ -12,7 +12,7 @@ export const nextSteps: { [key in eventType]: (params: nextStepsParams) => strin
     Invites: (params) =>
         `Laden sie ${getActionTime({ actionDate: params.task.date, dateOnly: true })} ${
             params.task.eventTaskAmount
-        } ihrer Follower*innen zum Event ein`,
+        } ihrer Follower*innen zum Event ein.\n `,
     Post: (params) =>
         `Veröffentlichen sie ihren Beitrag ${getActionTime({
             actionDate: params.task.date,
@@ -75,13 +75,21 @@ export const taskTopic: { [key in eventType]: (params: TaskTopicParams) => strin
     "Draft-ImpulsVideo": (params) => params.task.eventTitle ?? null,
 };
 
-const PossibleActionTypes = ["markFinished", "uploadText", "uploadVideo", "uploadImage", "uploadLink"] as const;
+const PossibleActionTypes = [
+    "markFinished",
+    "uploadText",
+    "uploadVideo",
+    "uploadImage",
+    "uploadLink",
+    "uploadScreenshot",
+] as const;
 export type PossibleAction = (typeof PossibleActionTypes)[number];
 export type ActionConfig = { [key in PossibleAction]?: boolean };
 
 export const possibleAction: { [key in eventType]: ActionConfig } = {
     Invites: {
-        markFinished: true,
+        // uploadImage: true,
+        uploadScreenshot: true,
     },
     Post: {
         uploadLink: true,

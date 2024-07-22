@@ -4,8 +4,8 @@ import { Box, Button, Dialog, SxProps } from "@mui/material";
 import { UseMutationResult, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { config } from "..";
 import { useMemo, useState } from "react";
-import { StorageManagerWrapper } from "./StorageManagers";
-import { queryClient, queryServer } from "./StorageManagers/functions";
+import { StorageManagerWrapper } from "@/app/Components";
+import { queryClient, queryServer } from "@/app/Components/StorageManagers/functions";
 
 //#region Definitions
 const ActionNames = [
@@ -52,17 +52,17 @@ export default function Actions({ task, campaignId, eventId }: ActionProps) {
     };
     const sx: SxProps = {
         "&": {
-            "flexGrow": 0,
-            "display": "flex",
-            "flexDirection": "column",
-            "paddingLeft": "5px",
-            "gap": "2px",
-            "width": "min-content",
+            flexGrow: 0,
+            display: "flex",
+            flexDirection: "column",
+            paddingLeft: "5px",
+            gap: "2px",
+            width: "min-content",
             ".actionButton": {
                 // "backgroundColor": "red",
                 // "color": "white",
-                "lineHeight": "1.2",
-                "textTransform": "none",
+                lineHeight: "1.2",
+                textTransform: "none",
                 "&:hover": {
                     // backgroundColor: "darkred",
                 },
@@ -94,8 +94,7 @@ export default function Actions({ task, campaignId, eventId }: ActionProps) {
         };
         if (!task) return possibleActions;
         else if (!task.timelineEventType) return possibleActions;
-        else if (!config.eventTypes.includes(task.timelineEventType as config.eventType))
-            return possibleActions;
+        else if (!config.eventTypes.includes(task.timelineEventType as config.eventType)) return possibleActions;
         else {
             const taskType: config.eventType = task.timelineEventType as config.eventType;
             possibleActions = { ...possibleActions, ...config.possibleAction[taskType] };
@@ -104,42 +103,26 @@ export default function Actions({ task, campaignId, eventId }: ActionProps) {
     }, [task]);
     return (
         <Box sx={sx}>
-            {actionConfig.markFinished && (
-                <FinishButton
-                    task={task}
-                    markFinished={DataChanges.markFinished}
-                />
-            )}
-            {actionConfig.uploadText && (
-                <UploadTextButton
-                    task={task}
-                    fileDialogSx={fileDialogSx}
-                    campaignId={campaignId}
-                    eventId={eventId}
-                />
-            )}
-            {actionConfig.uploadImage && (
+            {actionConfig.markFinished && <FinishButton task={task} markFinished={DataChanges.markFinished} />}
+            {actionConfig.uploadScreenshot && (
                 <UploadImageButton
                     task={task}
                     fileDialogSx={fileDialogSx}
                     campaignId={campaignId}
                     eventId={eventId}
+                    buttonText={"Screenshot hochladen"}
                 />
+            )}
+            {actionConfig.uploadText && (
+                <UploadTextButton task={task} fileDialogSx={fileDialogSx} campaignId={campaignId} eventId={eventId} />
+            )}
+            {actionConfig.uploadImage && (
+                <UploadImageButton task={task} fileDialogSx={fileDialogSx} campaignId={campaignId} eventId={eventId} />
             )}
             {actionConfig.uploadVideo && (
-                <UploadVideoButton
-                    task={task}
-                    fileDialogSx={fileDialogSx}
-                    campaignId={campaignId}
-                    eventId={eventId}
-                />
+                <UploadVideoButton task={task} fileDialogSx={fileDialogSx} campaignId={campaignId} eventId={eventId} />
             )}
-            {actionConfig.uploadLink && (
-                <UploadLinkButton
-                    task={task}
-                    fileDialogSx={fileDialogSx}
-                />
-            )}
+            {actionConfig.uploadLink && <UploadLinkButton task={task} fileDialogSx={fileDialogSx} />}
         </Box>
     );
 }
@@ -186,23 +169,10 @@ function UploadTextButton({ task, fileDialogSx, campaignId, eventId }: UploadTex
     }, [hasFile]);
     return (
         <>
-            <Dialog
-                className="FileDialog"
-                open={open}
-                onClose={() => setOpen(false)}
-                sx={fileDialogSx}
-            >
-                <StorageManagerWrapper
-                    campaignId={campaignId}
-                    eventId={eventId}
-                    dataType={"text"}
-                />
+            <Dialog className="FileDialog" open={open} onClose={() => setOpen(false)} sx={fileDialogSx}>
+                <StorageManagerWrapper campaignId={campaignId} eventId={eventId} dataType={"text"} />
             </Dialog>
-            <Button
-                className={className}
-                variant="contained"
-                onClick={() => setOpen(true)}
-            >
+            <Button className={className} variant="contained" onClick={() => setOpen(true)}>
                 Text hochladen
             </Button>
         </>
@@ -214,8 +184,9 @@ interface UploadImageButtonProps {
     fileDialogSx?: SxProps;
     campaignId: string;
     eventId: string;
+    buttonText?: string;
 }
-function UploadImageButton({ task, fileDialogSx, campaignId, eventId }: UploadImageButtonProps) {
+function UploadImageButton({ task, fileDialogSx, campaignId, eventId, buttonText }: UploadImageButtonProps) {
     const [open, setOpen] = useState(false);
     const files = useQuery({
         queryKey: [eventId, "image"],
@@ -233,24 +204,11 @@ function UploadImageButton({ task, fileDialogSx, campaignId, eventId }: UploadIm
     }, [hasFile]);
     return (
         <>
-            <Dialog
-                className="FileDialog"
-                open={open}
-                onClose={() => setOpen(false)}
-                sx={fileDialogSx}
-            >
-                <StorageManagerWrapper
-                    campaignId={campaignId}
-                    eventId={eventId}
-                    dataType={"image"}
-                />
+            <Dialog className="FileDialog" open={open} onClose={() => setOpen(false)} sx={fileDialogSx}>
+                <StorageManagerWrapper campaignId={campaignId} eventId={eventId} dataType={"image"} />
             </Dialog>
-            <Button
-                className={className}
-                variant="contained"
-                onClick={() => setOpen(true)}
-            >
-                Bild hochladen
+            <Button className={className} variant="contained" onClick={() => setOpen(true)}>
+                {buttonText ?? "Bild hochladen"}
             </Button>
         </>
     );
@@ -281,23 +239,10 @@ function UploadVideoButton({ task, fileDialogSx, campaignId, eventId }: UploadVi
     }, [hasFile]);
     return (
         <>
-            <Dialog
-                className="FileDialog"
-                open={open}
-                onClose={() => setOpen(false)}
-                sx={fileDialogSx}
-            >
-                <StorageManagerWrapper
-                    campaignId={campaignId}
-                    eventId={eventId}
-                    dataType={"video"}
-                />
+            <Dialog className="FileDialog" open={open} onClose={() => setOpen(false)} sx={fileDialogSx}>
+                <StorageManagerWrapper campaignId={campaignId} eventId={eventId} dataType={"video"} />
             </Dialog>
-            <Button
-                className={className}
-                variant="contained"
-                onClick={() => setOpen(true)}
-            >
+            <Button className={className} variant="contained" onClick={() => setOpen(true)}>
                 Video hochladen
             </Button>
         </>
@@ -311,10 +256,7 @@ interface UploadLinkButtonProps {
 
 function UploadLinkButton({ task }: UploadLinkButtonProps) {
     return (
-        <Button
-            className="actionButton linkButton"
-            variant="contained"
-        >
+        <Button className="actionButton linkButton" variant="contained">
             Link einfügen
         </Button>
     );

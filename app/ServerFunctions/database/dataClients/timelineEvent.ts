@@ -21,9 +21,7 @@ export const timelineEvent = {
  * @param timelineEvent The timeline event object to create
  * @returns The created timeline event object
  */
-export async function createTimelineEvent(
-    timelineEvent: Omit<Event, "id">,
-): Promise<Events.EventWithId> {
+export async function createTimelineEvent(timelineEvent: Omit<Event, "id">): Promise<Events.EventWithId> {
     // const campaignId = timelineEvent.campaign.id;
     // const queryClient = config.getQueryClient();
     // const assignment = timelineEvent.assignments[0];
@@ -90,10 +88,7 @@ interface UpdateTimelineEventParams {
     id: string;
     updatedData: Partial<Event>;
 }
-export async function updateTimelineEvent({
-    id,
-    updatedData,
-}: UpdateTimelineEventParams): Promise<Event> {
+export async function updateTimelineEvent({ id, updatedData }: UpdateTimelineEventParams): Promise<Event> {
     // debugger;
     const queryClient = config.getQueryClient();
     const previousTimelineEvent = queryClient.getQueryData<Event>(["timelineEvent", id]);
@@ -154,6 +149,7 @@ export async function listAll(): Promise<Event[]> {
     const timelineEvents = await database.timelineEvent.list();
 
     timelineEvents.forEach((event) => {
+        queryClient.cancelQueries({ queryKey: ["timelineEvent", event.id] });
         queryClient.setQueryData(["timelineEvent", event.id], event);
         // queryClient.refetchQueries({ queryKey: ["timelineEvent", event.id] });
     });
@@ -178,6 +174,7 @@ export async function listByCampaign(campaignId: string): Promise<Event[]> {
 
     queryClient.setQueryData(["timelineEvents", campaignId], timelineEvents);
     timelineEvents.forEach((event) => {
+        queryClient.cancelQueries({ queryKey: ["timelineEvent", event.id] });
         queryClient.setQueryData(["timelineEvent", event.id], event);
         // queryClient.refetchQueries({ queryKey: ["timelineEvent", event.id] });
     });
@@ -234,10 +231,7 @@ export async function listByAssignment(assignmentId: string): Promise<Event[]> {
     // }
 
     const timelineEvents = await database.timelineEvent.listByAssignment(assignmentId);
-    timelineEvents.forEach((event) => {
-        queryClient.setQueryData(["timelineEvent", event.id], event);
-        // queryClient.refetchQueries({ queryKey: ["timelineEvent", event.id] });
-    });
+
     return timelineEvents;
 }
 

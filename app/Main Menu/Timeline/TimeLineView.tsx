@@ -8,10 +8,9 @@ import TimelineViewItem from "./Components/TimelineViewItem";
 import database from "@/app/ServerFunctions/database/dbOperations";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import QueryDebugDisplay from "../../Components/QueryDebugDisplay";
 import { general as styles } from "../styles/stylesExporter";
 import { EventGroup, groupBy, groupEvents } from "./Functions/groupEvents";
-import TimelineEventDialog from "../Dialogs/TimelineEvent/TimelineEventDialog";
+import { TimelineEventDialog, QueryDebugDisplay } from "@/app/Components";
 
 const dialogStyles = stylesExporter.dialogs;
 const timelineStyles = stylesExporter.timeline;
@@ -46,8 +45,7 @@ export default function TimelineView(props: TimelineViewProps) {
     // const [groups, setGroups] = useState<EventGroup[]>([]);
     const [groupBy, setGroupBy] = useState<groupBy>(props.groupBy ?? "week");
     const [editingEvent, setEditingEvent] = useState<Event>();
-    const [controlsPositionState, setControlsPosition] =
-        useState<controlsPosition>(controlsPosition);
+    const [controlsPositionState, setControlsPosition] = useState<controlsPosition>(controlsPosition);
     const [campaign, setCampaign] = useState<Campaign>(props.campaign);
     const [openDialog, setOpenDialog] = useState<openDialog>("none");
     //#endregion States
@@ -177,10 +175,10 @@ export default function TimelineView(props: TimelineViewProps) {
     const styles: SxProps = useMemo(() => {
         return {
             "&": {
-                "display": "flex",
-                "flexDirection": "column",
-                "height": "100%",
-                "width": "100%",
+                display: "flex",
+                flexDirection: "column",
+                height: "100%",
+                width: "100%",
 
                 "#StatusState": {
                     display: "flex",
@@ -191,7 +189,7 @@ export default function TimelineView(props: TimelineViewProps) {
                     width: "100%",
                 },
                 "#TimelineViewContent": {
-                    "width": "100%",
+                    width: "100%",
                     "& > .MuiGrid2-root": {
                         // display: "flex",
                         // flexDirection: "column",
@@ -252,10 +250,7 @@ export default function TimelineView(props: TimelineViewProps) {
     // }
 
     return (
-        <Box
-            sx={styles}
-            id="TimelineViewContainer"
-        >
+        <Box sx={styles} id="TimelineViewContainer">
             {/* Dialogs */}
             {Dialogs[openDialog]()}
             {controlsPositionState === "before" && (

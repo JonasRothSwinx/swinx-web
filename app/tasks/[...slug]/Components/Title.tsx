@@ -1,5 +1,5 @@
 import { Box, SxProps, Typography } from "@mui/material";
-import { SwinxLogo } from "./SwinxLogo";
+import { SwinxLogo } from "@/app/Components";
 import { Campaign, ParentEvent, TimelineEvent } from "../Functions/Database/types";
 
 interface TitleProps {

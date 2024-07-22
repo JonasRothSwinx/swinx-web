@@ -12,7 +12,7 @@ type queryData = UseQueryResult & {
     queryKey?: QueryKey;
 };
 
-export default function QueryDebugDisplay(props: TimelineDebugDisplayProps) {
+export function QueryDebugDisplay(props: TimelineDebugDisplayProps) {
     const { data } = props;
     const queryClient = useQueryClient();
     const userGroups = useQuery({
@@ -85,15 +85,13 @@ function StatusDisplay(query: queryData) {
         case isLoading:
             return (
                 <Typography color={"darkgoldenrod"}>
-                    Loading...{" "}
-                    {query.failureCount > 0 ? `Failed ${query.failureCount} times` : null}
+                    Loading... {query.failureCount > 0 ? `Failed ${query.failureCount} times` : null}
                 </Typography>
             );
         case isFetching:
             return (
                 <Typography color={"darkgoldenrod"}>
-                    Fetching...{" "}
-                    {query.failureCount > 0 ? `Failed ${query.failureCount} times` : null}
+                    Fetching... {query.failureCount > 0 ? `Failed ${query.failureCount} times` : null}
                 </Typography>
             );
         case isError:
