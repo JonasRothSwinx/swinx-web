@@ -1,10 +1,10 @@
 import { dataClient } from "@/app/tasks/[...slug]/Functions/Database";
 import { Task, TimelineEvent } from "@/app/tasks/[...slug]/Functions/Database/types";
-import { Box, Button, Dialog, SxProps } from "@mui/material";
+import { Box, Button, Dialog, SxProps, Typography } from "@mui/material";
 import { UseMutationResult, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { config } from "..";
 import { useMemo, useState } from "react";
-import { StorageManagerWrapper } from "@/app/Components";
+import { StorageManagerDialog } from "@/app/Components";
 import { queryClient, queryServer } from "@/app/Components/StorageManagers/functions";
 
 //#region Definitions
@@ -55,19 +55,41 @@ export default function Actions({ task, campaignId, eventId }: ActionProps) {
             flexGrow: 0,
             display: "flex",
             flexDirection: "column",
-            paddingLeft: "5px",
-            gap: "2px",
+            padding: "20px",
+            gap: "20px",
             width: "min-content",
+            minWidth: "200px",
+            background: "#E8E8E8",
+            // background: "#CFCFCF",
+            jsutiifyContent: "center",
+            // borderLeft: "1px solid black",
             ".actionButton": {
                 // "backgroundColor": "red",
-                // "color": "white",
+                color: "black",
+                borderRadius: "10px",
+                padding: "5px 20px",
                 lineHeight: "1.2",
                 textTransform: "none",
+                backgroundColor: "white",
+                fontSize: 16,
+                flex: 1,
                 "&:hover": {
-                    // backgroundColor: "darkred",
+                    backgroundColor: "var(--swinx-blue-light)",
+                    // backgroundColor: "lightgray",
                 },
                 "&.hasFile": {
-                    backgroundColor: "green",
+                    backgroundColor: "lightgray",
+                    ".ButtonText": {
+                        textDecoration: "line-through",
+                    },
+                    ".Checkmark": {
+                        backgroundColor: "#E8E8E8",
+                        borderRadius: "50%",
+                        padding: "2px",
+                        width: "1.5rem",
+                        height: "1.5rem",
+                        color: "limegreen",
+                    },
                 },
             },
         },
@@ -94,7 +116,8 @@ export default function Actions({ task, campaignId, eventId }: ActionProps) {
         };
         if (!task) return possibleActions;
         else if (!task.timelineEventType) return possibleActions;
-        else if (!config.eventTypes.includes(task.timelineEventType as config.eventType)) return possibleActions;
+        else if (!config.eventTypes.includes(task.timelineEventType as config.eventType))
+            return possibleActions;
         else {
             const taskType: config.eventType = task.timelineEventType as config.eventType;
             possibleActions = { ...possibleActions, ...config.possibleAction[taskType] };
@@ -102,8 +125,16 @@ export default function Actions({ task, campaignId, eventId }: ActionProps) {
         return possibleActions;
     }, [task]);
     return (
-        <Box sx={sx}>
-            {actionConfig.markFinished && <FinishButton task={task} markFinished={DataChanges.markFinished} />}
+        <Box
+            sx={sx}
+            id="ActionContainer"
+        >
+            {actionConfig.markFinished && (
+                <FinishButton
+                    task={task}
+                    markFinished={DataChanges.markFinished}
+                />
+            )}
             {actionConfig.uploadScreenshot && (
                 <UploadImageButton
                     task={task}
@@ -114,15 +145,35 @@ export default function Actions({ task, campaignId, eventId }: ActionProps) {
                 />
             )}
             {actionConfig.uploadText && (
-                <UploadTextButton task={task} fileDialogSx={fileDialogSx} campaignId={campaignId} eventId={eventId} />
+                <UploadTextButton
+                    task={task}
+                    fileDialogSx={fileDialogSx}
+                    campaignId={campaignId}
+                    eventId={eventId}
+                />
             )}
             {actionConfig.uploadImage && (
-                <UploadImageButton task={task} fileDialogSx={fileDialogSx} campaignId={campaignId} eventId={eventId} />
+                <UploadImageButton
+                    task={task}
+                    fileDialogSx={fileDialogSx}
+                    campaignId={campaignId}
+                    eventId={eventId}
+                />
             )}
             {actionConfig.uploadVideo && (
-                <UploadVideoButton task={task} fileDialogSx={fileDialogSx} campaignId={campaignId} eventId={eventId} />
+                <UploadVideoButton
+                    task={task}
+                    fileDialogSx={fileDialogSx}
+                    campaignId={campaignId}
+                    eventId={eventId}
+                />
             )}
-            {actionConfig.uploadLink && <UploadLinkButton task={task} fileDialogSx={fileDialogSx} />}
+            {actionConfig.uploadLink && (
+                <UploadLinkButton
+                    task={task}
+                    fileDialogSx={fileDialogSx}
+                />
+            )}
         </Box>
     );
 }
@@ -169,11 +220,22 @@ function UploadTextButton({ task, fileDialogSx, campaignId, eventId }: UploadTex
     }, [hasFile]);
     return (
         <>
-            <Dialog className="FileDialog" open={open} onClose={() => setOpen(false)} sx={fileDialogSx}>
-                <StorageManagerWrapper campaignId={campaignId} eventId={eventId} dataType={"text"} />
-            </Dialog>
-            <Button className={className} variant="contained" onClick={() => setOpen(true)}>
-                Text hochladen
+            {open && (
+                <StorageManagerDialog
+                    campaignId={campaignId}
+                    eventId={eventId}
+                    dataType={"text"}
+                    onClose={() => setOpen(false)}
+                    showControls={true}
+                />
+            )}
+            <Button
+                className={className}
+                variant="contained"
+                onClick={() => setOpen(true)}
+            >
+                <Typography className="ButtonText">Text hochladen</Typography>
+                {hasFile && <Typography className="Checkmark">{" \u2713"}</Typography>}
             </Button>
         </>
     );
@@ -186,7 +248,13 @@ interface UploadImageButtonProps {
     eventId: string;
     buttonText?: string;
 }
-function UploadImageButton({ task, fileDialogSx, campaignId, eventId, buttonText }: UploadImageButtonProps) {
+function UploadImageButton({
+    task,
+    fileDialogSx,
+    campaignId,
+    eventId,
+    buttonText,
+}: UploadImageButtonProps) {
     const [open, setOpen] = useState(false);
     const files = useQuery({
         queryKey: [eventId, "image"],
@@ -204,11 +272,22 @@ function UploadImageButton({ task, fileDialogSx, campaignId, eventId, buttonText
     }, [hasFile]);
     return (
         <>
-            <Dialog className="FileDialog" open={open} onClose={() => setOpen(false)} sx={fileDialogSx}>
-                <StorageManagerWrapper campaignId={campaignId} eventId={eventId} dataType={"image"} />
-            </Dialog>
-            <Button className={className} variant="contained" onClick={() => setOpen(true)}>
-                {buttonText ?? "Bild hochladen"}
+            {open && (
+                <StorageManagerDialog
+                    campaignId={campaignId}
+                    eventId={eventId}
+                    dataType={"image"}
+                    onClose={() => setOpen(false)}
+                    showControls={true}
+                />
+            )}
+            <Button
+                className={className}
+                variant="contained"
+                onClick={() => setOpen(true)}
+            >
+                <Typography className="ButtonText">{buttonText ?? "Bild hochladen"}</Typography>
+                {hasFile && <Typography className="Checkmark">{" \u2713"}</Typography>}
             </Button>
         </>
     );
@@ -239,11 +318,22 @@ function UploadVideoButton({ task, fileDialogSx, campaignId, eventId }: UploadVi
     }, [hasFile]);
     return (
         <>
-            <Dialog className="FileDialog" open={open} onClose={() => setOpen(false)} sx={fileDialogSx}>
-                <StorageManagerWrapper campaignId={campaignId} eventId={eventId} dataType={"video"} />
-            </Dialog>
-            <Button className={className} variant="contained" onClick={() => setOpen(true)}>
-                Video hochladen
+            {open && (
+                <StorageManagerDialog
+                    campaignId={campaignId}
+                    eventId={eventId}
+                    dataType={"video"}
+                    onClose={() => setOpen(false)}
+                    showControls={true}
+                />
+            )}
+            <Button
+                className={className}
+                variant="contained"
+                onClick={() => setOpen(true)}
+            >
+                <Typography className="ButtonText">Video hochladen</Typography>
+                {hasFile && <Typography className="Checkmark">{" \u2713"}</Typography>}
             </Button>
         </>
     );
@@ -256,7 +346,10 @@ interface UploadLinkButtonProps {
 
 function UploadLinkButton({ task }: UploadLinkButtonProps) {
     return (
-        <Button className="actionButton linkButton" variant="contained">
+        <Button
+            className="actionButton linkButton"
+            variant="contained"
+        >
             Link einfügen
         </Button>
     );

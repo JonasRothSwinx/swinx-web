@@ -22,6 +22,7 @@ export async function preprocessFile({ file, targetFileName }: PreprocessFile) {
     return {
         file,
         key: `${targetFileName}.${fileExtension}`,
+        contentType: file.type,
         metadata: {
             step: "INFLUENCER_SUBMITTED",
         },

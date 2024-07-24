@@ -5,8 +5,8 @@ import { useMemo, useState } from "react";
 import { Loading } from "@/app/Components";
 import Title from "./Components/Title";
 import { dataClient } from "./Functions/Database";
-import Introduction from "./Components/Introduction";
 import TaskDisplay from "./Task Display/TaskDisplay";
+import { Summary } from "./Summary";
 
 interface TasksLandingProps {
     assignmentId: string;
@@ -24,9 +24,9 @@ export default function TasksLanding({
     // const [received, setReceived] = useState(false);
     const queryClient = useQueryClient();
 
-    const isLowHeight = useMediaQuery("(max-height: 600px)");
-    const isLowWidth = useMediaQuery("(max-width: 600px)");
-    const [responseClicked, setResponseClicked] = useState(false);
+    // const isLowHeight = useMediaQuery("(max-height: 600px)");
+    // const isLowWidth = useMediaQuery("(max-width: 600px)");
+    // const [responseClicked, setResponseClicked] = useState(false);
     //#region Queries
 
     const task = useQuery({
@@ -71,28 +71,21 @@ export default function TasksLanding({
         () => ({
             "&": {
                 position: "relative",
-                width: "calc(100vw - 40px)", // Account for left and right margins
-                height: "fit-content", // Account for top and bottom margins
-                maxHeight: "calc(100dvh - 40px)",
+                // width: "calc(100vw - 40px)", // Account for left and right margins
+                // height: "fit-content", // Account for top and bottom margins
+                width: "100%",
+                height: "100%",
+                maxHeight: "100vh",
+                // maxHeight: "calc(100dvh - 40px)",
                 maxWidth: "100vw",
-                margin: "20px",
-                border: "1px solid gray",
-                borderRadius: "10px",
-                backgroundColor: "var(--background-color)",
+                // margin: "20px",
+                // border: "1px solid gray",
+                // borderRadius: "10px",
+                // backgroundColor: "var(--background-color)",
                 display: "flex",
                 flexDirection: "column",
-                // overflowY: "auto",
-                "#ResponseLandingScrollableContent": {
-                    padding: "20px",
-                    paddingTop: "0",
-                    // "maxHeight": "-webkit-fill-available",
-                    // maxHeight: "calc(100dvh - 40px)",
-                    overflowY: "auto",
-                    // "flex": 1,
-                    "@media (max-width: 600px)": {
-                        overflowY: "auto",
-                    },
-                },
+                overflowY: "hidden",
+
                 "#ErrorText": {
                     width: "100%",
                     height: "100%",
@@ -102,94 +95,132 @@ export default function TasksLanding({
                     textShadow: "2px 2px 2px black",
                     color: "red",
                 },
-
-                "#AssignmentDescriptionsContainer": {
-                    overflowY: "auto",
-                    border: "1px solid black",
-                    borderRadius: "5px",
-                    maxHeight: "80%",
-                    "#DescriptionContainer": {
+                ".TaskSummaryBody": {
+                    padding: "0px",
+                    flex: 1,
+                    // maxHeight: "100%",
+                    display: "flex",
+                    overflow: "hidden",
+                    overflowY: "scroll",
+                    ".TaskDescriptionContainer": {
                         display: "flex",
                         flexDirection: "column",
-                        maxHeight: "400px",
-
-                        background: "var(--background-color)",
-                        // padding: "2px",
-                        // border: "1px solid black",
-                        // borderRadius: "5px",
-                        "#DescriptionTitle": {
-                            fontWeight: "bold",
-                            fontSize: "20px",
-                            padding: "10px",
-                            color: "white",
-                            backgroundColor: "var(--swinx-blue)",
-                        },
-                        "#SummaryContainer": {
-                            display: "flex",
-                            flexDirection: "row",
-                            paddingLeft: "10px",
-                            "#SummaryBox": {
-                                // float: "left",
-                                flex: 3,
-                            },
-                            "#InvitesTable": {
-                                // float: "right",
-                                overflowY: "auto",
-                                height: "fit-content",
-                                width: "fit-content",
-                                maxHeight: "fit-content",
-                                flex: 1,
-                                "& .MuiTableCell-head": {
-                                    fontWeight: "bold",
-                                    padding: "10px",
-                                },
-                                "& .MuiTableCell-root": {
-                                    padding: "5px",
-                                    width: "10em",
-                                    textAlign: "center",
-                                    height: "fit-content",
-                                },
-                            },
-                        },
-                        "@media (max-width: 500px)": {
-                            maxHeight: "fit-content",
-
-                            "#SummaryContainer": {
-                                flexDirection: "column",
-                                alignItems: "center",
-                                "#SummaryBox": {
-                                    width: "100%",
-                                },
-                                "#InvitesTable": {
-                                    width: "fit-content",
-                                },
-                            },
-                        },
+                        // borderTop: "1px solid black",
+                        borderRadius: "10px 10px 0 0",
+                        margin: "0 auto",
+                        backgroundColor: "white",
+                        padding: "10px 20px",
+                        flex: 1,
+                        // overflowY: "scroll",
+                        maxWidth: "1300px",
+                        // width: "100%",
+                        // justifyContent: "center",
+                        // paddingRight: "10px",
+                        // maxHeight: "100%",
+                    },
+                    ".ScrollableContent": {
+                        // padding: "20px",
+                        // margin: "0 auto",
+                        // display: "flex",
+                        // flexDirection: "column",
+                        // alignItems: "center",
+                        paddingTop: "0",
+                        // margin: "0 auto",
+                        // "maxHeight": "-webkit-fill-available",
+                        // maxHeight: "calc(100dvh - 40px)",
+                        // overflowY: "auto",
+                        // "flex": 1,
+                        // maxWidth: "1000px",
                     },
                 },
-                "#AssignmentDescriptionGroup": {
-                    display: "flex",
-                    flexDirection: "column",
-                    // padding: "10px",
-                    borderBlock: "1px solid black",
-                    overflow: "auto",
 
-                    borderBottom: "none",
-                    "&:first-of-type": {
-                        borderTop: "none",
-                        // borderTopLeftRadius: "5px",
-                        // borderTopRightRadius: "5px",
-                        // marginBottom: "10px",
-                    },
-                    "&:last-of-type": {
-                        borderBottom: "none",
-                        // borderBottomLeftRadius: "5px",
-                        // borderBottomRightRadius: "5px",
-                    },
-                },
+                // "#AssignmentDescriptionsContainer": {
+                //     overflowY: "auto",
+                //     border: "1px solid black",
+                //     borderRadius: "5px",
+                //     maxHeight: "80%",
+                //     "#DescriptionContainer": {
+                //         display: "flex",
+                //         flexDirection: "column",
+                //         maxHeight: "400px",
+
+                //         background: "var(--background-color)",
+                //         // padding: "2px",
+                //         // border: "1px solid black",
+                //         // borderRadius: "5px",
+                //         "#DescriptionTitle": {
+                //             fontWeight: "bold",
+                //             fontSize: "20px",
+                //             padding: "10px",
+                //             color: "white",
+                //             backgroundColor: "var(--swinx-blue)",
+                //         },
+                //         "#SummaryContainer": {
+                //             display: "flex",
+                //             flexDirection: "row",
+                //             paddingLeft: "10px",
+                //             "#SummaryBox": {
+                //                 // float: "left",
+                //                 flex: 3,
+                //             },
+                //             "#InvitesTable": {
+                //                 // float: "right",
+                //                 overflowY: "auto",
+                //                 height: "fit-content",
+                //                 width: "fit-content",
+                //                 maxHeight: "fit-content",
+                //                 flex: 1,
+                //                 "& .MuiTableCell-head": {
+                //                     fontWeight: "bold",
+                //                     padding: "10px",
+                //                 },
+                //                 "& .MuiTableCell-root": {
+                //                     padding: "5px",
+                //                     width: "10em",
+                //                     textAlign: "center",
+                //                     height: "fit-content",
+                //                 },
+                //             },
+                //         },
+                //         "@media (max-width: 500px)": {
+                //             maxHeight: "fit-content",
+
+                //             "#SummaryContainer": {
+                //                 flexDirection: "column",
+                //                 alignItems: "center",
+                //                 "#SummaryBox": {
+                //                     width: "100%",
+                //                 },
+                //                 "#InvitesTable": {
+                //                     width: "fit-content",
+                //                 },
+                //             },
+                //         },
+                //     },
+                // },
+                // "#AssignmentDescriptionGroup": {
+                //     display: "flex",
+                //     flexDirection: "column",
+                //     // padding: "10px",
+                //     borderBlock: "1px solid black",
+                //     overflow: "auto",
+
+                //     borderBottom: "none",
+                //     "&:first-of-type": {
+                //         borderTop: "none",
+                //         // borderTopLeftRadius: "5px",
+                //         // borderTopRightRadius: "5px",
+                //         // marginBottom: "10px",
+                //     },
+                //     "&:last-of-type": {
+                //         borderBottom: "none",
+                //         // borderBottomLeftRadius: "5px",
+                //         // borderBottomRightRadius: "5px",
+                //     },
+                // },
             },
         }),
-        []
+        [],
     );
     //#endregion
     //MARK: - Event Handler
@@ -200,7 +231,12 @@ export default function TasksLanding({
         return <Typography id="ErrorText">Ungültige Daten empfangen</Typography>;
     }
     if (task.isLoading || parentEvent.isLoading) {
-        return <Loading textMessage="Kampagne wird geladen" spinnerSize={100} />;
+        return (
+            <Loading
+                textMessage="Kampagne wird geladen"
+                spinnerSize={100}
+            />
+        );
     }
     if (
         task.isError ||
@@ -221,17 +257,42 @@ export default function TasksLanding({
     //Temporary fix for the issue
 
     return (
-        <Box id="ResponseLandingContainer" sx={styles}>
-            <Title parentEvent={parentEvent.data} campaign={campaign} />
-            <Box id="ResponseLandingScrollableContent">
-                <Introduction
-                    influencerFullName={`${influencer.firstName} ${influencer.lastName}`}
-                    webinar={parentEvent.data}
-                    CampaignData={campaign}
+        <>
+            <Box
+                id="ResponseLandingContainer"
+                sx={styles}
+            >
+                <Title
+                    parentEvent={parentEvent.data}
+                    campaign={campaign}
                 />
-                <TaskDisplay tasks={events} parentEvent={parentEvent.data} campaign={campaign} />
+                <Box
+                    id="TaskSummaryBody"
+                    className="TaskSummaryBody"
+                >
+                    <Box
+                        id="TaskDescriptionContainer"
+                        className="TaskDescriptionContainer"
+                    >
+                        <Summary
+                            influencerFullName={`${influencer.firstName} ${influencer.lastName}`}
+                            webinar={parentEvent.data}
+                            campaign={campaign}
+                            events={events}
+                        />
+                        <Box
+                            id="TasksScrollableContent"
+                            className="ScrollableContent"
+                        >
+                            <TaskDisplay
+                                tasks={events}
+                                parentEvent={parentEvent.data}
+                                campaign={campaign}
+                            />
+                        </Box>
+                    </Box>
+                </Box>
             </Box>
-            {/* <ResponseButtons processResponse={EventHandler.processResponse} /> */}
-        </Box>
+        </>
     );
 }

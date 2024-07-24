@@ -1,5 +1,5 @@
 import { QueryClient } from "@tanstack/react-query";
-import { DataType } from "../../StorageManagerWrapper";
+import { DataType } from "../../StorageManagerDialog";
 import { remove } from "aws-amplify/storage";
 
 interface OnUploadSuccess {
@@ -25,7 +25,7 @@ export async function onUploadSuccess({
             currentFiles.data.map((prevFile) => {
                 if (prevFile.path === file.key) return Promise.resolve();
                 remove({ path: prevFile.path });
-            })
+            }),
         )
             .then(() => {
                 queryClient.invalidateQueries({
@@ -35,7 +35,10 @@ export async function onUploadSuccess({
             .catch((error) => {
                 console.error("onUploadSuccessError", { currentFiles, error });
             });
-        queryClient.setQueryData([eventId, dataType], [{ path: file.key, lastModified: new Date() }]);
+        queryClient.setQueryData(
+            [eventId, dataType],
+            [{ path: file.key, lastModified: new Date() }],
+        );
         queryClient.invalidateQueries({
             queryKey: [file.key],
         });

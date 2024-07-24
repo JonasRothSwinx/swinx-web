@@ -9,7 +9,7 @@ import {
 import { Campaign, ParentEvent, TimelineEvent } from "../../../Functions/Database/types";
 import { dayjs } from "@/app/utils";
 import { ExpandMoreIcon } from "@/app/Definitions/Icons";
-import { Actions, Description } from "./Components";
+import { Actions, Description, Title } from "./Components";
 import { config } from ".";
 
 interface TaskProps {
@@ -17,54 +17,101 @@ interface TaskProps {
     parentEvent: ParentEvent;
     task: TimelineEvent;
     defaultExpanded?: boolean;
+    dateColor?: string;
 }
-export default function Task({ campaign, parentEvent, task, defaultExpanded = false }: TaskProps) {
-    const rawDate = dayjs(task.date);
-    const dateString = rawDate.isSame(dayjs(), "year")
-        ? dayjs(task.date).format("DD.MM")
-        : dayjs(task.date).format("DD.MM.YY");
-    const dateDiffText = dayjs(task.date).fromNow();
+export default function Task({
+    campaign,
+    parentEvent,
+    task,
+    defaultExpanded = false,
+    dateColor,
+}: TaskProps) {
     const sx: SxProps = {
         "&": {
             // ".MuiAccordion-root": {
-            "backgroundColor": "var(--swinx-blue)",
+            backgroundColor: "white",
             // "borderRadius": "20px",
-            "border": "1px solid black",
-            "borderTopStyle": "none",
-            "overflow": "auto",
+            // border: "1px solid black",
+            border: "none",
+            // borderTopStyle: "solid",
+            borderBottomStyle: "none",
+            overflow: "hidden",
+            boxShadow: "none",
             "&:first-of-type": {
-                borderTopLeftRadius: "20px",
-                borderTopRightRadius: "20px",
+                borderTopLeftRadius: "10px",
+                borderTopRightRadius: "10px",
+                // borderTopStyle: "solid",
             },
             "&:last-of-type": {
-                borderBottomLeftRadius: "20px",
-                borderBottomRightRadius: "20px",
+                borderBottomLeftRadius: "10px",
+                borderBottomRightRadius: "10px",
                 borderBottomStyle: "none",
+                ".MuiAccordionSummary-root": {
+                    borderBottom: "none",
+                    // backgroundColor: "red",
+                },
             },
             "&.Mui-expanded": {
-                borderTopStyle: "solid",
+                // borderBottomStyle: "none",
+                // borderBottomLeftRadius: "10px",
+                // borderBottomRightRadius: "10px",
             },
-            "#AccordionTitle": {
+            // ":nth-of-type(1 of .Mui-expanded ~ &)": {
+            //     backgroundColor: "red",
+            //     borderTopLeftRadius: "10px",
+            //     borderTopRightRadius: "10px",
+            // },
+            ".MuiAccordionSummary-root": {
                 // borderBottom: "1px solid black",
                 color: "white",
                 fontWeight: "bold",
+                // backgroundColor: "#E8E8E8",
+                backgroundColor: "white",
+                borderBottom: "1px solid #293133",
+                minHeight: "fit-content",
+                padding: 0,
                 // "&:nth-last-of-type(2)": {
                 //     borderBottom: "none",
                 // },
+                ".MuiAccordionSummary-content": {
+                    margin: "0",
+                },
+                "&:last-of-type": {
+                    borderBottom: "none",
+                },
             },
-            "#TaskContent": {
-                "display": "flex",
-                "flexDirection": "row",
-                "width": "100%",
-                "&>*": {
-                    "borderRight": "1px solid black",
-                    ":last-child": {
-                        borderRight: "none",
+            ".MuiAccordionSummary-root:last-child": {
+                borderBottom: "none",
+                backgroundColor: "red",
+            },
+            ".MuiAccordionDetails-root": {
+                padding: 0,
+                "#TaskContent": {
+                    display: "flex",
+                    flexDirection: "row",
+                    width: "100%",
+                    // "&>*": {
+                    //     borderRight: "1px solid black",
+                    //     ":last-child": {
+                    //         borderRight: "none",
+                    //     },
+                    // },
+                    "#TaskDescription": {
+                        padding: "10px",
+                        flex: 3,
+                        "p.MuiTypography-root": {
+                            fontSize: 14,
+                            lineHeight: "120%",
+                        },
                     },
                 },
             },
-            "#TaskDescription": {
-                flex: 3,
+        },
+        "&.last-of-type": {
+            backgroundColor: "red",
+            ".MuiAccordionSummary-root": {
+                borderBottom: "none",
+                backgroundColor: "red",
             },
         },
     };
@@ -77,11 +124,15 @@ export default function Task({ campaign, parentEvent, task, defaultExpanded = fa
         >
             <AccordionSummary
                 id="AccordionTitle"
-                expandIcon={<ExpandMoreIcon id="Expand" />}
+                // expandIcon={<ExpandMoreIcon id="Expand" />}
             >
-                <Typography>
+                <Title
+                    task={task}
+                    dateColor={dateColor}
+                />
+                {/* <Typography>
                     {dateString} - {dateDiffText}: {task.timelineEventType}
-                </Typography>
+                </Typography> */}
             </AccordionSummary>
             <AccordionDetails>
                 <Box id="TaskContent">
@@ -116,11 +167,7 @@ function NextSteps({ task }: NextSteps) {
     }
     const sx: SxProps = {
         "&": {
-            "padding": "10px",
-            "&> p": {
-                // fontSize: "1.5em",
-                fontWeight: "bold",
-            },
+            padding: "10px",
         },
     };
     return (
@@ -128,7 +175,7 @@ function NextSteps({ task }: NextSteps) {
             id="NextSteps"
             sx={sx}
         >
-            <Typography>Nächste Schritte:</Typography>
+            {/* <Typography>Nächste Schritte:</Typography> */}
             <Typography>{textContent}</Typography>
         </Box>
     );

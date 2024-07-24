@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { preprocessFile, queryClient as query } from "../functions";
 import { StorageManagerProps } from "./types";
 import { onUploadSuccess } from "./functions";
+import { dictionary } from "./localization";
 
 export function VideoStorageManager({ campaignId, eventId }: StorageManagerProps) {
     const queryClient = useQueryClient();
@@ -37,6 +38,7 @@ export function VideoStorageManager({ campaignId, eventId }: StorageManagerProps
                     dataType: "video",
                 });
             }}
+            displayText={dictionary}
         />
     );
 }

@@ -165,6 +165,7 @@ export async function getParentEventInfo({ id }: GetParentEventInfoParams) {
                 "eventTitle",
                 "date",
                 "targetAudience.*",
+                "timelineEventType",
             ],
         },
     );

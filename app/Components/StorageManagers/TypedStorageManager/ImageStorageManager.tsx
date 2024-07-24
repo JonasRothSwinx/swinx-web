@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { preprocessFile, queryClient as query } from "../functions";
 import { StorageManagerProps } from "./types";
 import { onUploadSuccess } from "./functions";
+import { dictionary } from "./localization";
 
 export function ImageStorageManager({ campaignId, eventId }: StorageManagerProps) {
     const queryClient = useQueryClient();
@@ -40,6 +41,7 @@ export function ImageStorageManager({ campaignId, eventId }: StorageManagerProps
                     dataType: "image",
                 });
             }}
+            displayText={dictionary}
         />
     );
 }

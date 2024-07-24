@@ -9,9 +9,20 @@ interface DescriptionProps {
 export default function Description({ task }: DescriptionProps) {
     const sx: SxProps = {
         "&": {
-            "flex": 1,
+            flex: 1,
             ".text": {
                 whiteSpace: "pre-wrap",
+            },
+            ".MuiTable-root": {
+                width: "fit-content",
+                ".MuiTableCell-root": {
+                    padding: "5px 20px",
+                    border: "none",
+                    fontSize: 20,
+                    "&:first-of-type": {
+                        borderRight: "1px solid black",
+                    },
+                },
             },
         },
     };

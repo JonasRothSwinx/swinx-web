@@ -32,15 +32,35 @@ export function Loading({ textMessage, spinnerSize }: LoadingProps) {
                 "#SwinxLogo": {
                     marginBottom: "10px",
                 },
+                "#LoadingMessage": {
+                    fontSize: "1.5rem",
+                    // fontWeight: "bold",
+                    // margin: "10px",
+                },
             },
         },
     };
     return (
-        <Box id="LoadingPage" className="LoadingPage" sx={styles}>
-            <Box id="LoadingContainer" className="LoadingContainer">
+        <Box
+            id="LoadingPage"
+            className="LoadingPage"
+            sx={styles}
+        >
+            <Box
+                id="LoadingContainer"
+                className="LoadingContainer"
+            >
                 <SwinxLogo />
-                <Typography variant="h4">{textMessage ?? "Lade"}</Typography>
-                <CircularProgress id="Spinner" size={spinnerSize ?? 20} />
+                <Typography
+                    id="LoadingMessage"
+                    className="LoadingMessage"
+                >
+                    {textMessage ?? "Lade"}
+                </Typography>
+                <CircularProgress
+                    id="Spinner"
+                    size={spinnerSize ?? 20}
+                />
             </Box>
         </Box>
     );
