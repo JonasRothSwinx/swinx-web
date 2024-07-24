@@ -6,6 +6,7 @@ import {
     CardContent,
     CardMedia,
     Skeleton,
+    SxProps,
     Typography,
 } from "@mui/material";
 import { PreviewProps } from "../FilePreview";
@@ -32,7 +33,9 @@ export function ImagePreview({ file }: PreviewProps) {
                     height={200}
                 />
             );
-        const sx: SxProps = {};
+        const sx: SxProps = {
+            "&": {},
+        };
         return (
             <Card
                 raised
@@ -51,7 +54,7 @@ export function ImagePreview({ file }: PreviewProps) {
                 <CardContent>
                     {/* <Typography textAlign={"center"}>{fileName}</Typography> */}
                     {/* <Typography textAlign={"center"}>Beitragsbild</Typography> */}
-                    <Box>
+                    <Box className="">
                         <Button onClick={() => console.log("Download", file.path)}>Download</Button>
                         <Button onClick={() => console.log("Delete", file.path)}>Delete</Button>
                     </Box>
