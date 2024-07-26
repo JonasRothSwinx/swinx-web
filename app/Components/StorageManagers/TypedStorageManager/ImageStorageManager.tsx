@@ -7,7 +7,11 @@ import { StorageManagerProps } from "./types";
 import { onUploadSuccess } from "./functions";
 import { dictionary } from "./localization";
 
-export function ImageStorageManager({ campaignId, eventId }: StorageManagerProps) {
+export function ImageStorageManager({
+    campaignId,
+    eventId,
+    onSuccess: successCallback,
+}: StorageManagerProps) {
     const queryClient = useQueryClient();
     const currentFiles = useQuery({
         queryKey: [eventId, "image"],
@@ -31,8 +35,9 @@ export function ImageStorageManager({ campaignId, eventId }: StorageManagerProps
             processFile={async ({ file }) => preprocessFile({ file, targetFileName: "PostImage" })}
             // maxFileSize={5000000}
             isResumable
+            autoUpload={false}
             onUploadSuccess={async (file) => {
-                return onUploadSuccess({
+                await onUploadSuccess({
                     file,
                     queryClient,
                     currentFiles,
@@ -40,6 +45,8 @@ export function ImageStorageManager({ campaignId, eventId }: StorageManagerProps
                     eventId,
                     dataType: "image",
                 });
+                await successCallback?.({ campaignId, eventId });
+                return;
             }}
             displayText={dictionary}
         />

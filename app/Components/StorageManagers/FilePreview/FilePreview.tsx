@@ -17,9 +17,9 @@ interface FilePreviewProps {
     // files: Array<Prettify<ListPaginateWithPathOutput["items"][number]> & { url: string }>;
     files: ListPaginateWithPathOutput["items"];
     dataType: DataType;
-    controls?: boolean;
+    showControls?: PreviewProps["showControls"];
 }
-export function FilePreview({ files, dataType, controls }: FilePreviewProps) {
+export function FilePreview({ files, dataType, showControls }: FilePreviewProps) {
     if (files.length === 0) return null;
     return (
         <Box
@@ -41,7 +41,7 @@ export function FilePreview({ files, dataType, controls }: FilePreviewProps) {
                             <Element
                                 key={`file_${file.path}_${key}`}
                                 file={file}
-                                showControls={controls}
+                                showControls={showControls}
                             />
                         );
                     } catch (error) {
@@ -55,5 +55,10 @@ export function FilePreview({ files, dataType, controls }: FilePreviewProps) {
 }
 export interface PreviewProps {
     file: { path: string; url?: string; lastModified?: Date };
-    showControls?: boolean;
+    showControls?: {
+        delete?: boolean;
+        download?: boolean;
+        approve?: boolean;
+        sendToCustomer?: boolean;
+    };
 }

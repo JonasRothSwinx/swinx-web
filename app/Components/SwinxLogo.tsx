@@ -5,31 +5,36 @@ import { useMemo } from "react";
 //MARK: SwinxLogo
 interface SwinxLogoProps {
     white?: boolean;
+    raveMode?: boolean;
 }
-export function SwinxLogo({ white }: SwinxLogoProps) {
+export function SwinxLogo({ white, raveMode }: SwinxLogoProps) {
     return (
         <Box
             id="SwinxLogo"
-            sx={{
-                "&": {
-                    animation: "raveMode .3s ease-in-out alternate infinite",
-                    "@keyframes raveMode": {
-                        "0%": {
-                            filter: " hue-rotate(0deg)",
-                            transform: "translateY(5px) rotate(-10deg) scaleY(0.8)",
-                        },
-                        "50%": {
-                            filter: "hue-rotate(180deg)",
-                            transform: "translateY(-10px) rotate(0deg) scaleY(1.2)",
-                        },
-                        "100%": {
-                            filter: "hue-rotate(360deg)",
+            sx={
+                raveMode
+                    ? {
+                          "&": {
+                              animation: "raveMode .3s ease-in-out alternate infinite",
+                              "@keyframes raveMode": {
+                                  "0%": {
+                                      filter: " hue-rotate(0deg)",
+                                      transform: "translateY(5px) rotate(-10deg) scaleY(0.8)",
+                                  },
+                                  "50%": {
+                                      filter: "hue-rotate(180deg)",
+                                      transform: "translateY(-10px) rotate(0deg) scaleY(1.2)",
+                                  },
+                                  "100%": {
+                                      filter: "hue-rotate(360deg)",
 
-                            transform: "translateY(5px) rotate(10deg) scaleY(0.8)",
-                        },
-                    },
-                },
-            }}
+                                      transform: "translateY(5px) rotate(10deg) scaleY(0.8)",
+                                  },
+                              },
+                          },
+                      }
+                    : {}
+            }
         >
             <Image
                 id="SwinxLogo"

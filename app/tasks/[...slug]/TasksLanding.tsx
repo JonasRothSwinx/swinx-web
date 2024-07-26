@@ -85,6 +85,7 @@ export default function TasksLanding({
                 display: "flex",
                 flexDirection: "column",
                 overflowY: "hidden",
+                overflowX: "hidden",
 
                 "#ErrorText": {
                     width: "100%",

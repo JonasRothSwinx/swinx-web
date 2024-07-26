@@ -12,7 +12,8 @@ import {
     TextStorageManager,
     VideoStorageManager,
 } from "./TypedStorageManager";
-import { FilePreview } from "./FilePreview";
+import { FilePreview, type PreviewProps } from "./FilePreview";
+import { onUploadSuccess } from "./TypedStorageManager/functions";
 
 export type DataType = "image" | "video" | "text";
 
@@ -37,21 +38,25 @@ const hidePreviewConfig: { [key in DataType]: boolean } = {
     video: false,
     text: true,
 };
-interface StorageManagerWrapperProps {
+interface StorageManagerDialogProps {
     campaignId: string;
     eventId: string;
     dataType: DataType;
+    showControls?: PreviewProps["showControls"];
+
     onClose: () => void;
-    showControls?: boolean;
+    onUploadSuccess?: StorageManagerProps["onSuccess"];
 }
 
 export function StorageManagerDialog({
     campaignId,
     eventId,
     dataType,
+    showControls,
+
     onClose,
-    showControls = false,
-}: StorageManagerWrapperProps) {
+    onUploadSuccess,
+}: StorageManagerDialogProps) {
     const queryClient = useQueryClient();
     const currentFiles = useQuery({
         queryKey: [eventId, dataType],
@@ -105,7 +110,7 @@ export function StorageManagerDialog({
                         <FilePreview
                             files={currentFiles.data ?? []}
                             dataType={dataType}
-                            controls={showControls}
+                            showControls={showControls}
                         />
                     </Box>
                 )}
@@ -116,6 +121,7 @@ export function StorageManagerDialog({
                     <StorageManager
                         campaignId={campaignId}
                         eventId={eventId}
+                        onSuccess={onUploadSuccess}
                     />
                 </Box>
             </Box>

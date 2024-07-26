@@ -33,6 +33,18 @@ const schema = a
         }),
 
         //##############################################
+        //################### Enums ####################
+        //##############################################
+
+        EventStatus: a.enum([
+            "WAITING_FOR_DRAFT",
+            "WAITING_FOR_APPROVAL",
+            "APPROVED",
+            "REJECTED",
+            "COMPLETED",
+        ]),
+
+        //##############################################
         //################### Models ###################
         //##############################################
         //#region Influencer
@@ -417,6 +429,12 @@ const schema = a
 
                 eventResources: a
                     .ref("EventResources")
+                    .authorization((allow) => [
+                        allow.groups(["admin", "projektmanager"]),
+                        allow.publicApiKey().to(["read", "update"]),
+                    ]),
+                status: a
+                    .ref("EventStatus")
                     .authorization((allow) => [
                         allow.groups(["admin", "projektmanager"]),
                         allow.publicApiKey().to(["read", "update"]),

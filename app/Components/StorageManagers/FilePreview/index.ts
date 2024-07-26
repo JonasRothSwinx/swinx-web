@@ -1,1 +1,1 @@
-export { FilePreview } from "./FilePreview";
+export { FilePreview, type PreviewProps } from "./FilePreview";

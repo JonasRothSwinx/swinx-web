@@ -282,11 +282,11 @@ export async function getTaskDetails({
     };
 }
 
-interface MarkeEventFinisheedParams {
+interface MarkeEventFinishedParams {
     eventId: string;
     isCompleted: boolean;
 }
-export async function markEventFinished({ eventId, isCompleted }: MarkeEventFinisheedParams) {
+export async function markEventFinished({ eventId, isCompleted }: MarkeEventFinishedParams) {
     const { data, errors } = await client.models.TimelineEvent.update({
         id: eventId,
         isCompleted: true,
@@ -294,6 +294,22 @@ export async function markEventFinished({ eventId, isCompleted }: MarkeEventFini
     if (errors) {
         console.error(errors);
         throw new Error("Error marking event as finished");
+    }
+    return true;
+}
+
+interface UpdateEventStatusParams {
+    eventId: string;
+    status: Schema["TimelineEvent"]["type"]["status"];
+}
+export async function updateEventStatus({ eventId, status }: UpdateEventStatusParams) {
+    const { data, errors } = await client.models.TimelineEvent.update({
+        id: eventId,
+        status,
+    });
+    if (errors) {
+        console.error(errors);
+        throw new Error("Error updating event status");
     }
     return true;
 }

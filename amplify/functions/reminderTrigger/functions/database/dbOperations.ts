@@ -162,15 +162,17 @@ function parseEmailTrigger(data: ListEmailTriggersQueryItem): EmailTriggerData |
             notes: "",
         };
 
-        const parsedProjectManagers: EmailTriggerData["projectManagers"] = rawProjectManagers.map((x) => ({
-            id: x.id,
-            firstName: x.firstName,
-            lastName: x.lastName,
-            email: x.email,
-            phoneNumber: x.phoneNumber,
-            jobTitle: x.jobTitle,
-            cognitoId: "",
-        }));
+        const parsedProjectManagers: EmailTriggerData["projectManagers"] = rawProjectManagers.map(
+            (x) => ({
+                id: x.id,
+                firstName: x.firstName,
+                lastName: x.lastName,
+                email: x.email,
+                phoneNumber: x.phoneNumber,
+                jobTitle: x.jobTitle,
+                cognitoId: "",
+            }),
+        );
 
         const parsedInfluencer: EmailTriggerData["influencer"] = {
             id: rawInfluencer.id,
@@ -199,6 +201,7 @@ function parseEmailTrigger(data: ListEmailTriggersQueryItem): EmailTriggerData |
                 industry: [],
             },
             isCompleted: false,
+            status: rawParentEvent.status ?? "WAITING_FOR_DRAFT",
         };
 
         const parsedEvent: EmailTriggerData["event"] = {
@@ -220,6 +223,8 @@ function parseEmailTrigger(data: ListEmailTriggersQueryItem): EmailTriggerData |
                 industry: [],
             },
             isCompleted: false,
+
+            status: rawEvent.status ?? "WAITING_FOR_DRAFT",
         };
 
         const parsedTrigger: EmailTriggerData["trigger"] = {

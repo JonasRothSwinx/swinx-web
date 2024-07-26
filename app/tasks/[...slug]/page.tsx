@@ -43,6 +43,7 @@ export default function Page({ params }: { params: { slug: string[] } }) {
             justifyContent: "center",
             backgroundColor: "#f5f5f5",
             // padding: "20px",
+            overflow: "hidden",
 
             "#TempMessageBox": {
                 height: "fit-content",
@@ -54,23 +55,23 @@ export default function Page({ params }: { params: { slug: string[] } }) {
                 border: "1px solid black",
                 textAlign: "center",
             },
-            filter: "sepia(100%)",
-            animation: "raveMode .3s ease-in-out alternate infinite",
-            "@keyframes raveMode": {
-                "0%": {
-                    filter: "sepia(100%) hue-rotate(0deg)",
-                    transform: "translateY(20px) rotate(-10deg) scaleY(0.8)",
-                },
-                "50%": {
-                    filter: "sepia(100%) hue-rotate(180deg)",
-                    transform: "translateY(-100px) rotate(0deg) scaleY(1.2)",
-                },
-                "100%": {
-                    filter: "sepia(100%) hue-rotate(360deg)",
+            // filter: "sepia(100%)",
+            // animation: "raveMode .3s ease-in-out alternate infinite",
+            // "@keyframes raveMode": {
+            //     "0%": {
+            //         filter: "sepia(100%) hue-rotate(0deg)",
+            //         transform: "translateY(20px) rotate(-10deg) scaleY(0.8)",
+            //     },
+            //     "50%": {
+            //         filter: "sepia(100%) hue-rotate(180deg)",
+            //         transform: "translateY(-100px) rotate(0deg) scaleY(1.2)",
+            //     },
+            //     "100%": {
+            //         filter: "sepia(100%) hue-rotate(360deg)",
 
-                    transform: "translateY(20px) rotate(10deg) scaleY(0.8)",
-                },
-            },
+            //         transform: "translateY(20px) rotate(10deg) scaleY(0.8)",
+            //     },
+            // },
         },
     };
     return (
@@ -78,7 +79,7 @@ export default function Page({ params }: { params: { slug: string[] } }) {
             <QueryClientProvider client={queryClient}>
                 <ConfirmProvider defaultOptions={confirmOptions}>
                     <Box
-                        id="ResponseLandingPage"
+                        id="TasksLandingPage"
                         sx={sx}
                     >
                         <TasksLanding

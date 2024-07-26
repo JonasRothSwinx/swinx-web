@@ -13,7 +13,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="de">
-            <body className={inter.className} style={{ height: "100dvh", width: "100dvw" }}>
+            <body
+                className={inter.className}
+                style={{ height: "100dvh", width: "100dvw", margin: 0 }}
+            >
                 <ConfigureAmplifyClientSide />
                 <>{children}</>
             </body>

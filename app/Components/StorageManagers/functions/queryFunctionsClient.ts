@@ -8,11 +8,11 @@ interface ListEventFiles {
 }
 export async function listEventImages({ campaignId, eventId }: ListEventFiles) {
     // return [];
-    console.log("listEventImages", { campaignId, eventId });
+    // console.log("listEventImages", { campaignId, eventId });
     try {
         const response = await list({ path: `test/${campaignId}/${eventId}/image/` });
 
-        console.log({ response });
+        // console.log({ response });
         // return response;
         // const images = await Promise.all(
         //     response.items.filter(async (item) => {
@@ -26,9 +26,9 @@ export async function listEventImages({ campaignId, eventId }: ListEventFiles) {
                     path: item.path,
                 });
                 return { ...item, url: url.url.toString() };
-            })
+            }),
         );
-        console.log("currentImages", { eventId, items });
+        // console.log("currentImages", { eventId, items });
         return items;
     } catch (e) {
         console.log(e);
@@ -42,9 +42,9 @@ export async function listEventTexts({ campaignId, eventId }: ListEventFiles) {
     const items = await Promise.all(
         response.items.map(async (item) => {
             return { ...item, url: "" };
-        })
+        }),
     );
-    console.log("currentTexts", { eventId, items });
+    // console.log("currentTexts", { eventId, items });
     return items;
 }
 
@@ -57,8 +57,15 @@ export async function listEventVideos({ campaignId, eventId }: ListEventFiles) {
                 path: item.path,
             });
             return { ...item, url: url.url.toString() };
-        })
+        }),
     );
-    console.log("currentVideos", { eventId, items });
+    // console.log("currentVideos", { eventId, items });
     return items;
+}
+
+export async function listEventFiles({ campaignId, eventId }: ListEventFiles) {
+    const images = await listEventImages({ campaignId, eventId });
+    const texts = await listEventTexts({ campaignId, eventId });
+    const videos = await listEventVideos({ campaignId, eventId });
+    return { images, texts, videos };
 }

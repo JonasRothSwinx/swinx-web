@@ -53,7 +53,7 @@ export function validate(testData: Partial<Event>): testData is Event {
     return true;
 }
 export type EventReference = { id: string; type?: eventType };
-
+export type EventStatus = NonNullable<Schema["TimelineEvent"]["type"]["status"]>;
 type EventCommon = {
     id?: string;
     type: eventType;
@@ -73,6 +73,7 @@ type EventCommon = {
     info: EventInfo;
     targetAudience?: TargetAudience;
     isCompleted: boolean;
+    status: EventStatus;
 };
 
 type TargetAudience = {

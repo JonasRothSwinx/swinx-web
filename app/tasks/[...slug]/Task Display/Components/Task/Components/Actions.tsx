@@ -6,6 +6,11 @@ import { config } from "..";
 import { useMemo, useState } from "react";
 import { StorageManagerDialog } from "@/app/Components";
 import { queryClient, queryServer } from "@/app/Components/StorageManagers/functions";
+import { useConfirm } from "material-ui-confirm";
+import {
+    markEventFinished,
+    updateEventStatus,
+} from "@/app/tasks/[...slug]/Functions/Database/dbOperations";
 
 //#region Definitions
 const ActionNames = [
@@ -210,7 +215,7 @@ function UploadTextButton({ task, fileDialogSx, campaignId, eventId }: UploadTex
                 campaignId,
                 eventId,
             });
-            console.log("UploadTextButton", { files });
+            // console.log("UploadTextButton", { files });
             return files;
         },
     });
@@ -218,6 +223,7 @@ function UploadTextButton({ task, fileDialogSx, campaignId, eventId }: UploadTex
     const className = useMemo(() => {
         return `actionButton ${hasFile ? "hasFile" : ""}`;
     }, [hasFile]);
+    const confirm = useConfirm();
     return (
         <>
             {open && (
@@ -226,7 +232,42 @@ function UploadTextButton({ task, fileDialogSx, campaignId, eventId }: UploadTex
                     eventId={eventId}
                     dataType={"text"}
                     onClose={() => setOpen(false)}
-                    showControls={true}
+                    // showControls={true}
+                    onUploadSuccess={async ({ campaignId, eventId }) => {
+                        const eventFiles = await queryClient.listEventFiles({
+                            campaignId,
+                            eventId,
+                        });
+                        console.log("UploadTextButton", { eventFiles });
+                        switch (task.timelineEventType) {
+                            case "Draft-Post": {
+                                if (eventFiles.texts.length > 0 && eventFiles.images.length > 0) {
+                                    console.log("Post finished");
+                                    await confirm().then(async () => {
+                                        await updateEventStatus({
+                                            eventId,
+                                            status: "WAITING_FOR_APPROVAL",
+                                        });
+                                    });
+                                }
+                                break;
+                            }
+                            case "Invites": {
+                                await updateEventStatus({
+                                    eventId,
+                                    status: "COMPLETED",
+                                });
+                                await markEventFinished({ eventId, isCompleted: true });
+                                break;
+                            }
+                            default: {
+                                console.log("Unhandled event type", {
+                                    type: task.timelineEventType,
+                                });
+                                break;
+                            }
+                        }
+                    }}
                 />
             )}
             <Button
@@ -270,6 +311,7 @@ function UploadImageButton({
     const className = useMemo(() => {
         return `actionButton ${hasFile ? "hasFile" : ""}`;
     }, [hasFile]);
+    const confirm = useConfirm();
     return (
         <>
             {open && (
@@ -278,7 +320,46 @@ function UploadImageButton({
                     eventId={eventId}
                     dataType={"image"}
                     onClose={() => setOpen(false)}
-                    showControls={true}
+                    showControls={{ delete: true, download: true }}
+                    onUploadSuccess={async ({ campaignId, eventId }) => {
+                        const eventFiles = await queryClient.listEventFiles({
+                            campaignId,
+                            eventId,
+                        });
+                        console.log("UploadImageButton", { eventFiles });
+                        switch (task.timelineEventType) {
+                            case "Draft-Post": {
+                                if (eventFiles.texts.length > 0 && eventFiles.images.length > 0) {
+                                    console.log("Post finished");
+                                    await confirm().then(async () => {
+                                        await updateEventStatus({
+                                            eventId,
+                                            status: "WAITING_FOR_APPROVAL",
+                                        });
+                                    });
+                                }
+                                break;
+                            }
+                            case "Draft-Video": {
+                                if (eventFiles.texts.length > 0 && eventFiles.videos.length > 0) {
+                                    console.log("Post finished");
+                                    await confirm().then(async () => {
+                                        await updateEventStatus({
+                                            eventId,
+                                            status: "WAITING_FOR_APPROVAL",
+                                        });
+                                    });
+                                }
+                                break;
+                            }
+                            default: {
+                                console.log("Unhandled event type", {
+                                    type: task.timelineEventType,
+                                });
+                                break;
+                            }
+                        }
+                    }}
                 />
             )}
             <Button
@@ -316,6 +397,7 @@ function UploadVideoButton({ task, fileDialogSx, campaignId, eventId }: UploadVi
     const className = useMemo(() => {
         return `actionButton ${hasFile ? "hasFile" : ""}`;
     }, [hasFile]);
+    const confirm = useConfirm();
     return (
         <>
             {open && (
@@ -324,7 +406,46 @@ function UploadVideoButton({ task, fileDialogSx, campaignId, eventId }: UploadVi
                     eventId={eventId}
                     dataType={"video"}
                     onClose={() => setOpen(false)}
-                    showControls={true}
+                    showControls={{ delete: true, download: true }}
+                    onUploadSuccess={async ({ campaignId, eventId }) => {
+                        const eventFiles = await queryClient.listEventFiles({
+                            campaignId,
+                            eventId,
+                        });
+                        console.log("UploadVideoButton", { eventFiles });
+                        switch (task.timelineEventType) {
+                            case "Draft-Video": {
+                                if (eventFiles.texts.length > 0 && eventFiles.videos.length > 0) {
+                                    console.log("Post finished");
+                                    await confirm().then(async () => {
+                                        await updateEventStatus({
+                                            eventId,
+                                            status: "WAITING_FOR_APPROVAL",
+                                        });
+                                    });
+                                }
+                                break;
+                            }
+                            case "Draft-ImpulsVideo": {
+                                if (eventFiles.texts.length > 0 && eventFiles.videos.length > 0) {
+                                    console.log("Post finished");
+                                    await confirm().then(async () => {
+                                        await updateEventStatus({
+                                            eventId,
+                                            status: "WAITING_FOR_APPROVAL",
+                                        });
+                                    });
+                                }
+                                break;
+                            }
+                            default: {
+                                console.log("Unhandled event type", {
+                                    type: task.timelineEventType,
+                                });
+                                break;
+                            }
+                        }
+                    }}
                 />
             )}
             <Button

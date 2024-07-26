@@ -7,7 +7,11 @@ import { useEffect, useRef, useState } from "react";
 import { Box, Button, SxProps, TextField } from "@mui/material";
 import { downloadData, uploadData } from "aws-amplify/storage";
 
-export function TextStorageManager({ campaignId, eventId }: StorageManagerProps) {
+export function TextStorageManager({
+    campaignId,
+    eventId,
+    onSuccess: successCallback,
+}: StorageManagerProps) {
     const queryClient = useQueryClient();
     const currentFiles = useQuery({
         queryKey: [eventId, "text"],
@@ -24,6 +28,7 @@ export function TextStorageManager({ campaignId, eventId }: StorageManagerProps)
         <TextBoxInputManager
             campaignId={campaignId}
             eventId={eventId}
+            onSuccess={successCallback}
         />
     );
     return (
@@ -48,7 +53,7 @@ export function TextStorageManager({ campaignId, eventId }: StorageManagerProps)
     );
 }
 
-function TextBoxInputManager({ campaignId, eventId }: StorageManagerProps) {
+function TextBoxInputManager({ campaignId, eventId, onSuccess }: StorageManagerProps) {
     const queryClient = useQueryClient();
     const currentFiles = useQuery({
         queryKey: [eventId, "textContent"],
@@ -65,12 +70,15 @@ function TextBoxInputManager({ campaignId, eventId }: StorageManagerProps) {
         },
         retryDelay: 5000,
     });
-    const [text, setText] = useState<string | null>(null);
+    const [text, setText] = useState<string>("");
     const upload = useMutation({
         onMutate: async (text: string) => {
             const res = await uploadTextAsFile({
                 text,
                 path: `test/${campaignId}/${eventId}/text/`,
+                campaignId,
+                eventId,
+                onSuccess,
             });
             return res;
         },
@@ -78,6 +86,7 @@ function TextBoxInputManager({ campaignId, eventId }: StorageManagerProps) {
     useEffect(() => {
         console.log({ currentFiles: currentFiles.data });
         if (currentFiles.data) setText(currentFiles.data);
+        else setText("");
     }, [currentFiles.data]);
     const sx: SxProps = {
         display: "flex",
@@ -115,8 +124,18 @@ interface UploadTextAsFile {
     text: string;
     path: string;
     onProgress?: (params: OnProgressFunctionParams) => void;
+    onSuccess?: StorageManagerProps["onSuccess"];
+    campaignId: string;
+    eventId: string;
 }
-async function uploadTextAsFile({ text, path, onProgress }: UploadTextAsFile) {
+async function uploadTextAsFile({
+    text,
+    path,
+    onProgress,
+    onSuccess,
+    campaignId,
+    eventId,
+}: UploadTextAsFile) {
     const file = new File([text], "PostText.txt", {
         type: "text/plain",
     });
@@ -133,5 +152,6 @@ async function uploadTextAsFile({ text, path, onProgress }: UploadTextAsFile) {
     });
     await res.result;
     console.log("Upload complete", { res });
+    await onSuccess?.({ campaignId, eventId });
     return;
 }

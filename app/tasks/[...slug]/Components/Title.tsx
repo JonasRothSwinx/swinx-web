@@ -38,7 +38,7 @@ export default function Title({ parentEvent, campaign }: TitleProps) {
             id="Title"
             sx={sx}
         >
-            {/* <SwinxLogo /> */}
+            <SwinxLogo raveMode />
             <Typography className="PageTitle">{`Leistungübersicht für ihre Kampagne von ${campaign.customerCompany}`}</Typography>
         </Box>
     );
