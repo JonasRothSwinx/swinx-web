@@ -4,40 +4,14 @@ import { SwinxLogo } from "./SwinxLogo";
 interface LoadingProps {
     textMessage?: string;
     spinnerSize?: number;
+    hideLogo?: boolean;
 }
-export function Loading({ textMessage, spinnerSize }: LoadingProps) {
+export function LoadingPage(props: LoadingProps) {
     const styles: SxProps = {
         "&.LoadingPage": {
             height: "100dvh",
             width: "100dvw",
             display: "flex",
-            ".LoadingContainer": {
-                width: "fit-content",
-                margin: "auto",
-                padding: "20px",
-                // maxWidth: "80vw",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                textWrap: "wrap",
-                textAlign: "center",
-                wordWrap: "break-word",
-                borderRadius: "10px",
-                border: "1px solid black",
-                backgroundColor: "white",
-                "#Spinner": {
-                    margin: "10px",
-                },
-                "#SwinxLogo": {
-                    marginBottom: "10px",
-                },
-                "#LoadingMessage": {
-                    fontSize: "1.5rem",
-                    // fontWeight: "bold",
-                    // margin: "10px",
-                },
-            },
         },
     };
     return (
@@ -46,22 +20,58 @@ export function Loading({ textMessage, spinnerSize }: LoadingProps) {
             className="LoadingPage"
             sx={styles}
         >
-            <Box
-                id="LoadingContainer"
-                className="LoadingContainer"
+            <LoadingElement {...props} />
+        </Box>
+    );
+}
+
+export function LoadingElement({ textMessage, spinnerSize, hideLogo }: LoadingProps) {
+    const sx: SxProps = {
+        "&.LoadingContainer": {
+            width: "fit-content",
+            margin: "auto",
+            padding: "20px",
+            // maxWidth: "80vw",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            textWrap: "wrap",
+            textAlign: "center",
+            wordWrap: "break-word",
+            borderRadius: "10px",
+            border: "1px solid black",
+            backgroundColor: "white",
+            "#Spinner": {
+                margin: "10px",
+            },
+            "#SwinxLogo": {
+                marginBottom: "10px",
+            },
+            "#LoadingMessage": {
+                fontSize: "1.5rem",
+                // fontWeight: "bold",
+                // margin: "10px",
+            },
+        },
+    };
+    return (
+        <Box
+            id="LoadingContainer"
+            className="LoadingContainer"
+            sx={sx}
+        >
+            {!hideLogo && <SwinxLogo />}
+            <Typography
+                id="LoadingMessage"
+                className="LoadingMessage"
             >
-                <SwinxLogo />
-                <Typography
-                    id="LoadingMessage"
-                    className="LoadingMessage"
-                >
-                    {textMessage ?? "Lade"}
-                </Typography>
-                <CircularProgress
-                    id="Spinner"
-                    size={spinnerSize ?? 20}
-                />
-            </Box>
+                {textMessage ?? "Lade"}
+            </Typography>
+            <CircularProgress
+                id="Spinner"
+                size={spinnerSize ?? 20}
+            />
         </Box>
     );
 }

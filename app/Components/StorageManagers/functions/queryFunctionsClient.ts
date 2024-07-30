@@ -62,6 +62,19 @@ export async function listEventVideos({ campaignId, eventId }: ListEventFiles) {
     // console.log("currentVideos", { eventId, items });
     return items;
 }
+export async function listAllEventFiles({ campaignId, eventId }: ListEventFiles) {
+    const response = await list({ path: `test/${campaignId}/${eventId}/` });
+    console.log({ response });
+    const items = await Promise.all(
+        response.items.map(async (item) => {
+            const url = await getUrl({
+                path: item.path,
+            });
+            return { ...item, url: url.url.toString() };
+        }),
+    );
+    return items;
+}
 
 export async function listEventFiles({ campaignId, eventId }: ListEventFiles) {
     const images = await listEventImages({ campaignId, eventId });

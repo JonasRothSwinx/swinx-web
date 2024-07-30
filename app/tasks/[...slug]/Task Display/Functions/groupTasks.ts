@@ -12,6 +12,7 @@ interface GroupTaskReturn {
     awatingApprovalTasks: TimelineEvent[];
     futureTasks: TimelineEvent[];
     finishedTasks: TimelineEvent[];
+    ungroupedTasks: TimelineEvent[];
 }
 
 export default function groupTasks({ tasks, parentEvent, campaign }: GroupTaskParams) {
@@ -21,6 +22,7 @@ export default function groupTasks({ tasks, parentEvent, campaign }: GroupTaskPa
         awatingApprovalTasks: [],
         futureTasks: [],
         finishedTasks: [],
+        ungroupedTasks: [],
     };
     tasks.reduce((acc, task) => {
         const { status, date } = task;
@@ -35,6 +37,7 @@ export default function groupTasks({ tasks, parentEvent, campaign }: GroupTaskPa
             }
             case null:
             case undefined:
+            case "APPROVED":
             case "WAITING_FOR_DRAFT": {
                 if (dayjs(date).isBefore(now)) {
                     acc.pastDueTasks.push(task);
@@ -44,6 +47,8 @@ export default function groupTasks({ tasks, parentEvent, campaign }: GroupTaskPa
                 break;
             }
             default: {
+                console.log("unhandled task", task);
+                acc.ungroupedTasks.push(task);
                 break;
             }
         }

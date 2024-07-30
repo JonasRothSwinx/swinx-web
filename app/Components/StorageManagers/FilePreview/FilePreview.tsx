@@ -12,6 +12,13 @@ const typePreview: {
     image: (props) => <ImagePreview {...props} />,
     video: (props) => <VideoPreview {...props} />,
     text: (props) => <TextPreview {...props} />,
+    mixed: (props) => (
+        <Box>
+            <ImagePreview {...props} />
+            <VideoPreview {...props} />
+            <TextPreview {...props} />
+        </Box>
+    ),
 };
 interface FilePreviewProps {
     // files: Array<Prettify<ListPaginateWithPathOutput["items"][number]> & { url: string }>;
@@ -27,13 +34,19 @@ export function FilePreview({ files, dataType, showControls }: FilePreviewProps)
             display={"flex"}
             flexDirection={"row"}
             justifyContent={"center"}
+            flexWrap={"wrap"}
             marginBottom={"20px"}
             maxHeight={"100%"}
+            gap={"10px"}
             key={"FilePreviewCardContainer" + dataType}
         >
             <ConfirmProvider>
                 {files.map((file, index) => {
-                    const Element = typePreview[dataType];
+                    const [campaignId, eventId, fileType, fileName] = file.path
+                        .split("/")
+                        .slice(-4);
+
+                    const Element = typePreview[fileType as DataType];
                     try {
                         const key = `file_${file.path}_${file.lastModified?.toISOString()}`;
                         // console.log({ key });
@@ -42,6 +55,10 @@ export function FilePreview({ files, dataType, showControls }: FilePreviewProps)
                                 key={`file_${file.path}_${key}`}
                                 file={file}
                                 showControls={showControls}
+                                campaignId={campaignId}
+                                eventId={eventId}
+                                // campaignId={file.path.split("/")[1]}
+                                // eventId={file.path.split("/")[2]}
                             />
                         );
                     } catch (error) {
@@ -60,5 +77,8 @@ export interface PreviewProps {
         download?: boolean;
         approve?: boolean;
         sendToCustomer?: boolean;
+        replace?: boolean;
     };
+    campaignId: string;
+    eventId: string;
 }

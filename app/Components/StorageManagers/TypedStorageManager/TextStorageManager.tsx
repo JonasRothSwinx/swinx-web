@@ -7,7 +7,11 @@ import { useEffect, useRef, useState } from "react";
 import { Box, Button, SxProps, TextField } from "@mui/material";
 import { downloadData, uploadData } from "aws-amplify/storage";
 
-export function TextStorageManager({ campaignId, eventId, onSuccess: successCallback }: StorageManagerProps) {
+export function TextStorageManager({
+    campaignId,
+    eventId,
+    onSuccess: successCallback,
+}: StorageManagerProps) {
     const queryClient = useQueryClient();
     const currentFiles = useQuery({
         queryKey: [eventId, "text"],
@@ -20,7 +24,13 @@ export function TextStorageManager({ campaignId, eventId, onSuccess: successCall
         },
         retryDelay: 5000,
     });
-    return <TextBoxInputManager campaignId={campaignId} eventId={eventId} onSuccess={successCallback} />;
+    return (
+        <TextBoxInputManager
+            campaignId={campaignId}
+            eventId={eventId}
+            onSuccess={successCallback}
+        />
+    );
     return (
         <StorageManager
             acceptedFileTypes={["text/plain", "application/pdf"]}
@@ -61,6 +71,7 @@ function TextBoxInputManager({ campaignId, eventId, onSuccess }: StorageManagerP
         retryDelay: 5000,
     });
     const [text, setText] = useState<string>("");
+    const [hasChanges, setHasChanges] = useState<boolean>(false);
     const upload = useMutation({
         onMutate: async (text: string) => {
             const res = await uploadTextAsFile({
@@ -78,6 +89,11 @@ function TextBoxInputManager({ campaignId, eventId, onSuccess }: StorageManagerP
         if (currentFiles.data) setText(currentFiles.data);
         else setText("");
     }, [currentFiles.data]);
+    useEffect(() => {
+        console.log({ text });
+        if (currentFiles.data !== text) setHasChanges(true);
+        else setHasChanges(false);
+    }, [text, currentFiles.data]);
     const sx: SxProps = {
         display: "flex",
         flexDirection: "column",
@@ -94,7 +110,10 @@ function TextBoxInputManager({ campaignId, eventId, onSuccess }: StorageManagerP
         },
     };
     return (
-        <Box id="TextStorageManager" sx={sx}>
+        <Box
+            id="TextStorageManager"
+            sx={sx}
+        >
             <TextField
                 type="text"
                 className="text-input"
@@ -105,17 +124,19 @@ function TextBoxInputManager({ campaignId, eventId, onSuccess }: StorageManagerP
                 placeholder="Geben sie hier ihren Beitragstext ein"
                 onChange={(e) => setText(e.target.value)}
                 error={text.length > 2000}
-                helperText={text.length > 2000 ? `Der Text ist zu lang: ${text.length}/2000 Zeichen` : ""}
+                helperText={
+                    text.length > 2000 ? `Der Text ist zu lang: ${text.length}/2000 Zeichen` : ""
+                }
             />
             <Button
-                disabled={text === null || upload.isPending}
+                disabled={text === null || upload.isPending || !hasChanges}
                 onClick={async () => {
                     if (!text) return;
                     upload.mutate(text);
                 }}
                 variant="contained"
             >
-                {currentFiles.data !== null ? "Hochladen" : "Änderungen speichern"}
+                {currentFiles.data === "" ? "Hochladen" : "Änderungen speichern"}
             </Button>
         </Box>
     );
@@ -133,7 +154,14 @@ interface UploadTextAsFile {
     campaignId: string;
     eventId: string;
 }
-async function uploadTextAsFile({ text, path, onProgress, onSuccess, campaignId, eventId }: UploadTextAsFile) {
+async function uploadTextAsFile({
+    text,
+    path,
+    onProgress,
+    onSuccess,
+    campaignId,
+    eventId,
+}: UploadTextAsFile) {
     const file = new File([text], "PostText.txt", {
         type: "text/plain",
     });

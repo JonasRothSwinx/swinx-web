@@ -2,7 +2,7 @@ export { ConfigureAmplifyClientSide } from "../Components/ConfigureAmplifyClient
 export { QueryDebugDisplay } from "./QueryDebugDisplay";
 export { CustomErrorBoundary } from "./CustomErrorBoundary";
 export { CustomIconButton } from "./IconButton";
-export { Loading } from "./Loading";
+export { LoadingPage, LoadingElement } from "./Loading";
 export { SwinxLogo } from "./SwinxLogo";
 export * from "./Dialogs";
 export * from "./StorageManagers";

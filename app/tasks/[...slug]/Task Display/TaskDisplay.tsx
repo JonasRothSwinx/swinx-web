@@ -11,7 +11,9 @@ interface TaskDisplayProps {
 }
 export default function TaskDisplay({ tasks, parentEvent, campaign }: TaskDisplayProps) {
     const allTasks: TimelineEvent[] = useMemo(() => {
-        const multipartTasks = tasks.filter((task) => task.info?.draftDeadline);
+        const multipartTasks = tasks.filter(
+            (task) => task.info?.draftDeadline && task.status === "WAITING_FOR_DRAFT",
+        );
         const pseudoTasks: TimelineEvent[] = multipartTasks.map((task) => ({
             ...task,
             id: `${task.id}`,
@@ -48,7 +50,10 @@ export default function TaskDisplay({ tasks, parentEvent, campaign }: TaskDispla
         },
     };
     return (
-        <Box id="TaskDisplay" sx={sx}>
+        <Box
+            id="TaskDisplay"
+            sx={sx}
+        >
             <TaskGroup
                 tasks={groupedTasks.pastDueTasks}
                 groupTitle="Fällig"
@@ -70,6 +75,15 @@ export default function TaskDisplay({ tasks, parentEvent, campaign }: TaskDispla
             <TaskGroup
                 tasks={groupedTasks.awatingApprovalTasks}
                 groupTitle="Wartet auf Freigabe"
+                campaign={campaign}
+                parentEvent={parentEvent}
+                boxColor="#b4b4b4"
+                disableControls
+                // borderColor="#C6E0FF"
+            />
+            <TaskGroup
+                tasks={groupedTasks.ungroupedTasks}
+                groupTitle="Nicht gruppierte Aufgaben"
                 campaign={campaign}
                 parentEvent={parentEvent}
                 boxColor="#b4b4b4"

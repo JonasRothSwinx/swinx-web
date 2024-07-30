@@ -131,7 +131,8 @@ export default function Actions({ task, campaignId, eventId, disableControls }: 
         };
         if (!task) return possibleActions;
         else if (!task.timelineEventType) return possibleActions;
-        else if (!config.eventTypes.includes(task.timelineEventType as config.eventType)) return possibleActions;
+        else if (!config.eventTypes.includes(task.timelineEventType as config.eventType))
+            return possibleActions;
         else {
             const taskType: config.eventType = task.timelineEventType as config.eventType;
             possibleActions = { ...possibleActions, ...config.possibleAction[taskType] };
@@ -139,7 +140,10 @@ export default function Actions({ task, campaignId, eventId, disableControls }: 
         return possibleActions;
     }, [task]);
     return (
-        <Box sx={sx} id="ActionContainer">
+        <Box
+            sx={sx}
+            id="ActionContainer"
+        >
             <ConfirmProvider
                 defaultOptions={{
                     allowClose: false,
@@ -196,8 +200,21 @@ export default function Actions({ task, campaignId, eventId, disableControls }: 
                         eventId={eventId}
                     />
                 )}
+                {actionConfig.showMedia && (
+                    <ShowMediaButton
+                        disableControls={disableControls}
+                        task={task}
+                        fileDialogSx={fileDialogSx}
+                        campaignId={campaignId}
+                        eventId={eventId}
+                    />
+                )}
                 {actionConfig.uploadLink && (
-                    <UploadLinkButton task={task} fileDialogSx={fileDialogSx} campaignId={campaignId} />
+                    <UploadLinkButton
+                        task={task}
+                        fileDialogSx={fileDialogSx}
+                        campaignId={campaignId}
+                    />
                 )}
             </ConfirmProvider>
         </Box>
@@ -229,7 +246,13 @@ interface UploadTextButtonProps {
     eventId: string;
     disableControls?: boolean;
 }
-function UploadTextButton({ task, fileDialogSx, campaignId, eventId, disableControls }: UploadTextButtonProps) {
+function UploadTextButton({
+    task,
+    fileDialogSx,
+    campaignId,
+    eventId,
+    disableControls,
+}: UploadTextButtonProps) {
     const [open, setOpen] = useState(false);
     const files = useQuery({
         queryKey: [eventId, "text"],
@@ -298,7 +321,12 @@ function UploadTextButton({ task, fileDialogSx, campaignId, eventId, disableCont
                     onUploadSuccess={onUploadSuccess}
                 />
             )}
-            <Button disabled={disableControls} className={className} variant="contained" onClick={() => setOpen(true)}>
+            <Button
+                disabled={disableControls}
+                className={className}
+                variant="contained"
+                onClick={() => setOpen(true)}
+            >
                 <Typography className="ButtonText">Text hochladen</Typography>
                 {hasFile && <CheckIcon />}
             </Button>
@@ -405,7 +433,12 @@ function UploadImageButton({
                     onUploadSuccess={onUploadSuccess}
                 />
             )}
-            <Button disabled={disableControls} className={className} variant="contained" onClick={() => setOpen(true)}>
+            <Button
+                disabled={disableControls}
+                className={className}
+                variant="contained"
+                onClick={() => setOpen(true)}
+            >
                 <Typography className="ButtonText">{buttonText ?? "Bild hochladen"}</Typography>
                 {hasFile && <CheckIcon />}
             </Button>
@@ -421,7 +454,13 @@ interface UploadVideoButtonProps {
     disableControls?: boolean;
 }
 
-function UploadVideoButton({ task, fileDialogSx, campaignId, eventId, disableControls }: UploadVideoButtonProps) {
+function UploadVideoButton({
+    task,
+    fileDialogSx,
+    campaignId,
+    eventId,
+    disableControls,
+}: UploadVideoButtonProps) {
     const [open, setOpen] = useState(false);
     const files = useQuery({
         queryKey: [eventId, "video"],
@@ -489,9 +528,47 @@ function UploadVideoButton({ task, fileDialogSx, campaignId, eventId, disableCon
                     onUploadSuccess={onUploadSuccess}
                 />
             )}
-            <Button disabled={disableControls} className={className} variant="contained" onClick={() => setOpen(true)}>
+            <Button
+                disabled={disableControls}
+                className={className}
+                variant="contained"
+                onClick={() => setOpen(true)}
+            >
                 <Typography className="ButtonText">Video hochladen</Typography>
                 {hasFile && <CheckIcon />}
+            </Button>
+        </>
+    );
+}
+interface ShowMediaButtonProps {
+    task: TimelineEvent;
+    fileDialogSx?: SxProps;
+    campaignId: string;
+    eventId: string;
+    disableControls?: boolean;
+}
+
+function ShowMediaButton({ task, campaignId, eventId, disableControls }: ShowMediaButtonProps) {
+    const [open, setOpen] = useState(false);
+    return (
+        <>
+            {open && (
+                <StorageManagerDialog
+                    campaignId={campaignId}
+                    eventId={eventId}
+                    dataType={"mixed"}
+                    onClose={() => setOpen(false)}
+                    showControls={{ download: true }}
+                    hideUploader={true}
+                />
+            )}
+            <Button
+                disabled={disableControls}
+                className="actionButton"
+                variant="contained"
+                onClick={() => setOpen(true)}
+            >
+                <Typography className="ButtonText">Dateien anzeigen</Typography>
             </Button>
         </>
     );
@@ -508,7 +585,12 @@ function UploadLinkButton({ task, disableControls, campaignId }: UploadLinkButto
     const [open, setOpen] = useState(false);
     return (
         <>
-            <SubmitLinkDialog open={open} onClose={setOpen} task={task} campaignId={campaignId} />
+            <SubmitLinkDialog
+                open={open}
+                onClose={setOpen}
+                task={task}
+                campaignId={campaignId}
+            />
             <Button
                 disabled={disableControls}
                 className="actionButton linkButton"
@@ -561,7 +643,11 @@ function SubmitLinkDialog({ open, onClose, task, campaignId }: SubmitLinkDialogP
         },
     };
     return (
-        <Dialog open={open} onClose={() => onClose(false)} sx={sx}>
+        <Dialog
+            open={open}
+            onClose={() => onClose(false)}
+            sx={sx}
+        >
             <Box className="SubmitLinkContainer">
                 <Typography className="Title">Link einfügen</Typography>
                 <TextField

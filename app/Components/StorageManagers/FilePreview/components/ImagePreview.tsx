@@ -14,7 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getUrl } from "aws-amplify/storage";
 import { Controls } from "./Controls";
 
-export function ImagePreview({ file, showControls }: PreviewProps) {
+export function ImagePreview({ file, showControls, campaignId, eventId }: PreviewProps) {
     try {
         // console.log(file);
         const url = useQuery({
@@ -27,13 +27,22 @@ export function ImagePreview({ file, showControls }: PreviewProps) {
         const fileName = file.path.split("/").pop();
         if (!url.data)
             return (
-                <Skeleton key={"skeleton" + file.path + file.lastModified} variant="rounded" width={100} height={200} />
+                <Skeleton
+                    key={"skeleton" + file.path + file.lastModified}
+                    variant="rounded"
+                    width={100}
+                    height={200}
+                />
             );
         const sx: SxProps = {
             "&": {},
         };
         return (
-            <Card raised key={"card" + file.path + file.lastModified} sx={sx}>
+            <Card
+                raised
+                key={"card" + file.path + file.lastModified}
+                sx={sx}
+            >
                 {/* <CardActionArea> */}
                 <CardMedia
                     component={"img"}
@@ -46,7 +55,10 @@ export function ImagePreview({ file, showControls }: PreviewProps) {
                 <CardContent>
                     {/* <Typography textAlign={"center"}>{fileName}</Typography> */}
                     {/* <Typography textAlign={"center"}>Beitragsbild</Typography> */}
-                    <Controls path={file.path} showControls={showControls} />
+                    <Controls
+                        path={file.path}
+                        showControls={showControls}
+                    />
                 </CardContent>
                 {/* </CardActionArea> */}
             </Card>

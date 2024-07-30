@@ -15,30 +15,38 @@ import {
 import { FilePreview, type PreviewProps } from "./FilePreview";
 import { onUploadSuccess } from "./TypedStorageManager/functions";
 
-export type DataType = "image" | "video" | "text";
+export type DataType = "image" | "video" | "text" | "mixed";
 
 const StorageManagers: { [key in DataType]: (props: StorageManagerProps) => JSX.Element } = {
     image: (props) => ImageStorageManager(props),
     video: (props) => VideoStorageManager(props),
     text: (props) => TextStorageManager(props),
+    mixed: () => <div>Not Implemented</div>,
 };
 const listFunctions: {
-    [key in DataType]: (props: { campaignId: string; eventId: string }) => queryClient.ListEventFilesOutput;
+    [key in DataType]: (props: {
+        campaignId: string;
+        eventId: string;
+    }) => queryClient.ListEventFilesOutput;
 } = {
     image: ({ campaignId, eventId }) => queryClient.listEventImages({ campaignId, eventId }),
     video: ({ campaignId, eventId }) => queryClient.listEventVideos({ campaignId, eventId }),
     text: ({ campaignId, eventId }) => queryClient.listEventTexts({ campaignId, eventId }),
+    mixed: ({ campaignId, eventId }) => queryClient.listAllEventFiles({ campaignId, eventId }),
 };
 
 const hidePreviewConfig: { [key in DataType]: boolean } = {
     image: false,
     video: false,
     text: true,
+    mixed: false,
 };
 interface StorageManagerDialogProps {
     campaignId: string;
     eventId: string;
     dataType: DataType;
+    hidePreview?: boolean;
+    hideUploader?: boolean;
     showControls?: PreviewProps["showControls"];
 
     onClose: () => void;
@@ -50,6 +58,8 @@ export function StorageManagerDialog({
     eventId,
     dataType,
     showControls,
+    hidePreview = false,
+    hideUploader = false,
 
     onClose,
     onUploadSuccess,
@@ -64,7 +74,7 @@ export function StorageManagerDialog({
             });
         },
     });
-    const hidePreview = hidePreviewConfig[dataType];
+    const hidePreviewSetting = hidePreview || hidePreviewConfig[dataType];
     const StorageManager = StorageManagers[dataType];
     const sx: SxProps = {
         "&": {
@@ -141,16 +151,39 @@ export function StorageManagerDialog({
         },
     };
     return (
-        <Dialog id="StorageManagerWrapper" open onClose={onClose} sx={sx}>
+        <Dialog
+            id="StorageManagerWrapper"
+            open
+            onClose={onClose}
+            sx={sx}
+        >
             <Box className="DialogContent">
-                {hidePreview || !currentFiles.data || currentFiles.data.length === 0 ? null : (
-                    <Box id="FilePreview" className="FilePreviewContainer">
-                        <FilePreview files={currentFiles.data ?? []} dataType={dataType} showControls={showControls} />
+                {hidePreviewSetting ||
+                !currentFiles.data ||
+                currentFiles.data.length === 0 ? null : (
+                    <Box
+                        id="FilePreview"
+                        className="FilePreviewContainer"
+                    >
+                        <FilePreview
+                            files={currentFiles.data ?? []}
+                            dataType={dataType}
+                            showControls={showControls}
+                        />
                     </Box>
                 )}
-                <Box id="StorageManager" className="StorageManagerContainer">
-                    <StorageManager campaignId={campaignId} eventId={eventId} onSuccess={onUploadSuccess} />
-                </Box>
+                {!hideUploader && (
+                    <Box
+                        id="StorageManager"
+                        className="StorageManagerContainer"
+                    >
+                        <StorageManager
+                            campaignId={campaignId}
+                            eventId={eventId}
+                            onSuccess={onUploadSuccess}
+                        />
+                    </Box>
+                )}
             </Box>
         </Dialog>
     );

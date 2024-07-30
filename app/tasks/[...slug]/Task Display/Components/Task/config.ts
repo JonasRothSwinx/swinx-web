@@ -2,7 +2,12 @@ import { Events } from "@/app/ServerFunctions/types";
 import { TimelineEvent } from "../../../Functions/Database/types";
 import { getActionTime } from "@/app/utils";
 
-export const eventTypes = [...Events.eventValues, "Draft-Post", "Draft-Video", "Draft-ImpulsVideo"] as const;
+export const eventTypes = [
+    ...Events.eventValues,
+    "Draft-Post",
+    "Draft-Video",
+    "Draft-ImpulsVideo",
+] as const;
 export type eventType = (typeof eventTypes)[number];
 
 type nextStepsParams = {
@@ -23,7 +28,9 @@ export const nextSteps: { [key in eventType]: (params: nextStepsParams) => strin
         })}. Bitte teilen sie danach hier den Link auf den Beitrag mit uns`,
     WebinarSpeaker: (params) => "Teilen sie ihr Wissen mit den Teilnehmern des Webinars",
     ImpulsVideo: (params) =>
-        `Ihr freigegebenes Video wird ${getActionTime({ actionDate: params.task.date })} im Webinar gezeigt`,
+        `Ihr freigegebenes Video wird ${getActionTime({
+            actionDate: params.task.date,
+        })} im Webinar gezeigt`,
     Webinar: (params) => "<Error>",
     "Draft-Post": (params) =>
         `Schreiben sie bis spätestens ${getActionTime({
@@ -46,18 +53,21 @@ type ContentLengthParams = {
     task: TimelineEvent;
 };
 
-export const contentLength: { [key in eventType]: (params: ContentLengthParams) => string | null } = {
-    Invites: (params) => null,
-    Post: (params) => null,
-    Video: (params) => null,
-    WebinarSpeaker: (params) => null,
-    ImpulsVideo: (params) => null,
-    Webinar: (params) => null,
-    "Draft-Post": (params) => (params.task.info?.charLimit ? `${params.task.info?.charLimit} Zeichen` : null),
-    "Draft-Video": (params) => (params.task.info?.maxDuration ? `${params.task.info?.maxDuration} Minuten` : null),
-    "Draft-ImpulsVideo": (params) =>
-        params.task.info?.maxDuration ? `${params.task.info?.maxDuration} Minuten` : null,
-};
+export const contentLength: { [key in eventType]: (params: ContentLengthParams) => string | null } =
+    {
+        Invites: (params) => null,
+        Post: (params) => null,
+        Video: (params) => null,
+        WebinarSpeaker: (params) => null,
+        ImpulsVideo: (params) => null,
+        Webinar: (params) => null,
+        "Draft-Post": (params) =>
+            params.task.info?.charLimit ? `${params.task.info?.charLimit} Zeichen` : null,
+        "Draft-Video": (params) =>
+            params.task.info?.maxDuration ? `${params.task.info?.maxDuration} Minuten` : null,
+        "Draft-ImpulsVideo": (params) =>
+            params.task.info?.maxDuration ? `${params.task.info?.maxDuration} Minuten` : null,
+    };
 
 type TaskTopicParams = {
     task: TimelineEvent;
@@ -82,6 +92,7 @@ const PossibleActionTypes = [
     "uploadImage",
     "uploadLink",
     "uploadScreenshot",
+    "showMedia",
 ] as const;
 export type PossibleAction = (typeof PossibleActionTypes)[number];
 export type ActionConfig = { [key in PossibleAction]?: boolean };
@@ -93,9 +104,11 @@ export const possibleAction: { [key in eventType]: ActionConfig } = {
     },
     Post: {
         uploadLink: true,
+        showMedia: true,
     },
     Video: {
         uploadLink: true,
+        showMedia: true,
     },
     WebinarSpeaker: {
         markFinished: true,
@@ -103,6 +116,7 @@ export const possibleAction: { [key in eventType]: ActionConfig } = {
     ImpulsVideo: {
         // markFinished: true,
         uploadVideo: true,
+        showMedia: true,
     },
     Webinar: {},
     "Draft-Post": {

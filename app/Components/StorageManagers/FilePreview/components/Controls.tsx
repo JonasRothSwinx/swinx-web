@@ -2,24 +2,39 @@ import { Box, Button, SxProps } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { downloadData, getUrl, remove } from "aws-amplify/storage";
 import { PreviewProps } from "../FilePreview";
+import { useMemo, useState } from "react";
+import { DataType, StorageManagerDialog } from "../../StorageManagerDialog";
+import { dataClient } from "@/app/tasks/[...slug]/Functions/Database";
 
 interface ControlsProps {
     path: string;
     showControls?: PreviewProps["showControls"];
 }
-export function Controls({ path, showControls = {} }: ControlsProps) {
-    const sx: SxProps = {
-        "&": {
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            gap: "10px",
-        },
-    };
+export function Controls(props: ControlsProps) {
+    const { path, showControls = {} } = props;
+    const buttonAmount = Object.keys(showControls).length;
+    const sx: SxProps = useMemo(
+        () => ({
+            "&": {
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: buttonAmount > 1 ? "space-between" : "center",
+                gap: "10px",
+                width: "100%",
+            },
+        }),
+        [buttonAmount],
+    );
+    if (!showControls || buttonAmount === 0) return null;
     return (
-        <Box>
-            <DownloadButton path={path} />
-            <DeleteButton path={path} />
+        <Box
+            id={"PreviewControls"}
+            sx={sx}
+        >
+            {showControls.download && <DownloadButton {...props} />}
+            {showControls.delete && <DeleteButton {...props} />}
+            {/* {showControls.approve && <ApproveButton {...props} />} */}
+            {showControls.replace && <ReplaceButton {...props} />}
         </Box>
     );
 }
@@ -64,6 +79,10 @@ function DeleteButton({ path }: ControlsProps) {
             console.log("Delete mutate", path);
             // if (!url.data) return;
             const response = await remove({ path });
+            await dataClient.updateEventStatus({
+                eventId,
+                status: "WAITING_FOR_DRAFT",
+            });
             await queryClient.invalidateQueries({ queryKey: [eventId, fileType] });
             return;
         },
@@ -82,4 +101,31 @@ function DeleteButton({ path }: ControlsProps) {
             Löschen
         </Button>
     );
+}
+function ReplaceButton({ path }: ControlsProps) {
+    const [campaignId, eventId, fileType, fileName] = path.split("/").slice(-4);
+    const [open, setOpen] = useState(false);
+    return (
+        <>
+            {open && (
+                <StorageManagerDialog
+                    onClose={() => setOpen(false)}
+                    dataType={fileType as DataType}
+                    campaignId={campaignId}
+                    eventId={eventId}
+                    hidePreview
+                />
+            )}
+            <Button
+                onClick={() => {
+                    setOpen(true);
+                }}
+            >
+                Ersetzen
+            </Button>
+        </>
+    );
+}
+function ApproveButton({ path }: ControlsProps) {
+    return <Button>Freigeben</Button>;
 }

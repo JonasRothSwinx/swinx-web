@@ -12,6 +12,7 @@ interface SendMailProps {
     subject: string;
     html: string;
     text?: string;
+    noSenderBcc?: boolean;
 }
 export default async function sendMail({
     ToAddresses,
@@ -20,10 +21,11 @@ export default async function sendMail({
     subject,
     html,
     text,
+    noSenderBcc,
 }: SendMailProps) {
     const emailClient = await getSESClient();
     const bcc: string[] = [];
-    if (sender && !sender.email.includes("noreply")) bcc.push(sender.email);
+    if (sender && !noSenderBcc && !sender.email.includes("noreply")) bcc.push(sender.email);
     const command = new SendEmailCommand({
         FromEmailAddress: sender
             ? `${sender.name} <${sender.email}>`

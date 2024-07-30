@@ -1,4 +1,4 @@
-import { CustomErrorBoundary, Loading, QueryDebugDisplay } from "@/app/Components";
+import { CustomErrorBoundary, LoadingPage, QueryDebugDisplay } from "@/app/Components";
 import { highlightData } from "@/app/Definitions/types";
 import { dataClient } from "@/app/ServerFunctions/database";
 import { Assignment, Campaign } from "@/app/ServerFunctions/types";
@@ -160,7 +160,7 @@ export default function CampaignDetails({ campaignId }: CampaignDetailsProps) {
     }, []);
     if (campaign.isLoading)
         return (
-            <Loading
+            <LoadingPage
                 textMessage="Kampagne wird geladen"
                 spinnerSize={100}
             />

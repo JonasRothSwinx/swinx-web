@@ -63,7 +63,7 @@
     },
     "devDependencies": {
         "@aws-amplify/backend": "^1.0.4",
-        "@aws-amplify/backend-cli": "^1.1.0",
+        "@aws-amplify/backend-cli": "^1.2.1",
         "@simbathesailor/use-what-changed": "^2.0.0",
         "@tanstack/eslint-plugin-query": "^5.27.3",
         "@types/aws-lambda": "^8.10.136",
