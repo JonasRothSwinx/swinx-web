@@ -1,11 +1,4 @@
-import {
-    Accordion,
-    AccordionDetails,
-    AccordionSummary,
-    Box,
-    SxProps,
-    Typography,
-} from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Box, SxProps, Typography } from "@mui/material";
 import { Campaign, ParentEvent, TimelineEvent } from "../../../Functions/Database/types";
 import { dayjs } from "@/app/utils";
 import { ExpandMoreIcon } from "@/app/Definitions/Icons";
@@ -18,6 +11,7 @@ interface TaskProps {
     task: TimelineEvent;
     defaultExpanded?: boolean;
     dateColor?: string;
+    disableControls?: boolean;
 }
 export default function Task({
     campaign,
@@ -25,6 +19,7 @@ export default function Task({
     task,
     defaultExpanded = false,
     dateColor,
+    disableControls,
 }: TaskProps) {
     const sx: SxProps = {
         "&": {
@@ -46,7 +41,7 @@ export default function Task({
                 borderBottomLeftRadius: "10px",
                 borderBottomRightRadius: "10px",
                 borderBottomStyle: "none",
-                ".MuiAccordionSummary-root": {
+                ".MuiAccordionSummary-root:not(.Mui-expanded)": {
                     borderBottom: "none",
                     // backgroundColor: "red",
                 },
@@ -76,7 +71,7 @@ export default function Task({
                 ".MuiAccordionSummary-content": {
                     margin: "0",
                 },
-                "&:last-of-type": {
+                "&:last-of-type:not(.Mui-expanded)": {
                     borderBottom: "none",
                 },
             },
@@ -114,6 +109,17 @@ export default function Task({
                 backgroundColor: "red",
             },
         },
+        "@media (max-width: 800px)": {
+            ".MuiAccordionDetails-root": {
+                flexDirection: "column",
+                "#TaskContent": {
+                    flexDirection: "column",
+                    "&>*": {
+                        borderRight: "none",
+                    },
+                },
+            },
+        },
     };
     return (
         <Accordion
@@ -126,10 +132,7 @@ export default function Task({
                 id="AccordionTitle"
                 // expandIcon={<ExpandMoreIcon id="Expand" />}
             >
-                <Title
-                    task={task}
-                    dateColor={dateColor}
-                />
+                <Title task={task} dateColor={dateColor} />
                 {/* <Typography>
                     {dateString} - {dateDiffText}: {task.timelineEventType}
                 </Typography> */}
@@ -140,11 +143,7 @@ export default function Task({
                         <NextSteps task={task} />
                         <Description task={task} />
                     </Box>
-                    <Actions
-                        task={task}
-                        campaignId={campaign.id}
-                        eventId={task.id}
-                    />
+                    <Actions task={task} campaignId={campaign.id} eventId={task.id} disableControls={disableControls} />
                 </Box>
                 {/* <Typography>{task.eventTitle}</Typography> */}
             </AccordionDetails>
@@ -171,10 +170,7 @@ function NextSteps({ task }: NextSteps) {
         },
     };
     return (
-        <Box
-            id="NextSteps"
-            sx={sx}
-        >
+        <Box id="NextSteps" sx={sx}>
             {/* <Typography>Nächste Schritte:</Typography> */}
             <Typography>{textContent}</Typography>
         </Box>

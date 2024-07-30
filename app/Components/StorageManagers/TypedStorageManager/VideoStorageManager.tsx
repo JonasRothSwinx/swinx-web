@@ -5,7 +5,7 @@ import { StorageManagerProps } from "./types";
 import { onUploadSuccess } from "./functions";
 import { dictionary } from "./localization";
 
-export function VideoStorageManager({ campaignId, eventId }: StorageManagerProps) {
+export function VideoStorageManager({ campaignId, eventId, onSuccess }: StorageManagerProps) {
     const queryClient = useQueryClient();
     const currentFiles = useQuery({
         queryKey: [eventId, "video"],
@@ -28,8 +28,9 @@ export function VideoStorageManager({ campaignId, eventId }: StorageManagerProps
             processFile={async ({ file }) => preprocessFile({ file, targetFileName: "PostVideo" })}
             // maxFileSize={20_000_000}
             isResumable
+            autoUpload={false}
             onUploadSuccess={async (file) => {
-                return onUploadSuccess({
+                await onUploadSuccess({
                     file,
                     queryClient,
                     currentFiles,
@@ -37,6 +38,7 @@ export function VideoStorageManager({ campaignId, eventId }: StorageManagerProps
                     eventId,
                     dataType: "video",
                 });
+                await onSuccess?.({ campaignId, eventId });
             }}
             displayText={dictionary}
         />

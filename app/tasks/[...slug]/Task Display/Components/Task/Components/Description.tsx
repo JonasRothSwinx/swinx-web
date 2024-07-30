@@ -24,6 +24,13 @@ export default function Description({ task }: DescriptionProps) {
                     },
                 },
             },
+            "@media (max-width: 800px)": {
+                ".MuiTable-root": {
+                    ".MuiTableCell-root:nth-of-type(2)": {
+                        wordBreak: "break-all",
+                    },
+                },
+            },
         },
     };
     return (

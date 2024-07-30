@@ -1,7 +1,11 @@
 import { Candidates } from "@/app/ServerFunctions/types";
 import * as dbOperations from "./dbOperations";
+import { Schema } from "@/amplify/data/resource";
+import { config } from ".";
+import { Task, TimelineEvent } from "./types";
+import { sharePostLink } from "./notifyManagers";
 
-const dataClient = {
+export const dataClient = {
     getCandidate,
     getAssignmentData,
     getEventsByAssignment,
@@ -11,8 +15,10 @@ const dataClient = {
     getInfluencerDetails,
     getTaskDetails,
     markEventFinished,
+    updateEventStatus,
+    submitPostLink,
+    getCampaignManagers,
 };
-export default dataClient;
 
 interface GetCandidateParams {
     id: string;
@@ -81,4 +87,76 @@ interface MarkEventFinishedParams {
 }
 async function markEventFinished({ eventId, isCompleted }: MarkEventFinishedParams) {
     return await dbOperations.markEventFinished({ eventId, isCompleted: isCompleted });
+}
+
+interface UpdateEventStatusParams {
+    eventId: string;
+    status: Schema["TimelineEvent"]["type"]["status"];
+}
+
+async function updateEventStatus({ eventId, status }: UpdateEventStatusParams) {
+    const queryClient = config.getQueryClient();
+    const dbResponse = dbOperations.updateEventStatus({ eventId, status });
+    console.log("updateEventStatus", { eventId, status });
+    queryClient.setQueryData<Task>(["task"], (oldData) => {
+        if (!oldData) return;
+        const newData: Task = {
+            ...oldData,
+            events: oldData.events.map((event) => {
+                if (event.id === eventId) {
+                    return {
+                        ...event,
+                        status,
+                    };
+                }
+                return event;
+            }),
+        };
+        return newData;
+    });
+    await Promise.all([dbResponse, queryClient.invalidateQueries({ queryKey: ["task"] })]);
+}
+
+interface SubmitPostLinkParams {
+    eventId: string;
+    postLink: string;
+    campaignId: string;
+}
+
+async function submitPostLink({ eventId, postLink, campaignId }: SubmitPostLinkParams) {
+    console.log("submitPostLink", { eventId, postLink });
+    const queryClient = config.getQueryClient();
+    console.log("hi 1!");
+    const dbResponse = await dbOperations.submitPostLink({ eventId, postLink });
+    console.log("hi 2!", dbResponse);
+    queryClient.setQueryData<Task>(["task"], (oldData) => {
+        if (!oldData) return;
+        const newData: Task = {
+            ...oldData,
+            events: oldData.events.map((event) => {
+                if (event.id === eventId) {
+                    return {
+                        ...event,
+                        postLink,
+                    };
+                }
+                return event;
+            }),
+        };
+        return newData;
+    });
+    console.log("hi 3!");
+    const emailResponse = await sharePostLink({
+        eventId,
+        campaignId,
+        postLink,
+    });
+    console.log("submitPostLink", emailResponse);
+}
+
+interface GetCampaignManagersParams {
+    campaignId: string;
+}
+async function getCampaignManagers({ campaignId }: GetCampaignManagersParams) {
+    return await dbOperations.getCampaignManagers({ campaignId });
 }

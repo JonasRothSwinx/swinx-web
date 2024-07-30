@@ -18,7 +18,7 @@ export function TaskSummary({ events }: TaskSummaryProps) {
     events.reduce((acc, event) => {
         const eventType = event.timelineEventType;
         switch (eventType) {
-            case "Speaker": {
+            case "WebinarSpeaker": {
                 acc.speakerDate = dayjs(event.date);
                 break;
             }
@@ -46,10 +46,7 @@ export function TaskSummary({ events }: TaskSummaryProps) {
         "&": {},
     };
     return (
-        <Box
-            sx={sx}
-            className="SummaryTable"
-        >
+        <Box sx={sx} className="SummaryTable">
             <Typography className="SummaryTableTitle">Leistungsübersicht</Typography>
             <Table>
                 <TableBody>
@@ -82,16 +79,15 @@ export function TaskSummary({ events }: TaskSummaryProps) {
                     )}
                     {summaryDetails.totalVideos && (
                         <TableRow>
-                            <TableCell>Impuls-Videos</TableCell>
+                            <TableCell>Impulsvideos</TableCell>
                             <TableCell>
-                                {summaryDetails.totalVideos}{" "}
-                                {summaryDetails.totalVideos === 1 ? "Video" : "Videos"}
+                                {summaryDetails.totalVideos} {summaryDetails.totalVideos === 1 ? "Video" : "Videos"}
                             </TableCell>
                         </TableRow>
                     )}
                     {summaryDetails.speakerDate && (
                         <TableRow>
-                            <TableCell>SpeakerSlot</TableCell>
+                            <TableCell>Speaker Slot</TableCell>
                             <TableCell>{summaryDetails.speakerDate.format("DD.MM.YYYY")}</TableCell>
                         </TableRow>
                     )}

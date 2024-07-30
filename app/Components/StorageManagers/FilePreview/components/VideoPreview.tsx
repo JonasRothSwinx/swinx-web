@@ -2,8 +2,9 @@ import { Card, CardActionArea, CardContent, CardMedia, Skeleton, Typography } fr
 import { PreviewProps } from "../FilePreview";
 import { useQuery } from "@tanstack/react-query";
 import { getUrl } from "aws-amplify/storage";
+import { Controls } from "./Controls";
 
-export function VideoPreview({ file }: PreviewProps) {
+export function VideoPreview({ file, showControls }: PreviewProps) {
     try {
         // console.log(file);
         const url = useQuery({
@@ -20,20 +21,19 @@ export function VideoPreview({ file }: PreviewProps) {
             );
         return (
             <Card raised key={"card" + file.path + file.lastModified}>
-                <CardActionArea>
-                    <CardMedia
-                        component={"video"}
-                        src={url.data}
-                        width={200}
-                        style={{ maxHeight: "200px" }}
-                        controls
-                        title={fileName}
-                    />
-                    <CardContent>
-                        {/* <Typography textAlign={"center"}>{fileName}</Typography> */}
-                        <Typography textAlign={"center"}>Beitragsvideo</Typography>
-                    </CardContent>
-                </CardActionArea>
+                <CardMedia
+                    component={"video"}
+                    src={url.data}
+                    width={200}
+                    style={{ maxHeight: "200px" }}
+                    controls
+                    title={fileName}
+                />
+                <CardContent>
+                    {/* <Typography textAlign={"center"}>{fileName}</Typography> */}
+                    {/* <Typography textAlign={"center"}>Beitragsbild</Typography> */}
+                    <Controls path={file.path} showControls={showControls} />
+                </CardContent>
             </Card>
         );
     } catch (error) {

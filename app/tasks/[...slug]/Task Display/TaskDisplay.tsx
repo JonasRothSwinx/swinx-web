@@ -48,10 +48,7 @@ export default function TaskDisplay({ tasks, parentEvent, campaign }: TaskDispla
         },
     };
     return (
-        <Box
-            id="TaskDisplay"
-            sx={sx}
-        >
+        <Box id="TaskDisplay" sx={sx}>
             <TaskGroup
                 tasks={groupedTasks.pastDueTasks}
                 groupTitle="Fällig"
@@ -71,12 +68,22 @@ export default function TaskDisplay({ tasks, parentEvent, campaign }: TaskDispla
                 // borderColor="#C6E0FF"
             />
             <TaskGroup
+                tasks={groupedTasks.awatingApprovalTasks}
+                groupTitle="Wartet auf Freigabe"
+                campaign={campaign}
+                parentEvent={parentEvent}
+                boxColor="#b4b4b4"
+                disableControls
+                // borderColor="#C6E0FF"
+            />
+            <TaskGroup
                 tasks={groupedTasks.finishedTasks}
                 groupTitle="Erledigt"
                 campaign={campaign}
                 parentEvent={parentEvent}
                 dateColor="lightgreen"
                 boxColor="#F8F8F8"
+                disableControls
                 // borderColor="lightgreen"
             />
         </Box>

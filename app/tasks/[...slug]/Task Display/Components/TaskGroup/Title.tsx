@@ -24,24 +24,17 @@ export default function Title({ title, taskCount, ...props }: TitleProps) {
                 // lineHeight: "130%",
                 fontWeight: "bold",
             },
+            "@media (max-width: 800px)": {
+                flexDirection: "column-reverse",
+            },
         },
     };
     return (
-        <Box
-            className="Title"
-            sx={sx}
-        >
-            <Typography
-                {...props}
-                className="TaskCount"
-            >
+        <Box className="Title" sx={sx}>
+            <Typography {...props} className="TaskCount">
                 {taskCount === 1 ? `Eine Aufgabe` : `${taskCount} Aufgaben`}
             </Typography>
-            <Typography
-                {...props}
-                id="GroupTitle"
-                className="GroupTitle"
-            >
+            <Typography {...props} id="GroupTitle" className="GroupTitle">
                 {title}
             </Typography>
         </Box>

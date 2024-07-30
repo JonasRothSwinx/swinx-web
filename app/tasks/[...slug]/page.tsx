@@ -3,7 +3,7 @@
 import { Box, SxProps, ThemeProvider, createTheme } from "@mui/material";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { blue } from "@mui/material/colors";
-import { dataClient } from "@/app/ServerFunctions/database";
+import { config } from "./Functions/Database/";
 import TasksLanding from "./TasksLanding";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 // import styles from "./styles";
@@ -13,7 +13,7 @@ import { ConfirmProvider, ConfirmProviderProps } from "material-ui-confirm";
 import "@aws-amplify/ui-react/styles.css";
 
 const queryClient = new QueryClient();
-dataClient.config.setQueryClient(queryClient);
+config.setQueryClient(queryClient);
 const theme = createTheme({
     palette: {
         primary: {
@@ -78,10 +78,7 @@ export default function Page({ params }: { params: { slug: string[] } }) {
         <ThemeProvider theme={theme}>
             <QueryClientProvider client={queryClient}>
                 <ConfirmProvider defaultOptions={confirmOptions}>
-                    <Box
-                        id="TasksLandingPage"
-                        sx={sx}
-                    >
+                    <Box id="TasksLandingPage" sx={sx}>
                         <TasksLanding
                             assignmentId={assignmentId}
                             campaignId={campaignId}

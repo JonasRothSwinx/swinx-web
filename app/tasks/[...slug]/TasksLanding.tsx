@@ -32,6 +32,7 @@ export default function TasksLanding({
     const task = useQuery({
         queryKey: ["task"],
         queryFn: async () => {
+            console.log("Task data requested");
             const response = await dataClient.getTaskDetails({
                 assignmentId: assignmentId,
                 campaignId: campaignId,
@@ -48,7 +49,7 @@ export default function TasksLanding({
         const campaign = task.data?.campaignInfo ?? null;
         const influencer = task.data?.influencerInfo ?? null;
         return [assignment, events, campaign, influencer];
-    }, [task]);
+    }, [task.data]);
 
     const parentEvent = useQuery({
         enabled: events !== null && events?.length > 0,
@@ -221,7 +222,7 @@ export default function TasksLanding({
                 // },
             },
         }),
-        [],
+        []
     );
     //#endregion
     //MARK: - Event Handler
@@ -232,12 +233,7 @@ export default function TasksLanding({
         return <Typography id="ErrorText">Ungültige Daten empfangen</Typography>;
     }
     if (task.isLoading || parentEvent.isLoading) {
-        return (
-            <Loading
-                textMessage="Kampagne wird geladen"
-                spinnerSize={100}
-            />
-        );
+        return <Loading textMessage="Kampagne wird geladen" spinnerSize={100} />;
     }
     if (
         task.isError ||
@@ -259,37 +255,18 @@ export default function TasksLanding({
 
     return (
         <>
-            <Box
-                id="ResponseLandingContainer"
-                sx={styles}
-            >
-                <Title
-                    parentEvent={parentEvent.data}
-                    campaign={campaign}
-                />
-                <Box
-                    id="TaskSummaryBody"
-                    className="TaskSummaryBody"
-                >
-                    <Box
-                        id="TaskDescriptionContainer"
-                        className="TaskDescriptionContainer"
-                    >
+            <Box id="ResponseLandingContainer" sx={styles}>
+                <Title parentEvent={parentEvent.data} campaign={campaign} />
+                <Box id="TaskSummaryBody" className="TaskSummaryBody">
+                    <Box id="TaskDescriptionContainer" className="TaskDescriptionContainer">
                         <Summary
                             influencerFullName={`${influencer.firstName} ${influencer.lastName}`}
                             webinar={parentEvent.data}
                             campaign={campaign}
                             events={events}
                         />
-                        <Box
-                            id="TasksScrollableContent"
-                            className="ScrollableContent"
-                        >
-                            <TaskDisplay
-                                tasks={events}
-                                parentEvent={parentEvent.data}
-                                campaign={campaign}
-                            />
+                        <Box id="TasksScrollableContent" className="ScrollableContent">
+                            <TaskDisplay tasks={events} parentEvent={parentEvent.data} campaign={campaign} />
                         </Box>
                     </Box>
                 </Box>

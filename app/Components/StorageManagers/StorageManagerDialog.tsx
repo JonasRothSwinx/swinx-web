@@ -23,10 +23,7 @@ const StorageManagers: { [key in DataType]: (props: StorageManagerProps) => JSX.
     text: (props) => TextStorageManager(props),
 };
 const listFunctions: {
-    [key in DataType]: (props: {
-        campaignId: string;
-        eventId: string;
-    }) => queryClient.ListEventFilesOutput;
+    [key in DataType]: (props: { campaignId: string; eventId: string }) => queryClient.ListEventFilesOutput;
 } = {
     image: ({ campaignId, eventId }) => queryClient.listEventImages({ campaignId, eventId }),
     video: ({ campaignId, eventId }) => queryClient.listEventVideos({ campaignId, eventId }),
@@ -72,57 +69,87 @@ export function StorageManagerDialog({
     const sx: SxProps = {
         "&": {
             width: "100%",
-            ".DialogContent": {
-                display: "flex",
-                flexDirection: "row",
-                gap: "20px",
-                padding: "20px",
-                overflow: "hidden",
-                height: "100%",
-                // minWidth: "max(400px , 50dvw)",
-                ".FilePreviewContainer": {
-                    flex: 2,
-                    flexBasis: "fit-content",
-                    maxHeight: "100%",
+            ".MuiPaper-root": {
+                maxHeight: "100dvh",
+                maxWidth: "100dvw",
+                ".DialogContent": {
+                    display: "flex",
+                    flexDirection: "row",
+                    gap: "20px",
+                    padding: "20px",
+                    overflow: "hidden",
+                    // overflowY: "auto",
+                    height: "100%",
+                    // minWidth: "max(400px , 50dvw)",
+                    ".FilePreviewContainer": {
+                        flex: 2,
+                        flexBasis: "fit-content",
+                        maxHeight: "100%",
+                    },
+                    ".StorageManagerContainer": {
+                        flex: 1,
+                        minWidth: "fit-content",
+                        // flexBasis: "20%",
+                        maxHeight: "100%",
+                        display: "flex",
+                        ".amplify-storagemanager * ": {
+                            maxWidth: "70vw",
+                            height: "100%",
+                            // animation: "rotate .2s linear infinite",
+                            // "@keyframes rotate": {
+                            //     from: {
+                            //         transform: "rotate(0deg)",
+                            //     },
+                            //     to: {
+                            //         transform: "rotate(360deg)",
+                            //     },
+                            // },
+                        },
+                    },
                 },
-                ".StorageManagerContainer": {
-                    flex: 1,
-                    minWidth: "fit-content",
-                    // flexBasis: "20%",
-                    maxHeight: "100%",
+            },
+            "@media (max-width: 800px)": {
+                ".MuiPaper-root": {
+                    margin: "20px",
+                    ".DialogContent": {
+                        flexDirection: "column-reverse",
+                        gap: "20px",
+                        ".FilePreviewContainer": {
+                            flex: 1,
+                            flexBasis: "fit-content",
+                            maxHeight: "50%",
+                            ".MuiCard-root": {
+                                // display: "flex",
+                                justifyContent: "center",
+                                ".MuiCardMedia-root": {
+                                    width: "unset",
+                                    maxWidth: "100%",
+                                    height: "100px",
+                                    margin: "auto",
+                                },
+                            },
+                        },
+                        ".StorageManagerContainer": {
+                            flex: 1,
+                            flexBasis: "fit-content",
+                            maxHeight: "50%",
+                            maxWidth: "100%",
+                        },
+                    },
                 },
             },
         },
     };
     return (
-        <Dialog
-            id="StorageManagerWrapper"
-            open
-            onClose={onClose}
-            sx={sx}
-        >
+        <Dialog id="StorageManagerWrapper" open onClose={onClose} sx={sx}>
             <Box className="DialogContent">
-                {hidePreview ? null : (
-                    <Box
-                        id="FilePreview"
-                        className="FilePreviewContainer"
-                    >
-                        <FilePreview
-                            files={currentFiles.data ?? []}
-                            dataType={dataType}
-                            showControls={showControls}
-                        />
+                {hidePreview || !currentFiles.data || currentFiles.data.length === 0 ? null : (
+                    <Box id="FilePreview" className="FilePreviewContainer">
+                        <FilePreview files={currentFiles.data ?? []} dataType={dataType} showControls={showControls} />
                     </Box>
                 )}
-                <Box
-                    id="StorageManager"
-                    className="StorageManagerContainer"
-                >
-                    <StorageManager
-                        campaignId={campaignId}
-                        eventId={eventId}
-                        onSuccess={onUploadSuccess}
-                    />
+                <Box id="StorageManager" className="StorageManagerContainer">
+                    <StorageManager campaignId={campaignId} eventId={eventId} onSuccess={onUploadSuccess} />
                 </Box>
             </Box>
         </Dialog>

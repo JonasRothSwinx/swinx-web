@@ -55,17 +55,16 @@ export function Title({ task, dateColor, ...props }: TitleProps) {
                     textAlign: "start",
                     // bottom: "5px",
                 },
+                "@media (max-width: 800px)": {
+                    flexDirection: "column",
+                },
             },
         }),
-        [dateColor],
+        [dateColor]
     );
     return (
-        <Box
-            className="Title"
-            {...props}
-            sx={sx}
-        >
-            <Typography className="TaskType">{eventType}</Typography>
+        <Box className="Title" {...props} sx={sx}>
+            <Typography className="TaskType">{eventTypeDictionary[eventType] ?? eventType}</Typography>
             {/* <Box> */}
             <Typography className="TaskDate">
                 <strong>{dateString}</strong> - {dateDiffText}
@@ -74,3 +73,13 @@ export function Title({ task, dateColor, ...props }: TitleProps) {
         </Box>
     );
 }
+const eventTypeDictionary: { [key: string]: string } = {
+    Invites: "Einladungen",
+    Post: "Textbeitrag",
+    "Draft-Post": "Entwurf für Textbeitrag",
+    Video: "Videobeitrag",
+    "Draft-Video": "Aufnahme für Videobeitrag",
+    ImpulsVideo: "Impulsvideo",
+    "Draft-ImpulsVideo": "Aufnahme für Impulsvideo",
+    WebinarSpeaker: "Auftritt als Speaker",
+};

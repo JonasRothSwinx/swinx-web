@@ -7,11 +7,7 @@ import { StorageManagerProps } from "./types";
 import { onUploadSuccess } from "./functions";
 import { dictionary } from "./localization";
 
-export function ImageStorageManager({
-    campaignId,
-    eventId,
-    onSuccess: successCallback,
-}: StorageManagerProps) {
+export function ImageStorageManager({ campaignId, eventId, onSuccess }: StorageManagerProps) {
     const queryClient = useQueryClient();
     const currentFiles = useQuery({
         queryKey: [eventId, "image"],
@@ -45,7 +41,7 @@ export function ImageStorageManager({
                     eventId,
                     dataType: "image",
                 });
-                await successCallback?.({ campaignId, eventId });
+                await onSuccess?.({ campaignId, eventId });
                 return;
             }}
             displayText={dictionary}

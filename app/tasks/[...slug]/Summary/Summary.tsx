@@ -47,6 +47,13 @@ export function Summary({ influencerFullName, webinar, campaign, events }: Summa
                     },
                 },
             },
+            "@media (max-width: 800px)": {
+                flexDirection: "column",
+                ".SummaryTable": {
+                    width: "100%",
+                    maxWidth: "100%",
+                },
+            },
         },
     };
     return (

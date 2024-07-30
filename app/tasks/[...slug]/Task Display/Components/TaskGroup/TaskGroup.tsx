@@ -24,6 +24,7 @@ export interface TaskGroupProps {
     dateColor?: string;
     boxColor?: string;
     borderColor?: string;
+    disableControls?: boolean;
 }
 export default function TaskGroup({
     tasks,
@@ -35,6 +36,7 @@ export default function TaskGroup({
     dateColor,
     boxColor,
     borderColor,
+    disableControls,
 }: TaskGroupProps) {
     const sortedTasks = useMemo(() => {
         // const allTasks: TimelineEvent[] = [...tasks, ...pseudoTasks];
@@ -94,7 +96,7 @@ export default function TaskGroup({
             },
             ...sxOverride,
         }),
-        [boxColor, sxOverride, borderColor],
+        [boxColor, sxOverride, borderColor]
     );
 
     if (tasks.length === 0) return null;
@@ -106,20 +108,12 @@ export default function TaskGroup({
             slots={{ transition: Collapse as AccordionSlots["transition"] }}
             slotProps={{ transition: { timeout: 400 } }}
         >
-            <AccordionSummary
-                id="AccordionTitle"
-                expandIcon={<ExpandMoreIcon id="Expand" />}
-            >
-                <Title
-                    title={groupTitle}
-                    taskCount={tasks.length}
-                />
+            <AccordionSummary id="AccordionTitle" expandIcon={<ExpandMoreIcon id="Expand" />}>
+                <Title title={groupTitle} taskCount={tasks.length} />
             </AccordionSummary>
             <AccordionDetails id="AccordionContent">
                 {sortedTasks.map((task, index) => {
-                    const key = task.timelineEventType.startsWith("Draft-")
-                        ? task.id
-                        : `Draft-${task.id}`;
+                    const key = task.timelineEventType.startsWith("Draft-") ? task.id : `Draft-${task.id}`;
                     return (
                         <Task
                             key={key}
@@ -128,6 +122,7 @@ export default function TaskGroup({
                             parentEvent={parentEvent}
                             defaultExpanded={startOpen && index === 0}
                             dateColor={dateColor}
+                            disableControls={disableControls}
                         />
                     );
                 })}

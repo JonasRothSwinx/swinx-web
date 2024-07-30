@@ -7,11 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { Box, Button, SxProps, TextField } from "@mui/material";
 import { downloadData, uploadData } from "aws-amplify/storage";
 
-export function TextStorageManager({
-    campaignId,
-    eventId,
-    onSuccess: successCallback,
-}: StorageManagerProps) {
+export function TextStorageManager({ campaignId, eventId, onSuccess: successCallback }: StorageManagerProps) {
     const queryClient = useQueryClient();
     const currentFiles = useQuery({
         queryKey: [eventId, "text"],
@@ -24,13 +20,7 @@ export function TextStorageManager({
         },
         retryDelay: 5000,
     });
-    return (
-        <TextBoxInputManager
-            campaignId={campaignId}
-            eventId={eventId}
-            onSuccess={successCallback}
-        />
-    );
+    return <TextBoxInputManager campaignId={campaignId} eventId={eventId} onSuccess={successCallback} />;
     return (
         <StorageManager
             acceptedFileTypes={["text/plain", "application/pdf"]}
@@ -92,15 +82,30 @@ function TextBoxInputManager({ campaignId, eventId, onSuccess }: StorageManagerP
         display: "flex",
         flexDirection: "column",
         gap: "10px",
+        // maxHeight: "100%",
+        ".text-input": {
+            flex: 1,
+            flexBasis: "fit-content",
+            minWidth: "min(600px, 80vw)",
+            maxWidth: "80vw",
+            // ".MuiTextField-root": {
+            //     overflow: "auto",
+            // },
+        },
     };
     return (
-        <Box sx={sx}>
+        <Box id="TextStorageManager" sx={sx}>
             <TextField
                 type="text"
+                className="text-input"
                 multiline
+                minRows={10}
+                maxRows={20}
                 value={text}
                 placeholder="Geben sie hier ihren Beitragstext ein"
                 onChange={(e) => setText(e.target.value)}
+                error={text.length > 2000}
+                helperText={text.length > 2000 ? `Der Text ist zu lang: ${text.length}/2000 Zeichen` : ""}
             />
             <Button
                 disabled={text === null || upload.isPending}
@@ -128,14 +133,7 @@ interface UploadTextAsFile {
     campaignId: string;
     eventId: string;
 }
-async function uploadTextAsFile({
-    text,
-    path,
-    onProgress,
-    onSuccess,
-    campaignId,
-    eventId,
-}: UploadTextAsFile) {
+async function uploadTextAsFile({ text, path, onProgress, onSuccess, campaignId, eventId }: UploadTextAsFile) {
     const file = new File([text], "PostText.txt", {
         type: "text/plain",
     });
