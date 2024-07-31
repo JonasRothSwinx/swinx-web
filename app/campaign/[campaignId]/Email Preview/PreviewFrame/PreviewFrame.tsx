@@ -3,6 +3,7 @@ import { Nullable, Prettify } from "@/app/Definitions/types";
 import emailClient from "@/app/Emails";
 import templateDefinitions from "@/app/Emails/templates";
 import { templateVariables as inviteTemplateVariables } from "@/app/Emails/templates/campaignInvite";
+import { SignatureTemplateVariables } from "@/app/Emails/templates/signature";
 import { dataClient } from "@/app/ServerFunctions/database";
 import { getInviteBaseUrl, getUserGroups } from "@/app/ServerFunctions/serverActions";
 import {
@@ -12,10 +13,12 @@ import {
     EmailTriggers,
     Influencer,
     Influencers,
+    ProjectManager,
 } from "@/app/ServerFunctions/types";
-import { encodeQueryParams } from "@/app/utils";
+import { encodeQueryParams, grabSignatureProps } from "@/app/utils";
 import { Box, CircularProgress, IconButton, SxProps, Typography } from "@mui/material";
 import { useQueries, useQuery } from "@tanstack/react-query";
+import { encode } from "punycode";
 import { use, useMemo } from "react";
 //#region Definitions
 //#endregion
@@ -92,8 +95,17 @@ export default function PreviewFrame({ selectedCandidate, assignmentId }: Previe
         queryKey: ["inviteBaseUrl"],
         queryFn: () => getInviteBaseUrl(),
     });
+    const campaign = useQuery({
+        enabled: !!campaignId,
+        queryKey: ["campaign", campaignId],
+        queryFn: ({ queryKey }) => {
+            const [, campaignId] = queryKey;
+            if (!campaignId) return null;
+            return dataClient.campaign.get(campaignId);
+        },
+    });
 
-    const variables: inviteTemplateVariables = useMemo(() => {
+    const variables: inviteTemplateVariables & SignatureTemplateVariables = useMemo(() => {
         const name = selectedCandidate?.influencer
             ? Influencers.getFullName(selectedCandidate.influencer)
             : "<Kein Name gefunden>";
@@ -101,13 +113,24 @@ export default function PreviewFrame({ selectedCandidate, assignmentId }: Previe
         const linkData = encodeQueryParams({
             assignmentId: assignmentId,
             campaignId: campaignId ?? "",
-            influencerId: selectedCandidate?.influencer?.id ?? "none",
+            candidateId: selectedCandidate?.influencer?.id ?? "none",
+            candidateFullName: name,
         });
+        const projectManager: ProjectManager = campaign.data?.projectManagers[0] ?? {
+            id: "placeholder",
+            email: "placeholder@swinx.de",
+            firstName: "Place",
+            lastName: "Holder",
+            jobTitle: "Placeholder",
+            phoneNumber: "123456789",
+            cognitoId: "placeholder",
+        };
         return {
             name,
             linkBase,
             linkData,
             customerCompany: customer.data?.company ?? "<Kein Unternehmen gefunden>",
+            ...grabSignatureProps({ projectManager }),
         };
     }, [
         selectedCandidate?.influencer,
@@ -115,6 +138,7 @@ export default function PreviewFrame({ selectedCandidate, assignmentId }: Previe
         assignmentId,
         campaignId,
         customer.data?.company,
+        campaign.data,
     ]);
 
     const [previewHtml, subjectLine] = useMemo(() => {
@@ -131,15 +155,15 @@ export default function PreviewFrame({ selectedCandidate, assignmentId }: Previe
         () =>
             ({
                 "&": {
-                    "display": "flex",
-                    "width": "100%",
-                    "height": "100%",
+                    display: "flex",
+                    width: "100%",
+                    height: "100%",
                     // margin: "10px",
-                    "padding": "10px",
-                    "alignContent": "center",
-                    "alignItems": "stretch",
-                    "justifyContent": "center",
-                    "textAlign": "center",
+                    padding: "10px",
+                    alignContent: "center",
+                    alignItems: "stretch",
+                    justifyContent: "center",
+                    textAlign: "center",
 
                     "& > *:not(button)": {
                         borderRadius: "10px",
@@ -147,8 +171,8 @@ export default function PreviewFrame({ selectedCandidate, assignmentId }: Previe
                         borderStyle: "inset",
                     },
                     "#EmailPreview": {
-                        "display": "flex",
-                        "flexDirection": "column",
+                        display: "flex",
+                        flexDirection: "column",
                         "#EmailSubjectLine": {
                             padding: "10px",
                             color: "white",
@@ -184,7 +208,7 @@ export default function PreviewFrame({ selectedCandidate, assignmentId }: Previe
     )
         return (
             <Box sx={sxProps}>
-                <Loading />;
+                <Loading />
             </Box>
         );
     //#endregion
@@ -201,7 +225,10 @@ export default function PreviewFrame({ selectedCandidate, assignmentId }: Previe
         </Box>
     );
 }
-function replaceVariables(template: string, variables: Partial<inviteTemplateVariables>) {
+function replaceVariables(
+    template: string,
+    variables: Partial<inviteTemplateVariables> & SignatureTemplateVariables,
+) {
     let out = template;
     // debugger;
     Object.entries(variables).forEach(([key, value]) => {
@@ -241,13 +268,13 @@ function AdminRefreshButton({ refreshTemplates, isRefetching }: AdminRefreshButt
     const style = useMemo(
         () =>
             ({
-                "position": "absolute",
-                "bottom": "10px",
-                "animationPlayState": "running",
-                "animationName": "spin",
-                "animationDuration": "500ms",
-                "animationIterationCount": `${isRefetching ? "infinite" : "0"}`,
-                "animationTimingFunction": "linear",
+                position: "absolute",
+                bottom: "10px",
+                animationPlayState: "running",
+                animationName: "spin",
+                animationDuration: "500ms",
+                animationIterationCount: `${isRefetching ? "infinite" : "0"}`,
+                animationTimingFunction: "linear",
                 "@keyframes spin": {
                     "100%": { transform: `rotate(360deg)` },
                 },

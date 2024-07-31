@@ -32,7 +32,9 @@ const confirmOptions: ConfirmProviderProps["defaultOptions"] = {
 
 export default function Page({ params }: { params: { slug: string[] } }) {
     // console.log("Page", params);
-    const [campaignId, assignmentId, influencerId, openedEvent] = params.slug;
+    // const [campaignId, assignmentId, influencerId, openedEvent] = params.slug;
+    const [assignmentId, openedEvent] = params.slug;
+
     const sx: SxProps = {
         "&": {
             "--background-color": "white",
@@ -78,11 +80,14 @@ export default function Page({ params }: { params: { slug: string[] } }) {
         <ThemeProvider theme={theme}>
             <QueryClientProvider client={queryClient}>
                 <ConfirmProvider defaultOptions={confirmOptions}>
-                    <Box id="TasksLandingPage" sx={sx}>
+                    <Box
+                        id="TasksLandingPage"
+                        sx={sx}
+                    >
                         <TasksLanding
                             assignmentId={assignmentId}
-                            campaignId={campaignId}
-                            influencerId={influencerId}
+                            // campaignId={campaignId}
+                            // influencerId={influencerId}
                             openedEvent={openedEvent}
                         />
                         <ReactQueryDevtools initialIsOpen={false} />

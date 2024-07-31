@@ -35,36 +35,40 @@ export function SubmitLinkEmail({
                 <title>{`${influencerName} hat einen Beitrag veröffentlicht`}</title>
             </Head>
             <Body
-                style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "10px",
-                    justifyContent: "center",
-                }}
+                style={
+                    {
+                        // display: "flex",
+                        // flexDirection: "column",
+                        // gap: "10px",
+                        // justifyContent: "center",
+                    }
+                }
             >
-                <Heading as="h1">
+                <Heading as="h3">
                     {influencerName} hat einen Beitragslink für {customerName} eingereicht
                 </Heading>
                 {/* <Section style={{ paddingBottom: "10px" }}> */}
-                <Text style={{ textAlign: "center" }}>
+                <Text style={{}}>
                     {influencerName} hat einen Beitrag zum Thema {event.eventTitle} veröffentlicht!.
                 </Text>
                 {/* </Section> */}
 
-                {/* <Section> */}
-                <Button
-                    href={postLink ?? "<Link fehlt>"}
-                    style={{
-                        color: "white",
-                        padding: "10px 20px",
-                        margin: "auto",
-                        border: "1px solid #61dafb",
-                        backgroundColor: "#61dafb",
-                    }}
+                <Section
+                    style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}
                 >
-                    Zum Beitrag
-                </Button>
-                {/* </Section> */}
+                    <Button
+                        href={postLink ?? "<Link fehlt>"}
+                        style={{
+                            color: "white",
+                            padding: "10px 20px",
+                            margin: "auto",
+                            border: "1px solid #61dafb",
+                            backgroundColor: "#61dafb",
+                        }}
+                    >
+                        Zum Beitrag
+                    </Button>
+                </Section>
             </Body>
         </Html>
     );

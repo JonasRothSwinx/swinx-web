@@ -15,7 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <html lang="de">
             <body
                 className={inter.className}
-                style={{ height: "100dvh", width: "100dvw", margin: 0 }}
+                style={{ height: "100dvh", width: "100dvw" }}
             >
                 <ConfigureAmplifyClientSide />
                 <>{children}</>

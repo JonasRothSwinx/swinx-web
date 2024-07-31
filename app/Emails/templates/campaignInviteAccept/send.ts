@@ -1,23 +1,31 @@
 "use server";
-import { TemplateVariables, templateNames } from "./TemplateVariables";
+import { TemplateVariables, defaultParams, templateNames } from "./TemplateVariables";
 import { SESClientSendMail as sesAPIClient } from "../../sesAPI";
 import { SendMailProps } from "../types";
+import {
+    grabSignatureProps,
+    defaultSignatureProps,
+    type SignatureTemplateVariables,
+} from "@/app/Emails/templates/signature";
+import { getTaskPageUrl } from "@/app/utils";
 
 export default async function send(props: SendMailProps) {
     const {
         level,
-        commonContext: { customer, projectManager: campaignManager },
+        commonContext: { customer, projectManager: campaignManager, campaign, assignment },
         individualContext,
     } = props;
     console.log("Sending invites for level", level, props);
 
     if (level === "none") return;
     // Check if all required data is present
-    if (!customer || !individualContext || !campaignManager) {
+    if (!customer || !individualContext || !campaignManager || !campaign || !assignment) {
         const missingContext = {
             customer: !!customer,
             individualContext: !!individualContext,
             campaignManager: !!campaignManager,
+            campaign: !!campaign,
+            assignment: !!assignment,
         };
         Object.entries(missingContext).forEach(([key, value]) => {
             if (value) {
@@ -31,14 +39,24 @@ export default async function send(props: SendMailProps) {
         if (!influencer) {
             throw new Error("Missing influencer context");
         }
+        const influencerName = `${influencer.firstName} ${influencer.lastName}`;
+        const customerName = customer.company;
+
+        const templateVariables: TemplateVariables & SignatureTemplateVariables = {
+            influencerName: influencerName,
+            customerName,
+            taskPageUrl: getTaskPageUrl({
+                // influencerId: influencer.id,
+                // campaignId: campaign.id,
+                assignmentId: assignment.id,
+            }),
+            ...grabSignatureProps({ projectManager: campaignManager }),
+        };
         return [
             ...acc,
             {
                 to: influencer.email,
-                templateData: JSON.stringify({
-                    influencerName: `${influencer.firstName} ${influencer.lastName}`,
-                    // customerName: customer.company,
-                } satisfies Partial<TemplateVariables>),
+                templateData: JSON.stringify(templateVariables),
             },
         ];
     }, [] as { to: string; templateData: string }[]);
@@ -48,9 +66,9 @@ export default async function send(props: SendMailProps) {
         from: fromAdress ?? "swinx GmbH <noreply@swinx.de>",
         templateName,
         defaultTemplateData: JSON.stringify({
-            customerName: customer.company,
-            influencerName: "{influencer.firstName} {influencer.lastName}",
-        } satisfies TemplateVariables),
+            ...defaultSignatureProps,
+            ...defaultParams,
+        }),
         bulkTemplateData: templateData,
     });
     return response;

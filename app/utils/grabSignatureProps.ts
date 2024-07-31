@@ -10,7 +10,7 @@ export function grabSignatureProps({
     const out: SignatureTemplateVariables = {
         projectManagerFullName: ProjectManagers.getFullName(projectManager),
         projectManagerJobTitle: projectManager.jobTitle,
-        projectManagerEmail: ProjectManagers.getEmailString(projectManager),
+        projectManagerEmail: projectManager.email,
         projectManagerPhoneNumber: projectManager.phoneNumber,
     };
     return out;

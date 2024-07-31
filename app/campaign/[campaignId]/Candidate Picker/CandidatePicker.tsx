@@ -19,7 +19,12 @@ import {
 } from "@mui/material";
 import { TabList, TabPanel, TabContext } from "@mui/lab";
 import Grid from "@mui/material/Unstable_Grid2";
-import { DataGrid, GridColDef, GridRowSelectionModel, GridToolbarQuickFilter } from "@mui/x-data-grid";
+import {
+    DataGrid,
+    GridColDef,
+    GridRowSelectionModel,
+    GridToolbarQuickFilter,
+} from "@mui/x-data-grid";
 import React, { useEffect, useMemo, useState } from "react";
 import EmailPreview from "../Email Preview";
 import { Candidates } from "@/app/ServerFunctions/types";
@@ -42,7 +47,11 @@ interface CandidatePickerProps {
     onClose: (hasChanged?: boolean, newDialog?: InfluencerDetailsButtonsOpenDialog) => void;
 }
 
-export function CandidatePickerTabs({ setAssignment, assignmentId, onClose }: CandidatePickerProps) {
+export function CandidatePickerTabs({
+    setAssignment,
+    assignmentId,
+    onClose,
+}: CandidatePickerProps) {
     const queryClient = useQueryClient(); //TODO: change props to only require assignmentId, get asignemnt by query
     const confirm = useConfirm();
 
@@ -95,7 +104,9 @@ export function CandidatePickerTabs({ setAssignment, assignmentId, onClose }: Ca
             }
             if (candidate.influencer.emailLevel === "none") {
                 await confirm({
-                    title: `${Influencers.getFullName(candidate.influencer)} erhält keine automatischen Emails`,
+                    title: `${Influencers.getFullName(
+                        candidate.influencer,
+                    )} erhält keine automatischen Emails`,
                     description: `Bitte kontaktiere sie/ihn persönlich unter\n ${candidate.influencer.email}`,
                     confirmationText: "Ok",
                     hideCancelButton: true,
@@ -113,7 +124,7 @@ export function CandidatePickerTabs({ setAssignment, assignmentId, onClose }: Ca
                     influencer: candidate.influencer,
                     isPlaceholder: false,
                 },
-                assignment.data
+                assignment.data,
             );
             onClose();
             const emailNone = await sendDecisionNotification({
@@ -121,6 +132,8 @@ export function CandidatePickerTabs({ setAssignment, assignmentId, onClose }: Ca
                 rejectedCandidates: assignment.data.candidates.filter((c) => c.id !== candidate.id),
                 customer: campaign.data.customers[0],
                 projectManagers: campaign.data.projectManagers,
+                campaign: campaign.data,
+                assignment: assignment.data,
             });
             if (emailNone.length > 0) {
                 await confirm({
@@ -132,8 +145,13 @@ export function CandidatePickerTabs({ setAssignment, assignmentId, onClose }: Ca
                                 return (
                                     <React.Fragment key={c.id}>
                                         <br />
-                                        <Link target="_blank" href={`mailto:${c.influencer.email}`}>
-                                            {`${Influencers.getFullName(c.influencer)}: ${c.influencer.email}`}
+                                        <Link
+                                            target="_blank"
+                                            href={`mailto:${c.influencer.email}`}
+                                        >
+                                            {`${Influencers.getFullName(c.influencer)}: ${
+                                                c.influencer.email
+                                            }`}
                                         </Link>
                                     </React.Fragment>
                                 );
@@ -158,7 +176,8 @@ export function CandidatePickerTabs({ setAssignment, assignmentId, onClose }: Ca
     useEffect(() => {
         if (tabValue !== "none") return;
         const numberOfInvitedCandidates =
-            assignment.data?.candidates?.filter((candidate) => candidate.invitationSent === true).length ?? 0;
+            assignment.data?.candidates?.filter((candidate) => candidate.invitationSent === true)
+                .length ?? 0;
         if (numberOfInvitedCandidates > 0) {
             setTabValue("response");
         } else {
@@ -199,7 +218,12 @@ export function CandidatePickerTabs({ setAssignment, assignmentId, onClose }: Ca
     };
     if (!assignment.data) return <Loading />;
     return (
-        <Dialog open onClose={() => EventHandlers.onClose()} fullWidth sx={styles}>
+        <Dialog
+            open
+            onClose={() => EventHandlers.onClose()}
+            fullWidth
+            sx={styles}
+        >
             <TabContext value={tabValue}>
                 <Box id="TabListContainer">
                     <TabList
@@ -208,8 +232,14 @@ export function CandidatePickerTabs({ setAssignment, assignmentId, onClose }: Ca
                         aria-label="tab list"
                         variant="fullWidth"
                     >
-                        <Tab label="Influencer einladen" value={"invite"} />
-                        <Tab label="Antworten" value={"response"} />
+                        <Tab
+                            label="Influencer einladen"
+                            value={"invite"}
+                        />
+                        <Tab
+                            label="Antworten"
+                            value={"response"}
+                        />
                     </TabList>
                 </Box>
                 <Grow in={tabValue === "invite"}>

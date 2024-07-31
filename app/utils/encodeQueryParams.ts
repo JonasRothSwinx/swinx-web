@@ -11,7 +11,17 @@ export type CampaignInviteEncodedData = {
 };
 export type InfluencerTaskEncodedData = {
     assignmentId: string;
-    campaignId: string;
-    influencerId: string;
+    // campaignId: string;
+    // influencerId: string;
     // influencerFullName: string;
 };
+
+export function getInviteResponseUrl(params: CampaignInviteEncodedData): string {
+    const baseUrl = (process.env.BASE_URL as string) + "/Response?data=";
+    return `${baseUrl}${encodeQueryParams(params)}`;
+}
+
+export function getTaskPageUrl({ assignmentId }: InfluencerTaskEncodedData): string {
+    const baseUrl = (process.env.BASE_URL as string) + "/tasks";
+    return `${baseUrl}/${assignmentId}`;
+}

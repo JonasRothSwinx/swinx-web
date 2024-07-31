@@ -151,20 +151,44 @@ export default function EmailPreview(props: EmailPreviewProps) {
     // }, [selectedCandidate, baseUrl.data, campaignId, assignmentId, customer.data?.company]);
 
     const EventHandlers = {
-        sendEmail: async () => {
-            if (!customer.data || !assignment.data || !campaignId) return;
-            const responses = await sendInvites({
-                candidates,
-                assignment: assignment.data,
-                customer: customer.data,
-                queryClient,
+        // sendEmail: async () => {
+        //     if (!customer.data || !assignment.data || !campaignId) return;
+        //     const responses = await sendInvites({
+        //         candidates,
+        //         assignment: assignment.data,
+        //         customer: customer.data,
+        //         queryClient,
 
-                campaignId,
-            });
-            console.log(responses);
-            Mutations.markCandidateAsSent.mutate(candidates);
-            onClose({ didSend: true });
-        },
+        //         campaignId,
+        //     });
+        //     console.log(responses);
+        //     Mutations.markCandidateAsSent.mutate(candidates);
+        //     onClose({ didSend: true });
+        // },
+        sendEmail: useMutation({
+            mutationFn: async () => {
+                if (!customer.data || !assignment.data || !campaignId) return;
+                const responses = await sendInvites({
+                    candidates,
+                    assignment: assignment.data,
+                    customer: customer.data,
+                    queryClient,
+
+                    campaignId,
+                });
+                return responses;
+            },
+            onMutate: async () => {
+                await queryClient.cancelQueries({ queryKey: ["candidates", assignmentId] });
+                return { previousCandidates: candidates };
+            },
+            onSuccess: (data, variables, context) => {
+                if (process.env.NODE_ENV === "development")
+                    console.log("Emails sent", { data, variables, context });
+                Mutations.markCandidateAsSent.mutate(candidates);
+                onClose({ didSend: true });
+            },
+        }),
 
         cancel: () => {
             onClose({ didSend: false });
@@ -222,7 +246,7 @@ export default function EmailPreview(props: EmailPreviewProps) {
                 onClose={onClose}
                 fullWidth
                 sx={{
-                    "margin": "0",
+                    margin: "0",
                     "& .MuiPaper-root": { maxWidth: "75%", height: "50vh", overflow: "hidden" },
                 }}
             >
@@ -246,7 +270,7 @@ export default function EmailPreview(props: EmailPreviewProps) {
             onClose={onClose}
             fullWidth
             sx={{
-                "margin": "0",
+                margin: "0",
                 "& .MuiPaper-root": { maxWidth: "75%", height: "50vh", overflow: "hidden" },
             }}
         >
@@ -301,10 +325,11 @@ export default function EmailPreview(props: EmailPreviewProps) {
                             Abbrechen
                         </Button>
                         <Button
-                            onClick={EventHandlers.sendEmail}
-                            disabled={!customer.isFetched}
+                            onClick={() => EventHandlers.sendEmail.mutate()}
+                            disabled={!customer.isFetched || EventHandlers.sendEmail.isPending}
                         >
                             Emails verschicken
+                            {EventHandlers.sendEmail.isPending && <CircularProgress size={20} />}
                         </Button>
                     </ButtonGroup>
                 </Grid>

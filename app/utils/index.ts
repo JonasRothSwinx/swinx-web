@@ -3,6 +3,8 @@ export {
     encodeQueryParams,
     type InfluencerTaskEncodedData,
     type CampaignInviteEncodedData,
+    getInviteResponseUrl,
+    getTaskPageUrl,
 } from "./encodeQueryParams";
 export { sanitize } from "./sanitize";
 export { simplify } from "./simplify";

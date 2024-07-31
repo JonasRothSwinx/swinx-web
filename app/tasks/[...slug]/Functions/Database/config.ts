@@ -11,7 +11,7 @@ const datClientConfig: dataClientConfig = {
 };
 
 function setQueryClient(queryClient: QueryClient) {
-    console.log("Setting query client",queryClient);
+    // console.log("Setting query client",queryClient);
     datClientConfig.queryClient = queryClient;
 }
 

@@ -87,7 +87,7 @@ function NewCampaignInvite(props: DebugToggle) {
                     Zur Kampagne
                 </Button>
             </Container>
-            {/* <Signature /> */}
+            <Signature />
         </Html>
     );
 }

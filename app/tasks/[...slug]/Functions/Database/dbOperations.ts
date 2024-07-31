@@ -17,7 +17,10 @@ interface GetCandidateParams {
     id: string;
 }
 export async function getCandidate({ id }: GetCandidateParams) {
-    const candidateResponse = await client.models.InfluencerCandidate.get({ id }, { selectionSet: ["id", "response"] });
+    const candidateResponse = await client.models.InfluencerCandidate.get(
+        { id },
+        { selectionSet: ["id", "response"] },
+    );
     if (candidateResponse.errors) {
         console.error(candidateResponse.errors);
         throw new Error("Error fetching candidate data");
@@ -48,7 +51,7 @@ export async function getAssignmentData({ id }: GetAssignmentDataParams) {
                 "campaignId",
                 "influencerId",
             ],
-        }
+        },
     );
     if (errors) {
         console.error(errors);
@@ -75,7 +78,7 @@ export async function getEventsByAssignment({ id }: GetEventsByAssignmentParams)
                 // Information about Event
                 "timelineEvent.id",
             ],
-        }
+        },
     );
     if (errors) {
         console.error(errors);
@@ -128,10 +131,10 @@ export async function getEventsByAssignment({ id }: GetEventsByAssignmentParams)
         /* (await Promise.all(tasks)) */
         tasks.filter(
             (
-                event
+                event,
             ): event is DeepWriteable<
                 NonNullable<SelectionSet<Schema["TimelineEvent"]["type"], typeof selectionSet>>
-            > => !!event
+            > => !!event,
         );
 
     return events;
@@ -149,7 +152,7 @@ export async function getCampaignInfo({ id }: GetCampaignInfoParams) {
                 "id",
                 "customers.company",
             ],
-        }
+        },
     );
     if (campaignResponse.errors) {
         console.error(campaignResponse.errors);
@@ -178,7 +181,7 @@ export async function getParentEventInfo({ id }: GetParentEventInfoParams) {
                 "targetAudience.*",
                 "timelineEventType",
             ],
-        }
+        },
     );
     if (errors) {
         console.error(errors);
@@ -225,7 +228,7 @@ export async function getProjectManagerEmails({ campaignId }: GetProjectManagerE
                 //
                 "projectManagers.projectManager.email",
             ],
-        }
+        },
     );
     if (errors) {
         console.error(errors);
@@ -252,7 +255,7 @@ export async function getInfluencerDetails({ id }: GetInfluencerDetailsParams) {
                 "firstName",
                 "lastName",
             ],
-        }
+        },
     );
     if (errors) {
         console.error(errors);
@@ -267,20 +270,41 @@ export async function getInfluencerDetails({ id }: GetInfluencerDetailsParams) {
 
 interface GetTaskDetailsParams {
     assignmentId: string;
-    campaignId: string;
-    influencerId: string;
+    // campaignId: string;
+    // influencerId: string;
 }
-export async function getTaskDetails({ assignmentId, campaignId, influencerId }: GetTaskDetailsParams) {
+export async function getTaskDetails({ assignmentId }: GetTaskDetailsParams) {
     const assignmentData = await getAssignmentData({ id: assignmentId });
-    const events = await getEventsByAssignment({ id: assignmentId });
-    const campaignInfo = await getCampaignInfo({ id: campaignId });
-    const influencerInfo = await getInfluencerDetails({ id: influencerId });
-    switch (true) {
-        case assignmentData?.influencerId !== influencerId:
-            throw new Error("Influencer ID does not match assignment data");
-        case assignmentData?.campaignId !== campaignId:
-            throw new Error("Campaign ID does not match assignment data");
+    if (!assignmentData) {
+        throw new Error("Assignment not found");
     }
+    const campaignId = assignmentData.campaignId;
+    const influencerId = assignmentData.influencerId;
+
+    const eventsResponse = getEventsByAssignment({ id: assignmentId });
+    const campaignInfoResponse = getCampaignInfo({ id: campaignId });
+    let influencerInfoResponse;
+    if (influencerId) {
+        influencerInfoResponse = getInfluencerDetails({ id: influencerId });
+    } else {
+        influencerInfoResponse = {
+            id: "placeholder",
+            firstName: "Place",
+            lastName: "Holder",
+        };
+    }
+    const [events, campaignInfo, influencerInfo] = await Promise.all([
+        eventsResponse,
+        campaignInfoResponse,
+        influencerInfoResponse,
+    ]);
+
+    // switch (true) {
+    //     case assignmentData?.influencerId !== influencerId:
+    //         throw new Error("Influencer ID does not match assignment data");
+    //     case assignmentData?.campaignId !== campaignId:
+    //         throw new Error("Campaign ID does not match assignment data");
+    // }
     return {
         assignmentData,
         events,
@@ -330,6 +354,7 @@ export async function submitPostLink({ eventId, postLink }: SubmitPostLinkParams
     const { data, errors } = await client.models.TimelineEvent.update({
         id: eventId,
         postLink,
+        // status: "COMPLETED",
     });
     if (errors) {
         console.error(errors);
@@ -348,7 +373,7 @@ export async function getCampaignManagers({ campaignId }: GetCampaignManagers) {
         },
         {
             selectionSet: ["projectManagers.projectManager.email"],
-        }
+        },
     );
     if (errors) {
         console.error(errors);

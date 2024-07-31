@@ -10,17 +10,16 @@ import { Summary } from "./Summary";
 
 interface TasksLandingProps {
     assignmentId: string;
-    campaignId: string;
-    influencerId: string;
+    // campaignId: string;
+    // influencerId: string;
     openedEvent?: string | null;
 }
 export default function TasksLanding({
     assignmentId,
-    campaignId,
-    influencerId,
+    // campaignId,
+    // influencerId,
     openedEvent = null,
 }: TasksLandingProps) {
-    const params = useSearchParams();
     // const [received, setReceived] = useState(false);
     const queryClient = useQueryClient();
 
@@ -35,8 +34,8 @@ export default function TasksLanding({
             console.log("Task data requested");
             const response = await dataClient.getTaskDetails({
                 assignmentId: assignmentId,
-                campaignId: campaignId,
-                influencerId: influencerId,
+                // campaignId: campaignId,
+                // influencerId: influencerId,
             });
             return response;
         },
@@ -252,8 +251,24 @@ export default function TasksLanding({
         !campaign ||
         !influencer
     ) {
-        console.log({ task, parentEvent });
-        return <Typography id="ErrorText">Ein Fehler ist aufgetreten</Typography>;
+        console.log({
+            task,
+            data: task.data,
+            parentEvent,
+            context: {
+                parentEvent: parentEvent.data,
+                assignment,
+                events,
+                campaign,
+                influencer,
+            },
+        });
+        return (
+            <Box>
+                <Typography id="ErrorText">Ein Fehler ist aufgetreten</Typography>
+                <Typography id="ErrorText">{task.error?.message}</Typography>
+            </Box>
+        );
     }
 
     //#endregion

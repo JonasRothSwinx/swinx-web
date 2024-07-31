@@ -74,11 +74,13 @@ async function getInfluencerDetails({ id }: GetInfluencerDetailsParams) {
 
 interface GetTaskDetailsParams {
     assignmentId: string;
-    campaignId: string;
-    influencerId: string;
+    // campaignId: string;
+    // influencerId: string;
 }
-async function getTaskDetails({ assignmentId, campaignId, influencerId }: GetTaskDetailsParams) {
-    return await dbOperations.getTaskDetails({ assignmentId, campaignId, influencerId });
+async function getTaskDetails({
+    assignmentId /* , campaignId, influencerId */,
+}: GetTaskDetailsParams) {
+    return await dbOperations.getTaskDetails({ assignmentId /* , campaignId, influencerId */ });
 }
 
 interface MarkEventFinishedParams {
@@ -124,11 +126,11 @@ interface SubmitPostLinkParams {
 }
 
 async function submitPostLink({ eventId, postLink, campaignId }: SubmitPostLinkParams) {
-    console.log("submitPostLink", { eventId, postLink });
+    // console.log("submitPostLink", { eventId, postLink });
     const queryClient = config.getQueryClient();
-    console.log("hi 1!");
+    // console.log("hi 1!");
     const dbResponse = await dbOperations.submitPostLink({ eventId, postLink });
-    console.log("hi 2!", dbResponse);
+    // console.log("hi 2!", dbResponse);
     queryClient.setQueryData<Task>(["task"], (oldData) => {
         console.log(oldData);
         if (!oldData) return;
@@ -147,7 +149,7 @@ async function submitPostLink({ eventId, postLink, campaignId }: SubmitPostLinkP
         return newData;
     });
     const task = queryClient.getQueryData<Task>(["task"]);
-    console.log("hi 3!");
+    // console.log("hi 3!");
     if (!task) {
         console.log("res is null", task);
         return;
@@ -158,7 +160,7 @@ async function submitPostLink({ eventId, postLink, campaignId }: SubmitPostLinkP
         postLink,
         task,
     });
-    console.log("submitPostLink", emailResponse);
+    // console.log("submitPostLink", emailResponse);
 }
 
 interface GetCampaignManagersParams {

@@ -1,19 +1,30 @@
 "use server";
 import emailClient from "@/app/Emails";
 import { EmailContextProps } from "@/app/Emails/templates/types";
-import { Candidate, Customer, ProjectManager, EmailTriggers } from "@/app/ServerFunctions/types";
+import {
+    Candidate,
+    Customer,
+    ProjectManager,
+    EmailTriggers,
+    Campaign,
+    Assignment,
+} from "@/app/ServerFunctions/types";
 
 interface SendDecisionNotification {
     acceptedCandidate: Candidate;
     rejectedCandidates: Candidate[];
     projectManagers: ProjectManager[];
     customer: Customer;
+    campaign: Campaign;
+    assignment: Assignment;
 }
 export async function sendDecisionNotification({
     acceptedCandidate,
     rejectedCandidates,
     projectManagers,
     customer,
+    campaign,
+    assignment,
 }: SendDecisionNotification) {
     console.log("Sending decision notification");
     console.log("Accepted candidate", acceptedCandidate);
@@ -24,6 +35,8 @@ export async function sendDecisionNotification({
     const commonContext: Partial<EmailContextProps> = {
         customer,
         projectManager: primaryProjectManager,
+        campaign,
+        assignment,
     };
 
     const rejectedCandidatesByEmailLevel: { [key in EmailTriggers.emailLevel]: Candidate[] } = {

@@ -2,6 +2,11 @@
 import { TemplateVariables, templateNames } from "./TemplateVariables";
 import { SESClientSendMail as sesAPIClient } from "../../sesAPI";
 import { SendMailProps } from "../types";
+import {
+    grabSignatureProps,
+    defaultSignatureProps,
+    type SignatureTemplateVariables,
+} from "@/app/Emails/templates/signature";
 
 export default async function send(props: SendMailProps) {
     const {
@@ -31,14 +36,18 @@ export default async function send(props: SendMailProps) {
         if (!influencer) {
             throw new Error("Missing influencer context");
         }
+        const influencerName = `${influencer.firstName} ${influencer.lastName}`;
+        const customerName = customer.company;
+        const templateVariables: TemplateVariables & SignatureTemplateVariables = {
+            influencerName: influencerName,
+            customerName,
+            ...grabSignatureProps({ projectManager: campaignManager }),
+        };
         return [
             ...acc,
             {
                 to: influencer.email,
-                templateData: JSON.stringify({
-                    influencerName: `${influencer.firstName} ${influencer.lastName}`,
-                    customerName: customer.company,
-                } satisfies TemplateVariables),
+                templateData: JSON.stringify(templateVariables),
             },
         ];
     }, [] as { to: string; templateData: string }[]);

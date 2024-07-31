@@ -1,8 +1,8 @@
 import { renderAsync } from "@react-email/render";
 import { EmailLevelDefinition, Template } from "../types";
 import send from "./send";
-import Email, { subjectLineBase, defaultParams } from "./Email";
-import { templateNames as templateLevelNames } from "./TemplateVariables";
+import Email, { subjectLineBase } from "./Email";
+import { templateNames as templateLevelNames, defaultParams } from "./TemplateVariables";
 
 export const templates: EmailLevelDefinition = {
     new: {
@@ -23,8 +23,8 @@ export const templateNames = [
     ...Object.values(templates).map((template) => template.name),
 ] as const;
 
-export { defaultParams } from "./Email";
-export { type TemplateVariables } from "./TemplateVariables";
+export {} from "./Email";
+export { type TemplateVariables, defaultParams } from "./TemplateVariables";
 
 export const template: Template = {
     defaultParams,

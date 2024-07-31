@@ -1,14 +1,14 @@
 import { Events } from "@/app/ServerFunctions/types";
 export const hasParentEvent: {
-    [key in Events.eventType | "none"]: { parentEventType: Events.multiEventType } | false;
+    [key in Events.eventType | "none"]: Events.multiEventType | false;
 } = {
     none: false,
 
-    Invites: { parentEventType: "Webinar" },
-    ImpulsVideo: { parentEventType: "Webinar" },
-    Post: { parentEventType: "Webinar" },
-    Video: { parentEventType: "Webinar" },
-    WebinarSpeaker: { parentEventType: "Webinar" },
+    Invites: "Webinar",
+    ImpulsVideo: "Webinar",
+    Post: "Webinar",
+    Video: "Webinar",
+    WebinarSpeaker: "Webinar",
 
     Webinar: false,
 };

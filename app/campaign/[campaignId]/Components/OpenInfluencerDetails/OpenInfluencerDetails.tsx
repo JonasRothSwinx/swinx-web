@@ -6,13 +6,16 @@ import {
     Event,
     Events,
     Influencers,
+    Assignments,
 } from "@/app/ServerFunctions/types";
 import {
     Accordion,
     AccordionDetails,
     AccordionSummary,
+    Box,
     Button,
     CircularProgress,
+    Skeleton,
     Typography,
 } from "@mui/material";
 import { randomDesk, randomId } from "@mui/x-data-grid-generator";
@@ -40,7 +43,11 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
     // });
     const assignments = useQuery({
         queryKey: ["assignments", campaignId],
-        queryFn: () => dataClient.assignment.byCampaign(campaignId),
+        queryFn: ({ queryKey }) => {
+            const [, campaignId] = queryKey;
+            const assignments = dataClient.assignment.byCampaign(campaignId);
+            return assignments;
+        },
     });
     // const [assignedInfluencers, setAssignedInfluencers] = useState<Assignment[]>([]);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -94,53 +101,78 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
     //     return () => {};
     // }, [/* placeholders,  */ events, campaign.data]);
     const EventHandlers = {
-        // addAssignment: () => {
-        //     setIsProcessing(true);
-        //     const tempId = randomId();
-        //     const newPlaceholder: Assignment = {
-        //         id: tempId,
-        //         placeholderName: `${randomDesk()}`,
-        //         budget: 0,
-        //         timelineEvents: [],
-        //         isPlaceholder: true,
-        //         influencer: null,
-        //         campaign: { id: campaignId },
-        //     };
-        //     dataClient.assignment.create(newPlaceholder).then((id) => {
-        //         // console.log("got id");
-        //         // const newPlaceholders = campaign.assignedInfluencers.map((x) =>
-        //         //     x.id === tempId ? { ...x, id: id } : x
-        //         // );
-        //         const newPlaceholders = [
-        //             ...campaign.data.assignedInfluencers,
-        //             { ...newPlaceholder, id },
-        //         ];
-        //         // console.log({ newPlaceholders });
-        //         setIsProcessing(false);
-        //     });
-        //     const newCampaign: Campaign = {
-        //         ...campaign.data,
-        //         assignedInfluencers: [...campaign.data.assignedInfluencers, newPlaceholder],
-        //     };
-        //     setCampaign(newCampaign);
-        // },
         addAssignment: useMutation({
             mutationFn: async () => {
-                const createdEvent = await dataClient.assignment.create({ campaignId });
-                return createdEvent;
+                const newCreatedAssignment = await dataClient.assignment.create({ campaignId });
+
+                return { newCreatedAssignment };
             },
-            onSettled: (data, error) => {
-                queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
-                queryClient.invalidateQueries({ queryKey: ["assignments", campaignId] });
+            onMutate(variables) {
+                console.log("Mutating", variables);
+                const placeholderAssignment: Assignments.Min = {
+                    id: "placeholder-" + randomId(),
+                    placeholderName: "Neuer Influencer",
+                    budget: 0,
+                    campaign: { id: campaignId },
+                    timelineEvents: [],
+                    influencer: null,
+                };
+                queryClient.setQueryData(["assignments", campaignId], (old: Assignment[]) => [
+                    ...old,
+                    placeholderAssignment,
+                ]);
+                return { placeholderAssignment };
+            },
+            onSettled: async (data, error) => {
+                console.log("Settled", data);
+
+                // await queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
+                await queryClient.invalidateQueries({ queryKey: ["assignments", campaignId] });
                 if (error) console.error(error);
             },
 
             onSuccess: (data, variables, context) => {
-                queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
-                queryClient.invalidateQueries({ queryKey: ["assignments", campaignId] });
+                const { newCreatedAssignment } = data;
+                const { placeholderAssignment } = context;
+                console.log("Success", data);
+                queryClient.setQueryData(["assignments", campaignId], (old: Assignment[]) => {
+                    const newAssignments = old.map((assignment) => {
+                        if (assignment.id === placeholderAssignment.id) {
+                            return newCreatedAssignment;
+                        }
+                        return assignment;
+                    });
+                    return newAssignments;
+                });
+                queryClient.setQueryData(
+                    ["assignment", newCreatedAssignment.id],
+                    newCreatedAssignment,
+                );
+                // queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
+                // queryClient.invalidateQueries({ queryKey: ["assignments", campaignId] });
             },
         }),
     };
+    if (assignments.isError) {
+        console.error(assignments.error);
+        return <Box>{assignments.error?.message}</Box>;
+    }
+    if (assignments.isLoading) {
+        return (
+            <Accordion
+                defaultExpanded
+                disableGutters
+            >
+                <AccordionSummary>
+                    <Typography>Lade...</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                    <Skeleton height={"200px"} />
+                </AccordionDetails>
+            </Accordion>
+        );
+    }
+
     return (
         <>
             <>{/* Dialogs */}</>
@@ -180,7 +212,9 @@ export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps)
                             >
                                 <AddIcon />
                                 <Typography>Neuer Influencer</Typography>
-                                {isProcessing && <CircularProgress />}
+                                {(EventHandlers.addAssignment.isPending || isProcessing) && (
+                                    <CircularProgress />
+                                )}
                             </Button>
                         </>
                     )}

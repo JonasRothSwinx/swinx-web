@@ -55,7 +55,7 @@ export function Signature() {
                 <Row>
                     <Column style={styles.signatureLetterColumn}>E</Column>
                     <Column>
-                        <Link href={projectManagerEmail}>{projectManagerEmail}</Link>
+                        <Link href={`mailto:${projectManagerEmail}`}>{projectManagerEmail}</Link>
                     </Column>
                 </Row>
                 <Row>

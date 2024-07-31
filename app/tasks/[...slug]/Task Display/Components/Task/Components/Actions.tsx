@@ -214,6 +214,7 @@ export default function Actions({ task, campaignId, eventId, disableControls }: 
                         task={task}
                         fileDialogSx={fileDialogSx}
                         campaignId={campaignId}
+                        disableControls={disableControls}
                     />
                 )}
             </ConfirmProvider>
@@ -285,6 +286,7 @@ function UploadTextButton({
                             eventId,
                             status: "WAITING_FOR_APPROVAL",
                         });
+                        setOpen(false);
                     });
                 }
                 break;
@@ -297,6 +299,7 @@ function UploadTextButton({
                             eventId,
                             status: "WAITING_FOR_APPROVAL",
                         });
+                        setOpen(false);
                     });
                 }
                 break;
@@ -382,6 +385,7 @@ function UploadImageButton({
                                 eventId,
                                 status: "WAITING_FOR_APPROVAL",
                             });
+                            setOpen(false);
                         })
                         .catch((e) => console.error("Error confirming", e));
                 }
@@ -396,6 +400,7 @@ function UploadImageButton({
                                 eventId,
                                 status: "WAITING_FOR_APPROVAL",
                             });
+                            setOpen(false);
                         })
                         .catch((e) => console.error("Error confirming", e));
                 }
@@ -409,6 +414,7 @@ function UploadImageButton({
                             eventId,
                             status: "COMPLETED",
                         });
+                        setOpen(false);
                     })
                     .catch((e) => console.error("Error confirming", e));
                 break;
@@ -492,6 +498,7 @@ function UploadVideoButton({
                             eventId,
                             status: "WAITING_FOR_APPROVAL",
                         });
+                        setOpen(false);
                     });
                 }
                 break;
@@ -504,6 +511,7 @@ function UploadVideoButton({
                             eventId,
                             status: "WAITING_FOR_APPROVAL",
                         });
+                        setOpen(false);
                     });
                 }
                 break;
@@ -587,7 +595,7 @@ function UploadLinkButton({ task, disableControls, campaignId }: UploadLinkButto
         <>
             <SubmitLinkDialog
                 open={open}
-                onClose={setOpen}
+                onClose={() => setOpen(false)}
                 task={task}
                 campaignId={campaignId}
             />
@@ -605,7 +613,7 @@ function UploadLinkButton({ task, disableControls, campaignId }: UploadLinkButto
 
 interface SubmitLinkDialogProps {
     open: boolean;
-    onClose: (open: boolean) => void;
+    onClose: () => void;
     task: TimelineEvent;
     campaignId: string;
 }
@@ -625,6 +633,7 @@ function SubmitLinkDialog({ open, onClose, task, campaignId }: SubmitLinkDialogP
             queryClient.invalidateQueries({
                 queryKey: ["task"],
             });
+            onClose();
         },
     });
     const sx: SxProps = {
@@ -645,7 +654,7 @@ function SubmitLinkDialog({ open, onClose, task, campaignId }: SubmitLinkDialogP
     return (
         <Dialog
             open={open}
-            onClose={() => onClose(false)}
+            onClose={onClose}
             sx={sx}
         >
             <Box className="SubmitLinkContainer">
