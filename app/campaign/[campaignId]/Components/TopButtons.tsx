@@ -2,6 +2,7 @@ import { CloseIcon, DeleteIcon, RefreshIcon } from "@/app/Definitions/Icons";
 import { dataClient } from "@/app/ServerFunctions/database";
 import { Campaign } from "@/app/ServerFunctions/types";
 import { Box, Button, IconButton, Skeleton, Typography } from "@mui/material";
+import Link from "next/link";
 
 interface CampaignDetailsButtonsProps {
     updateCampaign: (background?: boolean) => void;
@@ -43,11 +44,11 @@ export default function CampaignDetailsButtons(props: CampaignDetailsButtonsProp
             <IconButton
                 onClick={() => updateCampaign(true)}
                 sx={{
-                    "animationPlayState": "running",
-                    "animationName": "spin",
-                    "animationDuration": "500ms",
-                    "animationIterationCount": `${isLoading ? "infinite" : "0"}`,
-                    "animationTimingFunction": "linear",
+                    animationPlayState: "running",
+                    animationName: "spin",
+                    animationDuration: "500ms",
+                    animationIterationCount: `${isLoading ? "infinite" : "0"}`,
+                    animationTimingFunction: "linear",
                     "@keyframes spin": {
                         "100%": { transform: `rotate(360deg)` },
                     },
@@ -55,9 +56,11 @@ export default function CampaignDetailsButtons(props: CampaignDetailsButtonsProp
             >
                 <RefreshIcon />
             </IconButton>
-            <IconButton onClick={() => handleClose()}>
-                <CloseIcon />
-            </IconButton>
+            <Link href="/">
+                <IconButton>
+                    <CloseIcon />
+                </IconButton>
+            </Link>
         </Box>
     );
 }
