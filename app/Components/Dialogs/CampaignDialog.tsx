@@ -24,6 +24,7 @@ import { dataClient } from "@/app/ServerFunctions/database";
 import sxStyles from "./sxStyles";
 import { useQuery } from "@tanstack/react-query";
 import { TextFieldWithTooltip } from "./Components";
+import { useRouter } from "next/navigation";
 
 const styles = stylesExporter.dialogs;
 
@@ -59,10 +60,18 @@ type CampaignDialogProps = {
 export function CampaignDialog(props: CampaignDialogProps) {
     //##################
     //#region Prop Destructuring
-    const { isOpen = false, onClose, editing, editingData, parent: rows, setParent: setRows } = props;
+    const {
+        isOpen = false,
+        onClose,
+        editing,
+        editingData,
+        parent: rows,
+        setParent: setRows,
+    } = props;
     //#endregion Prop Destructuring
     //##################
 
+    const router = useRouter();
     //##################
     //#region States
     const [campaign, setCampaign] = useState<Campaign>(initialData);
@@ -111,7 +120,7 @@ export function CampaignDialog(props: CampaignDialogProps) {
             // setIsModalOpen(false);
         },
 
-        onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
+        onSubmit: async (event: React.FormEvent<HTMLFormElement>) => {
             event.preventDefault();
             const projectManagerId = projectManager.data?.[0].id;
             if (!projectManagerId) {
@@ -129,11 +138,19 @@ export function CampaignDialog(props: CampaignDialogProps) {
             } satisfies Campaign;
             console.log(assembledCampaign);
 
-            dataClient.campaign.create({ campaign: assembledCampaign, projectManagerId });
+            const createdCampaign = await dataClient.campaign.create({
+                campaign: assembledCampaign,
+                projectManagerId,
+            });
+            router.push(`/campaign/${createdCampaign.id}`);
+
             EventHandlers.handleClose(true);
         },
 
-        handleDateChange: (newValue: Dayjs | null, context: PickerChangeHandlerContext<DateTimeValidationError>) => {
+        handleDateChange: (
+            newValue: Dayjs | null,
+            context: PickerChangeHandlerContext<DateTimeValidationError>,
+        ) => {
             // console.log("value", newValue);
             try {
                 const newDate = dayjs(newValue);
@@ -188,10 +205,16 @@ export function CampaignDialog(props: CampaignDialogProps) {
                     setBillingAdress={setBillingAdress}
                 />
                 <DialogActions>
-                    <Button onClick={() => EventHandlers.handleClose(false)} color="secondary">
+                    <Button
+                        onClick={() => EventHandlers.handleClose(false)}
+                        color="secondary"
+                    >
                         Abbrechen
                     </Button>
-                    <Button variant="contained" type="submit">
+                    <Button
+                        variant="contained"
+                        type="submit"
+                    >
                         Speichern
                     </Button>
                 </DialogActions>
@@ -210,7 +233,8 @@ interface FormContentProps {
 }
 
 function FormContent(props: FormContentProps) {
-    const { customers, setCustomers, campaign, setCampaign, billingAdress, setBillingAdress } = props;
+    const { customers, setCustomers, campaign, setCampaign, billingAdress, setBillingAdress } =
+        props;
 
     const [tab, setTab] = useState("0");
     const EventHandlers = {
@@ -267,10 +291,15 @@ function FormContent(props: FormContentProps) {
             </IconButton> */}
                     {customers.map((customer, index) => {
                         return (
-                            <TabPanel key={index} value={index.toString()}>
+                            <TabPanel
+                                key={index}
+                                value={index.toString()}
+                            >
                                 <CustomerDialogContent
                                     customer={customer}
-                                    setCustomer={(changedData) => StateChanges.handleCustomerChange(changedData, index)}
+                                    setCustomer={(changedData) =>
+                                        StateChanges.handleCustomerChange(changedData, index)
+                                    }
                                     deleteCustomer={() => StateChanges.deleteCustomer(index)}
                                     index={index}
                                 />
@@ -281,11 +310,17 @@ function FormContent(props: FormContentProps) {
             </DialogContent>
             <DialogContent>
                 <DialogContentText>Budget</DialogContentText>
-                <BudgetInfo campaign={campaign} setCampaign={setCampaign} />
+                <BudgetInfo
+                    campaign={campaign}
+                    setCampaign={setCampaign}
+                />
             </DialogContent>
             <DialogContent>
                 <DialogContentText>Rechnungsadresse</DialogContentText>
-                <BillingAdressInfo billingAdress={billingAdress} setBillingAdress={setBillingAdress} />
+                <BillingAdressInfo
+                    billingAdress={billingAdress}
+                    setBillingAdress={setBillingAdress}
+                />
             </DialogContent>
         </Box>
     );
