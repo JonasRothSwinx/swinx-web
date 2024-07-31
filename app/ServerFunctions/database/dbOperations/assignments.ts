@@ -235,31 +235,31 @@ function validateAssignments(rawData: RawAssignment[]): Assignments.Min[] {
     return rawData.map(validateAssignment);
 }
 
-const eventSelectionSet = [
-    "timelineEvents.timelineEvent.*",
-    "timelineEvents.timelineEvent.campaign.id",
-] as const;
-export async function getAssignmentTimelineEvents(assignment: Assignments.Min) {
-    const fetchStart = performance.now();
-    const { data, errors } = await client.models.InfluencerAssignment.get(
-        { id: assignment.id },
-        {
-            selectionSet: eventSelectionSet,
-        },
-    );
-    const fetchEnd = performance.now();
-    console.log("Fetch Time", fetchEnd - fetchStart);
-    if (data === null) return [];
-    const validateStart = performance.now();
-    const dataOut: Event[] = await Promise.all(
-        data.timelineEvents.map((x) => {
-            return validateTimelineEvent(x, assignment);
-        }),
-    );
-    const validateEnd = performance.now();
-    console.log("Validate Time", validateEnd - validateStart);
-    return dataOut;
-}
+// const eventSelectionSet = [
+//     "timelineEvents.timelineEvent.*",
+//     "timelineEvents.timelineEvent.campaign.id",
+// ] as const;
+// export async function getAssignmentTimelineEvents(assignment: Assignments.Min) {
+//     const fetchStart = performance.now();
+//     const { data, errors } = await client.models.InfluencerAssignment.get(
+//         { id: assignment.id },
+//         {
+//             selectionSet: eventSelectionSet,
+//         },
+//     );
+//     const fetchEnd = performance.now();
+//     console.log("Fetch Time", fetchEnd - fetchStart);
+//     if (data === null) return [];
+//     const validateStart = performance.now();
+//     const dataOut: Event[] = await Promise.all(
+//         data.timelineEvents.map((x) => {
+//             return validateTimelineEvent(x.timelineEvent, assignment);
+//         }),
+//     );
+//     const validateEnd = performance.now();
+//     console.log("Validate Time", validateEnd - validateStart);
+//     return dataOut;
+// }
 
 /**
  * List all assignments, belonging to a campaign
@@ -280,39 +280,43 @@ export async function listAssignmentsByCampaign(campaignId: string) {
     return validatedAssignments;
 }
 
-function validateTimelineEvent(
-    rawData: SelectionSet<
-        Schema["InfluencerAssignment"]["type"],
-        typeof eventSelectionSet
-    >["timelineEvents"][number],
-    assignment: Assignments.Min,
-): Event {
-    const {
-        timelineEvent: {
-            id,
-            date,
-            timelineEventType: type,
-            eventAssignmentAmount,
-            eventTaskAmount,
-            eventTitle,
-            campaign,
-            isCompleted = false,
-        },
-    } = rawData;
-    const validatedEvent: Event = {
-        id: id,
-        date,
-        type: type as Events.eventType,
-        eventAssignmentAmount: 1,
-        eventTaskAmount,
-        eventTitle,
-        campaign,
-        assignments: [assignment],
-        emailTriggers: [],
-        parentEvent: null,
-        childEvents: [],
-        info: {},
-        isCompleted: isCompleted ?? false,
-    };
-    return validatedEvent;
-}
+// function validateTimelineEvent(
+//     rawData:  Omit<
+//     SelectionSet<
+//         Schema["InfluencerAssignment"]["type"],
+//         typeof eventSelectionSet
+//     >["timelineEvents"][number]["timelineEvent"],
+//          "status"
+//     >  & { status: Schema["TimelineEvent"]["type"]["status"] },
+//     assignment: Assignments.Min,
+// ): Event {
+//     const {
+//         id,
+//         date,
+//         timelineEventType: type,
+//         eventAssignmentAmount,
+//         eventTaskAmount,
+//         eventTitle,
+//         campaign,
+//         isCompleted = false,
+//         status,
+//     } = rawData;
+//     console.log("Validating in assignments", { status });
+//     const validatedEvent: Event = {
+//         id: id,
+//         date,
+//         type: type as Events.eventType,
+//         eventAssignmentAmount: 1,
+//         eventTaskAmount,
+//         eventTitle,
+//         campaign,
+//         assignments: [assignment],
+//         emailTriggers: [],
+//         parentEvent: null,
+//         childEvents: [],
+//         info: {},
+//         isCompleted: isCompleted ?? false,
+//         status: status as any, //?? "WAITING_FOR_DRAFT",
+//     };
+//     return validatedEvent;
+// }

@@ -12,6 +12,7 @@ export const timelineEvent = {
     get: getTimelineEvent,
     delete: deleteTimelineEvent,
     byCampaign: listByCampaign,
+    byCampaignByIds: listByCampaignByIds,
     byAssignment: listByAssignment,
 };
 
@@ -154,6 +155,7 @@ export async function listAll(): Promise<Event[]> {
     const timelineEvents = await database.timelineEvent.list();
 
     timelineEvents.forEach((event) => {
+        queryClient.cancelQueries({ queryKey: ["timelineEvent", event.id] });
         queryClient.setQueryData(["timelineEvent", event.id], event);
         // queryClient.refetchQueries({ queryKey: ["timelineEvent", event.id] });
     });
@@ -178,6 +180,31 @@ export async function listByCampaign(campaignId: string): Promise<Event[]> {
 
     queryClient.setQueryData(["timelineEvents", campaignId], timelineEvents);
     timelineEvents.forEach((event) => {
+        queryClient.cancelQueries({ queryKey: ["timelineEvent", event.id] });
+        queryClient.setQueryData(["timelineEvent", event.id], event);
+        // queryClient.refetchQueries({ queryKey: ["timelineEvent", event.id] });
+    });
+    return timelineEvents;
+}
+
+export async function listByCampaignByIds(
+    campaignId: string,
+    eventIds: string[],
+): Promise<Event[]> {
+    const queryClient = config.getQueryClient();
+    //return cache data if available
+    // const cachedTimelineEvents = queryClient.getQueryData(["timelineEvents", campaignId]) as Event[];
+    // if (cachedTimelineEvents) {
+    //     return cachedTimelineEvents;
+    // }
+    const timelineEvents = await database.timelineEvent.listByCampaignByIds({
+        campaignId,
+        eventIds,
+    });
+
+    queryClient.setQueryData(["timelineEvents", campaignId], timelineEvents);
+    timelineEvents.forEach((event) => {
+        queryClient.cancelQueries({ queryKey: ["timelineEvent", event.id] });
         queryClient.setQueryData(["timelineEvent", event.id], event);
         // queryClient.refetchQueries({ queryKey: ["timelineEvent", event.id] });
     });
@@ -234,10 +261,7 @@ export async function listByAssignment(assignmentId: string): Promise<Event[]> {
     // }
 
     const timelineEvents = await database.timelineEvent.listByAssignment(assignmentId);
-    timelineEvents.forEach((event) => {
-        queryClient.setQueryData(["timelineEvent", event.id], event);
-        // queryClient.refetchQueries({ queryKey: ["timelineEvent", event.id] });
-    });
+
     return timelineEvents;
 }
 

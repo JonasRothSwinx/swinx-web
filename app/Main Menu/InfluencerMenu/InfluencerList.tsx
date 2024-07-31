@@ -19,14 +19,7 @@ import {
     GridPreProcessEditCellProps,
 } from "@mui/x-data-grid";
 import { randomId, randomName, randomUserName } from "@mui/x-data-grid-generator";
-import {
-    Button,
-    CircularProgress,
-    TextField,
-    ThemeProvider,
-    Typography,
-    createTheme,
-} from "@mui/material";
+import { Button, CircularProgress, TextField, ThemeProvider, Typography, createTheme } from "@mui/material";
 import {
     Add as AddIcon,
     Edit as EditIcon,
@@ -36,7 +29,7 @@ import {
 } from "@mui/icons-material";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import { Influencer, Influencers } from "@/app/ServerFunctions/types";
-import InfluencerDialog from "../Dialogs/InfluencerDialog";
+import { InfluencerDialog } from "@/app/Components";
 
 import { deDE } from "@mui/x-data-grid";
 import { deDE as pickersDeDE } from "@mui/x-date-pickers/locales";
@@ -94,11 +87,7 @@ function EditToolbar(props: EditToolbarProps) {
     }
     return (
         <GridToolbarContainer>
-            <Button
-                color="primary"
-                startIcon={<AddIcon />}
-                onClick={handleClick}
-            >
+            <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
                 Neuer Influencer
             </Button>
             {/* <Button
@@ -313,8 +302,8 @@ function InfluencerList() {
                         }}
                         autoHeight={true}
                         sx={{
-                            "m": 2,
-                            "background": "white",
+                            m: 2,
+                            background: "white",
                             "& .MuiDataGrid-cell": {
                                 // color: "primary.main",
                                 borderLeft: "1px solid black",

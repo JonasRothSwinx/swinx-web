@@ -94,6 +94,7 @@ export const getEmailTrigger = /* GraphQL */ `query GetEmailTrigger($id: ID!) {
       isCompleted
       notes
       parentEventId
+      status
       timelineEventType
       updatedAt
       __typename
@@ -138,6 +139,7 @@ export const getEventAssignment = /* GraphQL */ `query GetEventAssignment($id: I
       isCompleted
       notes
       parentEventId
+      status
       timelineEventType
       updatedAt
       __typename
@@ -399,11 +401,13 @@ export const getTimelineEvent = /* GraphQL */ `query GetTimelineEvent($id: ID!) 
       isCompleted
       notes
       parentEventId
+      status
       timelineEventType
       updatedAt
       __typename
     }
     parentEventId
+    status
     targetAudience {
       cities
       country
@@ -474,6 +478,7 @@ export const listByCampaign = /* GraphQL */ `query ListByCampaign(
       isCompleted
       notes
       parentEventId
+      status
       timelineEventType
       updatedAt
       __typename
@@ -886,6 +891,7 @@ export const listTimelineEvents = /* GraphQL */ `query ListTimelineEvents(
       isCompleted
       notes
       parentEventId
+      status
       timelineEventType
       updatedAt
       __typename

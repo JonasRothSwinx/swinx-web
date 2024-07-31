@@ -20,6 +20,7 @@ export async function dummy() {
             "date",
             "notes",
             "info.*",
+            "status",
 
             //campaign info
             "campaign.id",
@@ -56,6 +57,7 @@ const selectionSet = [
     "notes",
     "info.*",
     "isCompleted",
+    "status",
 
     //campaign info
     "campaign.id",
@@ -183,10 +185,13 @@ export async function updateTimelineEvent({ id, updatedData }: UpdateTimelineEve
         childEvents,
         targetAudience,
         isCompleted,
+        status,
     } = updatedData;
+
     if (!id) {
         throw new Error("Missing Data");
     }
+
     const newEvent: Partial<Schema["TimelineEvent"]["type"]> = {
         id,
         ...(date && { date }),
@@ -198,6 +203,7 @@ export async function updateTimelineEvent({ id, updatedData }: UpdateTimelineEve
         ...(eventTitle && { eventTitle }),
         ...(info && { info }),
         ...(targetAudience && { targetAudience }),
+        ...(status && { status }),
         isCompleted,
     };
 
@@ -343,6 +349,7 @@ export async function getAssignmentTimelineEvents(assignmentId: string) {
                 "timelineEvent.date",
                 "timelineEvent.notes",
                 "timelineEvent.parentEventId",
+                "timelineEvent.isCompleted",
 
                 // Event info
                 "timelineEvent.info.*",
@@ -404,6 +411,7 @@ export async function getCampaignTimelineEvents(campaignId: string, verbose = fa
             campaignId,
         },
         {
+            filter: {},
             selectionSet: selectionSet,
         },
     );
@@ -421,6 +429,43 @@ export async function getCampaignTimelineEvents(campaignId: string, verbose = fa
         });
     return events;
 }
+interface GetTimelineEventsByIdsParams {
+    campaignId: string;
+    eventIds: string[];
+}
+export async function getCampaignTimelineEventsByIds({
+    campaignId,
+    eventIds,
+}: GetTimelineEventsByIdsParams) {
+    // const { data, errors } = await client.models.TimelineEvent.list({
+    //     filter: { campaignCampaignTimelineEventsId: { eq: campaignId } },
+    //     //@ts-ignore
+    //     selectionSet,
+    // });
+    const { data, errors } = await client.models.TimelineEvent.listByCampaign(
+        {
+            campaignId,
+        },
+        {
+            filter: {
+                or: eventIds.map((id) => ({ id: { eq: id } })),
+            },
+            selectionSet: selectionSet,
+        },
+    );
+    if (errors) throw new Error(JSON.stringify(errors));
+    const events: Event[] = data
+        .map((event) => validateEvent(event))
+        .filter((event): event is Event => {
+            if (event === null) {
+                console.error("event is null", event);
+                return false;
+            }
+            return true;
+        });
+    return events;
+}
+
 /**
  * Get Event for Email Trigger Routine
  * Includes additional data
@@ -588,6 +633,8 @@ function validateEvent(rawEvent: Nullable<RawEvent>): Nullable<Event> {
         cities: rawEvent.targetAudience?.cities?.filter((x): x is string => x !== null) ?? [],
     };
 
+    const eventStatus: Event["status"] = rawEvent.status ?? "WAITING_FOR_DRAFT";
+
     const eventOut: Event = {
         id,
         type: timelineEventType,
@@ -611,6 +658,7 @@ function validateEvent(rawEvent: Nullable<RawEvent>): Nullable<Event> {
             sent: x.sent,
         })),
         targetAudience,
+        status: eventStatus,
     };
     return eventOut;
 }

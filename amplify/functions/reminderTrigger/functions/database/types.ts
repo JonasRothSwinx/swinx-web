@@ -8,6 +8,7 @@ import {
     Influencers,
     ProjectManager,
 } from "@/app/ServerFunctions/types";
+import { Schema } from "../../../../data/resource";
 
 type GeneratedQuery<InputType, OutputType> = string & {
     __generatedQueryInput: InputType;
@@ -36,6 +37,7 @@ export const listEmailTriggers = /* GraphQL */ `query ListEmailTriggers(
                 eventTitle
                 eventTaskAmount
                 date
+                status
                 info {
                     topic
                     charLimit
@@ -86,6 +88,7 @@ export const listEmailTriggers = /* GraphQL */ `query ListEmailTriggers(
                     isCompleted
                     eventTitle
                     date
+                    status
                     info {
                         topic
                         charLimit
@@ -150,6 +153,7 @@ type RawParentEvent = {
     isCompleted: boolean;
     eventTitle: string;
     date: string;
+    status: Schema["TimelineEvent"]["type"]["status"];
     info: {
         topic?: string;
         charLimit?: number;

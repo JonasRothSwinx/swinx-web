@@ -97,31 +97,45 @@ export async function getEventsByAssignment({ id }: GetEventsByAssignmentParams)
         "eventTitle",
         "date",
         "isCompleted",
+        "status",
 
         "info.*",
         "eventTaskAmount",
         "parentEventId",
+        "postLink",
     ] as const;
-    const tasks = eventIds.map(async (eventId) => {
-        const { data: event, errors } = await client.models.TimelineEvent.get(
-            { id: eventId },
-            {
-                selectionSet,
-            },
-        );
-        if (errors) {
-            console.error(errors);
-            return null;
-        }
-        return event;
+    // const tasks = eventIds.map(async (eventId) => {
+    //     const { data: event, errors } = await client.models.TimelineEvent.get(
+    //         { id: eventId },
+    //         {
+    //             selectionSet,
+    //         }
+    //     );
+    //     if (errors) {
+    //         console.error(errors);
+    //         return null;
+    //     }
+    //     return event;
+    // });
+    const { data: tasks, errors: taskErrors } = await client.models.TimelineEvent.list({
+        filter: {
+            or: eventIds.map((id) => ({ id: { eq: id } })),
+        },
+        selectionSet,
     });
-    const events = (await Promise.all(tasks)).filter(
-        (
-            event,
-        ): event is DeepWriteable<
-            NonNullable<SelectionSet<Schema["TimelineEvent"]["type"], typeof selectionSet>>
-        > => !!event,
-    );
+    if (taskErrors) {
+        console.error(taskErrors);
+        return [];
+    }
+    const events =
+        /* (await Promise.all(tasks)) */
+        tasks.filter(
+            (
+                event,
+            ): event is DeepWriteable<
+                NonNullable<SelectionSet<Schema["TimelineEvent"]["type"], typeof selectionSet>>
+            > => !!event,
+        );
 
     return events;
 }
@@ -145,6 +159,7 @@ export async function getCampaignInfo({ id }: GetCampaignInfoParams) {
         throw new Error("Error fetching campaign data");
     }
     const dataOut = {
+        id: campaignResponse.data?.id ?? "<Error>",
         customerCompany: campaignResponse.data?.customers?.[0]?.company ?? "<Error>",
     };
     return dataOut;
@@ -164,6 +179,7 @@ export async function getParentEventInfo({ id }: GetParentEventInfoParams) {
                 "eventTitle",
                 "date",
                 "targetAudience.*",
+                "timelineEventType",
             ],
         },
     );
@@ -254,24 +270,41 @@ export async function getInfluencerDetails({ id }: GetInfluencerDetailsParams) {
 
 interface GetTaskDetailsParams {
     assignmentId: string;
-    campaignId: string;
-    influencerId: string;
+    // campaignId: string;
+    // influencerId: string;
 }
-export async function getTaskDetails({
-    assignmentId,
-    campaignId,
-    influencerId,
-}: GetTaskDetailsParams) {
+export async function getTaskDetails({ assignmentId }: GetTaskDetailsParams) {
     const assignmentData = await getAssignmentData({ id: assignmentId });
-    const events = await getEventsByAssignment({ id: assignmentId });
-    const campaignInfo = await getCampaignInfo({ id: campaignId });
-    const influencerInfo = await getInfluencerDetails({ id: influencerId });
-    switch (true) {
-        case assignmentData?.influencerId !== influencerId:
-            throw new Error("Influencer ID does not match assignment data");
-        case assignmentData?.campaignId !== campaignId:
-            throw new Error("Campaign ID does not match assignment data");
+    if (!assignmentData) {
+        throw new Error("Assignment not found");
     }
+    const campaignId = assignmentData.campaignId;
+    const influencerId = assignmentData.influencerId;
+
+    const eventsResponse = getEventsByAssignment({ id: assignmentId });
+    const campaignInfoResponse = getCampaignInfo({ id: campaignId });
+    let influencerInfoResponse;
+    if (influencerId) {
+        influencerInfoResponse = getInfluencerDetails({ id: influencerId });
+    } else {
+        influencerInfoResponse = {
+            id: "placeholder",
+            firstName: "Place",
+            lastName: "Holder",
+        };
+    }
+    const [events, campaignInfo, influencerInfo] = await Promise.all([
+        eventsResponse,
+        campaignInfoResponse,
+        influencerInfoResponse,
+    ]);
+
+    // switch (true) {
+    //     case assignmentData?.influencerId !== influencerId:
+    //         throw new Error("Influencer ID does not match assignment data");
+    //     case assignmentData?.campaignId !== campaignId:
+    //         throw new Error("Campaign ID does not match assignment data");
+    // }
     return {
         assignmentData,
         events,
@@ -280,11 +313,11 @@ export async function getTaskDetails({
     };
 }
 
-interface MarkeEventFinisheedParams {
+interface MarkeEventFinishedParams {
     eventId: string;
     isCompleted: boolean;
 }
-export async function markEventFinished({ eventId, isCompleted }: MarkeEventFinisheedParams) {
+export async function markEventFinished({ eventId, isCompleted }: MarkeEventFinishedParams) {
     const { data, errors } = await client.models.TimelineEvent.update({
         id: eventId,
         isCompleted: true,
@@ -294,4 +327,61 @@ export async function markEventFinished({ eventId, isCompleted }: MarkeEventFini
         throw new Error("Error marking event as finished");
     }
     return true;
+}
+
+interface UpdateEventStatusParams {
+    eventId: string;
+    status: Schema["TimelineEvent"]["type"]["status"];
+}
+export async function updateEventStatus({ eventId, status }: UpdateEventStatusParams) {
+    const { data, errors } = await client.models.TimelineEvent.update({
+        id: eventId,
+        status,
+    });
+    if (errors) {
+        console.error(errors);
+        throw new Error("Error updating event status");
+    }
+    return true;
+}
+
+interface SubmitPostLinkParams {
+    eventId: string;
+    postLink: string;
+}
+
+export async function submitPostLink({ eventId, postLink }: SubmitPostLinkParams) {
+    const { data, errors } = await client.models.TimelineEvent.update({
+        id: eventId,
+        postLink,
+        // status: "COMPLETED",
+    });
+    if (errors) {
+        console.error(errors);
+        throw new Error("Error submitting post link");
+    }
+    return true;
+}
+
+interface GetCampaignManagers {
+    campaignId: string;
+}
+export async function getCampaignManagers({ campaignId }: GetCampaignManagers) {
+    const { data, errors } = await client.models.Campaign.get(
+        {
+            id: campaignId,
+        },
+        {
+            selectionSet: ["projectManagers.projectManager.email"],
+        },
+    );
+    if (errors) {
+        console.error(errors);
+        throw new Error("Error fetching campaign managers");
+    }
+    if (!data) {
+        return [];
+    }
+    const emails = data.projectManagers.map((pm) => pm.projectManager.email);
+    return emails;
 }

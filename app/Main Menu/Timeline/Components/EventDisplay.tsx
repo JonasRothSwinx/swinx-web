@@ -22,7 +22,7 @@ import { Nullable, highlightData } from "@/app/Definitions/types";
 import { dataClient } from "@/app/ServerFunctions/database";
 import { useMemo, useState } from "react";
 import { useConfirm } from "material-ui-confirm";
-import TimelineEventDialog from "../../Dialogs/TimelineEvent/TimelineEventDialog";
+import { TimelineEventDialog } from "@/app/Components";
 const config = {
     lineheight: 20,
 };
@@ -84,10 +84,7 @@ export function EventDisplay(props: EventProps) {
     //######################################################################################################################
     //#region Styles
     const dateColumns = useMemo(() => (groupBy === "day" ? 2 : 3), [groupBy]);
-    const contentColumns = useMemo(
-        () => totalColumns - dateColumns /* - modifyColumns */,
-        [totalColumns, dateColumns],
-    );
+    const contentColumns = useMemo(() => totalColumns - dateColumns /* - modifyColumns */, [totalColumns, dateColumns]);
     const isOverdue = useMemo(() => {
         if (!event.data) return false;
         const eventDate = dayjs(event.data.date);
@@ -98,43 +95,39 @@ export function EventDisplay(props: EventProps) {
     const sxProps: SxProps = useMemo(() => {
         return {
             "&#EventRow": {
-                "position": "relative",
+                position: "relative",
                 // "display": "flex",
                 // "flexDirection": "row",
-                "alignItems": "center",
+                alignItems: "center",
                 // flexWrap: "wrap",
-                "width": "100%",
-                "padding": "0",
-                "margin": "0",
-                "backgroundColor": event.data?.isCompleted
-                    ? "green"
-                    : isOverdue
-                    ? "red"
-                    : "inherit",
+                width: "100%",
+                padding: "0",
+                margin: "0",
+                backgroundColor: event.data?.isCompleted ? "green" : isOverdue ? "red" : "inherit",
                 // backgroundColor: "green",
                 "& *": event.data?.isCompleted && {
                     textDecoration: "line-through",
                 },
                 "&:hover": {
-                    "backgroundColor": "lightgrey",
+                    backgroundColor: "lightgrey",
                     "#modifyButtonGroup": {
-                        "display": editable ? "flex" : "none",
-                        "width": "40px",
-                        "backgroundColor": "lightgrey",
+                        display: editable ? "flex" : "none",
+                        width: "40px",
+                        backgroundColor: "lightgrey",
 
                         "@keyframes fadeIn": {
                             from: { opacity: 0, width: 0 },
                             to: { opacity: 1, width: 40 },
                         },
-                        "animation": "fadeIn linear 0.3s",
+                        animation: "fadeIn linear 0.3s",
                     },
                 },
 
                 ".MuiTableCell-root": {
-                    "padding": "0",
-                    "minWidth": "max-content",
-                    "paddingRight": "3px",
-                    "paddingLeft": "3px",
+                    padding: "0",
+                    minWidth: "max-content",
+                    paddingRight: "3px",
+                    paddingLeft: "3px",
                     "&:first-of-type": {
                         paddingLeft: "5px",
                     },
@@ -181,15 +174,15 @@ export function EventDisplay(props: EventProps) {
 
                 "&>#modifyButtonGroup": {
                     "&": {
-                        "display": "none",
-                        "justifyContent": "right",
-                        "overflow": "hidden",
+                        display: "none",
+                        justifyContent: "right",
+                        overflow: "hidden",
 
                         "@keyframes fadeOut": {
                             from: { opacity: 1, width: 40, display: "flex" },
                             to: { opacity: 0, width: 0 },
                         },
-                        "animation": "fadeOut linear 0.3s",
+                        animation: "fadeOut linear 0.3s",
                     },
 
                     "&>#editButton, &>#deleteButton": {
@@ -227,26 +220,14 @@ export function EventDisplay(props: EventProps) {
     //#endregion Data State
     //######################################################################################################################
     return (
-        <TableRow
-            id="EventRow"
-            sx={sxProps}
-        >
+        <TableRow id="EventRow" sx={sxProps}>
             {/* <Grid
                 id="Event"
                 container
                 columns={totalColumns}
             > */}
-            {dateColumns > 0 && (
-                <EventDate
-                    date={event.data.date ?? ""}
-                    groupBy={groupBy}
-                    columnSize={dateColumns}
-                />
-            )}
-            <EventContent
-                event={event.data}
-                columnSize={contentColumns}
-            />
+            {dateColumns > 0 && <EventDate date={event.data.date ?? ""} groupBy={groupBy} columnSize={dateColumns} />}
+            <EventContent event={event.data} columnSize={contentColumns} />
             {/* </Grid> */}
             <CircularProgress id="fetchIndicator" />
 
@@ -273,20 +254,10 @@ function EventContent(props: EventContentProps) {
     const { event, columnSize = 10 } = props;
     switch (true) {
         case Events.isSingleEvent(event): {
-            return (
-                <EventContentSingle
-                    event={event}
-                    columnSize={columnSize}
-                />
-            );
+            return <EventContentSingle event={event} columnSize={columnSize} />;
         }
         case Events.isMultiEvent(event): {
-            return (
-                <EventContentMulti
-                    event={event}
-                    columnSize={columnSize}
-                />
-            );
+            return <EventContentMulti event={event} columnSize={columnSize} />;
         }
         default: {
             return <>{"Error: Event Type not recognized"}</>;
@@ -377,10 +348,7 @@ function DeleteButton(props: DeleteButtonProps) {
         });
     };
     return (
-        <IconButton
-            id="deleteButton"
-            onClick={deleteHandler}
-        >
+        <IconButton id="deleteButton" onClick={deleteHandler}>
             <DeleteIcon color="error" />
         </IconButton>
     );

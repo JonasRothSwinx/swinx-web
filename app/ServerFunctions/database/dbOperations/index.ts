@@ -33,6 +33,7 @@ import {
     updateTimelineEvent,
     getAssignmentTimelineEvents,
     getEventForEmailTrigger,
+    getCampaignTimelineEventsByIds,
 } from "./timelineEvents";
 import candidate from "./candidate";
 import {
@@ -87,6 +88,7 @@ const timelineEvents = {
     connectToAssignment: connectToAssignment,
     connectEvents: connectEvents,
     getForEmailTrigger: getEventForEmailTrigger,
+    listByCampaignByIds: getCampaignTimelineEventsByIds,
 };
 
 const assignments = {

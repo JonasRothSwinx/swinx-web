@@ -8,28 +8,50 @@ interface GroupTaskParams {
 }
 
 interface GroupTaskReturn {
-    finishedTasks: TimelineEvent[];
     pastDueTasks: TimelineEvent[];
+    awatingApprovalTasks: TimelineEvent[];
     futureTasks: TimelineEvent[];
+    finishedTasks: TimelineEvent[];
+    ungroupedTasks: TimelineEvent[];
 }
 
 export default function groupTasks({ tasks, parentEvent, campaign }: GroupTaskParams) {
     const now = dayjs();
     const output: GroupTaskReturn = {
-        finishedTasks: [],
         pastDueTasks: [],
+        awatingApprovalTasks: [],
         futureTasks: [],
+        finishedTasks: [],
+        ungroupedTasks: [],
     };
     tasks.reduce((acc, task) => {
-        if (task.isCompleted) {
-            acc.finishedTasks.push(task);
-            return acc;
+        const { status, date } = task;
+        switch (status) {
+            case "WAITING_FOR_APPROVAL": {
+                acc.awatingApprovalTasks.push(task);
+                break;
+            }
+            case "COMPLETED": {
+                acc.finishedTasks.push(task);
+                break;
+            }
+            case null:
+            case undefined:
+            case "APPROVED":
+            case "WAITING_FOR_DRAFT": {
+                if (dayjs(date).isBefore(now)) {
+                    acc.pastDueTasks.push(task);
+                } else {
+                    acc.futureTasks.push(task);
+                }
+                break;
+            }
+            default: {
+                console.log("unhandled task", task);
+                acc.ungroupedTasks.push(task);
+                break;
+            }
         }
-        if (dayjs(task.date).isBefore(now)) {
-            acc.pastDueTasks.push(task);
-            return acc;
-        }
-        acc.futureTasks.push(task);
         return acc;
     }, output);
     return output;

@@ -103,6 +103,7 @@ export const createEmailTrigger = /* GraphQL */ `mutation CreateEmailTrigger(
       isCompleted
       notes
       parentEventId
+      status
       timelineEventType
       updatedAt
       __typename
@@ -150,6 +151,7 @@ export const createEventAssignment = /* GraphQL */ `mutation CreateEventAssignme
       isCompleted
       notes
       parentEventId
+      status
       timelineEventType
       updatedAt
       __typename
@@ -429,11 +431,13 @@ export const createTimelineEvent = /* GraphQL */ `mutation CreateTimelineEvent(
       isCompleted
       notes
       parentEventId
+      status
       timelineEventType
       updatedAt
       __typename
     }
     parentEventId
+    status
     targetAudience {
       cities
       country
@@ -544,6 +548,7 @@ export const deleteEmailTrigger = /* GraphQL */ `mutation DeleteEmailTrigger(
       isCompleted
       notes
       parentEventId
+      status
       timelineEventType
       updatedAt
       __typename
@@ -591,6 +596,7 @@ export const deleteEventAssignment = /* GraphQL */ `mutation DeleteEventAssignme
       isCompleted
       notes
       parentEventId
+      status
       timelineEventType
       updatedAt
       __typename
@@ -870,11 +876,13 @@ export const deleteTimelineEvent = /* GraphQL */ `mutation DeleteTimelineEvent(
       isCompleted
       notes
       parentEventId
+      status
       timelineEventType
       updatedAt
       __typename
     }
     parentEventId
+    status
     targetAudience {
       cities
       country
@@ -985,6 +993,7 @@ export const updateEmailTrigger = /* GraphQL */ `mutation UpdateEmailTrigger(
       isCompleted
       notes
       parentEventId
+      status
       timelineEventType
       updatedAt
       __typename
@@ -1032,6 +1041,7 @@ export const updateEventAssignment = /* GraphQL */ `mutation UpdateEventAssignme
       isCompleted
       notes
       parentEventId
+      status
       timelineEventType
       updatedAt
       __typename
@@ -1311,11 +1321,13 @@ export const updateTimelineEvent = /* GraphQL */ `mutation UpdateTimelineEvent(
       isCompleted
       notes
       parentEventId
+      status
       timelineEventType
       updatedAt
       __typename
     }
     parentEventId
+    status
     targetAudience {
       cities
       country

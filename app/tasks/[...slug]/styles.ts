@@ -8,6 +8,7 @@ const styles: SxProps = {
         height: "100vh",
         display: "flex",
         justifyContent: "center",
+        // padding: "20px",
 
         "#TempMessageBox": {
             height: "fit-content",
@@ -18,6 +19,12 @@ const styles: SxProps = {
             borderRadius: "5px",
             border: "1px solid black",
             textAlign: "center",
+        },
+        filter: { greyscale: "100%" },
+        "@keyframes raveMode": {
+            "50%": {
+                filter: { greyscale: "100%" },
+            },
         },
     },
 };

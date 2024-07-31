@@ -25,9 +25,24 @@ export async function getEmailTriggers(
         start: startDate.toISOString(),
         end: endDate.toISOString(),
     });
+    const filteredTriggers = triggers.filter((trigger) => {
+        switch (true) {
+            case trigger.event.status === "COMPLETED":
+            case trigger.event.isCompleted: {
+                return false;
+            }
+            case trigger.trigger.type === "deadlineReminder" &&
+                trigger.event.status !== "WAITING_FOR_DRAFT": {
+                return false;
+            }
+            default: {
+                return true;
+            }
+        }
+    });
     // const contextProps = await defineContext(triggers);
     // const triggersWithContext = await Promise.all(
     //     triggers.map(async (trigger) => {
     //         const triggerWithContext = await getTriggerContext(trigger);
-    return triggers;
+    return filteredTriggers;
 }

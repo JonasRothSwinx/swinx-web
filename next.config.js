@@ -9,6 +9,8 @@ const nextConfig = {
             test: /\.csv$/i,
             use: "raw-loader",
         });
+
+        // config.resolve.fallback = { fs: false };
         return config;
     },
     // webpack: {

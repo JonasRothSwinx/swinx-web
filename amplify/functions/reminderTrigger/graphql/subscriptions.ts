@@ -96,6 +96,7 @@ export const onCreateEmailTrigger = /* GraphQL */ `subscription OnCreateEmailTri
       isCompleted
       notes
       parentEventId
+      status
       timelineEventType
       updatedAt
       __typename
@@ -142,6 +143,7 @@ export const onCreateEventAssignment = /* GraphQL */ `subscription OnCreateEvent
       isCompleted
       notes
       parentEventId
+      status
       timelineEventType
       updatedAt
       __typename
@@ -415,11 +417,13 @@ export const onCreateTimelineEvent = /* GraphQL */ `subscription OnCreateTimelin
       isCompleted
       notes
       parentEventId
+      status
       timelineEventType
       updatedAt
       __typename
     }
     parentEventId
+    status
     targetAudience {
       cities
       country
@@ -523,6 +527,7 @@ export const onDeleteEmailTrigger = /* GraphQL */ `subscription OnDeleteEmailTri
       isCompleted
       notes
       parentEventId
+      status
       timelineEventType
       updatedAt
       __typename
@@ -569,6 +574,7 @@ export const onDeleteEventAssignment = /* GraphQL */ `subscription OnDeleteEvent
       isCompleted
       notes
       parentEventId
+      status
       timelineEventType
       updatedAt
       __typename
@@ -842,11 +848,13 @@ export const onDeleteTimelineEvent = /* GraphQL */ `subscription OnDeleteTimelin
       isCompleted
       notes
       parentEventId
+      status
       timelineEventType
       updatedAt
       __typename
     }
     parentEventId
+    status
     targetAudience {
       cities
       country
@@ -950,6 +958,7 @@ export const onUpdateEmailTrigger = /* GraphQL */ `subscription OnUpdateEmailTri
       isCompleted
       notes
       parentEventId
+      status
       timelineEventType
       updatedAt
       __typename
@@ -996,6 +1005,7 @@ export const onUpdateEventAssignment = /* GraphQL */ `subscription OnUpdateEvent
       isCompleted
       notes
       parentEventId
+      status
       timelineEventType
       updatedAt
       __typename
@@ -1269,11 +1279,13 @@ export const onUpdateTimelineEvent = /* GraphQL */ `subscription OnUpdateTimelin
       isCompleted
       notes
       parentEventId
+      status
       timelineEventType
       updatedAt
       __typename
     }
     parentEventId
+    status
     targetAudience {
       cities
       country

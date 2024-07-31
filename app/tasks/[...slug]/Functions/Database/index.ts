@@ -1,3 +1,2 @@
-import dataClient from "./dataClient";
-
-export { dataClient };
+export { dataClient } from "./dataClient";
+export { config } from "./config";

@@ -33,6 +33,12 @@ const schema = a
         }),
 
         //##############################################
+        //################### Enums ####################
+        //##############################################
+
+        EventStatus: a.enum(["WAITING_FOR_DRAFT", "WAITING_FOR_APPROVAL", "APPROVED", "REJECTED", "COMPLETED"]),
+
+        //##############################################
         //################### Models ###################
         //##############################################
         //#region Influencer
@@ -98,10 +104,7 @@ const schema = a
                 candidatures: a.hasMany("InfluencerCandidate", "influencerId"),
                 //##########################
             })
-            .authorization((allow) => [
-                allow.publicApiKey().to(["read"]),
-                allow.groups(["admin", "projektmanager"]),
-            ]),
+            .authorization((allow) => [allow.publicApiKey().to(["read"]), allow.groups(["admin", "projektmanager"])]),
 
         /**
          * InfluencerAssignment model - Represents the assignment of an influencer to a campaign
@@ -120,17 +123,19 @@ const schema = a
             .model({
                 budget: a.integer(),
                 isPlaceholder: a.boolean().required(),
-                placeholderName: a
-                    .string()
-                    .authorization((allow) => [allow.groups(["admin", "projektmanager"])]),
+                placeholderName: a.string().authorization((allow) => [allow.groups(["admin", "projektmanager"])]),
 
                 //##########################
                 //### Relations ############
                 influencerId: a.id(),
-                /* .authorization((allow) => [allow.groups(["admin", "projektmanager"])]) */ influencer:
-                    a.belongsTo("Influencer", "influencerId"),
-                /* .authorization((allow) => [allow.groups(["admin", "projektmanager"])]) */ timelineEvents:
-                    a.hasMany("EventAssignment", "assignmentId"),
+                /* .authorization((allow) => [allow.groups(["admin", "projektmanager"])]) */ influencer: a.belongsTo(
+                    "Influencer",
+                    "influencerId"
+                ),
+                /* .authorization((allow) => [allow.groups(["admin", "projektmanager"])]) */ timelineEvents: a.hasMany(
+                    "EventAssignment",
+                    "assignmentId"
+                ),
 
                 campaignId: a.id().required(),
                 campaign: a.belongsTo("Campaign", "campaignId"),
@@ -140,10 +145,7 @@ const schema = a
                     .authorization((allow) => [allow.groups(["admin", "projektmanager"])]),
                 //##########################
             })
-            .authorization((allow) => [
-                allow.publicApiKey().to(["read"]),
-                allow.groups(["admin", "projektmanager"]),
-            ]),
+            .authorization((allow) => [allow.publicApiKey().to(["read"]), allow.groups(["admin", "projektmanager"])]),
         //#endregion InfluencerAssignment
 
         //#region InfluencerCandidate
@@ -168,10 +170,7 @@ const schema = a
                     ]),
                 feedback: a
                     .string()
-                    .authorization((allow) => [
-                        allow.publicApiKey(),
-                        allow.groups(["admin", "projektmanager"]),
-                    ]),
+                    .authorization((allow) => [allow.publicApiKey(), allow.groups(["admin", "projektmanager"])]),
                 invitationSent: a
                     .boolean()
                     .default(false)
@@ -180,10 +179,7 @@ const schema = a
                         allow.groups(["admin", "projektmanager"]),
                     ]),
             })
-            .authorization((allow) => [
-                allow.publicApiKey().to(["read"]),
-                allow.groups(["admin", "projektmanager"]),
-            ]),
+            .authorization((allow) => [allow.publicApiKey().to(["read"]), allow.groups(["admin", "projektmanager"])]),
         //#endregion InfluencerCandidate
 
         //#region EventAssignment
@@ -199,14 +195,9 @@ const schema = a
             })
             .secondaryIndexes((index) => [
                 index("assignmentId").queryField("listByAssignmentId").name("listByAssignmentId"),
-                index("timelineEventId")
-                    .queryField("listByTimelineEventId")
-                    .name("listByTimelineEventId"),
+                index("timelineEventId").queryField("listByTimelineEventId").name("listByTimelineEventId"),
             ])
-            .authorization((allow) => [
-                allow.publicApiKey().to(["read"]),
-                allow.groups(["admin", "projektmanager"]),
-            ]),
+            .authorization((allow) => [allow.publicApiKey().to(["read"]), allow.groups(["admin", "projektmanager"])]),
         //#endregion EventAssignment
         //#endregion Influencer
         //##############################################
@@ -232,13 +223,8 @@ const schema = a
 
                 campaigns: a.hasMany("ProjectManagerCampaignAssignment", "projectManagerId"),
             })
-            .secondaryIndexes((index) => [
-                index("cognitoId").queryField("listByCognitoId").name("listByCognitoId"),
-            ])
-            .authorization((allow) => [
-                allow.publicApiKey().to(["read"]),
-                allow.groups(["admin", "projektmanager"]),
-            ]),
+            .secondaryIndexes((index) => [index("cognitoId").queryField("listByCognitoId").name("listByCognitoId")])
+            .authorization((allow) => [allow.publicApiKey().to(["read"]), allow.groups(["admin", "projektmanager"])]),
         //#endregion ProjectManager
 
         //#region ProjectManagerCampaignAssignment
@@ -255,10 +241,7 @@ const schema = a
                 projectManagerId: a.id().required(),
                 projectManager: a.belongsTo("ProjectManager", "projectManagerId"),
             })
-            .authorization((allow) => [
-                allow.publicApiKey().to(["read"]),
-                allow.groups(["admin", "projektmanager"]),
-            ]),
+            .authorization((allow) => [allow.publicApiKey().to(["read"]), allow.groups(["admin", "projektmanager"])]),
         //#endregion ProjectManagerCampaignAssignment
         //#region Campaign
         /**
@@ -293,10 +276,7 @@ const schema = a
                 timelineEvents: a.hasMany("TimelineEvent", "campaignId"),
                 assignedInfluencers: a.hasMany("InfluencerAssignment", "campaignId"),
             })
-            .authorization((allow) => [
-                allow.publicApiKey().to(["read"]),
-                allow.groups(["admin", "projektmanager"]),
-            ]),
+            .authorization((allow) => [allow.publicApiKey().to(["read"]), allow.groups(["admin", "projektmanager"])]),
         //#endregion Campaign
 
         //#region Customer
@@ -340,13 +320,8 @@ const schema = a
                 campaign: a.belongsTo("Campaign", "campaignId"),
                 //#####################
             })
-            .secondaryIndexes((index) => [
-                index("campaignId").queryField("listCustomersByCampaign"),
-            ])
-            .authorization((allow) => [
-                allow.publicApiKey().to(["read"]),
-                allow.groups(["admin", "projektmanager"]),
-            ]),
+            .secondaryIndexes((index) => [index("campaignId").queryField("listCustomersByCampaign")])
+            .authorization((allow) => [allow.publicApiKey().to(["read"]), allow.groups(["admin", "projektmanager"])]),
         //#endregion Customer
 
         //#region TimelineEvent
@@ -421,14 +396,21 @@ const schema = a
                         allow.groups(["admin", "projektmanager"]),
                         allow.publicApiKey().to(["read", "update"]),
                     ]),
+                status: a
+                    .ref("EventStatus")
+                    .authorization((allow) => [
+                        allow.groups(["admin", "projektmanager"]),
+                        allow.publicApiKey().to(["read", "update"]),
+                    ]),
+                postLink: a
+                    .string()
+                    .authorization((allow) => [
+                        allow.groups(["admin", "projektmanager"]),
+                        allow.publicApiKey().to(["read", "update"]),
+                    ]),
             })
-            .secondaryIndexes((index) => [
-                index("campaignId").queryField("listByCampaign").name("listByCampaign"),
-            ])
-            .authorization((allow) => [
-                allow.publicApiKey().to(["read"]),
-                allow.groups(["admin", "projektmanager"]),
-            ]),
+            .secondaryIndexes((index) => [index("campaignId").queryField("listByCampaign").name("listByCampaign")])
+            .authorization((allow) => [allow.publicApiKey().to(["read"]), allow.groups(["admin", "projektmanager"])]),
         //#endregion TimelineEvent
 
         //#region EmailTrigger
@@ -478,13 +460,8 @@ const schema = a
                 event: a.belongsTo("TimelineEvent", "eventId"),
                 //####################
             })
-            .secondaryIndexes((index) => [
-                index("eventId").queryField("listByEvent").name("listByEvent"),
-            ])
-            .authorization((allow) => [
-                allow.publicApiKey().to(["read"]),
-                allow.groups(["admin", "projektmanager"]),
-            ]),
+            .secondaryIndexes((index) => [index("eventId").queryField("listByEvent").name("listByEvent")])
+            .authorization((allow) => [allow.publicApiKey().to(["read"]), allow.groups(["admin", "projektmanager"])]),
         //#endregion EmailTrigger
     })
     .authorization((allow) => [allow.resource(reminderTrigger)]);

@@ -1,19 +1,23 @@
 import { defineBackend } from "@aws-amplify/backend";
 import { auth } from "./auth/resource.js";
 import { data } from "./data/resource.js";
+import { storage } from "./storage/resource.js";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as eventBridge from "aws-cdk-lib/aws-events";
 import * as eventBridgeTargets from "aws-cdk-lib/aws-events-targets";
+import * as s3 from "aws-cdk-lib/aws-s3";
 import { Function } from "aws-cdk-lib/aws-lambda";
 import { sesHandler } from "./functions/sesHandler/resource.js";
 import { reminderTrigger } from "./functions/reminderTrigger/resource.js";
 import { PolicyStatement, Effect } from "aws-cdk-lib/aws-iam";
+
 import dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
 export const backend = defineBackend({
     auth,
     data,
+    storage,
     sesHandler,
     reminderTrigger,
 });
@@ -34,6 +38,35 @@ const dataResources = backend.data.resources;
 Object.values(dataResources.cfnResources.amplifyDynamoDbTables).forEach((table) => {
     table.pointInTimeRecoveryEnabled = true;
 });
+
+const s3Bucket = backend.storage.resources.bucket;
+const cfnBucket = s3Bucket.node.defaultChild as s3.CfnBucket;
+
+cfnBucket.corsConfiguration = {
+    corsRules: [
+        {
+            allowedOrigins: ["*"],
+            allowedMethods: [
+                //
+                "GET",
+                "PUT",
+                "POST",
+                "DELETE",
+                "HEAD",
+            ],
+            allowedHeaders: ["*"],
+            exposedHeaders: [
+                //
+                "x-amz-server-side-encryption",
+                "x-amz-request-id",
+                "x-amz-id-2",
+                "ETag",
+                "x-amz-meta-step",
+            ],
+            maxAge: 3000,
+        },
+    ],
+};
 
 //#region SES Handler Lambda & API Gateway
 // // eslint-disable-next-line @typescript-eslint/ban-types -- this is a valid use case
