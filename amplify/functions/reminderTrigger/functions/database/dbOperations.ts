@@ -1,5 +1,5 @@
 import { Schema } from "@/amplify/data/resource.js";
-import { EmailTriggers, Events } from "@/app/ServerFunctions/types";
+import { Assignments, EmailTriggers, Events } from "@/app/ServerFunctions/types";
 import { generateClient } from "aws-amplify/data";
 import {
     EmailTriggerData,
@@ -213,7 +213,17 @@ function parseEmailTrigger(data: ListEmailTriggersQueryItem): EmailTriggerData |
             eventAssignmentAmount: 0,
             eventTaskAmount: rawEvent.eventTaskAmount ?? 0,
             eventTitle: rawEvent.eventTitle ?? "<Error: No Title>",
-            assignments: [],
+            assignments: rawEvent.assignments.items.map((x) => {
+                const out: Assignments.Min = {
+                    id: x.assignment.id,
+                    isPlaceholder: x.assignment.isPlaceholder,
+                    influencer: null,
+                    campaign: { id: rawEvent.campaign.id },
+                    placeholderName: "",
+                    timelineEvents: [],
+                };
+                return out;
+            }),
             childEvents: [],
             parentEvent: parsedParentEvent,
             emailTriggers: [],
