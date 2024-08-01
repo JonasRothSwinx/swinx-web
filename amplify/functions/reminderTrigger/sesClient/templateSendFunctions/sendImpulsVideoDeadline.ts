@@ -5,7 +5,12 @@ import {
     TemplateVariables,
     templateNames,
 } from "@/app/Emails/templates/impulsVideo/TemplateVariables";
-import { grabSignatureProps, defaultSignatureProps, getActionTime } from "./functions";
+import {
+    grabSignatureProps,
+    defaultSignatureProps,
+    getActionTime,
+    getTaskPageUrl,
+} from "./functions";
 
 /**
  * Send campaign invites to candidates
@@ -49,6 +54,7 @@ export async function sendImpulsVideoDeadlineReminder(props: SendMailProps) {
                 customerName: customer.company,
                 dueDate,
                 topic: topic,
+                taskPageLink: getTaskPageUrl({ assignmentId: event.assignments[0].id }),
                 ...signatureProps,
             };
             acc.push({
@@ -69,6 +75,7 @@ export async function sendImpulsVideoDeadlineReminder(props: SendMailProps) {
             customerName: "TestCustomer",
             dueDate: "TestDate",
             topic: "TestTopic",
+            taskPageLink: "https://www.swinx.de",
             ...defaultSignatureProps,
         } satisfies TemplateVariables & SignatureTemplateVariables),
         bulkTemplateData: templateData,

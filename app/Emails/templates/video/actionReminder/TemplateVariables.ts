@@ -4,6 +4,7 @@ export type TemplateVariables = {
     customerLink: string;
     // postContent: string;
     postTime: string;
+    taskPageLink: string;
 };
 
 const templateBaseName = "VideoReminder";
@@ -17,5 +18,6 @@ export const defaultParams: TemplateVariables = {
     customerLink: "https://www.swinx.de",
     // postContent: "TestContent",
     postTime: "09:00",
+    taskPageLink: "https://www.swinx.de",
 };
 export const subjectLineBase = "Erinnerung: Beitragsveröffentlichung";

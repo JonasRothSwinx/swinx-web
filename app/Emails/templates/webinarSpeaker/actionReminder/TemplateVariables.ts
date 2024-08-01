@@ -3,6 +3,7 @@ export type TemplateVariables = {
     time: string;
     webinarTitle: string;
     topic: string;
+    taskPageLink: string;
 };
 
 const templateBaseName = "WebinarSpeakerActionReminder";

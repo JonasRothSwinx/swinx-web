@@ -6,7 +6,7 @@ import {
 import { dayjs } from "@/app/utils";
 
 import { SendMailProps, sesAPIClient } from "..";
-import { grabSignatureProps, defaultSignatureProps } from "./functions";
+import { grabSignatureProps, defaultSignatureProps, getTaskPageUrl } from "./functions";
 import { SignatureTemplateVariables } from "@/app/Emails/templates/_components/SignatureTemplateVariables";
 
 export async function sendWebinarSpeakerActionReminder(props: SendMailProps) {
@@ -43,6 +43,7 @@ export async function sendWebinarSpeakerActionReminder(props: SendMailProps) {
                         webinarTitle,
                         topic,
                         time,
+                        taskPageLink: getTaskPageUrl({ assignmentId: event.assignments[0].id }),
                         ...signatureProps,
                     } satisfies TemplateVariables & SignatureTemplateVariables),
                 },
@@ -60,6 +61,7 @@ export async function sendWebinarSpeakerActionReminder(props: SendMailProps) {
             webinarTitle: "TestWebinar",
             topic: "TestTopic",
             time: "00:00",
+            taskPageLink: "https://www.swinx.de",
             ...defaultSignatureProps,
         } satisfies TemplateVariables & SignatureTemplateVariables),
         bulkTemplateData: templateData,

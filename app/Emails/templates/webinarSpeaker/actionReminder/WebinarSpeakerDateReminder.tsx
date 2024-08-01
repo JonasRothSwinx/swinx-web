@@ -14,6 +14,7 @@ export const defaultParams: TemplateVariables = {
     time: "00:00",
     webinarTitle: "TestWebinar",
     topic: "TestTopic",
+    taskPageLink: "https://www.swinx.de",
 };
 
 const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
@@ -21,6 +22,7 @@ const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } =
     time: Placeholder({ name: "time" }),
     webinarTitle: Placeholder({ name: "webinarTitle" }),
     topic: Placeholder({ name: "topic" }),
+    taskPageLink: Placeholder({ name: "taskPageLink" }),
 };
 const EmailTemplates: {
     [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
@@ -55,6 +57,13 @@ function NewWebinarSpeakerDateReminder(props: DebugToggle) {
                 <br />
                 Sie werden dabei über {topic} sprechen.
             </Text>
+            {/* <Container> */}
+            <Button
+                style={styles.responseButton}
+                href={placeholders.taskPageLink.toString()}
+            >
+                Zur Übersicht
+            </Button>
             <Signature />
         </Html>
     );

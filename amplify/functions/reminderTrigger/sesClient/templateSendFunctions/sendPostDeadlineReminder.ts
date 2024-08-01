@@ -4,7 +4,12 @@ import {
     defaultParams,
 } from "@/app/Emails/templates/posts/deadlineReminder/TemplateVariables";
 import { SendMailProps, sesAPIClient } from "..";
-import { grabSignatureProps, defaultSignatureProps, getActionTime } from "./functions";
+import {
+    grabSignatureProps,
+    defaultSignatureProps,
+    getActionTime,
+    getTaskPageUrl,
+} from "./functions";
 import { SignatureTemplateVariables } from "@/app/Emails/templates/_components/SignatureTemplateVariables";
 
 export async function sendPostDeadlineReminder(props: SendMailProps) {
@@ -33,6 +38,7 @@ export async function sendPostDeadlineReminder(props: SendMailProps) {
                         customerName,
                         topic,
                         actionTime,
+                        taskPageLink: getTaskPageUrl({ assignmentId: event.assignments[0].id }),
                         ...signatureProps,
                     } satisfies TemplateVariables & SignatureTemplateVariables),
                 },

@@ -11,6 +11,7 @@ const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } =
     customerName: Placeholder({ name: "customerName" }),
     topic: Placeholder({ name: "topic" }),
     actionTime: Placeholder({ name: "actionTime" }),
+    taskPageLink: Placeholder({ name: "taskPageLink" }),
 };
 const EmailTemplates: {
     [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
@@ -41,6 +42,16 @@ function NewVideoDraftDeadlineReminder(props: DebugToggle) {
                 Wir möchten sie daran erinnern, dass sie bis {actionTime} noch ein Video für den
                 Kunden {customerName} zum Thema {topic} bei uns einreichen müssen.
             </Text>
+            <Text style={styles.text}>
+                Bitte laden Sie Ihre Aufnahme auf unserer Plattform hoch
+            </Text>
+            {/* <Container> */}
+            <Button
+                style={styles.responseButton}
+                href={placeholders.taskPageLink.toString()}
+            >
+                Zur Übersicht
+            </Button>
             <Signature />
         </Html>
     );

@@ -3,6 +3,7 @@ export type TemplateVariables = {
     customerName: string;
     topic: string;
     actionTime: string;
+    taskPageLink: string;
 };
 const templateBaseName = "VideoDraftDeadlineReminder";
 export const templateNames: { [key in "new" | "reduced"]: string } = {
@@ -15,4 +16,5 @@ export const defaultParams: TemplateVariables = {
     customerName: "TestCustomer",
     topic: "TestTopic",
     actionTime: "am Ende aller Tage",
+    taskPageLink: "https://www.swinx.de",
 };
