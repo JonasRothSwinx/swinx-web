@@ -59,7 +59,7 @@ export default function TaskDisplay({ tasks, parentEvent, campaign }: TaskDispla
                 groupTitle="Fällig"
                 campaign={campaign}
                 parentEvent={parentEvent}
-                startOpen
+                startOpen={groupedTasks.pastDueTasks.length > 0}
                 dateColor="#FFC4C4"
                 // boxColor="#FFE3D2"
                 boxColor="#ffd2d299"
@@ -67,6 +67,7 @@ export default function TaskDisplay({ tasks, parentEvent, campaign }: TaskDispla
             />
             <TaskGroup
                 tasks={groupedTasks.futureTasks}
+                startOpen={groupedTasks.pastDueTasks.length === 0}
                 groupTitle="Ausstehend"
                 campaign={campaign}
                 parentEvent={parentEvent}

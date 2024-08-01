@@ -129,8 +129,6 @@ async function submitPostLink({ eventId, postLink, campaignId }: SubmitPostLinkP
     // console.log("submitPostLink", { eventId, postLink });
     const queryClient = config.getQueryClient();
     // console.log("hi 1!");
-    const dbResponse = await dbOperations.submitPostLink({ eventId, postLink });
-    // console.log("hi 2!", dbResponse);
     queryClient.setQueryData<Task>(["task"], (oldData) => {
         console.log(oldData);
         if (!oldData) return;
@@ -141,6 +139,7 @@ async function submitPostLink({ eventId, postLink, campaignId }: SubmitPostLinkP
                     return {
                         ...event,
                         postLink,
+                        status: "COMPLETED",
                     };
                 }
                 return event;
@@ -148,10 +147,12 @@ async function submitPostLink({ eventId, postLink, campaignId }: SubmitPostLinkP
         };
         return newData;
     });
+    const dbResponse = await dbOperations.submitPostLink({ eventId, postLink });
+    // console.log("hi 2!", dbResponse);
     const task = queryClient.getQueryData<Task>(["task"]);
     // console.log("hi 3!");
     if (!task) {
-        console.log("res is null", task);
+        console.log("task is null", task);
         return;
     }
     const emailResponse = await sharePostLink({

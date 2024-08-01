@@ -151,14 +151,18 @@ export async function deleteCampaign(
 
     const tasks: Promise<unknown>[] = [];
     //Remove Customer
-    // tasks.push(customers.delete(campaign.customers));
+    tasks.push(...campaign.customers.map((customer) => database.customer.delete(customer)));
 
     //Remove TimelineEvents
-    // tasks.push(...campaign.campaignTimelineEvents.map((event) => timelineEvents.delete(event)));
-
-    tasks.push(client.models.Campaign.delete({ id: campaign.id }));
+    tasks.push(
+        ...campaign.campaignTimelineEvents.map((event) => {
+            if (!event.id) return Promise.resolve();
+            return database.timelineEvent.delete({ id: event.id });
+        }),
+    );
 
     await Promise.all(tasks);
+    await client.models.Campaign.delete({ id: campaign.id });
 }
 //#endregion delete
 

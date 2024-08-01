@@ -92,11 +92,6 @@ async function deleteCampaign(
     const queryClient = config.getQueryClient();
     const { id } = campaign;
     await database.campaign.delete(campaign);
-    queryClient.setQueryData(["campaigns"], (prev: Campaign[]) => {
-        if (!prev) return [];
-        return prev.filter((campaign) => campaign.id !== id);
-    });
-    queryClient.refetchQueries({ queryKey: ["campaigns"] });
 }
 
 /**

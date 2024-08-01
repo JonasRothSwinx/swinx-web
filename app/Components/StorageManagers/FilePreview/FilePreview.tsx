@@ -1,5 +1,5 @@
 import { queryServer } from "../functions";
-import { Box } from "@mui/material";
+import { Box, SxProps } from "@mui/material";
 import { Prettify } from "@/app/Definitions/types";
 import { DataType } from "../StorageManagerDialog";
 import { ImagePreview, VideoPreview, TextPreview, Controls } from "./components";
@@ -25,20 +25,28 @@ interface FilePreviewProps {
     files: ListPaginateWithPathOutput["items"];
     dataType: DataType;
     showControls?: PreviewProps["showControls"];
+    onDataChange?: () => Promise<void>;
 }
 export function FilePreview({ files, dataType, showControls }: FilePreviewProps) {
     if (files.length === 0) return null;
+    const sx: SxProps = {
+        "&": {
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "center",
+            flexWrap: "wrap",
+            marginBottom: "20px",
+            maxHeight: "100%",
+            gap: "10px",
+            maxWidth: "100%",
+        },
+    };
+
     return (
         <Box
             id="FilePreviewCardContainer"
-            display={"flex"}
-            flexDirection={"row"}
-            justifyContent={"center"}
-            flexWrap={"wrap"}
-            marginBottom={"20px"}
-            maxHeight={"100%"}
-            gap={"10px"}
             key={"FilePreviewCardContainer" + dataType}
+            sx={sx}
         >
             <ConfirmProvider>
                 {files.map((file, index) => {
@@ -81,4 +89,5 @@ export interface PreviewProps {
     };
     campaignId: string;
     eventId: string;
+    onDataChange?: () => Promise<void>;
 }

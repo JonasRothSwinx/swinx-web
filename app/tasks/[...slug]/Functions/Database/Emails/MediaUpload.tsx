@@ -1,32 +1,33 @@
 import { Body, Head, Heading, Html, Section, Link, Button, Text } from "@react-email/components";
 import { Task } from "../types";
 
-interface SubmitLinkEmailProps {
+interface MediaUploadEmailProps {
     campaignId: string;
     eventId: string;
     // task: Task;
     event: Task["events"][number];
     customerName: string;
     influencerName: string;
-    postLink: string;
+    campaignUrl: string;
 }
-export function SubmitLinkEmail({
+export function MediaUploadEmail({
     campaignId,
     eventId,
     // task,
     event,
     customerName,
     influencerName,
-    postLink,
-}: SubmitLinkEmailProps) {
+    campaignUrl,
+}: MediaUploadEmailProps) {
     console.log("SubmitLinkEmail", {
         campaignId,
         eventId,
         event,
         customerName,
         influencerName,
-        postLink,
+        campaignUrl,
     });
+    const taskType = event.timelineEventType;
     return (
         <Html>
             <Head>
@@ -44,11 +45,11 @@ export function SubmitLinkEmail({
                 }
             >
                 <Heading as="h3">
-                    {influencerName} hat einen Beitragslink für {customerName} eingereicht
+                    {influencerName} hat Medien für {customerName} hochgeladen
                 </Heading>
                 {/* <Section style={{ paddingBottom: "10px" }}> */}
                 <Text style={{}}>
-                    {influencerName} hat einen Beitrag zum Thema {event.eventTitle} veröffentlicht!.
+                    {influencerName} hat Medien hochgeladen. (Aufgabentyp: {taskType})
                 </Text>
                 {/* </Section> */}
 
@@ -56,7 +57,7 @@ export function SubmitLinkEmail({
                     style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}
                 >
                     <Button
-                        href={postLink ?? "<Link fehlt>"}
+                        href={campaignUrl ?? "<Link fehlt>"}
                         style={{
                             color: "white",
                             padding: "10px 20px",
@@ -65,16 +66,16 @@ export function SubmitLinkEmail({
                             backgroundColor: "#61dafb",
                         }}
                     >
-                        Zum Beitrag
+                        Zur Kampagne
                     </Button>
                 </Section>
             </Body>
         </Html>
     );
 }
-export default SubmitLinkEmail;
+export default MediaUploadEmail;
 
-SubmitLinkEmail.PreviewProps = {
+MediaUploadEmail.PreviewProps = {
     campaignId: "campaignId",
     eventId: "eventId",
     event: {
@@ -91,5 +92,5 @@ SubmitLinkEmail.PreviewProps = {
     },
     customerName: "customerName",
     influencerName: "influencerName",
-    postLink: "postLink",
-} satisfies SubmitLinkEmailProps;
+    campaignUrl: "campaignUrl",
+} satisfies MediaUploadEmailProps;

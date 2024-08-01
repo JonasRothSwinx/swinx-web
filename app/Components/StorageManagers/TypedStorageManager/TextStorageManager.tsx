@@ -4,7 +4,7 @@ import { preprocessFile, queryClient as query } from "../functions";
 import { StorageManagerProps } from "./types";
 import { onUploadSuccess } from "./functions";
 import { useEffect, useRef, useState } from "react";
-import { Box, Button, SxProps, TextField } from "@mui/material";
+import { Box, Button, CircularProgress, LinearProgress, SxProps, TextField } from "@mui/material";
 import { downloadData, uploadData } from "aws-amplify/storage";
 
 export function TextStorageManager({
@@ -73,7 +73,7 @@ function TextBoxInputManager({ campaignId, eventId, onSuccess }: StorageManagerP
     const [text, setText] = useState<string>("");
     const [hasChanges, setHasChanges] = useState<boolean>(false);
     const upload = useMutation({
-        onMutate: async (text: string) => {
+        mutationFn: async (text: string) => {
             const res = await uploadTextAsFile({
                 text,
                 path: `test/${campaignId}/${eventId}/text/`,
@@ -83,14 +83,34 @@ function TextBoxInputManager({ campaignId, eventId, onSuccess }: StorageManagerP
             });
             return res;
         },
+        onMutate: async (variables) => {
+            console.log("onMutate", { variables });
+            await queryClient.cancelQueries({ queryKey: [eventId, "textContent"] });
+            const previousValue = queryClient.getQueryData<string>([eventId, "textContent"]);
+            queryClient.setQueryData<string>([eventId, "textContent"], variables);
+            return { previousValue };
+        },
+        onError: async (error, variables, context) => {
+            console.error("Upload failed", { error, variables, context });
+            if (context && context.previousValue) {
+                queryClient.setQueryData([eventId, "textContent"], context.previousValue);
+            }
+        },
+        onSuccess: async (data, variables, context) => {
+            console.log("Upload success", { data, variables, context });
+        },
+        onSettled: async (data, error, variables, context) => {
+            console.log("Upload settled", { data, error, variables, context });
+            await queryClient.invalidateQueries({ queryKey: [eventId, "text"] });
+        },
     });
     useEffect(() => {
-        console.log({ currentFiles: currentFiles.data });
+        // console.log({ currentFiles: currentFiles.data });
         if (currentFiles.data) setText(currentFiles.data);
         else setText("");
     }, [currentFiles.data]);
     useEffect(() => {
-        console.log({ text });
+        // console.log({ text });
         if (currentFiles.data !== text) setHasChanges(true);
         else setHasChanges(false);
     }, [text, currentFiles.data]);
@@ -136,7 +156,13 @@ function TextBoxInputManager({ campaignId, eventId, onSuccess }: StorageManagerP
                 }}
                 variant="contained"
             >
-                {currentFiles.data === "" ? "Hochladen" : "Änderungen speichern"}
+                {upload.isPending ? (
+                    <LinearProgress />
+                ) : currentFiles.data === "" ? (
+                    "Hochladen"
+                ) : (
+                    "Änderungen speichern"
+                )}
             </Button>
         </Box>
     );

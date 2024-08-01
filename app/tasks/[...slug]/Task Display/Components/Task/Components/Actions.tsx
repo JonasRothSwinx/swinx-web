@@ -1,4 +1,4 @@
-import { dataClient } from "@/app/tasks/[...slug]/Functions/Database";
+import { dataClient, notifyMediaSubmission } from "@/app/tasks/[...slug]/Functions/Database";
 import { Task, TimelineEvent } from "@/app/tasks/[...slug]/Functions/Database/types";
 import { Box, Button, Dialog, SxProps, TextField, Typography } from "@mui/material";
 import { UseMutationResult, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -9,6 +9,8 @@ import { queryClient, queryServer } from "@/app/Components/StorageManagers/funct
 import { ConfirmProvider, useConfirm } from "material-ui-confirm";
 import { StorageManagerProps } from "@/app/Components/StorageManagers/TypedStorageManager";
 import { CheckIcon } from "@/app/Definitions/Icons";
+import { assignment } from "@/app/ServerFunctions/database/dataClients";
+import { usePathname } from "next/navigation";
 
 //#region Definitions
 const ActionNames = [
@@ -23,12 +25,15 @@ const ActionNames = [
 interface ActionProps {
     task: TimelineEvent;
     campaignId: string;
+    // assignmentId: string;
     eventId: string;
     disableControls?: boolean;
 }
 
 export default function Actions({ task, campaignId, eventId, disableControls }: ActionProps) {
     const queryClient = useQueryClient();
+    const pathname = usePathname();
+    const assignmentId = pathname.split("/").pop();
     const DataChanges = {
         markFinished: useMutation({
             mutationFn: async () => {
@@ -139,6 +144,7 @@ export default function Actions({ task, campaignId, eventId, disableControls }: 
         }
         return possibleActions;
     }, [task]);
+    if (!assignmentId) return <Typography>Assignment ID not found {pathname}</Typography>;
     return (
         <Box
             sx={sx}
@@ -171,6 +177,8 @@ export default function Actions({ task, campaignId, eventId, disableControls }: 
                         campaignId={campaignId}
                         eventId={eventId}
                         buttonText={"Screenshot hochladen"}
+                        disableControls={disableControls}
+                        assignmentId={assignmentId}
                     />
                 )}
                 {actionConfig.uploadText && (
@@ -180,6 +188,7 @@ export default function Actions({ task, campaignId, eventId, disableControls }: 
                         fileDialogSx={fileDialogSx}
                         campaignId={campaignId}
                         eventId={eventId}
+                        assignmentId={assignmentId}
                     />
                 )}
                 {actionConfig.uploadImage && (
@@ -189,6 +198,7 @@ export default function Actions({ task, campaignId, eventId, disableControls }: 
                         fileDialogSx={fileDialogSx}
                         campaignId={campaignId}
                         eventId={eventId}
+                        assignmentId={assignmentId}
                     />
                 )}
                 {actionConfig.uploadVideo && (
@@ -198,6 +208,7 @@ export default function Actions({ task, campaignId, eventId, disableControls }: 
                         fileDialogSx={fileDialogSx}
                         campaignId={campaignId}
                         eventId={eventId}
+                        assignmentId={assignmentId}
                     />
                 )}
                 {actionConfig.showMedia && (
@@ -246,6 +257,7 @@ interface UploadTextButtonProps {
     campaignId: string;
     eventId: string;
     disableControls?: boolean;
+    assignmentId: string;
 }
 function UploadTextButton({
     task,
@@ -253,6 +265,7 @@ function UploadTextButton({
     campaignId,
     eventId,
     disableControls,
+    assignmentId,
 }: UploadTextButtonProps) {
     const [open, setOpen] = useState(false);
     const files = useQuery({
@@ -266,12 +279,25 @@ function UploadTextButton({
             return files;
         },
     });
+    const taskTotal = useQuery({
+        queryKey: ["task"],
+        queryFn: async () => {
+            console.log("Task data requested");
+            const response = await dataClient.getTaskDetails({
+                assignmentId: assignmentId,
+                // campaignId: campaignId,
+                // influencerId: influencerId,
+            });
+            return response;
+        },
+    });
     const hasFile: boolean = (files.data && files.data.length > 0) ?? false;
     const className = useMemo(() => {
         return `actionButton ${hasFile ? "hasFile" : ""}`;
     }, [hasFile]);
     const confirm = useConfirm();
     const onUploadSuccess: StorageManagerProps["onSuccess"] = async ({ campaignId, eventId }) => {
+        if (!taskTotal.data) return;
         const eventFiles = await queryClient.listEventFiles({
             campaignId,
             eventId,
@@ -286,6 +312,7 @@ function UploadTextButton({
                             eventId,
                             status: "WAITING_FOR_APPROVAL",
                         });
+                        await notifyMediaSubmission({ eventId, campaignId, task: taskTotal.data });
                         setOpen(false);
                     });
                 }
@@ -299,6 +326,7 @@ function UploadTextButton({
                             eventId,
                             status: "WAITING_FOR_APPROVAL",
                         });
+                        await notifyMediaSubmission({ eventId, campaignId, task: taskTotal.data });
                         setOpen(false);
                     });
                 }
@@ -344,6 +372,7 @@ interface UploadImageButtonProps {
     eventId: string;
     buttonText?: string;
     disableControls?: boolean;
+    assignmentId: string;
 }
 function UploadImageButton({
     task,
@@ -352,6 +381,7 @@ function UploadImageButton({
     eventId,
     buttonText,
     disableControls,
+    assignmentId,
 }: UploadImageButtonProps) {
     const [open, setOpen] = useState(false);
     const files = useQuery({
@@ -364,12 +394,26 @@ function UploadImageButton({
             return files;
         },
     });
+    const taskTotal = useQuery({
+        queryKey: ["task"],
+        queryFn: async () => {
+            console.log("Task data requested");
+            const response = await dataClient.getTaskDetails({
+                assignmentId: assignmentId,
+                // campaignId: campaignId,
+                // influencerId: influencerId,
+            });
+            return response;
+        },
+    });
+
     const hasFile: boolean = (files.data && files.data.length > 0) ?? false;
     const className = useMemo(() => {
         return `actionButton ${hasFile ? "hasFile" : ""}`;
     }, [hasFile]);
     const confirm = useConfirm();
     const onUploadSuccess: StorageManagerProps["onSuccess"] = async ({ campaignId, eventId }) => {
+        if (!taskTotal.data) return;
         const eventFiles = await queryClient.listEventFiles({
             campaignId,
             eventId,
@@ -384,6 +428,11 @@ function UploadImageButton({
                             await dataClient.updateEventStatus({
                                 eventId,
                                 status: "WAITING_FOR_APPROVAL",
+                            });
+                            await notifyMediaSubmission({
+                                eventId,
+                                campaignId,
+                                task: taskTotal.data,
                             });
                             setOpen(false);
                         })
@@ -400,6 +449,11 @@ function UploadImageButton({
                                 eventId,
                                 status: "WAITING_FOR_APPROVAL",
                             });
+                            await notifyMediaSubmission({
+                                eventId,
+                                campaignId,
+                                task: taskTotal.data,
+                            });
                             setOpen(false);
                         })
                         .catch((e) => console.error("Error confirming", e));
@@ -412,8 +466,9 @@ function UploadImageButton({
                     .then(async () => {
                         await dataClient.updateEventStatus({
                             eventId,
-                            status: "COMPLETED",
+                            status: "WAITING_FOR_APPROVAL",
                         });
+                        await notifyMediaSubmission({ eventId, campaignId, task: taskTotal.data });
                         setOpen(false);
                     })
                     .catch((e) => console.error("Error confirming", e));
@@ -458,6 +513,7 @@ interface UploadVideoButtonProps {
     campaignId: string;
     eventId: string;
     disableControls?: boolean;
+    assignmentId: string;
 }
 
 function UploadVideoButton({
@@ -466,6 +522,7 @@ function UploadVideoButton({
     campaignId,
     eventId,
     disableControls,
+    assignmentId,
 }: UploadVideoButtonProps) {
     const [open, setOpen] = useState(false);
     const files = useQuery({
@@ -478,12 +535,25 @@ function UploadVideoButton({
             return files;
         },
     });
+    const taskTotal = useQuery({
+        queryKey: ["task"],
+        queryFn: async () => {
+            console.log("Task data requested");
+            const response = await dataClient.getTaskDetails({
+                assignmentId: assignmentId,
+                // campaignId: campaignId,
+                // influencerId: influencerId,
+            });
+            return response;
+        },
+    });
     const hasFile: boolean = (files.data && files.data.length > 0) ?? false;
     const className = useMemo(() => {
         return `actionButton ${hasFile ? "hasFile" : ""}`;
     }, [hasFile]);
     const confirm = useConfirm();
     const onUploadSuccess: StorageManagerProps["onSuccess"] = async ({ campaignId, eventId }) => {
+        if (!taskTotal.data) return;
         const eventFiles = await queryClient.listEventFiles({
             campaignId,
             eventId,
@@ -498,6 +568,7 @@ function UploadVideoButton({
                             eventId,
                             status: "WAITING_FOR_APPROVAL",
                         });
+                        await notifyMediaSubmission({ eventId, campaignId, task: taskTotal.data });
                         setOpen(false);
                     });
                 }
@@ -511,6 +582,7 @@ function UploadVideoButton({
                             eventId,
                             status: "WAITING_FOR_APPROVAL",
                         });
+                        await notifyMediaSubmission({ eventId, campaignId, task: taskTotal.data });
                         setOpen(false);
                     });
                 }

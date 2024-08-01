@@ -105,6 +105,7 @@ export function StorageManagerDialog({
                         ".amplify-storagemanager * ": {
                             maxWidth: "70vw",
                             height: "100%",
+                            ".amplify-image": { maxHeight: "100px", maxWidth: "100px" },
                             // animation: "rotate .2s linear infinite",
                             // "@keyframes rotate": {
                             //     from: {

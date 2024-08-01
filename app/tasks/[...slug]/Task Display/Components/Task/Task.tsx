@@ -1,4 +1,11 @@
-import { Accordion, AccordionDetails, AccordionSummary, Box, SxProps, Typography } from "@mui/material";
+import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
+    Box,
+    SxProps,
+    Typography,
+} from "@mui/material";
 import { Campaign, ParentEvent, TimelineEvent } from "../../../Functions/Database/types";
 import { dayjs } from "@/app/utils";
 import { ExpandMoreIcon } from "@/app/Definitions/Icons";
@@ -132,7 +139,10 @@ export default function Task({
                 id="AccordionTitle"
                 // expandIcon={<ExpandMoreIcon id="Expand" />}
             >
-                <Title task={task} dateColor={dateColor} />
+                <Title
+                    task={task}
+                    dateColor={dateColor}
+                />
                 {/* <Typography>
                     {dateString} - {dateDiffText}: {task.timelineEventType}
                 </Typography> */}
@@ -143,7 +153,12 @@ export default function Task({
                         <NextSteps task={task} />
                         <Description task={task} />
                     </Box>
-                    <Actions task={task} campaignId={campaign.id} eventId={task.id} disableControls={disableControls} />
+                    <Actions
+                        task={task}
+                        campaignId={campaign.id}
+                        eventId={task.id}
+                        disableControls={disableControls}
+                    />
                 </Box>
                 {/* <Typography>{task.eventTitle}</Typography> */}
             </AccordionDetails>
@@ -170,7 +185,10 @@ function NextSteps({ task }: NextSteps) {
         },
     };
     return (
-        <Box id="NextSteps" sx={sx}>
+        <Box
+            id="NextSteps"
+            sx={sx}
+        >
             {/* <Typography>Nächste Schritte:</Typography> */}
             <Typography>{textContent}</Typography>
         </Box>

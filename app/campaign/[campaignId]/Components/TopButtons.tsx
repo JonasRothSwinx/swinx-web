@@ -3,6 +3,7 @@ import { dataClient } from "@/app/ServerFunctions/database";
 import { Campaign } from "@/app/ServerFunctions/types";
 import { Box, Button, IconButton, Skeleton, Typography } from "@mui/material";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface CampaignDetailsButtonsProps {
     updateCampaign: (background?: boolean) => void;
@@ -11,14 +12,14 @@ interface CampaignDetailsButtonsProps {
     isLoading?: boolean;
 }
 export default function CampaignDetailsButtons(props: CampaignDetailsButtonsProps) {
+    const router = useRouter();
     const { updateCampaign, handleClose, campaign, isLoading } = props;
     const ClickHandlers = {
-        deleteCampaign: () => {
-            return () => {
-                if (!campaign || !confirm("Kampagne wirklich unwiderruflich löschen?")) return;
-                dataClient.campaign.delete(campaign);
-                handleClose(true);
-            };
+        deleteCampaign: async () => {
+            if (!campaign || !confirm("Kampagne wirklich unwiderruflich löschen?")) return;
+            router.prefetch("/");
+            await dataClient.campaign.delete(campaign);
+            router.push("/");
         },
     };
     return (
@@ -28,7 +29,7 @@ export default function CampaignDetailsButtons(props: CampaignDetailsButtonsProp
                     id="DeleteButton"
                     variant="outlined"
                     color="inherit"
-                    onClick={ClickHandlers.deleteCampaign()}
+                    onClick={() => ClickHandlers.deleteCampaign()}
                 >
                     <DeleteIcon color="error" />
                     <Typography
@@ -56,7 +57,10 @@ export default function CampaignDetailsButtons(props: CampaignDetailsButtonsProp
             >
                 <RefreshIcon />
             </IconButton>
-            <Link href="/">
+            <Link
+                href="/"
+                prefetch
+            >
                 <IconButton>
                     <CloseIcon />
                 </IconButton>

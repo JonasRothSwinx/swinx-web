@@ -91,7 +91,7 @@ export function CampaignDialog(props: CampaignDialogProps) {
     const projectManager = useQuery({
         queryKey: ["projectManager"],
         queryFn: async () => {
-            return await dataClient.projectManager.list();
+            return await dataClient.projectManager.getForUser();
         },
     });
 
@@ -122,7 +122,7 @@ export function CampaignDialog(props: CampaignDialogProps) {
 
         onSubmit: async (event: React.FormEvent<HTMLFormElement>) => {
             event.preventDefault();
-            const projectManagerId = projectManager.data?.[0].id;
+            const projectManagerId = projectManager.data?.id;
             if (!projectManagerId) {
                 alert("Projektmanager nicht gefunden, bitte versuchen Sie es erneut");
                 return;
@@ -143,8 +143,9 @@ export function CampaignDialog(props: CampaignDialogProps) {
                 projectManagerId,
             });
             router.push(`/campaign/${createdCampaign.id}`);
+            router.refresh();
 
-            EventHandlers.handleClose(true);
+            // EventHandlers.handleClose(true);
         },
 
         handleDateChange: (

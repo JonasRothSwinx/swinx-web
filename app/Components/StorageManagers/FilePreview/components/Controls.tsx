@@ -9,6 +9,7 @@ import { dataClient } from "@/app/tasks/[...slug]/Functions/Database";
 interface ControlsProps {
     path: string;
     showControls?: PreviewProps["showControls"];
+    onDataChange?: () => Promise<void>;
 }
 export function Controls(props: ControlsProps) {
     const { path, showControls = {} } = props;
@@ -84,6 +85,8 @@ function DeleteButton({ path }: ControlsProps) {
                 status: "WAITING_FOR_DRAFT",
             });
             await queryClient.invalidateQueries({ queryKey: [eventId, fileType] });
+            await queryClient.invalidateQueries({ queryKey: ["files"] });
+            await queryClient.invalidateQueries({ queryKey: ["timelineEvent", eventId] });
             return;
         },
         onError: (error) => {
@@ -102,7 +105,7 @@ function DeleteButton({ path }: ControlsProps) {
         </Button>
     );
 }
-function ReplaceButton({ path }: ControlsProps) {
+function ReplaceButton({ path, onDataChange }: ControlsProps) {
     const [campaignId, eventId, fileType, fileName] = path.split("/").slice(-4);
     const [open, setOpen] = useState(false);
     return (
@@ -114,6 +117,7 @@ function ReplaceButton({ path }: ControlsProps) {
                     campaignId={campaignId}
                     eventId={eventId}
                     hidePreview
+                    onUploadSuccess={onDataChange}
                 />
             )}
             <Button
