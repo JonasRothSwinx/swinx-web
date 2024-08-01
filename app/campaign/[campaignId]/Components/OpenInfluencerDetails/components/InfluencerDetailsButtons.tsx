@@ -271,7 +271,7 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
                     placement="top"
                 >
                     <Link
-                        href={getTaskPageUrl({ assignmentId: assignment.id })}
+                        href={`/tasks/${assignment.id}`}
                         target="_blank"
                     >
                         <IconButton>
