@@ -7,6 +7,7 @@ import { config, dataClient } from ".";
 import { SendEmailCommand } from "@aws-sdk/client-sesv2";
 import { renderAsync } from "@react-email/render";
 import { SubmitLinkEmail } from "./Emails/SubmitLink";
+import MediaUploadEmail from "./Emails/MediaUpload";
 
 interface SharePostLink {
     eventId: string;
@@ -32,7 +33,7 @@ export async function sharePostLink({ eventId, campaignId, postLink, task }: Sha
             event,
             customerName,
             influencerName,
-            postLink,
+            postLink: "",
         }),
     );
     const emailText = renderAsync(
@@ -42,7 +43,7 @@ export async function sharePostLink({ eventId, campaignId, postLink, task }: Sha
             event,
             customerName,
             influencerName,
-            postLink,
+            postLink: "",
         }),
         { plainText: true },
     );
@@ -57,39 +58,61 @@ export async function sharePostLink({ eventId, campaignId, postLink, task }: Sha
             name: "swinx Email Gremlin",
             email: "basement@swinx.de",
         },
-        subject: `Influencer ${influencerName} hat einen Beitragslink für ${customerName} eingereicht`,
+        subject: `Influencer ${influencerName} hat Medien für ${customerName} eingereicht`,
         html: await emailHtml,
         text: await emailText,
         noSenderBcc: true,
     });
     // console.log("Email sent", resAPI);
     return resAPI;
-    // const response = await sesClient.send(
-    //     new SendEmailCommand({
-    //         FromEmailAddress: "swinx Email Gremlin <basement@swinx.de>",
-    //         Destination: {
-    //             ToAddresses: [mangagerEmails[0]],
-    //             CcAddresses: mangagerEmails.slice(1),
-    //         },
-    //         Content: {
-    //             Simple: {
-    //                 Subject: {
-    //                     Data: `Influencer ${influencerName} hat einen Beitragslink für ${customerName} eingereicht`,
-    //                 },
-    //                 Body: {
-    //                     Html: {
-    //                         Charset: "UTF-8",
-    //                         Data: await emailHtml,
-    //                     },
-    //                     Text: {
-    //                         Charset: "UTF-8",
-    //                         Data: await emailText,
-    //                     },
-    //                 },
-    //             },
-    //         },
-    //     }),
-    // );
-    // console.log("Email sent", response);
-    // return response;
+}
+interface NotifyMediaSubmission {
+    eventId: string;
+    campaignId: string;
+    task: Task;
+}
+export async function notifyMediaSubmission({ eventId, campaignId, task }: NotifyMediaSubmission) {
+    const mangagerEmails = await dataClient.getCampaignManagers({ campaignId });
+    if (!task) throw new Error("Task not found");
+    const event = task.events.find((event) => event.id === eventId);
+    if (!event) throw new Error("Event not found");
+    const customerName = task.campaignInfo.customerCompany;
+    const influencerName =
+        `${task.influencerInfo.firstName} ${task.influencerInfo.lastName}`.trim();
+
+    const baseUrl = process.env.BASE_URL as string;
+    const campaignUrl = `${baseUrl}/campaign/${campaignId}`;
+    const emailHtml = renderAsync(
+        MediaUploadEmail({
+            campaignId,
+            eventId,
+            event,
+            customerName,
+            influencerName,
+            campaignUrl,
+        }),
+    );
+    const emailText = renderAsync(
+        MediaUploadEmail({
+            campaignId,
+            eventId,
+            event,
+            customerName,
+            influencerName,
+            campaignUrl,
+        }),
+        { plainText: true },
+    );
+    const resAPI = await sesAPIClient.send({
+        ToAddresses: [mangagerEmails[0]],
+        CcAddresses: mangagerEmails.slice(1),
+        sender: {
+            name: "swinx Email Gremlin",
+            email: "basement@swinx.de",
+        },
+        subject: `Influencer ${influencerName} hat Medien für ${customerName} eingereicht`,
+        html: await emailHtml,
+        text: await emailText,
+        noSenderBcc: true,
+    });
 }

@@ -4,7 +4,13 @@ import { useQuery } from "@tanstack/react-query";
 import { getUrl } from "aws-amplify/storage";
 import { Controls } from "./Controls";
 
-export function VideoPreview({ file, showControls, campaignId, eventId }: PreviewProps) {
+export function VideoPreview({
+    file,
+    showControls,
+    campaignId,
+    eventId,
+    onDataChange,
+}: PreviewProps) {
     try {
         // console.log(file);
         const url = useQuery({
@@ -43,6 +49,7 @@ export function VideoPreview({ file, showControls, campaignId, eventId }: Previe
                     <Controls
                         path={file.path}
                         showControls={showControls}
+                        onDataChange={onDataChange}
                     />
                 </CardContent>
             </Card>

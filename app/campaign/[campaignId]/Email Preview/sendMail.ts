@@ -36,7 +36,9 @@ export default async function sendInvites({
     }
     const groupedCandidates = candidates.reduce(
         (acc, candidate) => {
+            if (candidate.response === "rejected") return acc;
             const level = candidate.influencer.emailLevel;
+
             if (!level) return acc;
             acc[level].push(candidate);
             return acc;

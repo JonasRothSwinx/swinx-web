@@ -6,7 +6,7 @@ import { NextRequest } from "next/server";
 import { Controls } from "./Controls";
 // import PDFParser from "pdf2json";
 
-export function TextPreview({ file, showControls }: PreviewProps) {
+export function TextPreview({ file, showControls, onDataChange }: PreviewProps) {
     const text = useQuery({
         queryKey: [file.path],
         queryFn: async () => {
@@ -44,7 +44,7 @@ export function TextPreview({ file, showControls }: PreviewProps) {
                         overflow: "hidden",
                         display: "flex",
                         flexDirection: "column",
-                        minWidth: "600px",
+                        minWidth: "min(100%, 600px)",
                     },
                 }}
             >
@@ -75,6 +75,7 @@ export function TextPreview({ file, showControls }: PreviewProps) {
                     <Controls
                         path={file.path}
                         showControls={showControls}
+                        onDataChange={onDataChange}
                     />
                 </CardContent>
             </Card>

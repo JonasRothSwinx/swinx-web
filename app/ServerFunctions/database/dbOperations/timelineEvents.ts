@@ -135,6 +135,7 @@ export async function createTimelineEvent(props: Omit<Event, "id">) {
             info: info,
             parentEventId,
             targetAudience,
+            status: "WAITING_FOR_DRAFT",
         },
         {},
     );

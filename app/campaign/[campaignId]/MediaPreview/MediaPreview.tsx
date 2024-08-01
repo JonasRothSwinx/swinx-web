@@ -7,6 +7,7 @@ import {
     Box,
     Button,
     CircularProgress,
+    IconButton,
     Skeleton,
     SxProps,
     Typography,
@@ -15,6 +16,8 @@ import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/rea
 import { ListPaginateWithPathOutput, getProperties, list } from "aws-amplify/storage";
 import { dayjs } from "@/app/utils";
 import { Event } from "@/app/ServerFunctions/types";
+import { RefreshIcon } from "@/app/Definitions/Icons";
+import { useMemo } from "react";
 
 interface MediaPreview {
     campaignId: string;
@@ -28,11 +31,11 @@ export function MediaPreview({ campaignId }: MediaPreview) {
             const filteredItems = await items.reduce(async (acc, item) => {
                 const [eventId, dataType, fileName] = item.path.split("/").slice(-3);
                 const event =
-                    queryClient.getQueryData<Event>(["timelineEvent", eventId]) ??
-                    (await queryClient.fetchQuery({
+                    /* queryClient.getQueryData<Event>(["timelineEvent", eventId]) ?? */
+                    await queryClient.fetchQuery({
                         queryKey: ["timelineEvent", eventId],
                         queryFn: async () => dataClient.timelineEvent.get(eventId),
-                    }));
+                    });
                 // console.log({ item, event });
                 if (event && event.status === "WAITING_FOR_APPROVAL") {
                     return [...(await acc), item];
@@ -53,6 +56,13 @@ export function MediaPreview({ campaignId }: MediaPreview) {
             flexDirection: "column",
             gap: "1rem",
             padding: "1rem",
+            ".TitleContainer": {
+                position: "relative",
+                width: "100%",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+            },
         },
     };
     if (allFiles.isError) return <Typography>Error: {allFiles.error.message}</Typography>;
@@ -63,14 +73,35 @@ export function MediaPreview({ campaignId }: MediaPreview) {
                 hideLogo
             />
         );
-    if (allFiles.data && Object.keys(allFiles.data).length === 0) return null;
+    if (allFiles.data && Object.keys(allFiles.data).length === 0)
+        return (
+            <Box
+                id="MediaColumn"
+                className="MediaColumn"
+                sx={sx}
+            >
+                <Box
+                    id="TitleContainer"
+                    className="TitleContainer"
+                >
+                    <Typography textAlign={"center"}>Keine Medien warten auf Freigabe</Typography>
+                    <RefreshButton />
+                </Box>
+            </Box>
+        );
     return (
         <Box
             id="MediaColumn"
             className="MediaColumn"
             sx={sx}
         >
-            <Typography textAlign={"center"}>Medien warten auf Freigabe!</Typography>
+            <Box
+                id="TitleContainer"
+                className="TitleContainer"
+            >
+                <Typography textAlign={"center"}>Medien warten auf Freigabe!</Typography>
+                <RefreshButton />
+            </Box>
             {allFiles.data &&
                 Object.entries(allFiles.data).map(([eventId, files]) => {
                     return (
@@ -160,6 +191,9 @@ function EventMediaDisplay({ eventId, files }: EventMediaDisplayProps) {
                                 approve: true,
                                 replace: true,
                                 delete: true,
+                            },
+                            onDataChange: async () => {
+                                console.log("Data changed!");
                             },
                         });
                     })}
@@ -262,5 +296,51 @@ function EventMediaButtons({ eventId, campaignId }: EventMediaButtonsProps) {
                 {approve.isPending ? <CircularProgress /> : "Inhalte freigeben"}
             </Button>
         </Box>
+    );
+}
+
+function RefreshButton() {
+    const queryClient = useQueryClient();
+    const refresh = useMutation({
+        mutationFn: async () => {
+            await queryClient.invalidateQueries({ queryKey: ["files"] });
+            return;
+        },
+    });
+    const sx: SxProps = useMemo(
+        () => ({
+            "&.RefreshButton": {
+                position: "absolute",
+                right: 0,
+                display: "flex",
+                justifyContent: "center",
+                // gap: "1rem",
+                // padding: "1rem",
+                animation: "rotate .5s linear infinite",
+                animationPlayState: refresh.isPending ? "running" : "paused",
+                // marginLeft: "auto",
+                "@keyframes rotate": {
+                    "100%": {
+                        transform: "rotate(360deg)",
+                    },
+                },
+            },
+        }),
+        [refresh.isPending],
+    );
+    return (
+        // <Box
+        //     sx={sx}
+        //     className="RefreshButton"
+        // >
+        <IconButton
+            sx={sx}
+            className="RefreshButton"
+            onClick={() => refresh.mutate()}
+            disabled={refresh.isPending}
+        >
+            <RefreshIcon />
+        </IconButton>
+        // </Box>
     );
 }

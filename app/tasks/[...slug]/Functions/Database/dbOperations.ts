@@ -354,7 +354,7 @@ export async function submitPostLink({ eventId, postLink }: SubmitPostLinkParams
     const { data, errors } = await client.models.TimelineEvent.update({
         id: eventId,
         postLink,
-        // status: "COMPLETED",
+        status: "COMPLETED",
     });
     if (errors) {
         console.error(errors);
