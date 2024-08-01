@@ -3,7 +3,12 @@ import {
     templateNames,
 } from "@/app/Emails/templates/video/actionReminder/TemplateVariables";
 import { SendMailProps, sesAPIClient } from "..";
-import { grabSignatureProps, defaultSignatureProps, getActionTime } from "./functions";
+import {
+    grabSignatureProps,
+    defaultSignatureProps,
+    getActionTime,
+    getTaskPageUrl,
+} from "./functions";
 import { SignatureTemplateVariables } from "@/app/Emails/templates/_components/SignatureTemplateVariables";
 
 export async function sendVideoActionReminder(props: SendMailProps) {
@@ -33,6 +38,7 @@ export async function sendVideoActionReminder(props: SendMailProps) {
                         // topic,
                         postTime,
                         customerLink: "https://www.swinx.de",
+                        taskPageLink: getTaskPageUrl({ assignmentId: event.assignments[0].id }),
                         ...signatureProps,
                     } satisfies TemplateVariables & SignatureTemplateVariables),
                 },
@@ -51,6 +57,7 @@ export async function sendVideoActionReminder(props: SendMailProps) {
             postTime: "TestPostTime",
             // topic: "TestTopic",
             customerLink: "https://www.swinx.de",
+            taskPageLink: "https://www.swinx.de",
             ...defaultSignatureProps,
         } satisfies TemplateVariables & SignatureTemplateVariables),
         bulkTemplateData: templateData,

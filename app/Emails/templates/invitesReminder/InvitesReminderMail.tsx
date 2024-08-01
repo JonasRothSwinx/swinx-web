@@ -1,5 +1,5 @@
 import { EmailTriggers } from "@/app/ServerFunctions/types";
-import { Head, Hr, Html, Link, Preview, Text } from "@react-email/components";
+import { Button, Head, Hr, Html, Link, Preview, Text } from "@react-email/components";
 import React from "react";
 import { Placeholder, Signature } from "../_components";
 import styles from "../styles";
@@ -17,6 +17,7 @@ const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } =
     filterJobGroups: PlaceholderList({ parentName: "filterJobGroups", listItemName: "jobGroup" }),
     filterCountries: Placeholder({ name: "filterCountries" }),
     actionTime: Placeholder({ name: "actionTime" }),
+    taskPageLink: Placeholder({ name: "taskPageLink" }),
 };
 const EmailTemplates: {
     [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
@@ -36,8 +37,16 @@ InvitesReminderMail.PreviewProps = {
 } satisfies EmailProps;
 
 function NewInvitesReminder(props: DebugToggle) {
-    const { name, inviteAmount, customerName, eventName, eventLink, filterCountries, actionTime } =
-        props.debug ? defaultParams : placeholders;
+    const {
+        name,
+        inviteAmount,
+        customerName,
+        eventName,
+        eventLink,
+        filterCountries,
+        actionTime,
+        taskPageLink,
+    } = props.debug ? defaultParams : placeholders;
     const filterJobGroups = props.debug ? (
         <ul>
             {defaultParams.filterJobGroups.map((a, index) => (
@@ -62,15 +71,19 @@ function NewInvitesReminder(props: DebugToggle) {
                 <br />
                 Bitte benutzen sie dafür unsere Browser Extension, mit ihrer personalisierten
                 Filter-Datei, die sie von uns erhalten haben.
-                <br />
-                Bitte teilen sie uns danach mit, ob alles funktioniert hat.
             </Text>
+            <Text style={styles.text}>
+                {`Bitte laden Sie im Anschluss einen Screenshot auf unserer Plattform hoch`}
+            </Text>
+            {/* <Container> */}
+            <Button
+                style={styles.responseButton}
+                href={placeholders.taskPageLink.toString()}
+            >
+                Zur Übersicht
+            </Button>
+            {/* </Container> */}
             <Signature />
-            {/* <Container align="left" style={styles.buttonContainer}>
-                <Button style={styles.responseButton} href="https://www.swinx.de">
-                    Zu Swinx
-                </Button>
-            </Container> */}
         </Html>
     );
 }

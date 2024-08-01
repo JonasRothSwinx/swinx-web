@@ -5,7 +5,12 @@ import {
 import { dayjs } from "@/app/utils";
 import { SendMailProps, sesAPIClient } from "..";
 import { SignatureTemplateVariables } from "@/app/Emails/templates/_components/SignatureTemplateVariables";
-import { grabSignatureProps, defaultSignatureProps, getActionTime } from "./functions";
+import {
+    grabSignatureProps,
+    defaultSignatureProps,
+    getActionTime,
+    getTaskPageUrl,
+} from "./functions";
 
 export async function sendPostActionReminder(props: SendMailProps) {
     const { level, fromAdress, bcc, individualContext } = props;
@@ -34,6 +39,7 @@ export async function sendPostActionReminder(props: SendMailProps) {
                         postTime,
                         customerName,
                         customerProfileLink: customerProfileLink ?? "Invalid",
+                        taskPageLink: getTaskPageUrl({ assignmentId: event.assignments[0].id }),
                         ...signatureProps,
                         // postContent,
                     } satisfies TemplateVariables & SignatureTemplateVariables),
@@ -51,6 +57,7 @@ export async function sendPostActionReminder(props: SendMailProps) {
             postTime: "00:00",
             customerName: "TestCustomer",
             customerProfileLink: "https://www.swinx.de",
+            taskPageLink: "https://www.swinx.de",
             // postContent: Array(10).fill("blablabla").join("\n"),
             ...defaultSignatureProps,
         } satisfies TemplateVariables & SignatureTemplateVariables),

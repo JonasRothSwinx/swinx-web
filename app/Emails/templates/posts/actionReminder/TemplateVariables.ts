@@ -3,6 +3,7 @@ export type TemplateVariables = {
     postTime: string;
     customerName: string;
     customerProfileLink: string;
+    taskPageLink: string;
 };
 
 const templateBaseName = "PostReminder";
@@ -16,5 +17,6 @@ export const defaultParams: TemplateVariables = {
     postTime: "00:00",
     customerName: "TestCustomer",
     customerProfileLink: "https://www.swinx.de",
+    taskPageLink: "https://www.swinx.de",
     // postContent: Array(10).fill("blablabla").join("\n"),
 };

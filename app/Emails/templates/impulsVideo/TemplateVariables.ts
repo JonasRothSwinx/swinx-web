@@ -3,6 +3,7 @@ export type TemplateVariables = {
     customerName: string;
     dueDate: string;
     topic: string;
+    taskPageLink: string;
 };
 
 const templateBaseName = "ImpulsVideoReminder";

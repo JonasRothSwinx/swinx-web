@@ -12,6 +12,7 @@ const placeholders: { [key in keyof TemplateVariables]: string } = {
     customerLink: Placeholder({ name: "customerLink" }),
     // postContent: Placeholder({ name: "postContent" }),
     postTime: Placeholder({ name: "postTime" }),
+    taskPageLink: Placeholder({ name: "taskPageLink" }),
 };
 
 const EmailTemplates: {
@@ -38,6 +39,7 @@ function NewVideoActionReminder(props: DebugToggle) {
         customerLink,
         // postContent,
         postTime,
+        taskPageLink,
     } = placeholders;
     return (
         <Html
@@ -65,19 +67,18 @@ function NewVideoActionReminder(props: DebugToggle) {
                     <li>Bitte verwende das freigegebene Video und den Beitragstext</li>
                 </ul>
             </Text>
-            {/* <Text style={styles.text}>
-                Der freigegebene Beitragstext ist:
-                <br />
-                {"{{PostContent}}"}
-            </Text> */}
             <Text style={styles.text}>
-                Bitte teilen sie uns danach mit, ob alles funktioniert hat.
+                Bitte tragen sie im Anschluss den Link auf den veröffentlichten Beitrag auf unserer
+                Plattform ein
+                <br />
+                Dort können sie auch die für den Beitrag freigegebenen Medien herunterladen.
             </Text>
-            {/* <Container align="left" style={styles.buttonContainer}>
-                <Button style={styles.responseButton} href="https://www.swinx.de">
-                    Zu Swinx
-                </Button>
-            </Container> */}
+            <Button
+                style={styles.responseButton}
+                href={placeholders.taskPageLink.toString()}
+            >
+                Zur Übersicht
+            </Button>
             <Signature />
         </Html>
     );

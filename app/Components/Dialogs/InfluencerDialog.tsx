@@ -33,7 +33,14 @@ type InfluencerDialogProps = {
 
 export function InfluencerDialog(props: InfluencerDialogProps) {
     // debugger;
-    const { onClose, parent: rows, setParent: setRows, isOpen = true, editing, editingData } = props;
+    const {
+        onClose,
+        parent: rows,
+        setParent: setRows,
+        isOpen = true,
+        editing,
+        editingData,
+    } = props;
     // const [isModalOpen, setIsModalOpen] = useState(open);
     const [changedData, setChangedData] = useState<Partial<Influencers.Full>>({});
 
@@ -85,10 +92,16 @@ export function InfluencerDialog(props: InfluencerDialogProps) {
                 <FormInputs {...infoProps} />
 
                 <DialogActions>
-                    <Button onClick={EventHandlers.handleClose} color="secondary">
+                    <Button
+                        onClick={EventHandlers.handleClose}
+                        color="secondary"
+                    >
                         Abbrechen
                     </Button>
-                    <Button variant="contained" type="submit">
+                    <Button
+                        variant="contained"
+                        type="submit"
+                    >
                         Speichern
                     </Button>
                 </DialogActions>
@@ -153,7 +166,10 @@ function ContactInfo(props: InfoProps) {
                 "& .MuiFormControl-root:has(#email)": { flexBasis: "100%" },
             }}
         >
-            <DialogContentText margin={"10"} textAlign={"center"}>
+            <DialogContentText
+                margin={"10"}
+                textAlign={"center"}
+            >
                 Kontakt
             </DialogContentText>
             <TextField
@@ -190,6 +206,7 @@ function ContactInfo(props: InfoProps) {
             {/* Email type Selector. Possible Values come from Influencers.emailTypeValues */}
             <TextFieldWithTooltip
                 select
+                disabled
                 id="emailType"
                 name="emailType"
                 className={styles.TextField}
@@ -204,7 +221,10 @@ function ContactInfo(props: InfoProps) {
                 }}
             >
                 {EmailTriggers.emailLevels.map((option) => (
-                    <MenuItem key={option} value={option}>
+                    <MenuItem
+                        key={option}
+                        value={option}
+                    >
                         {EmailTriggers.getDisplayName(option)}
                     </MenuItem>
                 ))}

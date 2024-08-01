@@ -12,6 +12,7 @@ export const defaultParams: TemplateVariables = {
     customerName: "Musterfirma",
     dueDate: "01.01.2022",
     topic: "Impulsvideo",
+    taskPageLink: "https://example.com",
 };
 
 const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
@@ -19,6 +20,7 @@ const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } =
     customerName: Placeholder({ name: "customerName" }),
     dueDate: Placeholder({ name: "dueDate" }),
     topic: Placeholder({ name: "topic" }),
+    taskPageLink: Placeholder({ name: "taskPageLink" }),
 };
 
 const EmailTemplates: {
@@ -53,6 +55,18 @@ function NewReminder(props: DebugToggle) {
             <Text style={styles.text}>
                 {`Wir möchten sie daran erinnern, dass sie uns bis spätestens ${dueDate} ihre Aufnahme für den Kunden ${customerName} zum Thema ${topic} zuschicken sollen.`}
             </Text>
+            <Text style={styles.text}>
+                {`Bitte laden Sie Ihre Aufnahme auf unserer Plattform hoch`}
+            </Text>
+            {/* <Container> */}
+            <Button
+                style={styles.responseButton}
+                href={placeholders.taskPageLink.toString()}
+            >
+                Zur Übersicht
+            </Button>
+            {/* </Container> */}
+
             <Signature />
         </Html>
     );

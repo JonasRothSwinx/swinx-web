@@ -6,7 +6,12 @@ import {
 import { Events } from "@/app/ServerFunctions/types";
 import { SendMailProps, sesAPIClient } from "..";
 import { SignatureTemplateVariables } from "@/app/Emails/templates/_components/SignatureTemplateVariables";
-import { grabSignatureProps, defaultSignatureProps, getActionTime } from "./functions";
+import {
+    grabSignatureProps,
+    defaultSignatureProps,
+    getActionTime,
+    getTaskPageUrl,
+} from "./functions";
 
 export async function sendInviteActionReminder(props: SendMailProps) {
     console.log("Sending invite action reminder", JSON.stringify(props, null, 2));
@@ -73,6 +78,7 @@ export async function sendInviteActionReminder(props: SendMailProps) {
                         filterJobGroups,
                         filterCountries,
                         actionTime,
+                        taskPageLink: getTaskPageUrl({ assignmentId: event.assignments[0].id }),
                         ...signatureProps,
                     } satisfies TemplateVariables & SignatureTemplateVariables),
                 },

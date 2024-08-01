@@ -7,6 +7,7 @@ export type TemplateVariables = {
     filterJobGroups: { jobGroup: string }[];
     filterCountries: string;
     actionTime: string;
+    taskPageLink: string;
 };
 
 export const defaultParams: TemplateVariables = {
@@ -22,6 +23,7 @@ export const defaultParams: TemplateVariables = {
     ],
     filterCountries: "TestCountry",
     actionTime: "am Ende aller Tage",
+    taskPageLink: "https://www.swinx.de",
 };
 
 export const subjectLineBase = "Erinnerung: Einladungen";

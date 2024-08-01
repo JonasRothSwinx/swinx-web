@@ -12,6 +12,7 @@ const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } =
     customerName: Placeholder({ name: "customerName" }),
     topic: Placeholder({ name: "topic" }),
     actionTime: Placeholder({ name: "actionTime" }),
+    taskPageLink: Placeholder({ name: "taskPageLink" }),
 };
 const EmailTemplates: {
     [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
@@ -30,7 +31,9 @@ PostDraftDeadlineReminderEmail.PreviewProps = {
 } satisfies EmailProps;
 
 function NewPostDraftDeadlineReminder(props: DebugToggle) {
-    const { name, customerName, topic, actionTime } = props.debug ? defaultParams : placeholders;
+    const { name, customerName, topic, actionTime, taskPageLink } = props.debug
+        ? defaultParams
+        : placeholders;
     return (
         <Html
             dir="ltr"
@@ -45,6 +48,13 @@ function NewPostDraftDeadlineReminder(props: DebugToggle) {
                 {""}
                 zum Thema {topic} bei uns einreichen müssen.
             </Text>
+            <Text style={styles.text}>Bitte laden sie den Entwurf auf unserer Plattform hoch.</Text>
+            <Button
+                style={styles.responseButton}
+                href={placeholders.taskPageLink.toString()}
+            >
+                Zur Übersicht
+            </Button>
             <Signature />
         </Html>
     );
