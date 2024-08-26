@@ -47,7 +47,7 @@ export default function CampaignDetails({ campaignId }: CampaignDetailsProps) {
         // console.log("campaign changed");
 
         return () => {};
-    }, [campaign]);
+    }, [campaign.data]);
 
     // console.log(callbackSetCampaign);
     // function callbackSetCampaign(campaign: Campaign.Campaign) {
@@ -158,13 +158,7 @@ export default function CampaignDetails({ campaignId }: CampaignDetailsProps) {
             },
         };
     }, []);
-    if (campaign.isLoading)
-        return (
-            <LoadingPage
-                textMessage="Kampagne wird geladen"
-                spinnerSize={100}
-            />
-        );
+    if (campaign.isLoading) return <LoadingPage textMessage="Kampagne wird geladen" spinnerSize={100} />;
     if (!campaign.data) return <Placeholder />;
     return (
         <Box
@@ -180,10 +174,7 @@ export default function CampaignDetails({ campaignId }: CampaignDetailsProps) {
             // }}
             // open={isOpen}
         >
-            <Box
-                id="campaignDetailsContent"
-                className={"campaignDetailsContent"}
-            >
+            <Box id="campaignDetailsContent" className={"campaignDetailsContent"}>
                 <CustomErrorBoundary message="Error loading.... Buttons?">
                     <CampaignDetailsButtons
                         updateCampaign={EventHandlers.updateCampaign}
@@ -193,19 +184,8 @@ export default function CampaignDetails({ campaignId }: CampaignDetailsProps) {
                     />
                 </CustomErrorBoundary>
 
-                <Grid
-                    id="CampaignDetailsGrid"
-                    container
-                    columns={3}
-                    sx={{}}
-                    maxHeight={"100%"}
-                >
-                    <Grid
-                        id="CampaignDetailsDisplay"
-                        xs={1}
-                        display={"flex"}
-                        flexDirection={"column"}
-                    >
+                <Grid id="CampaignDetailsGrid" container columns={3} sx={{}} maxHeight={"100%"}>
+                    <Grid id="CampaignDetailsDisplay" xs={1} display={"flex"} flexDirection={"column"}>
                         <CustomErrorBoundary message="Error loading customer details">
                             <CustomerDetails
                                 campaign={campaign.data}
@@ -223,11 +203,7 @@ export default function CampaignDetails({ campaignId }: CampaignDetailsProps) {
                             />
                         </CustomErrorBoundary>
                     </Grid>
-                    <Grid
-                        id="MediaPreview"
-                        xs={1}
-                        maxHeight={"100%"}
-                    >
+                    <Grid id="MediaPreview" xs={1} maxHeight={"100%"}>
                         <MediaPreview campaignId={campaignId} />
 
                         {/* <QueryDebugDisplay
@@ -253,11 +229,7 @@ export default function CampaignDetails({ campaignId }: CampaignDetailsProps) {
                             <Typography> None</Typography>
                         )} */}
                     </Grid>
-                    <Grid
-                        id="timeline"
-                        xs={1}
-                        columns={1}
-                    >
+                    <Grid id="timeline" xs={1} columns={1}>
                         <CustomErrorBoundary message="Error loading timeline">
                             <TimelineView
                                 setCampaign={EventHandlers.setCampaign}

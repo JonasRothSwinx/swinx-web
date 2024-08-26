@@ -311,6 +311,7 @@ export function TimelineEventDialog(props: TimelineEventDialogProps) {
         },
         createEvents: useMutation({
             mutationFn: async (data: { newEvents: Event[] }) => {
+                console.log("Creating events", data);
                 const { newEvents } = data;
                 const createdEvents = await Promise.all(
                     newEvents.map((newEvent) => submitEvent({ event: newEvent, editing: false }))
