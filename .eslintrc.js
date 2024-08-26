@@ -11,7 +11,7 @@ module.exports = {
         "plugin:@typescript-eslint/recommended",
         "plugin:react-hooks/recommended",
         "plugin:react/recommended",
-        // "plugin:@tanstack/eslint-plugin-query/recommended",
+        "plugin:@tanstack/eslint-plugin-query/recommended",
     ],
     overrides: [
         {

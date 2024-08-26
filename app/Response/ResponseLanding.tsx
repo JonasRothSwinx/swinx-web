@@ -1,13 +1,5 @@
 import { Candidates } from "@/app/ServerFunctions/types";
-import {
-    Box,
-    Button,
-    CircularProgress,
-    Icon,
-    SxProps,
-    Typography,
-    useMediaQuery,
-} from "@mui/material";
+import { Box, Button, CircularProgress, Icon, SxProps, Typography, useMediaQuery } from "@mui/material";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -52,7 +44,7 @@ export default function ResponseLanding() {
     //#region Queries
     const candidate = useQuery({
         enabled: !!candidateId,
-        queryKey: ["candidate"],
+        queryKey: ["candidate", candidateId],
         queryFn: () => {
             return dataClient.getCandidate({ id: candidateId });
         },
@@ -60,7 +52,7 @@ export default function ResponseLanding() {
 
     const assignmentData = useQuery({
         enabled: !!assignmentId,
-        queryKey: ["assignment"],
+        queryKey: ["assignment", assignmentId],
         queryFn: () => {
             return dataClient.getAssignmentData({ id: assignmentId });
         },
@@ -68,7 +60,7 @@ export default function ResponseLanding() {
 
     const events = useQuery({
         enabled: !!assignmentId,
-        queryKey: ["events"],
+        queryKey: [assignmentId, "events"] as const,
         queryFn: async () => {
             const events = await dataClient.getEventsByAssignment({ id: assignmentId });
             return events;
@@ -86,7 +78,7 @@ export default function ResponseLanding() {
 
     const CampaignData = useQuery({
         enabled: !!campaignId,
-        queryKey: ["campaign"],
+        queryKey: ["campaign", campaignId],
         queryFn: () => {
             return dataClient.getCampaignInfo({ id: campaignId });
         },
@@ -94,7 +86,7 @@ export default function ResponseLanding() {
 
     const parentEvent = useQuery({
         enabled: !!events.data,
-        queryKey: ["parentEvent"],
+        queryKey: [events.data?.[0], "parentEvent"],
         queryFn: async () => {
             const firstEvent = events.data?.[0];
             const parentEventId = firstEvent?.parentEventId;
@@ -112,25 +104,25 @@ export default function ResponseLanding() {
     const styles: SxProps = useMemo(
         () => ({
             "&": {
-                "position": "relative",
-                "width": "calc(100vw - 40px)", // Account for left and right margins
-                "height": "fit-content", // Account for top and bottom margins
-                "maxHeight": "calc(100dvh - 40px)",
-                "maxWidth": "100vw",
-                "margin": "20px",
-                "border": "1px solid gray",
-                "borderRadius": "10px",
-                "backgroundColor": "var(--background-color)",
-                "display": "flex",
-                "flexDirection": "column",
+                position: "relative",
+                width: "calc(100vw - 40px)", // Account for left and right margins
+                height: "fit-content", // Account for top and bottom margins
+                maxHeight: "calc(100dvh - 40px)",
+                maxWidth: "100vw",
+                margin: "20px",
+                border: "1px solid gray",
+                borderRadius: "10px",
+                backgroundColor: "var(--background-color)",
+                display: "flex",
+                flexDirection: "column",
                 // overflowY: "auto",
                 "#ResponseLandingScrollableContent": {
-                    "padding": "20px",
-                    "paddingTop": "0",
-                    "maxHeight": "-webkit-fill-available",
+                    padding: "20px",
+                    paddingTop: "0",
+                    maxHeight: "-webkit-fill-available",
                     // maxHeight: "calc(100dvh - 40px)",
-                    "overflowY": "auto",
-                    "flex": 1,
+                    overflowY: "auto",
+                    flex: 1,
                     "@media (max-width: 600px)": {
                         overflowY: "auto",
                     },
@@ -146,10 +138,10 @@ export default function ResponseLanding() {
                 },
                 "#Title": {
                     // position: "sticky",
-                    "padding": "20px",
-                    "paddingBottom": "0",
-                    "width": "100%",
-                    "textAlign": "center",
+                    padding: "20px",
+                    paddingBottom: "0",
+                    width: "100%",
+                    textAlign: "center",
                     "#SwinxLogo": {
                         float: "right",
                         width: "100px",
@@ -159,16 +151,16 @@ export default function ResponseLanding() {
                 },
 
                 "#AssignmentDescriptionsContainer": {
-                    "overflowY": "auto",
-                    "border": "1px solid black",
-                    "borderRadius": "5px",
-                    "maxHeight": "80%",
+                    overflowY: "auto",
+                    border: "1px solid black",
+                    borderRadius: "5px",
+                    maxHeight: "80%",
                     "#DescriptionContainer": {
-                        "display": "flex",
-                        "flexDirection": "column",
-                        "maxHeight": "400px",
+                        display: "flex",
+                        flexDirection: "column",
+                        maxHeight: "400px",
 
-                        "background": "var(--background-color)",
+                        background: "var(--background-color)",
                         // padding: "2px",
                         // border: "1px solid black",
                         // borderRadius: "5px",
@@ -180,20 +172,20 @@ export default function ResponseLanding() {
                             backgroundColor: "var(--swinx-blue)",
                         },
                         "#SummaryContainer": {
-                            "display": "flex",
-                            "flexDirection": "row",
-                            "paddingLeft": "10px",
+                            display: "flex",
+                            flexDirection: "row",
+                            paddingLeft: "10px",
                             "#SummaryBox": {
                                 // float: "left",
                                 flex: 3,
                             },
                             "#InvitesTable": {
                                 // float: "right",
-                                "overflowY": "auto",
-                                "height": "fit-content",
-                                "width": "fit-content",
-                                "maxHeight": "fit-content",
-                                "flex": 1,
+                                overflowY: "auto",
+                                height: "fit-content",
+                                width: "fit-content",
+                                maxHeight: "fit-content",
+                                flex: 1,
                                 "& .MuiTableCell-head": {
                                     fontWeight: "bold",
                                     padding: "10px",
@@ -207,11 +199,11 @@ export default function ResponseLanding() {
                             },
                         },
                         "@media (max-width: 500px)": {
-                            "maxHeight": "fit-content",
+                            maxHeight: "fit-content",
 
                             "#SummaryContainer": {
-                                "flexDirection": "column",
-                                "alignItems": "center",
+                                flexDirection: "column",
+                                alignItems: "center",
                                 "#SummaryBox": {
                                     width: "100%",
                                 },
@@ -223,13 +215,13 @@ export default function ResponseLanding() {
                     },
                 },
                 "#AssignmentDescriptionGroup": {
-                    "display": "flex",
-                    "flexDirection": "column",
+                    display: "flex",
+                    flexDirection: "column",
                     // padding: "10px",
-                    "borderBlock": "1px solid black",
-                    "overflow": "auto",
+                    borderBlock: "1px solid black",
+                    overflow: "auto",
 
-                    "borderBottom": "none",
+                    borderBottom: "none",
                     "&:first-of-type": {
                         borderTop: "none",
                         // borderTopLeftRadius: "5px",
@@ -244,7 +236,7 @@ export default function ResponseLanding() {
                 },
             },
         }),
-        [],
+        []
     );
     //#endregion
     //MARK: - Event Handler
@@ -322,24 +314,13 @@ export default function ResponseLanding() {
         CampaignData.isLoading ||
         parentEvent.isLoading
     ) {
-        return (
-            <Loading
-                textMessage="Kampagne wird geladen"
-                spinnerSize={100}
-            />
-        );
+        return <Loading textMessage="Kampagne wird geladen" spinnerSize={100} />;
     }
     if (queries.some((query) => query.isError) || !queries.every((query) => query.data)) {
         return <Typography id="ErrorText">Ein Fehler ist aufgetreten</Typography>;
     }
     //assure that query data is present
-    if (
-        !candidate.data ||
-        !assignmentData.data ||
-        !events.data ||
-        !CampaignData.data ||
-        !parentEvent.data
-    ) {
+    if (!candidate.data || !assignmentData.data || !events.data || !CampaignData.data || !parentEvent.data) {
         return <Typography id="ErrorText">Ein Fehler ist aufgetreten</Typography>;
     }
     if (candidate.data.response && candidate.data.response !== "pending") {
@@ -354,10 +335,7 @@ export default function ResponseLanding() {
     //Temporary fix for the issue
 
     return (
-        <Box
-            id="ResponseLandingContainer"
-            sx={styles}
-        >
+        <Box id="ResponseLandingContainer" sx={styles}>
             <Title />
             <Box id="ResponseLandingScrollableContent">
                 <Introduction

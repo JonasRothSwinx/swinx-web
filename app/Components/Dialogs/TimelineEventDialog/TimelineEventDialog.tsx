@@ -329,7 +329,10 @@ export function TimelineEventDialog(props: TimelineEventDialogProps) {
                         ...newEvent,
                     })
                 );
-                queryClient.setQueryData<Event[]>(["timelineEvents"], [...(previousEvents ?? []), ...newEvents]);
+                queryClient.setQueryData<Event[]>(
+                    [campaignId, "timelineEvents"],
+                    [...(previousEvents ?? []), ...newEvents]
+                );
                 const assignment = newEvents[0].assignments[0];
                 let previousAssignmentEvents: Event[] | undefined = [];
                 if (assignment) {

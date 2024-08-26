@@ -47,7 +47,7 @@ export function EventDisplay(props: EventProps) {
     //######################################################################################################################
     //#region Query
     const event = useQuery({
-        queryKey: ["timelineEvent", id],
+        queryKey: ["timelineEvent", id, props.event, tempId],
         queryFn: () => {
             if (tempId !== undefined) return props.event;
             return dataClient.timelineEvent.get(id);

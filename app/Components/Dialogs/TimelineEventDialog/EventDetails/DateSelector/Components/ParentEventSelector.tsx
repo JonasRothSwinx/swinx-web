@@ -29,7 +29,7 @@ export function ParentEventSelector({
     //########################################
     //#region Queries
     const parentEventChoices = useQuery({
-        queryKey: ["events", parentEventType],
+        queryKey: ["events", campaignId, parentEventType],
         queryFn: async () => {
             const events = await dataClient.timelineEvent.byCampaign(campaignId);
             const parentEventChoices = events.filter((event) => parentEventType && event.type === parentEventType);

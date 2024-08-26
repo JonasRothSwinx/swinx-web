@@ -88,85 +88,6 @@ function applyDefaultValues(props: applyDefaultValuesProps) {
     };
     return newEvent;
 }
-// function appendEventsToTimeline(
-//     events: Event[],
-//     campaign: Campaign,
-//     oldTimeline: Event[],
-//     queryClient: ReturnType<typeof useQueryClient>,
-// ) {
-//     events.map((x) => queryClient.setQueryData(["event", x.id], x));
-//     const newTimeline = [...oldTimeline, ...events];
-//     const newCampaign = {
-//         ...campaign,
-//         campaignTimelineEvents: newTimeline,
-//     };
-//     //update query data
-//     //update campaign
-//     queryClient.setQueryData(["campaign", campaign.id], newCampaign);
-//     queryClient.refetchQueries({ queryKey: ["campaign", campaign.id] });
-
-//     //update events
-//     queryClient.setQueryData(["events", campaign.id], (oldData: Event[]) => {
-//         if (!oldData) return [];
-//         return [...oldTimeline, ...events];
-//     });
-//     queryClient.refetchQueries({ queryKey: ["events", campaign.id] });
-
-//     //update assignment events
-//     queryClient.setQueryData(
-//         ["assignmentEvents", events[0].assignments[0].id],
-//         (oldData: Event[]) => {
-//             if (!oldData) return [];
-//             return newTimeline;
-//         },
-//     );
-//     queryClient.refetchQueries({ queryKey: ["assignmentEvents", events[0].assignments[0].id] });
-
-//     // queryClient.refetchQueries({ queryKey: ["events", campaign.id] });
-//     // queryClient.refetchQueries({ queryKey: ["groups", campaign.id] });
-//     // queryClient.refetchQueries({ queryKey: ["campaign", campaign.id] });
-//     // queryClient.refetchQueries({ queryKey: ["assignmentEvents"], exact: false });
-// }
-
-// function invalidateData(events: Event[], queryClient: ReturnType<typeof useQueryClient>) {
-//     events.map((x) => {
-//         queryClient.invalidateQueries({ queryKey: ["event", x.id] });
-//         queryClient.invalidateQueries({ queryKey: ["assignmentEvents", x.assignments[0].id] });
-//     });
-//     queryClient.invalidateQueries({ queryKey: ["events", events[0].campaign.id] });
-//     queryClient.invalidateQueries({ queryKey: ["groups", events[0].campaign.id] });
-//     queryClient.refetchQueries({ queryKey: ["groups", events[0].campaign.id] });
-//     queryClient.refetchQueries({ queryKey: ["campaign", events[0].campaign.id] });
-// }
-
-// interface handleRelatedEventsProps {
-//     event: Event;
-//     parentEvent?: Event["parentEvent"];
-//     childEvents?: Event["childEvents"];
-//     assignment: Assignments.Min;
-// }
-// async function handleRelatedEvents(props: handleRelatedEventsProps) {
-//     const { event, parentEvent, childEvents, assignment } = props;
-//     //if updated event has children, set their parent reference to the new event
-//     if (childEvents && childEvents.length) {
-//         if (!childEvents.every((x) => x.id)) throw new Error("Child event has no id");
-//         await Promise.all(
-//             childEvents.map(async (x) => {
-//                 // dataClient.timelineEvent.
-//             }),
-//         );
-//     }
-//     /** if new event has a parent, set the parent reference to the new event
-//      *  and connect the parent event to the assigned position
-//      */
-
-//     if (parentEvent && parentEvent.id) {
-//         await Promise.all([
-//             // database.timelineEvent.connectEvents(parentEvent, event),
-//             // database.timelineEvent.connectToAssignment(parentEvent.id, assignment.id),
-//         ]);
-//     }
-// }
 interface createEmailTriggersProps {
     event: Events.EventWithId;
 }
@@ -184,7 +105,7 @@ async function createEmailTriggers({ event }: createEmailTriggersProps) {
                     console.log("Telling dataClient to create email trigger", trigger);
                     const createdTrigger = await dataClient.emailTrigger.create(trigger);
                     console.log("Created email trigger", createdTrigger);
-                }),
+                })
             );
         }
     } catch (error) {

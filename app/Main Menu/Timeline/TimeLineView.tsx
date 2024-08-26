@@ -54,14 +54,14 @@ export default function TimelineView(props: TimelineViewProps) {
     //############################################
     //#region Queries
     const influencers = useQuery({
-        queryKey: ["influencers"],
+        queryKey: ["influencers", props.influencers],
         queryFn: () => {
             return props.influencers;
         },
         placeholderData: [],
     });
     const events = useQuery({
-        queryKey: ["timelineEvents", campaign.id],
+        queryKey: [campaign.id, "events"],
         queryFn: async () => {
             const events = await database.timelineEvent.listByCampaign(campaign.id);
             events.map((event) => {
@@ -80,7 +80,7 @@ export default function TimelineView(props: TimelineViewProps) {
     });
 
     const groups = useQuery({
-        queryKey: ["groups", campaign.id, groupBy],
+        queryKey: ["groups", events.data, campaign.id, groupBy],
         enabled: events.isSuccess,
         queryFn: () => {
             return groupEvents(events.data ?? [], groupBy);
@@ -102,9 +102,9 @@ export default function TimelineView(props: TimelineViewProps) {
     //#region Effects
     // useWhatChanged([events, groupBy, campaign, controlsPosition], "events.data, groupBy, campaign, controlsPosition");
     useEffect(() => {
-        console.log("Events changed, updating groups");
-        queryClient.invalidateQueries({ queryKey: ["groups", campaign.id], refetchType: "all" });
-        groups.refetch();
+        // console.log("Events changed, updating groups");
+        // queryClient.invalidateQueries({ queryKey: ["groups", campaign.id] });
+        // groups.refetch();
         // console.log("Events changed, updating groups");
         return () => {};
     }, [events.data, groupBy, campaign]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -272,51 +272,6 @@ export default function TimelineView(props: TimelineViewProps) {
                     ]}
                 />
             )}
-            {/* <Grid
-                container
-                direction={orientation === "horizontal" ? "row" : "column"}
-                // rowSpacing={1}
-                rowGap={1}
-                // columns={1}
-                columnGap={"5px"}
-                // columnSpacing={1}
-                justifyContent={"space-evenly"}
-                sx={{
-                    "& > .MuiGrid2-root": {
-                        // display: "flex",
-                        // flexDirection: "column",
-                        // overflowY: "auto",
-                        // maxHeight: "90vh",
-                        // paddingTop: "60px",
-                        width: "100%",
-                        // gap: "5px",
-                    },
-                    // display: "flex",
-                    // flexDirection: "column",
-                    // overflowY: "auto",
-                    // maxHeight: "90vh",
-                    // paddingTop: "60px",
-                    width: "100%",
-                    // gap: "5px",
-                }}
-            >
-                {groups.data.slice(0, maxItems).map((group, i) => {
-                    return (
-                        <Grid key={i} xs={orientation === "horizontal" ? 5 : 16}>
-                            <TimelineViewItem
-                                key={i}
-                                keyValue={i}
-                                group={group}
-                                groupedBy={groupBy}
-                                setEditingEvent={setEditingEvent}
-                                openDialog={() => setEditingDialogOpen(true)}
-                                editable={editable}
-                                campaignId={campaign.id}
-                            />
-                        </Grid>
-                    );
-                })}
-            </Grid> */}
             <TimelineViewContent
                 {...props}
                 influencers={influencers.data}

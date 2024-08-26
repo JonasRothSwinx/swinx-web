@@ -5,6 +5,8 @@ import {
     Unstable_Grid2 as Grid,
     GridSize,
     Link,
+    SxProps,
+    TableCell,
     Typography,
 } from "@mui/material";
 import { useMemo } from "react";
@@ -23,12 +25,9 @@ export default function EventContentMulti(props: EventContentProps) {
     };
 
     return (
-        <Grid
-            sx={{ paddingLeft: "10px" }}
-            xs={columnSize}
-        >
+        <TableCell sx={{ paddingLeft: "10px" }} width={"100%"}>
             {EventElement[event.type as eventType] ?? <></>}
-        </Grid>
+        </TableCell>
     );
 }
 
@@ -36,7 +35,7 @@ function WebinarEventContent(props: EventContentProps) {
     const { event } = props;
     const speakers = useMemo(
         () => event.childEvents.filter((childEvent) => childEvent.type === "WebinarSpeaker"),
-        [event],
+        [event]
     );
     const speakerEvents = useQueries({
         queries: speakers.map((speaker) => ({
@@ -49,8 +48,13 @@ function WebinarEventContent(props: EventContentProps) {
     });
     // debugger;
     const openSlots = event.eventAssignmentAmount - speakers.length;
+    const sx: SxProps = {
+        "&": {
+            width: "100%",
+        },
+    };
     return (
-        <Grid xs>
+        <Box id="WebinarEventContent" sx={sx}>
             <Typography variant="h6">{event.type}</Typography>
             <Typography variant="body1">Titel: {event.eventTitle}</Typography>
             {event.eventAssignmentAmount > 0 && (
@@ -62,10 +66,7 @@ function WebinarEventContent(props: EventContentProps) {
                         if (!data) return <CircularProgress key={index} />;
                         const assignment = data.assignments[0];
                         return (
-                            <Grid
-                                key={data.id}
-                                xs
-                            >
+                            <Grid key={data.id} xs>
                                 -{" "}
                                 {assignment.isPlaceholder
                                     ? `Influencer ${assignment.placeholderName}`
@@ -82,10 +83,7 @@ function WebinarEventContent(props: EventContentProps) {
             )}
             <Box>
                 {event.info?.eventLink ? (
-                    <Link
-                        href={event.info.eventLink}
-                        target="_blank"
-                    >
+                    <Link href={event.info.eventLink} target="_blank">
                         Zur Eventpage
                     </Link>
                 ) : (
@@ -102,7 +100,7 @@ function WebinarEventContent(props: EventContentProps) {
                     </Typography>
                 )}
             </Box>
-        </Grid>
+        </Box>
     );
 }
 // interface ItemNameProps {

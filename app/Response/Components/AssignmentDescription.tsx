@@ -26,7 +26,7 @@ export function AssignmentDescription({ assignmentId }: AssignmentDescriptionPro
     // const queryClient = useQueryClient();
     const events = useQuery({
         enabled: !!assignmentId,
-        queryKey: ["events"],
+        queryKey: [assignmentId, "events"],
         queryFn: async () => {
             const events = await dataClient.getEventsByAssignment({ id: assignmentId });
             return events;
@@ -35,7 +35,7 @@ export function AssignmentDescription({ assignmentId }: AssignmentDescriptionPro
 
     const sortedEvents = useQuery({
         enabled: !!events.data,
-        queryKey: ["sortedEvents"],
+        queryKey: [{ events: events.data }, "sortedEvents"],
         queryFn: () => {
             if (!events.data) return {};
             return sortEvents({ events: events.data });
