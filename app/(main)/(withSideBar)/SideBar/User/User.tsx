@@ -35,7 +35,7 @@ export function UserView() {
             attributes.data.sub !== undefined &&
             userGroups.data &&
             ["projektmanager", "admin"].some((group) => userGroups.data.includes(group)),
-        queryKey: ["userProjectManager"],
+        queryKey: ["userProjectManager", attributes.data?.sub],
         queryFn: async () => {
             // console.log("fetching project manager entry");
             const cognitoId = attributes.data?.sub;

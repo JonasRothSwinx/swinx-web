@@ -72,10 +72,7 @@ function WebinarEventContent(props: EventContentProps) {
                         if (!data) return <CircularProgress key={index} />;
                         const assignment = data.assignments[0];
                         return (
-                            <Grid
-                                key={data.id}
-                                xs
-                            >
+                            <Grid key={data.id}>
                                 -{" "}
                                 {assignment.isPlaceholder
                                     ? `Influencer ${assignment.placeholderName}`
