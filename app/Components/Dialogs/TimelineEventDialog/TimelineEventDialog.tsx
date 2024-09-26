@@ -321,6 +321,7 @@ export function TimelineEventDialog(props: TimelineEventDialogProps) {
         },
         createEvents: useMutation({
             mutationFn: async (data: { newEvents: Event[] }) => {
+                console.log("Creating events", data);
                 const { newEvents } = data;
                 const createdEvents = await Promise.all(
                     newEvents.map((newEvent) => submitEvent({ event: newEvent, editing: false })),
@@ -340,6 +341,10 @@ export function TimelineEventDialog(props: TimelineEventDialogProps) {
                 );
                 queryClient.setQueryData<Event[]>(
                     ["timelineEvents"],
+                    [...(previousEvents ?? []), ...newEvents],
+                );
+                queryClient.setQueryData<Event[]>(
+                    [campaignId, "timelineEvents"],
                     [...(previousEvents ?? []), ...newEvents],
                 );
                 const assignment = newEvents[0].assignments[0];

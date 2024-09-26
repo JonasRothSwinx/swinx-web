@@ -1,5 +1,14 @@
 import { Event, Events } from "@/app/ServerFunctions/types";
-import { Box, CircularProgress, Grid2 as Grid, GridSize, Link, Typography } from "@mui/material";
+import {
+    Box,
+    CircularProgress,
+    Grid2 as Grid,
+    GridSize,
+    Link,
+    SxProps,
+    TableCell,
+    Typography,
+} from "@mui/material";
 import { useMemo } from "react";
 import { useQueries } from "@tanstack/react-query";
 import { dataClient } from "@/app/ServerFunctions/database";
@@ -16,12 +25,12 @@ export default function EventContentMulti(props: EventContentProps) {
     };
 
     return (
-        <Grid
+        <TableCell
             sx={{ paddingLeft: "10px" }}
-            size={columnSize}
+            width={"100%"}
         >
             {EventElement[event.type as eventType] ?? <></>}
-        </Grid>
+        </TableCell>
     );
 }
 
@@ -42,8 +51,16 @@ function WebinarEventContent(props: EventContentProps) {
     });
     // debugger;
     const openSlots = event.eventAssignmentAmount - speakers.length;
+    const sx: SxProps = {
+        "&": {
+            width: "100%",
+        },
+    };
     return (
-        <Grid>
+        <Box
+            id="WebinarEventContent"
+            sx={sx}
+        >
             <Typography variant="h6">{event.type}</Typography>
             <Typography variant="body1">Titel: {event.eventTitle}</Typography>
             {event.eventAssignmentAmount > 0 && (
@@ -55,7 +72,10 @@ function WebinarEventContent(props: EventContentProps) {
                         if (!data) return <CircularProgress key={index} />;
                         const assignment = data.assignments[0];
                         return (
-                            <Grid key={data.id}>
+                            <Grid
+                                key={data.id}
+                                xs
+                            >
                                 -{" "}
                                 {assignment.isPlaceholder
                                     ? `Influencer ${assignment.placeholderName}`
@@ -92,7 +112,7 @@ function WebinarEventContent(props: EventContentProps) {
                     </Typography>
                 )}
             </Box>
-        </Grid>
+        </Box>
     );
 }
 // interface ItemNameProps {

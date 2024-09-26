@@ -47,7 +47,7 @@ export default function CampaignDetails({ campaignId }: CampaignDetailsProps) {
         // console.log("campaign changed");
 
         return () => {};
-    }, [campaign]);
+    }, [campaign.data]);
 
     // console.log(callbackSetCampaign);
     // function callbackSetCampaign(campaign: Campaign.Campaign) {
@@ -158,13 +158,7 @@ export default function CampaignDetails({ campaignId }: CampaignDetailsProps) {
             },
         };
     }, []);
-    if (campaign.isLoading)
-        return (
-            <LoadingPage
-                textMessage="Kampagne wird geladen"
-                spinnerSize={100}
-            />
-        );
+    if (campaign.isLoading) return <LoadingPage textMessage="Kampagne wird geladen" spinnerSize={100} />;
     if (!campaign.data) return <Placeholder />;
     return (
         <Box
@@ -180,10 +174,7 @@ export default function CampaignDetails({ campaignId }: CampaignDetailsProps) {
             // }}
             // open={isOpen}
         >
-            <Box
-                id="campaignDetailsContent"
-                className={"campaignDetailsContent"}
-            >
+            <Box id="campaignDetailsContent" className={"campaignDetailsContent"}>
                 <CustomErrorBoundary message="Error loading.... Buttons?">
                     <CampaignDetailsButtons
                         updateCampaign={EventHandlers.updateCampaign}

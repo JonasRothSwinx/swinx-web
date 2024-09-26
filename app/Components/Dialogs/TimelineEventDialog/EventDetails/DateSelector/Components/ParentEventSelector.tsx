@@ -29,12 +29,10 @@ export function ParentEventSelector({
     //########################################
     //#region Queries
     const parentEventChoices = useQuery({
-        queryKey: ["events", parentEventType],
+        queryKey: ["events", campaignId, parentEventType],
         queryFn: async () => {
             const events = await dataClient.timelineEvent.byCampaign(campaignId);
-            const parentEventChoices = events.filter(
-                (event) => parentEventType && event.type === parentEventType,
-            );
+            const parentEventChoices = events.filter((event) => parentEventType && event.type === parentEventType);
             console.log("events", { events, parentEventChoices });
             return parentEventChoices;
         },
@@ -118,10 +116,7 @@ export function ParentEventSelector({
             {parentEventChoices.data.map((parentEvent) => {
                 if (!parentEvent.id) return null;
                 return (
-                    <MenuItem
-                        key={parentEvent.id}
-                        value={parentEvent.id}
-                    >
+                    <MenuItem key={parentEvent.id} value={parentEvent.id}>
                         {EntryName[grandParentEventType](parentEvent.id)}
                     </MenuItem>
                 );

@@ -54,7 +54,7 @@ export default function TimelineControls(props: TimelineControlsProps) {
         <Box id="TimelineControls">
             {/* Dialogs */}
             <>{Dialogs[openDialog]}</>
-            <div
+            <Box
                 style={{
                     // position: "fixed",
                     // top: "40px",
@@ -94,7 +94,7 @@ export default function TimelineControls(props: TimelineControlsProps) {
                     <AddIcon />
                     <Typography variant="body1">Webinar</Typography>
                 </Button>
-            </div>
+            </Box>
         </Box>
     );
 }

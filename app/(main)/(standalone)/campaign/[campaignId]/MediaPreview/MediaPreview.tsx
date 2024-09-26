@@ -281,6 +281,9 @@ function EventMediaButtons({ eventId, campaignId }: EventMediaButtonsProps) {
             queryClient.invalidateQueries({ queryKey: ["timelineEvent", eventId] });
             queryClient.invalidateQueries({ queryKey: ["files", campaignId] });
         },
+        onError: (error) => {
+            console.error("Error approving event", error);
+        },
     });
 
     return (
@@ -334,13 +337,13 @@ function RefreshButton() {
         //     className="RefreshButton"
         // >
         // </Box>
-        (<IconButton
+        <IconButton
             sx={sx}
             className="RefreshButton"
             onClick={() => refresh.mutate()}
             disabled={refresh.isPending}
         >
             <RefreshIcon />
-        </IconButton>)
+        </IconButton>
     );
 }

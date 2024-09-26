@@ -22,9 +22,7 @@ export const timelineEvent = {
  * @param timelineEvent The timeline event object to create
  * @returns The created timeline event object
  */
-export async function createTimelineEvent(
-    timelineEvent: Omit<Event, "id">,
-): Promise<Events.EventWithId> {
+export async function createTimelineEvent(timelineEvent: Omit<Event, "id">): Promise<Events.EventWithId> {
     // const campaignId = timelineEvent.campaign.id;
     // const queryClient = config.getQueryClient();
     // const assignment = timelineEvent.assignments[0];
@@ -91,15 +89,13 @@ interface UpdateTimelineEventParams {
     id: string;
     updatedData: Partial<Event>;
 }
-export async function updateTimelineEvent({
-    id,
-    updatedData,
-}: UpdateTimelineEventParams): Promise<Event> {
+export async function updateTimelineEvent({ id, updatedData }: UpdateTimelineEventParams): Promise<Event> {
     // debugger;
     const queryClient = config.getQueryClient();
-    const previousTimelineEvent = queryClient.getQueryData<Event>(["timelineEvent", id]);
+    const previousTimelineEvent =
+        queryClient.getQueryData<Event>(["timelineEvent", id]) ?? (await database.timelineEvent.get(id));
     if (!previousTimelineEvent) {
-        throw new Error("Timeline event not found");
+        throw new Error(`Timeline event not found for id: "${id}"`);
     }
     const campaignId = previousTimelineEvent.campaign.id;
     if (updatedData.type && previousTimelineEvent.type !== updatedData.type) {
@@ -187,10 +183,7 @@ export async function listByCampaign(campaignId: string): Promise<Event[]> {
     return timelineEvents;
 }
 
-export async function listByCampaignByIds(
-    campaignId: string,
-    eventIds: string[],
-): Promise<Event[]> {
+export async function listByCampaignByIds(campaignId: string, eventIds: string[]): Promise<Event[]> {
     const queryClient = config.getQueryClient();
     //return cache data if available
     // const cachedTimelineEvents = queryClient.getQueryData(["timelineEvents", campaignId]) as Event[];
