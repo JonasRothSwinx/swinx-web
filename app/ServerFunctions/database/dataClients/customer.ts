@@ -53,10 +53,8 @@ interface GetCustomer {
 
 async function getCustomer({ id }: GetCustomer): Promise<Nullable<Customer>> {
     const queryClient = config.getQueryClient();
-    const customer = await queryClient.fetchQuery({
-        queryKey: ["customer", id],
-        queryFn: () => database.customer.get(id),
-    });
+    const customer = await database.customer.get(id);
+    console.log("customer", id, customer);
     return customer;
 }
 

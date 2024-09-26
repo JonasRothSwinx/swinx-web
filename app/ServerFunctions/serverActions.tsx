@@ -15,16 +15,21 @@ dayjs.extend(customParseFormat);
 const client = generateServerClientUsingCookies<Schema>({ config, cookies });
 
 export async function getUserGroups() {
+    // console.log("getUserGroups");
     const result = await runWithAmplifyServerContext({
         nextServerContext: { cookies },
         operation: async (contextSpec) => {
+            // console.log("fetching session");
             const session = await fetchAuthSession(contextSpec, { forceRefresh: true });
             // console.log("-------------------------------");
             // console.log(client);
             // console.log(cookies(), "---\n", session);
             // console.log("-------------------------------");
+            // console.log("session fetched", session);
+            // console.log("getting Groups");
             const payloadGroups =
                 (session.tokens?.accessToken.payload["cognito:groups"] as string[]) ?? [];
+            // console.log("Groups fetched", payloadGroups);
             // console.log(typeof payloadGroups);
             // if (!payloadGroups || typeof payloadGroups !== Json[]) return [];
             // console.log(payloadGroups);

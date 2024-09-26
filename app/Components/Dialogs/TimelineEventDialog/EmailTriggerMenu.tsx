@@ -243,23 +243,25 @@ interface EmailLevelSelectorProps {
 function EmailLevelSelector(props: EmailLevelSelectorProps) {
     const { emailLevel, onChange } = props;
     return (
-        <TextField
+        (<TextField
             select
             label="Email Level"
             value={emailLevel}
             onChange={(e) => onChange(e.target.value as EmailTriggers.emailLevel)}
             variant="standard"
-            SelectProps={{
-                MenuProps: {
-                    anchorOrigin: {
-                        vertical: "bottom",
-                        horizontal: "left",
+            slotProps={{
+                select: {
+                    MenuProps: {
+                        anchorOrigin: {
+                            vertical: "bottom",
+                            horizontal: "left",
+                        },
+                        transformOrigin: {
+                            vertical: "top",
+                            horizontal: "left",
+                        },
                     },
-                    transformOrigin: {
-                        vertical: "top",
-                        horizontal: "left",
-                    },
-                },
+                }
             }}
         >
             {EmailTriggers.emailLevels.map((level) => (
@@ -270,7 +272,7 @@ function EmailLevelSelector(props: EmailLevelSelectorProps) {
                     {level}
                 </MenuItem>
             ))}
-        </TextField>
+        </TextField>)
     );
 }
 interface ButtonContainerProps {

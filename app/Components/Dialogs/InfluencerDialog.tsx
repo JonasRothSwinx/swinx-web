@@ -12,11 +12,11 @@ import {
     TextField,
 } from "@mui/material";
 import React, { useState } from "react";
-import stylesExporter from "../../Main Menu/styles/stylesExporter";
+import stylesExporter from "@/app/(main)/styles/stylesExporter";
 import { dataClient } from "@/app/ServerFunctions/database";
 import { useQueryClient } from "@tanstack/react-query";
 import sxStyles from "./sxStyles";
-import { Unstable_Grid2 as Grid } from "@mui/material";
+import { Grid2 as Grid } from "@mui/material";
 import { TextFieldWithTooltip } from "./Components";
 
 const styles = stylesExporter.dialogs;

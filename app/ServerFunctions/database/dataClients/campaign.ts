@@ -2,7 +2,7 @@ import { dataClient } from "..";
 import { Campaign, Campaigns } from "../../types";
 import database from "../dbOperations";
 import { PartialWith } from "@/app/Definitions/types";
-import { config } from ".";
+import { config, customer } from ".";
 
 /**
  * Campaign database operations
@@ -61,6 +61,11 @@ async function listCampaigns(): Promise<Campaign[]> {
         campaigns.map(async (campaign) => {
             const resolvedCampaign = await resolveCampaignReferences(campaign);
             queryClient.setQueryData(["campaign", campaign.id], resolvedCampaign);
+            resolvedCampaign.customers.map((customer) => {
+                queryClient.cancelQueries({ queryKey: ["customer", customer.id] });
+                queryClient.setQueryData(["customer", customer.id], customer);
+            });
+
             // queryClient.refetchQueries({ queryKey: ["campaign", campaign.id] });
             return resolvedCampaign;
         }),

@@ -1,7 +1,16 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField } from "@mui/material";
+import {
+    Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    IconButton,
+    TextField,
+} from "@mui/material";
 import { Customer, Customers } from "@/app/ServerFunctions/types";
 import React, { ChangeEvent, useEffect, useState } from "react";
-import stylesExporter from "../../Main Menu/styles/stylesExporter";
+import stylesExporter from "@/app/(main)/styles/stylesExporter";
 import { dataClient } from "@/app/ServerFunctions/database";
 import { Tab } from "@mui/material";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
@@ -53,7 +62,7 @@ export function CustomerDialog(props: CustomerDialogProps) {
             if (!changedData) return;
             if (editing) {
                 // console.log({ changedData });
-                dataClient.customer;
+                // dataClient.customer;
             } else {
                 //check required properties
                 Customers.satisfies(changedData);
@@ -91,10 +100,16 @@ export function CustomerDialog(props: CustomerDialogProps) {
                     justifyContent: "space-between",
                 }}
             >
-                <Button onClick={EventHandlers.handleClose(false)} color="secondary">
+                <Button
+                    onClick={EventHandlers.handleClose(false)}
+                    color="secondary"
+                >
                     Abbrechen
                 </Button>
-                <Button variant="contained" type="submit">
+                <Button
+                    variant="contained"
+                    type="submit"
+                >
                     Speichern
                 </Button>
             </DialogActions>
@@ -160,10 +175,15 @@ function FormContent(props: FormContentProps) {
             </IconButton> */}
                 {changedData.map((customer, index) => {
                     return (
-                        <TabPanel key={index} value={index.toString()}>
+                        <TabPanel
+                            key={index}
+                            value={index.toString()}
+                        >
                             <CustomerDialogContent
                                 customer={customer}
-                                setCustomer={(changedData) => StateChanges.handleCustomerChange(changedData, index)}
+                                setCustomer={(changedData) =>
+                                    StateChanges.handleCustomerChange(changedData, index)
+                                }
                                 deleteCustomer={() => StateChanges.deleteCustomer(index)}
                                 index={index}
                             />

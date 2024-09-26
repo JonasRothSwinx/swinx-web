@@ -13,6 +13,15 @@ const nextConfig = {
         // config.resolve.fallback = { fs: false };
         return config;
     },
+    async redirects() {
+        return [
+            {
+                source: "/",
+                destination: "/CampaignList",
+                permanent: true,
+            },
+        ];
+    },
     // webpack: {
     //     module: {
     //         rules: [

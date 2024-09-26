@@ -35,7 +35,7 @@ module.exports = {
         },
     },
     rules: {
-        "@typescript-eslint/ban-types": "warn",
+        // "@typescript-eslint/ban-types": "warn",
         "@typescript-eslint/ban-ts-comment": "warn",
         "@typescript-eslint/no-empty-function": "off",
         "@typescript-eslint/no-empty-interface": "warn",

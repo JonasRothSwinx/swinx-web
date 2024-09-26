@@ -12,13 +12,12 @@ import {
     TextField,
 } from "@mui/material";
 import React, { useMemo, useState } from "react";
-import stylesExporter from "../../Main Menu/styles/stylesExporter";
+import stylesExporter from "@/app/(main)/styles/stylesExporter";
 import { dataClient } from "@/app/ServerFunctions/database";
 import { useQueryClient } from "@tanstack/react-query";
 import sxStyles from "./sxStyles";
-import { Unstable_Grid2 as Grid } from "@mui/material";
+import { Grid2 as Grid } from "@mui/material";
 import { ProjectManager, ProjectManagers } from "@/app/ServerFunctions/types";
-import { randomJobTitle } from "@mui/x-data-grid-generator";
 
 const styles = stylesExporter.dialogs;
 interface ProjectManagerDialogProps {
@@ -107,7 +106,7 @@ export function ProjectManagerDialog(props: ProjectManagerDialogProps) {
                 },
             },
         }),
-        []
+        [],
     );
 
     return (
@@ -125,12 +124,21 @@ export function ProjectManagerDialog(props: ProjectManagerDialogProps) {
             <Box>
                 <DialogTitle id="DialogTitle">{"Projekt Manager Daten"}</DialogTitle>
                 {/* <button onClick={handleCloseModal}>x</button> */}
-                <FormInputs data={data} setData={setData} />
+                <FormInputs
+                    data={data}
+                    setData={setData}
+                />
                 <DialogActions>
-                    <Button onClick={EventHandlers.handleClose} color="secondary">
+                    <Button
+                        onClick={EventHandlers.handleClose}
+                        color="secondary"
+                    >
                         Abbrechen
                     </Button>
-                    <Button variant="contained" type="submit">
+                    <Button
+                        variant="contained"
+                        type="submit"
+                    >
                         Speichern
                     </Button>
                 </DialogActions>
@@ -168,20 +176,38 @@ function FormInputs(props: FormInputsProps) {
             return email.endsWith("@swinx.de");
         },
     } as const;
-    const [isEmailValid, setIsEmailValid] = useState<boolean>(Validator.validateEmail(data.email ?? ""));
+    const [isEmailValid, setIsEmailValid] = useState<boolean>(
+        Validator.validateEmail(data.email ?? ""),
+    );
     return (
         <DialogContent id="FormInputWrapper">
             <Box id="FormInputContainer">
-                <TextField label="Cognito Id" value={data.cognitoId} disabled />
-                <TextField label="Vorname" value={data.firstName} onChange={ChangeHandler.firstName} required />
-                <TextField label="Nachname" value={data.lastName} onChange={ChangeHandler.lastName} required />
+                <TextField
+                    label="Cognito Id"
+                    value={data.cognitoId}
+                    disabled
+                />
+                <TextField
+                    label="Vorname"
+                    value={data.firstName}
+                    onChange={ChangeHandler.firstName}
+                    required
+                />
+                <TextField
+                    label="Nachname"
+                    value={data.lastName}
+                    onChange={ChangeHandler.lastName}
+                    required
+                />
                 <TextField
                     label="Email"
                     value={data.email}
                     onChange={ChangeHandler.email}
                     type="email"
                     error={!isEmailValid}
-                    helperText={isEmailValid ? "" : "Projektmanager Emails müssen auf @swinx.de enden"}
+                    helperText={
+                        isEmailValid ? "" : "Projektmanager Emails müssen auf @swinx.de enden"
+                    }
                     required
                 />
                 <TextField

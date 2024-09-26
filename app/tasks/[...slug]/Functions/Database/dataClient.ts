@@ -108,7 +108,7 @@ async function updateEventStatus({ eventId, status }: UpdateEventStatusParams) {
                 if (event.id === eventId) {
                     return {
                         ...event,
-                        status,
+                        status: status ?? null,
                     };
                 }
                 return event;

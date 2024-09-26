@@ -103,20 +103,22 @@ interface IndustryFilterProps {
 function IndustryFilter(props: IndustryFilterProps) {
     const { onChange, industryTargets } = props;
     return (
-        <TextField
+        (<TextField
             id="IndustryFilter"
             label="Zielgruppen"
             select
             multiline
-            SelectProps={{
-                multiple: true,
-                value: industryTargets,
-                onChange: (e) => {
-                    const newData = e.target.value as string[];
-                    onChange(newData);
-                },
-            }}
             variant="standard"
+            slotProps={{
+                select: {
+                    multiple: true,
+                    value: industryTargets,
+                    onChange: (e) => {
+                        const newData = e.target.value as string[];
+                        onChange(newData);
+                    },
+                }
+            }}
         >
             {Object.entries(industries).map(([category, items]) => {
                 return [
@@ -137,7 +139,7 @@ function IndustryFilter(props: IndustryFilterProps) {
                     )),
                 ];
             })}
-        </TextField>
+        </TextField>)
     );
 }
 
@@ -148,20 +150,22 @@ interface CountryFilterProps {
 function CountryFilter(props: CountryFilterProps) {
     const { onChange, countryTargets } = props;
     return (
-        <TextField
+        (<TextField
             id="CountryFilter"
             label="Zielländer"
             select
             multiline
-            SelectProps={{
-                multiple: true,
-                value: countryTargets,
-                onChange: (e) => {
-                    const newData = e.target.value as string[];
-                    onChange(newData);
-                },
-            }}
             variant="standard"
+            slotProps={{
+                select: {
+                    multiple: true,
+                    value: countryTargets,
+                    onChange: (e) => {
+                        const newData = e.target.value as string[];
+                        onChange(newData);
+                    },
+                }
+            }}
         >
             {countries.map((country) => {
                 return (
@@ -174,6 +178,6 @@ function CountryFilter(props: CountryFilterProps) {
                     </MenuItem>
                 );
             })}
-        </TextField>
+        </TextField>)
     );
 }

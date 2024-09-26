@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { DateTimeValidationError, PickerChangeHandlerContext } from "@mui/x-date-pickers";
 import { ChangeEvent, useEffect, useState } from "react";
-import stylesExporter from "../../Main Menu/styles/stylesExporter";
+import stylesExporter from "@/app/(main)/styles/stylesExporter";
 import { CustomerDialogContent } from "./CustomerDialog";
 import { Tab } from "@mui/material";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
@@ -54,28 +54,18 @@ type CampaignDialogProps = {
     editing?: boolean;
     editingData?: Campaign;
     parent: Campaign[];
-    setParent: React.Dispatch<React.SetStateAction<Campaign[]>>;
     isOpen?: boolean;
 };
-export function CampaignDialog(props: CampaignDialogProps) {
-    //##################
-    //#region Prop Destructuring
-    const {
-        isOpen = false,
-        onClose,
-        editing,
-        editingData,
-        parent: rows,
-        setParent: setRows,
-    } = props;
-    //#endregion Prop Destructuring
-    //##################
-
+export function CampaignDialog({
+    isOpen = false,
+    onClose,
+    editing,
+    editingData,
+}: CampaignDialogProps) {
     const router = useRouter();
     //##################
     //#region States
     const [campaign, setCampaign] = useState<Campaign>(initialData);
-    const [changedData, setChangedData] = useState<Partial<Campaign>>(editingData ?? {});
     const [customers, setCustomers] = useState<Partial<Customer>[]>(editingData?.customers ?? [{}]);
     const [billingAdress, setBillingAdress] = useState<Campaigns.BillingAdress>({
         name: "",
@@ -188,7 +178,10 @@ export function CampaignDialog(props: CampaignDialogProps) {
             // ref={modalRef}
             open={isOpen}
             // className={styles.dialog}
-            onClose={() => EventHandlers.handleClose(false)}
+            onClose={(event, reason) => {
+                if (reason === "backdropClick" || reason === "escapeKeyDown") return;
+                EventHandlers.handleClose(false);
+            }}
             PaperProps={{
                 component: "form",
                 onSubmit: EventHandlers.onSubmit,
