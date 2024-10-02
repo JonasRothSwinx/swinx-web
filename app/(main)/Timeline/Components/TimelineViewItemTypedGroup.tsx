@@ -1,13 +1,11 @@
-import { Event, Events } from "@/app/ServerFunctions/types";
-import stylesExporter from "../../styles/stylesExporter";
-import { TypedEventGroup as TypedEventGroup, groupBy } from "../Functions/groupEvents";
-import { EventDisplay } from "./EventDisplay";
-import { randomId } from "@mui/x-data-grid-generator";
-import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { highlightData } from "@/app/Definitions/types";
-import { Box, SxProps, Table, TableBody, TableHead, TableRow, Typography } from "@mui/material";
-import { margin } from "@mui/system";
+import { Event, Events } from "@/app/ServerFunctions/types";
+import { SxProps, Table, TableBody, TableHead, TableRow, Typography } from "@mui/material";
+import { randomId } from "@mui/x-data-grid-generator";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { TypedEventGroup, groupBy } from "../Functions/groupEvents";
+import { EventDisplay } from "./EventDisplay";
 
 interface TypedEventGroupDisplayProps {
     eventGroup: TypedEventGroup;
@@ -15,7 +13,7 @@ interface TypedEventGroupDisplayProps {
     editable: boolean;
     campaignId: string;
 }
-const hiddenEventTypes: Events.eventType[] = ["WebinarSpeaker"];
+const hiddenEventTypes: Events.EventType[] = ["WebinarSpeaker"];
 
 export default function TypedEventGroupDisplay(props: TypedEventGroupDisplayProps) {
     const { eventGroup, groupBy, editable, campaignId } = props;
@@ -33,14 +31,14 @@ export default function TypedEventGroupDisplay(props: TypedEventGroupDisplayProp
                 "&#TimelineViewGroupContent": {
                     // padding: "2px",
 
-                    "border": "solid black",
-                    "borderTop": "none",
-                    "borderWidth": "0 0 1px",
+                    border: "solid black",
+                    borderTop: "none",
+                    borderWidth: "0 0 1px",
                     // borderLeft: "none",
                     // borderRadius: "10px",
-                    "display": "flex",
-                    "flexDirection": " column",
-                    "overflow": "hidden",
+                    display: "flex",
+                    flexDirection: " column",
+                    overflow: "hidden",
                     // "&:first-of-type": {
                     //     borderTopLeftRadius: "10px",
                     //     borderTopRightRadius: "10px",
@@ -82,8 +80,8 @@ function GroupTitle(props: GroupTitleProps) {
     const sx: SxProps = useMemo(
         () => ({
             "&": {
-                "display": "flex",
-                "width": "100%",
+                display: "flex",
+                width: "100%",
                 ".TitleRow": {
                     width: "100%",
                 },

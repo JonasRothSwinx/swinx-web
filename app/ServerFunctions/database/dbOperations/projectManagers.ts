@@ -1,6 +1,6 @@
 "use server";
 import { SelectionSet } from "aws-amplify/api";
-import client from "./.dbclient";
+import { client } from "./_dbclient";
 import { Schema } from "@/amplify/data/resource";
 import { ProjectManager } from "../../types";
 import { Nullable } from "@/app/Definitions/types";
@@ -59,10 +59,10 @@ export async function listProjectManagers() {
     const { data, errors } = await client.models.ProjectManager.list({
         selectionSet,
     });
-    console.log({
-        data: data,
-        error: JSON.stringify(errors),
-    });
+    // console.log({
+    //     data: data,
+    //     error: JSON.stringify(errors),
+    // });
     return validateProjectManagers(data);
 }
 //#endregion

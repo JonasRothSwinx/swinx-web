@@ -1,4 +1,4 @@
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 import emailClient from "@/app/Emails";
 import { Box, Button, SxProps } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
@@ -12,9 +12,9 @@ export default function DebugButtons() {
     // const queryClient = useQueryClient();
     const styles: SxProps = useMemo(
         () => ({
-            "display": "flex",
-            "flexDirection": "column",
-            "gap": 2,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
             "& .MuiButton-root": {
                 borderColor: "white",
                 color: "white",

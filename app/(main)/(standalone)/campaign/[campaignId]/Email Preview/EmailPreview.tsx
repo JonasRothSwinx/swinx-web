@@ -1,7 +1,7 @@
 import { Nullable } from "@/app/Definitions/types";
 import emailClient from "@/app/Emails/";
 import templateDefinitions, { templateName } from "@/app/Emails/templates";
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 import { getInviteBaseUrl, getUserGroups } from "@/app/ServerFunctions/serverActions";
 import { Candidates } from "@/app/ServerFunctions/types";
 import { EmailTriggers } from "@/app/ServerFunctions/types";
@@ -12,6 +12,7 @@ import { useEffect, useMemo, useState } from "react";
 import Editor from "./Editor";
 import PreviewFrame from "./PreviewFrame";
 import sendInvites from "./sendMail";
+import { queryKeys } from "@/app/(main)/queryClient/keys";
 
 interface GetTemplateProps {
     setIsLoading: (value: boolean) => void;
@@ -109,7 +110,7 @@ export default function EmailPreview(props: EmailPreviewProps) {
         );
     }, [assignment.data]);
     const userGroups = useQuery({
-        queryKey: ["userGroups"],
+        queryKey: queryKeys.currentUser.userGroups(),
         queryFn: getUserGroups,
     });
 

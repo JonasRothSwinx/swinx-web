@@ -1,3 +1,4 @@
+"use client";
 import { Box, Button, SxProps } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { downloadData, getUrl, remove } from "aws-amplify/storage";

@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import { useMemo } from "react";
 import { useQueries } from "@tanstack/react-query";
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 
 interface EventContentProps {
     event: Events.MultiEvent;
@@ -45,7 +45,7 @@ function WebinarEventContent(props: EventContentProps) {
             enabled: speaker.id !== undefined,
             queryKey: ["timelineEvent", speaker.id],
             queryFn: () => {
-                return dataClient.timelineEvent.get(speaker.id!);
+                return dataClient.event.get(speaker.id!);
             },
         })),
     });

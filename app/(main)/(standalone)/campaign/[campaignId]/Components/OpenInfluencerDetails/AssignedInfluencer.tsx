@@ -14,13 +14,12 @@ import {
 import { dayjs } from "@/app/utils";
 import { useEffect, useState } from "react";
 import categorizeEvents, { EventCategory } from "./functions/categorizeEvents";
-import stylesExporter from "@/app/(main)/styles/stylesExporter";
 import EventCategoryDisplay from "./EventCategoryDisplay";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { InfluencerDetailsButtons } from "./components/InfluencerDetailsButtons";
 import { InfluencerName } from "./components/InfluencerName";
 import { QueryDebugDisplay } from "@/app/Components";
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 
 interface AssignedInfluencerProps {
     campaignId: string;
@@ -48,6 +47,7 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
         queryFn: () => dataClient.campaign.get(campaignId),
     });
     const campaignEvents = useQuery({
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: ["campaignEvents", campaignId],
         queryFn: async () => {
             return campaign.data?.campaignTimelineEvents ?? [];
@@ -73,7 +73,7 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
         queryKey: ["assignmentEvents", props.assignedInfluencer.id],
         queryFn: async () => {
             const raw = (
-                await dataClient.timelineEvent.byAssignment(props.assignedInfluencer.id)
+                await dataClient.event.list.by.assignment(props.assignedInfluencer.id)
             ).filter((event): event is Events.SingleEvent => Events.isSingleEvent(event));
             return raw.sort((a, b) => dayjs(a.date).unix() - dayjs(b.date).unix());
         },
@@ -165,12 +165,26 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
             ></Skeleton>
         );
     }
+    const sx = {
+        "&": {
+            ".assignmentAccordionHeader": {
+                display: "flex",
+                width: "100%",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "5px",
+                maxHeight: "1em",
+                margin: "5px",
+            },
+        },
+    };
     return (
         <Accordion
             key={assignedInfluencer.data.id}
             defaultExpanded
             disableGutters
             variant="outlined"
+            sx={sx}
         >
             <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
@@ -180,7 +194,7 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): JSX.
                     },
                 }}
             >
-                <div className={stylesExporter.campaignDetails.assignmentAccordionHeader}>
+                <div className={"assignmentAccordionHeader"}>
                     <InfluencerName assignedInfluencer={assignedInfluencer.data} />
                     {assignmentEvents.isFetching ? (
                         <Skeleton

@@ -1,7 +1,7 @@
 import { Assignment, Assignments, Event, Events } from "@/app/ServerFunctions/types";
 import { MenuItem, SelectChangeEvent, TextField } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 
 interface AssignmentSelectorProps {
     timelineEvent: Partial<Event>;
@@ -23,7 +23,7 @@ export function AssignmentSelector(props: AssignmentSelectorProps) {
     if (assignedInfluencers.data === undefined || assignedInfluencers.data.length === 0)
         return <div>Undefined...</div>;
     return (
-        (<TextField
+        <TextField
             id="influencer"
             select
             disabled={targetAssignment !== undefined}
@@ -36,7 +36,7 @@ export function AssignmentSelector(props: AssignmentSelectorProps) {
                 select: {
                     value: timelineEvent.assignments?.[0].id ?? "",
                     onChange: onAssignmentChange,
-                }
+                },
             }}
         >
             {assignedInfluencers.data.map((assignment, i, a) => {
@@ -60,6 +60,6 @@ export function AssignmentSelector(props: AssignmentSelectorProps) {
                     </MenuItem>
                 );
             })}
-        </TextField>)
+        </TextField>
     );
 }

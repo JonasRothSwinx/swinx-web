@@ -19,7 +19,7 @@ import EventContentMulti from "./EventContentMulti";
 import { Query, QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AddIcon, DeleteIcon, EditIcon, RefreshIcon } from "@/app/Definitions/Icons";
 import { Nullable, highlightData } from "@/app/Definitions/types";
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 import { useMemo, useState } from "react";
 import { useConfirm } from "material-ui-confirm";
 import { TimelineEventDialog } from "@/app/Components";
@@ -50,7 +50,7 @@ export function EventDisplay(props: EventProps) {
         queryKey: ["timelineEvent", id, props.event, tempId],
         queryFn: () => {
             if (tempId !== undefined) return props.event;
-            return dataClient.timelineEvent.get(id);
+            return dataClient.event.get(id);
         },
     });
     const campaign = useQuery({
@@ -65,7 +65,7 @@ export function EventDisplay(props: EventProps) {
     const EventHandlers = {
         deleteFunction: async () => {
             if (!event.data || !event.data.id) return;
-            await dataClient.timelineEvent
+            await dataClient.event
                 .delete(event.data.id)
                 .then(() => console.log(`Deleted event ${event.data.id}`))
                 .catch((e) => console.error(e));
@@ -74,7 +74,7 @@ export function EventDisplay(props: EventProps) {
             if (!event.data) return;
             if (!event.data.id) return console.error("Event has no id");
             console.log("Updating event", updatedData, event.data);
-            const newEvent = await dataClient.timelineEvent.update({
+            const newEvent = await dataClient.event.update({
                 id: event.data.id,
                 updatedData,
             });

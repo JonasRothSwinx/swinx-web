@@ -22,7 +22,7 @@ export type groupBy = "day" | "week";
 // };
 
 export type TypedEventGroup = {
-    type: Events.eventType;
+    type: Events.EventType;
     events: groupableEvent[];
 };
 

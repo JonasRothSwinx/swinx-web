@@ -184,7 +184,7 @@ function parseEmailTrigger(data: ListEmailTriggersQueryItem): EmailTriggerData |
 
         const parsedParentEvent: EmailTriggerData["parentEvent"] = {
             id: rawParentEvent.id,
-            type: rawParentEvent.timelineEventType as Events.eventType,
+            type: rawParentEvent.timelineEventType as Events.EventType,
             info: rawParentEvent.info,
             date: rawParentEvent.date,
             campaign: { id: rawEvent.campaign.id },
@@ -206,7 +206,7 @@ function parseEmailTrigger(data: ListEmailTriggersQueryItem): EmailTriggerData |
 
         const parsedEvent: EmailTriggerData["event"] = {
             id: rawEvent.id,
-            type: rawEvent.timelineEventType as Events.eventType,
+            type: rawEvent.timelineEventType as Events.EventType,
             info: rawEvent.info,
             date: rawEvent.date,
             campaign: { id: rawEvent.campaign.id },

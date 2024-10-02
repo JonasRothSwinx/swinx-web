@@ -27,4 +27,4 @@
 //     return datClientConfig.queryClient;
 // }
 
-export * from "@/app/ServerFunctions/database/dataClients/config";
+export * from "@dataClient/_config";

@@ -56,5 +56,5 @@ function renderEmail({ response, influencerName, customerCompany, feedback }: Re
         customerCompany,
         feedback,
     });
-    return { html: renderAsync(mailJSX), text: renderAsync(mailJSX, { plainText: true }) };
+    return { html: render(mailJSX), text: render(mailJSX, { plainText: true }) };
 }

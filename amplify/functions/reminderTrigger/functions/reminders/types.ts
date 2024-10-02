@@ -16,4 +16,4 @@ type GroupedTriggerLevel = {
     [key in Exclude<EmailTriggers.emailLevel, "none">]?: EmailTriggerData[];
 };
 export type GroupedTrigger = { [key in EmailTriggers.emailTriggerType]?: GroupedTriggerLevel };
-export type TriggerGroup = { [key in Events.eventType]?: GroupedTrigger };
+export type TriggerGroup = { [key in Events.EventType]?: GroupedTrigger };

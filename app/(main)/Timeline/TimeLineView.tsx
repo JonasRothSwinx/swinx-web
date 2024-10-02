@@ -1,19 +1,15 @@
 import { Campaign, Event, Influencer, Influencers } from "@/app/ServerFunctions/types";
 import { Box, CircularProgress, Grid2 as Grid, SxProps, Typography } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
-import stylesExporter from "../styles/stylesExporter";
 import TimelineControls from "./Components/TimelineControls";
 import TimelineViewItem from "./Components/TimelineViewItem";
 
-import database from "@/app/ServerFunctions/database/dbOperations";
+import { dataClient } from "@dataClient";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { general as styles } from "../styles/stylesExporter";
 import { EventGroup, groupBy, groupEvents } from "./Functions/groupEvents";
 import { TimelineEventDialog, QueryDebugDisplay } from "@/app/Components";
-
-const dialogStyles = stylesExporter.dialogs;
-const timelineStyles = stylesExporter.timeline;
+import { queryKeys } from "../queryClient/keys";
 
 type orientation = "horizontal" | "vertical";
 type controlsPosition = "before" | "after" | "none";
@@ -64,7 +60,9 @@ export default function TimelineView(props: TimelineViewProps) {
     const events = useQuery({
         queryKey: [campaign.id, "events"],
         queryFn: async () => {
-            const events = await database.timelineEvent.listByCampaign(campaign.id);
+            const events = await dataClient.event.list.by.campaign({
+                campaignId: campaign.id,
+            });
             events.map((event) => {
                 queryClient.setQueryData(["event", event.id], event);
             });
@@ -90,7 +88,7 @@ export default function TimelineView(props: TimelineViewProps) {
     });
 
     const userGroups = useQuery({
-        queryKey: ["userGroups"],
+        queryKey: queryKeys.currentUser.userGroups(),
         queryFn: () => {
             return getUserGroups();
         },

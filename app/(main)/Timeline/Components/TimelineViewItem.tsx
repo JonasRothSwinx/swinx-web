@@ -1,24 +1,9 @@
-import { CancelIcon, EditIcon } from "@/app/Definitions/Icons";
 import { Event } from "@/app/ServerFunctions/types";
 import { dayjs } from "@/app/utils";
-import {
-    Box,
-    Grid2 as Grid,
-    IconButton,
-    SxProps,
-    Table,
-    TableHead,
-    Typography,
-} from "@mui/material";
-import { GridDeleteForeverIcon } from "@mui/x-data-grid";
-import { useMemo, useState } from "react";
-import stylesExporter from "../../styles/stylesExporter";
+import { SxProps, Table, TableHead, Typography } from "@mui/material";
+import { useMemo } from "react";
 import { EventGroup, groupBy } from "../Functions/groupEvents";
-import EventGroupDisplay from "./TimelineViewItemTypedGroup";
 import TypedEventGroupDisplay from "./TimelineViewItemTypedGroup";
-
-const dialogStyles = stylesExporter.dialogs;
-const timelineStyles = stylesExporter.timeline;
 
 interface TimelineViewItemProps {
     campaignId: string;

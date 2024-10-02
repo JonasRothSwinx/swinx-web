@@ -2,7 +2,7 @@
 
 import { Nullable, PartialWith } from "@/app/Definitions/types";
 import { Influencer, Candidate } from "@/app/ServerFunctions/types";
-import client from "../.dbclient";
+import { client } from "../_dbclient";
 
 interface CreateCandidateParams {
     candidate: Omit<Candidate, "id">;

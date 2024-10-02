@@ -5,7 +5,9 @@ import { Nullable } from "@/app/Definitions/types";
 import { TextFieldWithTooltip } from "@/app/Components/Dialogs/Components";
 
 const AssignmentSelectorCreator: {
-    [key in Events.eventType | "none"]: (props: Parameters<typeof AssignmentSelector>[0]) => Nullable<JSX.Element>;
+    [key in Events.EventType | "none"]: (
+        props: Parameters<typeof AssignmentSelector>[0],
+    ) => Nullable<JSX.Element>;
 } = {
     ImpulsVideo: (props) => <AssignmentSelector {...props} />,
     Invites: (props) => <AssignmentSelector {...props} />,
@@ -29,7 +31,14 @@ interface EventTypeSelectorProps {
     onTypeChange: (e: SelectChangeEvent<unknown>) => void;
 }
 export function GeneralDetails(props: EventTypeSelectorProps) {
-    const { event: timelineEvent, onInfluencerChange, onTypeChange, editing, targetAssignment, campaignId } = props;
+    const {
+        event: timelineEvent,
+        onInfluencerChange,
+        onTypeChange,
+        editing,
+        targetAssignment,
+        campaignId,
+    } = props;
 
     const allowedTypes = getAllowedEventTypes(targetAssignment).toSorted((a, b) => {
         const displayNameA = Events.getDisplayName(a);
@@ -37,7 +46,10 @@ export function GeneralDetails(props: EventTypeSelectorProps) {
         return displayNameA.localeCompare(displayNameB);
     });
     return (
-        <DialogContent dividers sx={{ "& .MuiFormControl-root": { flexBasis: "100%" } }}>
+        <DialogContent
+            dividers
+            sx={{ "& .MuiFormControl-root": { flexBasis: "100%" } }}
+        >
             <TextFieldWithTooltip
                 select
                 disabled={editing}
@@ -59,7 +71,10 @@ export function GeneralDetails(props: EventTypeSelectorProps) {
             >
                 {allowedTypes.map((x, i) => {
                     return (
-                        <MenuItem key={`eventtype${i}`} value={x}>
+                        <MenuItem
+                            key={`eventtype${i}`}
+                            value={x}
+                        >
                             {Events.getDisplayName(x)}
                         </MenuItem>
                     );

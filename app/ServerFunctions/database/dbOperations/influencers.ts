@@ -1,6 +1,6 @@
 "use server";
 
-import client from "./.dbclient";
+import { client } from "./_dbclient";
 import { EmailTriggers, Influencer, Influencers } from "@/app/ServerFunctions/types";
 import { Nullable, PartialWith } from "@/app/Definitions/types";
 import { Schema } from "@/amplify/data/resource";

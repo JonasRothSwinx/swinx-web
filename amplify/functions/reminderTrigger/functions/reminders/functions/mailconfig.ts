@@ -7,7 +7,7 @@ import { SendBulkEmailResponse } from "@aws-sdk/client-sesv2";
 
 type SendFunction = (props: SendMailProps) => Promise<SendBulkEmailResponse | void>;
 type MailConfig = {
-    [key in Events.eventType]: {
+    [key in Events.EventType]: {
         [key in EmailTriggers.emailTriggerType]: Nullable<SendFunction>;
     };
 };

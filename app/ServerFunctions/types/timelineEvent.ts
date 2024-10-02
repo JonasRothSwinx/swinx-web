@@ -20,7 +20,7 @@ export const multiEventValues = ["Webinar"] as const;
 export type multiEventType = (typeof multiEventValues)[number];
 
 export const eventValues = [...singleEventValues, ...multiEventValues] as const;
-export type eventType = Prettify<singleEventType | multiEventType>;
+export type EventType = Prettify<singleEventType | multiEventType>;
 
 export function isEventReference(event: unknown): event is EventReference {
     const testEvent = event as EventReference;
@@ -29,7 +29,7 @@ export function isEventReference(event: unknown): event is EventReference {
         testEvent !== null &&
         typeof testEvent.id === "string" &&
         typeof testEvent.type === "string" &&
-        eventValues.includes(testEvent.type as eventType)
+        eventValues.includes(testEvent.type as EventType)
     );
 }
 
@@ -39,11 +39,11 @@ export function isTimelineEvent(event: unknown): event is Event {
         typeof testEvent === "object" &&
         testEvent !== null &&
         typeof testEvent.type === "string" &&
-        eventValues.includes(testEvent.type as eventType)
+        eventValues.includes(testEvent.type as EventType)
     );
 }
-export function isTimelineEventType(type: unknown): type is eventType {
-    return typeof type === "string" && eventValues.includes(type as eventType);
+export function isTimelineEventType(type: unknown): type is EventType {
+    return typeof type === "string" && eventValues.includes(type as EventType);
 }
 export function validate(testData: Partial<Event>): testData is Event {
     const testKeys: (keyof Event)[] = ["type", "campaign"];
@@ -52,11 +52,11 @@ export function validate(testData: Partial<Event>): testData is Event {
     if (!isTimelineEventType(type)) return false;
     return true;
 }
-export type EventReference = { id: string; type?: eventType };
+export type EventReference = { id: string; type?: EventType };
 export type EventStatus = NonNullable<Schema["TimelineEvent"]["type"]["status"]>;
 type EventCommon = {
     id?: string;
-    type: eventType;
+    type: EventType;
     createdAt?: string;
     updatedAt?: string;
     date?: string;
@@ -210,7 +210,7 @@ export function isWebinarEvent(event: Event): event is Webinar {
 //#endregion Multi Event Types
 
 //#region Display
-export const EventTypeDisplayName: { [key in eventType]: { sing: string; plur: string } } = {
+export const EventTypeDisplayName: { [key in EventType]: { sing: string; plur: string } } = {
     ImpulsVideo: { sing: "Impulsvideo", plur: "Impulsvideos" },
     Invites: { sing: "Einladung", plur: "Einladungen" },
     Post: { sing: "Textbeitrag", plur: "Textbeiträge" },
@@ -220,8 +220,8 @@ export const EventTypeDisplayName: { [key in eventType]: { sing: string; plur: s
 };
 export function getDisplayName(entry: string, form: "sing" | "plur" = "sing") {
     switch (true) {
-        case eventValues.includes(entry as eventType): {
-            return EventTypeDisplayName[entry as eventType][form];
+        case eventValues.includes(entry as EventType): {
+            return EventTypeDisplayName[entry as EventType][form];
         }
         default: {
             return entry;

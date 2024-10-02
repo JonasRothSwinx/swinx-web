@@ -1,9 +1,8 @@
-import { randomDesk, randomId } from "@mui/x-data-grid-generator";
-import { Assignment, Assignments } from "../../types";
 import { PartialWith } from "@/app/Definitions/types";
-import { config } from ".";
+import { randomDesk, randomId } from "@mui/x-data-grid-generator";
+import { dataClient } from ".";
+import { Assignment, Assignments } from "../../types";
 import database from "../dbOperations";
-import { dataClient } from "..";
 
 /**
  * Assignment database operations
@@ -54,7 +53,7 @@ async function createAssignment({ campaignId }: CreateAssignment): Promise<Assig
  * @returns The list of assignments
  */
 async function listAssignments(): Promise<Assignment[]> {
-    const queryClient = config.getQueryClient();
+    const queryClient = dataClient.config.getQueryClient();
     //Return cached data if available
 
     const assignments = await database.assignment.list();
@@ -75,7 +74,7 @@ async function listAssignments(): Promise<Assignment[]> {
  * @returns The assignment object
  */
 async function getAssignment(id: string): Promise<Assignment> {
-    const queryClient = config.getQueryClient();
+    const queryClient = dataClient.config.getQueryClient();
     //Return cached data if available
     // const cachedAssignment = queryClient.getQueryData(["assignment", id]) as Assignment.AssignmentFull;
     // if (cachedAssignment) {
@@ -98,7 +97,7 @@ async function updateAssignment(
     updatedData: PartialWith<Assignment, "id">,
     previousAssignment: Assignment,
 ): Promise<Assignment> {
-    const queryClient = config.getQueryClient();
+    const queryClient = dataClient.config.getQueryClient();
     const campaignId = previousAssignment.campaign.id;
     await database.assignment.update(updatedData);
     const updatedAssignment = { ...previousAssignment, ...updatedData };
@@ -122,7 +121,7 @@ async function updateAssignment(
  * @returns void
  */
 async function deleteAssignment(id: string): Promise<void> {
-    const queryClient = config.getQueryClient();
+    const queryClient = dataClient.config.getQueryClient();
     await database.assignment.delete({ id });
     queryClient.setQueryData(["assignment", id], undefined);
     queryClient.setQueryData(["assignments"], (prev: Assignment[]) =>
@@ -138,7 +137,7 @@ async function deleteAssignment(id: string): Promise<void> {
  * @returns The list of assignments
  */
 async function byCampaign(campaignId: string): Promise<Assignment[]> {
-    const queryClient = config.getQueryClient();
+    const queryClient = dataClient.config.getQueryClient();
     //Return cached data if available
     // const cachedAssignments = queryClient.getQueryData(["assignments", campaignId]) as Assignment[];
     // if (cachedAssignments) {
@@ -163,13 +162,13 @@ async function byCampaign(campaignId: string): Promise<Assignment[]> {
  */
 
 async function resolveAssignmentReferences(assignment: Assignments.Min): Promise<Assignment> {
-    const queryClient = config.getQueryClient();
+    const queryClient = dataClient.config.getQueryClient();
     //use cached data if available
     // const cachedAssignment = queryClient.getQueryData(["assignment", assignment.id]) as Assignment.AssignmentFull;
     // if (cachedAssignment) {
     //     return cachedAssignment;
     // }
-    const timelineEvents = dataClient.timelineEvent.byAssignment(assignment.id);
+    const timelineEvents = dataClient.event.list.by.assignment(assignment.id);
     let influencer = null;
     if (assignment.influencer && assignment.influencer.id) {
         influencer = dataClient.influencer.get(assignment.influencer.id);

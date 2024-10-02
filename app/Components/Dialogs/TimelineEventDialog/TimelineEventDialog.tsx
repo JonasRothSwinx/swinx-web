@@ -24,11 +24,10 @@ import { dayjs, Dayjs } from "@/app/utils";
 import { UseMutationResult, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import "dayjs/locale/de";
 import { useEffect, useMemo, useState } from "react";
-import stylesExporter, { timeline } from "@/app/(main)/styles/stylesExporter";
 import DateSelector from "./EventDetails/DateSelector";
 import { submitEvent } from "./actions/submitEvent";
 import EventDetails from "./EventDetails/EventDetails";
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 import sxStyles from "../sxStyles";
 import EmailTriggerMenu from "./EmailTriggerMenu";
 import { GeneralDetails } from "./EventDetails/GeneralDetails";
@@ -37,8 +36,7 @@ import { random, randomId } from "@mui/x-data-grid-generator";
 import { createEventAssignment } from "@/amplify/functions/reminderTrigger/graphql/mutations";
 import { validate } from "@/app/ServerFunctions/types/projectManagers";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
-
-export const styles = stylesExporter.dialogs;
+import { queryKeys } from "@/app/(main)/queryClient/keys";
 
 // export type dates = {
 //     number: number;
@@ -54,7 +52,7 @@ type TimelineEventDialogProps = {
 //######################
 //#region DefaultValues
 const typeDefault: {
-    [key in Events.eventType]: Partial<Event>;
+    [key in Events.EventType]: Partial<Event>;
 } = {
     ImpulsVideo: {
         type: "ImpulsVideo",
@@ -90,7 +88,7 @@ const typeDefault: {
         childEvents: [],
     },
 };
-const EventHasEmailTriggers: { [key in Events.eventType | "none"]: boolean } = {
+const EventHasEmailTriggers: { [key in Events.EventType | "none"]: boolean } = {
     none: false,
 
     Invites: true,
@@ -132,7 +130,7 @@ export function TimelineEventDialog(props: TimelineEventDialogProps) {
     );
     const [updatedData, setUpdatedData] = useState<Partial<Event>[]>([{}]);
     const { data: userGroups } = useQuery({
-        queryKey: ["userGroups"],
+        queryKey: queryKeys.currentUser.userGroups(),
         queryFn: async () => {
             return getUserGroups();
         },
@@ -510,7 +508,7 @@ export function TimelineEventDialog(props: TimelineEventDialogProps) {
             mutationFn: async (isCompleted: boolean) => {
                 const event = timelineEvent;
                 if (!event.id) throw new Error("Event has no id");
-                const updatedEvent = await dataClient.timelineEvent.update({
+                const updatedEvent = await dataClient.event.update({
                     id: event.id,
                     updatedData: { isCompleted },
                 });
@@ -563,13 +561,16 @@ export function TimelineEventDialog(props: TimelineEventDialogProps) {
         <Dialog
             // ref={modalRef}
             open
-            className={styles.dialog}
-            onClose={EventHandlers.handleClose(false)}
+            className={"dialog timelineDialog"}
+            onClose={(event, reason) => {
+                if (reason === "backdropClick" || reason === "escapeKeyDown") return;
+                EventHandlers.handleClose(false);
+            }}
             PaperProps={{
                 component: "form",
                 onSubmit: EventHandlers.onSubmit,
             }}
-            sx={sxStyles.TimelineEventDialog}
+            sx={sxStyles.DialogDefault}
         >
             <Box
                 id="EventTriggerSplit"
@@ -665,7 +666,7 @@ function EventCompleteCheckbox(props: EventCompleteCheckboxProps) {
         queryKey: ["timelineEvent", eventId],
         queryFn: async () => {
             console.log(`Getting event ${eventId} in EventCompleteCheckbox`);
-            return dataClient.timelineEvent.get(eventId);
+            return dataClient.event.get(eventId);
         },
     });
     const isPlaceholder = event.data?.assignments[0]?.isPlaceholder ?? true;

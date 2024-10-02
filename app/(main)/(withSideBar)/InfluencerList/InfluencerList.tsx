@@ -1,5 +1,6 @@
 import { Schema } from "@/amplify/data/resource";
-import { InfluencerDialog, LoadingElement } from "@/app/Components";
+import { InfluencerDialog } from "@/app/Components";
+import { LoadingElement } from "@/app/Components/Loading";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import { Influencers } from "@/app/ServerFunctions/types";
 import { useAuthenticator } from "@aws-amplify/ui-react";
@@ -33,13 +34,14 @@ import { generateClient } from "aws-amplify/api";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 import { range } from "@/app/Definitions/utility";
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 import { deDE as coreDeDE } from "@mui/material/locale";
 import { deDE } from "@mui/x-data-grid/locales";
 import { deDE as pickersDeDE } from "@mui/x-date-pickers/locales";
 import { QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
 import { animals, colors, names, uniqueNamesGenerator } from "unique-names-generator";
 import { GridToolbarDensitySelector } from "@mui/x-data-grid";
+import { useDemoData } from "@mui/x-data-grid-generator";
 
 const theme = createTheme({}, { deDE, pickersDeDE, coreDeDE });
 
@@ -214,11 +216,11 @@ function InfluencerList() {
 
             headerAlign: "center",
             align: "center",
-            valueGetter: (value: Influencers.Full, row, params, apiRef) => {
-                console.log({ value, row, params, apiRef });
-                const influencer = row as Influencers.Full;
-                return row.email;
-            },
+            // valueGetter: (value: Influencers.Full, row, params, apiRef) => {
+            //     // console.log({ value, row, params, apiRef });
+            //     const influencer = row as Influencers.Full;
+            //     return row.email;
+            // },
         },
         {
             field: "actions",
@@ -246,10 +248,21 @@ function InfluencerList() {
             },
         },
     ];
+    const { data } = useDemoData({
+        dataSet: "Employee",
+        rowLength: 100,
+        maxColumns: 6,
+    });
     const sx: SxProps = {
         "&": {
             m: 2,
             background: "white",
+            flex: 1,
+
+            ".MuiDataGrid-main": {
+                height: "100%",
+                maxHeight: "100%",
+            },
             ".MuiDataGrid-cell": {
                 // color: "primary.main",
                 borderLeft: "1px solid black",
@@ -268,14 +281,18 @@ function InfluencerList() {
     if (influencers.isLoading)
         return LoadingElement({ textMessage: "Lade Influencer", hideLogo: true });
     return (
-        <>
+        <Box
+            id="influencerListContainer"
+            sx={sx}
+        >
             {Dialogs[openDialog]()}
             <ThemeProvider theme={theme}>
                 <DataGrid
-                    sx={sx}
                     localeText={deDE.components.MuiDataGrid.defaultProps.localeText}
                     rows={influencers.data ?? []}
                     columns={columns}
+                    // {...data}
+
                     // rowModesModel={rowModesModel}
                     // onRowModesModelChange={handleRowModesModelChange}
                     // onRowEditStop={handleRowEditStop}
@@ -295,10 +312,19 @@ function InfluencerList() {
                             isPending: influencers.isFetching,
                         },
                     }}
-                    autoHeight={true}
+                    initialState={{
+                        columns: {
+                            columnVisibilityModel: {
+                                id: false,
+                            },
+                        },
+                    }}
+                    // pageSizeOptions={[5, 10, 20, 50, 100]}
+                    autoPageSize
+                    // autoHeight={true}
                 />
             </ThemeProvider>
-        </>
+        </Box>
     );
     // return (
     //     <ul>

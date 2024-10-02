@@ -8,7 +8,7 @@ import { blue } from "@mui/material/colors";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { ConfirmProvider, ConfirmProviderProps } from "material-ui-confirm";
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import CampaignDetails from "./CampaignDetails";
 

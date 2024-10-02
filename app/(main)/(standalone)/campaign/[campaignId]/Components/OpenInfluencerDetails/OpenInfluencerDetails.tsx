@@ -22,7 +22,7 @@ import { randomDesk, randomId } from "@mui/x-data-grid-generator";
 import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import AssignedInfluencer from "./AssignedInfluencer";
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 
 type OpenInfluencerDetailsProps = {
     influencers: Influencers.Full[];

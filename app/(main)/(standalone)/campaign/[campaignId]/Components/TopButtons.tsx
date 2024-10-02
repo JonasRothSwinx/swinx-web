@@ -1,5 +1,5 @@
 import { CloseIcon, DeleteIcon, RefreshIcon } from "@/app/Definitions/Icons";
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 import { Campaign } from "@/app/ServerFunctions/types";
 import { Box, Button, IconButton, Skeleton, Typography } from "@mui/material";
 import Link from "next/link";

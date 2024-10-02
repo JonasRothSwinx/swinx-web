@@ -1,5 +1,6 @@
-import { DataType, FilePreview, LoadingElement } from "@/app/Components";
-import { dataClient } from "@/app/ServerFunctions/database";
+import { DataType, FilePreview } from "@/app/Components";
+import { LoadingElement } from "@/app/Components/Loading";
+import { dataClient } from "@dataClient";
 import {
     Accordion,
     AccordionDetails,
@@ -34,7 +35,7 @@ export function MediaPreview({ campaignId }: MediaPreview) {
                     /* queryClient.getQueryData<Event>(["timelineEvent", eventId]) ?? */
                     await queryClient.fetchQuery({
                         queryKey: ["timelineEvent", eventId],
-                        queryFn: async () => dataClient.timelineEvent.get(eventId),
+                        queryFn: async () => dataClient.event.get(eventId),
                     });
                 // console.log({ item, event });
                 if (event && event.status === "WAITING_FOR_APPROVAL") {
@@ -156,7 +157,7 @@ function EventMediaDisplay({ eventId, files }: EventMediaDisplayProps) {
         queryKey: ["timelineEvent", eventId],
         queryFn: async ({ queryKey }) => {
             const [_, eventId] = queryKey;
-            return dataClient.timelineEvent.get(eventId);
+            return dataClient.event.get(eventId);
         },
     });
     const sx: SxProps = {
@@ -212,7 +213,7 @@ function EventDescription({ eventId }: { eventId: string }) {
         queryKey: ["timelineEvent", eventId],
         queryFn: async ({ queryKey }) => {
             const [_, eventId] = queryKey;
-            return dataClient.timelineEvent.get(eventId);
+            return dataClient.event.get(eventId);
         },
     });
 
@@ -250,7 +251,7 @@ function EventMediaButtons({ eventId, campaignId }: EventMediaButtonsProps) {
         queryKey: ["timelineEvent", eventId],
         queryFn: async ({ queryKey }) => {
             const [_, eventId] = queryKey;
-            return dataClient.timelineEvent.get(eventId);
+            return dataClient.event.get(eventId);
         },
     });
 
@@ -265,7 +266,7 @@ function EventMediaButtons({ eventId, campaignId }: EventMediaButtonsProps) {
     };
     const approve = useMutation({
         mutationFn: async () => {
-            const res = await dataClient.timelineEvent.update({
+            const res = await dataClient.event.update({
                 id: eventId,
                 updatedData: {
                     status: "APPROVED",

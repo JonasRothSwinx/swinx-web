@@ -1,20 +1,18 @@
-import { CustomErrorBoundary, LoadingPage, QueryDebugDisplay } from "@/app/Components";
+import TimelineView from "@/app/(main)/Timeline/TimeLineView";
+import { CustomErrorBoundary } from "@/app/Components";
+import { LoadingPage } from "@/app/Components/Loading";
 import { highlightData } from "@/app/Definitions/types";
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 import { Assignment, Campaign } from "@/app/ServerFunctions/types";
 import { Placeholder } from "@aws-amplify/ui-react";
-import { Box, Dialog, Grid2 as Grid, SxProps, Typography } from "@mui/material";
+import { Box, Grid2 as Grid, SxProps } from "@mui/material";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import TimelineView from "@/app/(main)/Timeline/TimeLineView";
-import stylesExporter from "@/app/(main)/styles/stylesExporter";
 import CustomerDetails from "./Components/CustomerDetails";
 import OpenInfluencerDetails from "./Components/OpenInfluencerDetails/OpenInfluencerDetails";
 import CampaignDetailsButtons from "./Components/TopButtons";
-import { redirect, useRouter } from "next/navigation";
 import { MediaPreview } from "./MediaPreview";
-
-const styles = stylesExporter.campaignDetails;
 
 interface CampaignDetailsProps {
     campaignId: string;
@@ -158,7 +156,13 @@ export default function CampaignDetails({ campaignId }: CampaignDetailsProps) {
             },
         };
     }, []);
-    if (campaign.isLoading) return <LoadingPage textMessage="Kampagne wird geladen" spinnerSize={100} />;
+    if (campaign.isLoading)
+        return (
+            <LoadingPage
+                textMessage="Kampagne wird geladen"
+                spinnerSize={100}
+            />
+        );
     if (!campaign.data) return <Placeholder />;
     return (
         <Box
@@ -174,7 +178,10 @@ export default function CampaignDetails({ campaignId }: CampaignDetailsProps) {
             // }}
             // open={isOpen}
         >
-            <Box id="campaignDetailsContent" className={"campaignDetailsContent"}>
+            <Box
+                id="campaignDetailsContent"
+                className={"campaignDetailsContent"}
+            >
                 <CustomErrorBoundary message="Error loading.... Buttons?">
                     <CampaignDetailsButtons
                         updateCampaign={EventHandlers.updateCampaign}

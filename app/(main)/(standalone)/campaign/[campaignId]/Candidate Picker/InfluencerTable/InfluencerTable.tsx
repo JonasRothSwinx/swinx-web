@@ -1,4 +1,4 @@
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 import { Candidate, Influencers } from "@/app/ServerFunctions/types";
 import { Box, Skeleton, SxProps, Typography } from "@mui/material";
 import {

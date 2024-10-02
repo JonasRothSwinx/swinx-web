@@ -4,7 +4,7 @@ import emailClient from "@/app/Emails";
 import templateDefinitions from "@/app/Emails/templates";
 import { templateVariables as inviteTemplateVariables } from "@/app/Emails/templates/campaignInvite";
 import { SignatureTemplateVariables } from "@/app/Emails/templates/signature";
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 import { getInviteBaseUrl, getUserGroups } from "@/app/ServerFunctions/serverActions";
 import {
     Assignment,
@@ -20,6 +20,7 @@ import { Box, CircularProgress, IconButton, SxProps, Typography } from "@mui/mat
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { encode } from "punycode";
 import { use, useMemo } from "react";
+import { queryKeys } from "@/app/(main)/queryClient/keys";
 //#region Definitions
 //#endregion
 
@@ -262,7 +263,7 @@ interface AdminRefreshButtonProps {
 }
 function AdminRefreshButton({ refreshTemplates, isRefetching }: AdminRefreshButtonProps) {
     const userGroups = useQuery({
-        queryKey: ["userGroups"],
+        queryKey: queryKeys.currentUser.userGroups(),
         queryFn: () => getUserGroups(),
     });
     const style = useMemo(

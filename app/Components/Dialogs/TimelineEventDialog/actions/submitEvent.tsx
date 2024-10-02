@@ -1,4 +1,4 @@
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 import { Prettify } from "@/app/Definitions/types";
 import { dayjs, Dayjs } from "@/app/utils";
 import {
@@ -45,7 +45,7 @@ async function updateEvent(props: updateEventProps) {
     // if (!dates.dates[0]) throw new Error("No date provided for event update");
     if (!updatedData) return event;
     updatedData.info = { ...event.info, ...updatedData.info };
-    const updatedEvent = await dataClient.timelineEvent.update({
+    const updatedEvent = await dataClient.event.update({
         id: event.id,
         updatedData: updatedData,
     });
@@ -64,7 +64,7 @@ async function createEvent(props: createEventProps) {
     //         return event;
     //     })
     //     .filter((x): x is Event => x !== undefined);
-    const createdEvent = await dataClient.timelineEvent.create(newEvent);
+    const createdEvent = await dataClient.event.create(newEvent);
     createdEvent.emailTriggers = applyEmailTriggerDefaults({ event: createdEvent });
     createEmailTriggers({ event: createdEvent });
     return createdEvent;
@@ -105,7 +105,7 @@ async function createEmailTriggers({ event }: createEmailTriggersProps) {
                     console.log("Telling dataClient to create email trigger", trigger);
                     const createdTrigger = await dataClient.emailTrigger.create(trigger);
                     console.log("Created email trigger", createdTrigger);
-                })
+                }),
             );
         }
     } catch (error) {

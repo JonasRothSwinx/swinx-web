@@ -1,10 +1,4 @@
-import {
-    createNewCampaign,
-    deleteCampaign,
-    dummyListCampaigns,
-    getCampaign,
-    listCampaigns,
-} from "./campaigns";
+import { campaign } from "./campaigns";
 import {
     createCustomer,
     deleteCustomer,
@@ -53,13 +47,6 @@ import {
     listProjectManagers,
     updateProjectManager,
 } from "./projectManagers";
-
-const campaigns = {
-    create: createNewCampaign,
-    get: getCampaign,
-    delete: deleteCampaign,
-    list: listCampaigns,
-};
 
 const customers = {
     create: createCustomer,
@@ -127,11 +114,11 @@ const projectManagers = {
 
 const debug = {
     debugEventList: dummy,
-    debugCampaignList: dummyListCampaigns,
+    // debugCampaignList: dummyListCampaigns,
 };
 
 const database = {
-    campaign: campaigns,
+    campaign,
     customer: customers,
     influencer: influencers,
     timelineEvent: timelineEvents,
@@ -141,5 +128,6 @@ const database = {
     emailTrigger: emailTriggers,
     projectManager: projectManagers,
 };
-
+export { database };
+/**@deprecated Don't use the default export  */
 export default database;

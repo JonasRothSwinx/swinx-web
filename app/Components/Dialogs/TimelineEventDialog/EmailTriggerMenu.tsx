@@ -1,4 +1,4 @@
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 import {
     Box,
     Checkbox,
@@ -25,7 +25,7 @@ interface EmailTriggerMenuProps {
 }
 
 const emailTypeDisplayNames: {
-    [key in Events.eventType]: Nullable<{
+    [key in Events.EventType]: Nullable<{
         [key in EmailTriggers.emailTriggerType]: string | null;
     }>;
 } = {
@@ -243,7 +243,7 @@ interface EmailLevelSelectorProps {
 function EmailLevelSelector(props: EmailLevelSelectorProps) {
     const { emailLevel, onChange } = props;
     return (
-        (<TextField
+        <TextField
             select
             label="Email Level"
             value={emailLevel}
@@ -261,7 +261,7 @@ function EmailLevelSelector(props: EmailLevelSelectorProps) {
                             horizontal: "left",
                         },
                     },
-                }
+                },
             }}
         >
             {EmailTriggers.emailLevels.map((level) => (
@@ -272,7 +272,7 @@ function EmailLevelSelector(props: EmailLevelSelectorProps) {
                     {level}
                 </MenuItem>
             ))}
-        </TextField>)
+        </TextField>
     );
 }
 interface ButtonContainerProps {

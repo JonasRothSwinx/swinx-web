@@ -1,7 +1,7 @@
 import { Events } from "@/app/ServerFunctions/types";
 
 export const isRepeatable: {
-    [key in Events.eventType | "none"]: boolean;
+    [key in Events.EventType | "none"]: boolean;
 } = {
     none: false,
 

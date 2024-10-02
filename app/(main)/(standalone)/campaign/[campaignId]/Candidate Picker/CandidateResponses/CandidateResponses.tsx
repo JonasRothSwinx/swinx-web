@@ -15,12 +15,12 @@ import {
     SxProps,
     Button,
 } from "@mui/material";
-import stylesExporter from "@/app/(main)/styles/stylesExporter";
 import { useQuery } from "@tanstack/react-query";
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 import { useMemo } from "react";
 import Components from "./Components";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
+import { queryKeys } from "@/app/(main)/queryClient/keys";
 
 interface CandidateResponsesProps {
     assignmentId: string;
@@ -36,14 +36,14 @@ export default function CandidateResponses({
     });
     const candidates = useMemo(() => {
         return assignment.data?.candidates ?? [];
-    }, [assignment]);
+    }, [assignment.data]);
     const EventHandlers = {
         assignInfluencer: (candidate: Candidates.Candidate) => {
             assignInfluencer(candidate);
         },
     };
     const userGroups = useQuery({
-        queryKey: ["userGroups"],
+        queryKey: queryKeys.currentUser.userGroups(),
         queryFn: () => getUserGroups(),
     });
     const styles: SxProps = {

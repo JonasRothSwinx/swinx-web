@@ -1,6 +1,6 @@
 import { Events } from "@/app/ServerFunctions/types";
 export const hasParentEvent: {
-    [key in Events.eventType | "none"]: Events.multiEventType | false;
+    [key in Events.EventType | "none"]: Events.multiEventType | false;
 } = {
     none: false,
 

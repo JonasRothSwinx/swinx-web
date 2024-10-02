@@ -16,15 +16,15 @@ import {
 } from "@/app/ServerFunctions/types";
 import { Tooltip, IconButton, Box } from "@mui/material";
 import { MouseEvent, useState } from "react";
-import database from "@/app/ServerFunctions/database/dbOperations";
 import { TimelineEventDialog, BudgetDialog } from "@/app/Components/Dialogs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import { Confirm } from "@/app/Components/Popups";
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 import { CandidatePickerTabs } from "../../../Candidate Picker/CandidatePicker";
 import { encodeQueryParams, getTaskPageUrl } from "@/app/utils";
 import Link from "next/link";
+import { queryKeys } from "@/app/(main)/queryClient/keys";
 
 type openDialog =
     | "none"
@@ -59,7 +59,7 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
     const queryClient = useQueryClient();
     const [openDialog, setOpenDialog] = useState<openDialog>("none");
     const userGroups = useQuery({
-        queryKey: ["userGroups"],
+        queryKey: queryKeys.currentUser.userGroups(),
         queryFn: () => getUserGroups(),
         placeholderData: [],
     });
@@ -82,7 +82,7 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
         deleteAssignment: useMutation({
             mutationFn: async () => {
                 if (!assignment) return;
-                await database.assignment.delete({ id: assignment.id });
+                await dataClient.assignment.delete(assignment.id);
             },
             onMutate: async () => {
                 await queryClient.cancelQueries({ queryKey: ["assignment", assignment.id] });

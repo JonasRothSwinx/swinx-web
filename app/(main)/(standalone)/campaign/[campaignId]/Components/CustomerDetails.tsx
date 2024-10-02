@@ -1,13 +1,19 @@
 import { Campaign, Customer, Customers } from "@/app/ServerFunctions/types";
 import { MouseEvent, SyntheticEvent, useEffect, useState } from "react";
 import { CustomerDialog } from "@/app/Components/Dialogs";
-import { Accordion, AccordionDetails, AccordionSummary, Box, IconButton, Tab } from "@mui/material";
-import stylesExporter from "@/app/(main)/styles/stylesExporter";
+import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
+    Box,
+    IconButton,
+    Link,
+    SxProps,
+    Tab,
+} from "@mui/material";
 import { AddIcon, EditIcon, ExpandMoreIcon, MailIcon } from "@/app/Definitions/Icons";
 import Grid from "@mui/material/Grid2/Grid2";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
-
-const styles = stylesExporter.campaignDetails;
 
 type CustomerDetailsProps = {
     customers: Customer[];
@@ -30,13 +36,13 @@ function getCustomerData(customers: Customer[]): CustomerData[] {
                 name: "",
                 value: customer.email,
                 insertBefore: (
-                    <a
+                    <Link
                         href={`mailto:${customer.email}`}
                         rel="noreferrer"
                         target="_blank"
                     >
                         <MailIcon />
-                    </a>
+                    </Link>
                 ),
             },
         ] satisfies CustomerData;
@@ -101,6 +107,14 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
             />
         ),
     };
+    const sx: SxProps = {
+        "& .summaryWithEdit": {
+            width: "100%",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+        },
+    };
     return (
         <>
             {Dialogs[openDialog]}
@@ -110,7 +124,7 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
                 variant="outlined"
             >
                 <AccordionSummary
-                    className={styles.summaryWithEdit}
+                    className={"summaryWithEdit"}
                     expandIcon={<ExpandMoreIcon />}
                     aria-controls="panel1-content"
                     id="panel1-header"
@@ -120,7 +134,7 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
                     //     },
                     // }}
                 >
-                    <div className={styles.summaryWithEdit}>
+                    <Box className={"summaryWithEdit"}>
                         Auftraggeber
                         <IconButton
                             className="textPrimary"
@@ -129,7 +143,7 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
                         >
                             <EditIcon />
                         </IconButton>
-                    </div>
+                    </Box>
                 </AccordionSummary>
                 <AccordionDetails>
                     <TabContext value={tab}>

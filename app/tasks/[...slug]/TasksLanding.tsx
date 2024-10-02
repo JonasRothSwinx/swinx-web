@@ -2,7 +2,7 @@ import { Box, SxProps, Typography, useMediaQuery } from "@mui/material";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { LoadingPage } from "@/app/Components";
+import { LoadingPage } from "@/app/Components/Loading";
 import Title from "./Components/Title";
 import { dataClient } from "./Functions/Database";
 import TaskDisplay from "./Task Display/TaskDisplay";
@@ -29,7 +29,7 @@ export default function TasksLanding({
     //#region Queries
 
     const task = useQuery({
-        queryKey: ["task"],
+        queryKey: ["task", assignmentId],
         queryFn: async () => {
             console.log("Task data requested");
             const response = await dataClient.getTaskDetails({
@@ -52,6 +52,7 @@ export default function TasksLanding({
 
     const parentEvent = useQuery({
         enabled: events !== null && events?.length > 0,
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: ["parentEvent"],
         queryFn: async () => {
             if (!events) throw new Error("No events found");

@@ -12,14 +12,11 @@ import {
     TextField,
 } from "@mui/material";
 import React, { useState } from "react";
-import stylesExporter from "@/app/(main)/styles/stylesExporter";
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 import { useQueryClient } from "@tanstack/react-query";
 import sxStyles from "./sxStyles";
 import { Grid2 as Grid } from "@mui/material";
 import { TextFieldWithTooltip } from "./Components";
-
-const styles = stylesExporter.dialogs;
 
 // type InfluencerDialogProps = DialogProps<Influencer.Full[], DialogType>;
 type InfluencerDialogProps = {
@@ -77,6 +74,7 @@ export function InfluencerDialog(props: InfluencerDialogProps) {
     return (
         <Dialog
             // ref={modalRef}
+            className="dialog"
             open={isOpen}
             // className={styles.dialog}
             onClose={EventHandlers.handleClose}
@@ -176,7 +174,7 @@ function ContactInfo(props: InfoProps) {
                 autoFocus
                 id="firstName"
                 name="firstName"
-                className={styles.TextField}
+                className={"textField"}
                 label="Vorname"
                 type="text"
                 value={changedData.firstName ?? editingData?.firstName ?? ""}
@@ -186,7 +184,7 @@ function ContactInfo(props: InfoProps) {
             <TextField
                 id="lastName"
                 name="lastName"
-                className={styles.TextField}
+                className={"textField"}
                 label="Nachname"
                 type="text"
                 value={changedData.lastName ?? editingData?.lastName ?? ""}
@@ -196,7 +194,7 @@ function ContactInfo(props: InfoProps) {
             <TextField
                 id="email"
                 name="email"
-                className={styles.TextField}
+                className={"textField"}
                 label="E-Mail"
                 type="email"
                 value={changedData.email ?? editingData?.email ?? ""}
@@ -209,7 +207,7 @@ function ContactInfo(props: InfoProps) {
                 disabled
                 id="emailType"
                 name="emailType"
-                className={styles.TextField}
+                className={"textField"}
                 label="E-Mail Typ"
                 type="text"
                 SelectProps={{
@@ -260,7 +258,7 @@ function IndustryInfo(props: InfoProps) {
             <TextField
                 id="industry"
                 name="industry"
-                className={styles.TextField}
+                className={"textField"}
                 label="Branche"
                 type="text"
                 value={changedData.industry ?? editingData?.industry ?? ""}
@@ -269,7 +267,7 @@ function IndustryInfo(props: InfoProps) {
             <TextField
                 id="company"
                 name="company"
-                className={styles.TextField}
+                className={"textField"}
                 label="Firma"
                 type="text"
                 value={changedData.company ?? editingData?.company ?? ""}
@@ -278,7 +276,7 @@ function IndustryInfo(props: InfoProps) {
             <TextField
                 id="position"
                 name="position"
-                className={styles.TextField}
+                className={"textField"}
                 label="Position"
                 type="text"
                 value={changedData.companyPosition ?? editingData?.companyPosition ?? ""}
@@ -316,7 +314,7 @@ function SocialMediaInfo(props: InfoProps) {
             <TextFieldWithTooltip
                 id="linkedin"
                 name="linkedin"
-                className={styles.TextField}
+                className={"textField"}
                 label="LinkedIn"
                 type="text"
                 value={changedData.linkedinProfile ?? editingData?.linkedinProfile ?? ""}
@@ -328,7 +326,7 @@ function SocialMediaInfo(props: InfoProps) {
             <TextFieldWithTooltip
                 id="followers"
                 name="followers"
-                className={styles.TextField}
+                className={"textField"}
                 label="Follower"
                 type="number"
                 value={changedData.followers ?? editingData?.followers ?? 0}
@@ -340,7 +338,7 @@ function SocialMediaInfo(props: InfoProps) {
             <TextFieldWithTooltip
                 id="topics"
                 name="topics"
-                className={styles.TextField}
+                className={"textField"}
                 label="Themen"
                 type="text"
                 value={(changedData.topic ?? editingData?.topic ?? []).join(",") ?? ""}
@@ -374,7 +372,7 @@ function Notes(props: InfoProps) {
                 minRows={3}
                 id="notes"
                 name="notes"
-                className={styles.TextField}
+                className={"textField"}
                 label="Notizen"
                 type="text"
                 value={changedData.notes ?? ""}

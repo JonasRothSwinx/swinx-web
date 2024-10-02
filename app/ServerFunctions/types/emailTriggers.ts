@@ -1,8 +1,12 @@
 import { Nullable, Prettify } from "@/app/Definitions/types";
 import { Event, Events, Customer, Influencers } from ".";
 
-export type EmailTrigger = Prettify<GeneralInfo & EventInfo & ContactInfo & EmailOverrides & State & CustomerContext>;
-export type EmailTriggerEventRef = Prettify<GeneralInfo & EventReference & ContactInfo & EmailOverrides & State>;
+export type EmailTrigger = Prettify<
+    GeneralInfo & EventInfo & ContactInfo & EmailOverrides & State & CustomerContext
+>;
+export type EmailTriggerEventRef = Prettify<
+    GeneralInfo & EventReference & ContactInfo & EmailOverrides & State
+>;
 export type EmailTriggerPure = Prettify<GeneralInfo & EmailOverrides & State>;
 
 type GeneralInfo = {
@@ -137,7 +141,7 @@ type EmailTriggerDefinition = {
     offset: timeOffset;
 };
 type EmailTriggerTypeDefaults = { [key in emailTriggerType]: EmailTriggerDefinition[] };
-type EventEmailTriggerDefault = { [key in Events.eventType]: EmailTriggerTypeDefaults };
+type EventEmailTriggerDefault = { [key in Events.EventType]: EmailTriggerTypeDefaults };
 
 export const EventEmailTriggerDefaults: EventEmailTriggerDefault = {
     Invites: {

@@ -77,7 +77,7 @@ function Declined({
     );
 }
 
-function Pending(InfluencerName: string, customerCompany: string): JSX.Element {
+function Pending(InfluencerName: string, customerCompany: string): React.JSX.Element {
     return (
         <Html
             dir="ltr"

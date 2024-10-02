@@ -14,19 +14,15 @@ import {
 } from "@mui/material";
 import { DateTimeValidationError, PickerChangeHandlerContext } from "@mui/x-date-pickers";
 import { ChangeEvent, useEffect, useState } from "react";
-import stylesExporter from "@/app/(main)/styles/stylesExporter";
 import { CustomerDialogContent } from "./CustomerDialog";
 import { Tab } from "@mui/material";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { AddIcon } from "@/app/Definitions/Icons";
-import { deleteCustomer } from "@/app/ServerFunctions/database/dbOperations/customers";
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 import sxStyles from "./sxStyles";
 import { useQuery } from "@tanstack/react-query";
 import { TextFieldWithTooltip } from "./Components";
 import { useRouter } from "next/navigation";
-
-const styles = stylesExporter.dialogs;
 
 const initialCustomer: Customer = {
     firstName: "",
@@ -53,7 +49,7 @@ type CampaignDialogProps = {
     onClose?: (hasChanged?: boolean) => void;
     editing?: boolean;
     editingData?: Campaign;
-    parent: Campaign[];
+    // parent: Campaign[];
     isOpen?: boolean;
 };
 export function CampaignDialog({
@@ -177,7 +173,7 @@ export function CampaignDialog({
         <Dialog
             // ref={modalRef}
             open={isOpen}
-            // className={styles.dialog}
+            className="dialog"
             onClose={(event, reason) => {
                 if (reason === "backdropClick" || reason === "escapeKeyDown") return;
                 EventHandlers.handleClose(false);
@@ -342,7 +338,7 @@ function BillingAdressInfo(props: InfoProps) {
                 value={billingAdress.name}
                 onChange={handleChange}
                 // fullWidth
-                className={styles.TextField}
+                className={"textField"}
                 variant="standard"
             />
             <TextFieldWithTooltip
@@ -351,7 +347,7 @@ function BillingAdressInfo(props: InfoProps) {
                 value={billingAdress.street}
                 onChange={handleChange}
                 // fullWidth
-                className={styles.TextField}
+                className={"textField"}
                 variant="standard"
             />
             <TextFieldWithTooltip
@@ -360,7 +356,7 @@ function BillingAdressInfo(props: InfoProps) {
                 value={billingAdress.city}
                 onChange={handleChange}
                 // fullWidth
-                className={styles.TextField}
+                className={"textField"}
                 variant="standard"
             />
             <TextFieldWithTooltip
@@ -369,7 +365,7 @@ function BillingAdressInfo(props: InfoProps) {
                 value={billingAdress.zip}
                 onChange={handleChange}
                 // fullWidth
-                className={styles.TextField}
+                className={"textField"}
                 variant="standard"
             />
         </DialogContent>
@@ -401,7 +397,7 @@ function BudgetInfo(props: BudgetinfoProps) {
                 value={campaign.budget ?? ""}
                 onChange={handleChange}
                 // fullWidth
-                className={styles.TextField}
+                className={"textField"}
                 variant="standard"
                 InputProps={{
                     inputProps: { min: 0, style: { textAlign: "right" } },

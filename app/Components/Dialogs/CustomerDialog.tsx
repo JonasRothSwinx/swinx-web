@@ -10,14 +10,12 @@ import {
 } from "@mui/material";
 import { Customer, Customers } from "@/app/ServerFunctions/types";
 import React, { ChangeEvent, useEffect, useState } from "react";
-import stylesExporter from "@/app/(main)/styles/stylesExporter";
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 import { Tab } from "@mui/material";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { AddIcon } from "@/app/Definitions/Icons";
 import sxStyles from "./sxStyles";
 
-const styles = stylesExporter.dialogs;
 interface InfoProps {
     customer: Partial<Customer>;
     setCustomer: (changedData: Partial<Customer>, index?: number) => void;
@@ -77,7 +75,7 @@ export function CustomerDialog(props: CustomerDialogProps) {
     return (
         <Dialog
             open
-            className={styles.dialog}
+            className={"dialog"}
             onClose={EventHandlers.handleClose()}
             PaperProps={{
                 component: "form",
@@ -258,7 +256,7 @@ function ContactInfo(props: InfoProps) {
                 autoFocus
                 id="customerNameFirst"
                 name="customerNameFirst"
-                className={styles.TextField}
+                className={"textField"}
                 label="Vorname"
                 type="text"
                 value={customer.firstName ?? ""}
@@ -271,7 +269,7 @@ function ContactInfo(props: InfoProps) {
             <TextField
                 id="customerNameLast"
                 name="customerNameLast"
-                className={styles.TextField}
+                className={"textField"}
                 label="Nachname"
                 type="text"
                 value={customer.lastName ?? ""}
@@ -283,7 +281,7 @@ function ContactInfo(props: InfoProps) {
             <TextField
                 id="customerEmail"
                 name="customerEmail"
-                className={styles.TextField}
+                className={"textField"}
                 label="E-Mail"
                 type="email"
                 value={customer.email ?? ""}
@@ -295,7 +293,7 @@ function ContactInfo(props: InfoProps) {
             <TextField
                 id="customerPhone"
                 name="customerPhone"
-                className={styles.TextField}
+                className={"textField"}
                 label="Telefon"
                 type="tel"
                 value={customer.phoneNumber ?? ""}
@@ -307,7 +305,7 @@ function ContactInfo(props: InfoProps) {
                 <TextField
                     id="customerCompanyLink"
                     name="customerCompanyLink"
-                    className={styles.TextField}
+                    className={"textField"}
                     label="LinkedIn Company Link"
                     type="url"
                     value={customer.profileLink ?? ""}
@@ -344,7 +342,7 @@ function JobInfo(props: InfoProps) {
             <TextField
                 id="customerCompany"
                 name="customerCompany"
-                className={styles.TextField}
+                className={"textField"}
                 label="Firma"
                 type="text"
                 value={changedData.company ?? ""}
@@ -355,7 +353,7 @@ function JobInfo(props: InfoProps) {
             <TextField
                 id="customerPosition"
                 name="customerPosition"
-                className={styles.TextField}
+                className={"textField"}
                 label="Position in Firma"
                 type="text"
                 value={changedData.companyPosition ?? ""}

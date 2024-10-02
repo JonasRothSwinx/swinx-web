@@ -1,6 +1,6 @@
 import { PartialWith } from "@/app/Definitions/types";
 import { TextFieldWithTooltip } from "@/app/Components/Dialogs/Components";
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 import { Event, Events } from "@/app/ServerFunctions/types";
 import { SelectChangeEvent, Typography, MenuItem, CircularProgress } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
@@ -31,8 +31,10 @@ export function ParentEventSelector({
     const parentEventChoices = useQuery({
         queryKey: ["events", campaignId, parentEventType],
         queryFn: async () => {
-            const events = await dataClient.timelineEvent.byCampaign(campaignId);
-            const parentEventChoices = events.filter((event) => parentEventType && event.type === parentEventType);
+            const events = await dataClient.event.list.by.campaign({ campaignId });
+            const parentEventChoices = events.filter(
+                (event) => parentEventType && event.type === parentEventType,
+            );
             console.log("events", { events, parentEventChoices });
             return parentEventChoices;
         },
@@ -116,7 +118,10 @@ export function ParentEventSelector({
             {parentEventChoices.data.map((parentEvent) => {
                 if (!parentEvent.id) return null;
                 return (
-                    <MenuItem key={parentEvent.id} value={parentEvent.id}>
+                    <MenuItem
+                        key={parentEvent.id}
+                        value={parentEvent.id}
+                    >
                         {EntryName[grandParentEventType](parentEvent.id)}
                     </MenuItem>
                 );

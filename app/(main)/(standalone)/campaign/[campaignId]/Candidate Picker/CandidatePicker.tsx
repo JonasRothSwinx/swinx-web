@@ -1,43 +1,14 @@
-import { CheckBoxIcon } from "@/app/Definitions/Icons";
-import { Nullable } from "@/app/Definitions/types";
-import { getUserGroups } from "@/app/ServerFunctions/serverActions";
-import { Assignment, Influencers } from "@/app/ServerFunctions/types";
-import {
-    Button,
-    Dialog,
-    IconButton,
-    Skeleton,
-    Tabs,
-    Tab,
-    Tooltip,
-    Typography,
-    SxProps,
-    Box,
-    Grow,
-    Collapse,
-    Link,
-} from "@mui/material";
-import { TabList, TabPanel, TabContext } from "@mui/lab";
-import Grid from "@mui/material/Grid2";
-import {
-    DataGrid,
-    GridColDef,
-    GridRowSelectionModel,
-    GridToolbarQuickFilter,
-} from "@mui/x-data-grid";
-import React, { useEffect, useMemo, useState } from "react";
-import EmailPreview from "../Email Preview";
-import { Candidates } from "@/app/ServerFunctions/types";
-import { dataClient } from "@/app/ServerFunctions/database";
+import { Assignment, Candidates, Influencers } from "@/app/ServerFunctions/types";
+import { dataClient } from "@dataClient";
+import { TabContext, TabList, TabPanel } from "@mui/lab";
+import { Box, Dialog, Grow, Link, Skeleton, SxProps, Tab, Typography } from "@mui/material";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { InfluencerDetailsButtonsOpenDialog } from "../Components/OpenInfluencerDetails/components/InfluencerDetailsButtons";
-import InfluencerTable from "./InfluencerTable";
-import CandidateResponses from "./CandidateResponses";
-import { TransitionGroup } from "react-transition-group";
-import emailClient from "@/app/Emails";
-import { InfluencerTaskEncodedData } from "@/app/utils";
-import { sendDecisionNotification } from "./Functions";
 import { useConfirm } from "material-ui-confirm";
+import React, { useEffect, useState } from "react";
+import { InfluencerDetailsButtonsOpenDialog } from "../Components/OpenInfluencerDetails/components/InfluencerDetailsButtons";
+import CandidateResponses from "./CandidateResponses";
+import { sendDecisionNotification } from "./Functions";
+import InfluencerTable from "./InfluencerTable";
 
 // eslint-disable-next-line
 interface CandidatePickerProps {

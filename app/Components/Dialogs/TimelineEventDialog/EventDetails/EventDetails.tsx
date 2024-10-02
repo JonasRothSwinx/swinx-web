@@ -32,7 +32,7 @@ type DetailsConfig = {
     [key in relevantDetailsKey]?: DetailsConfigEntry;
 };
 
-const EventTypeConfig: { [key in Events.eventType]: DetailsConfig } = {
+const EventTypeConfig: { [key in Events.EventType]: DetailsConfig } = {
     Invites: {
         topic: {
             enabled: false,
@@ -257,7 +257,7 @@ interface AdditionalFieldsProps {
     onChange: (data: Partial<Event>[]) => void;
 }
 const AdditionalFields: {
-    [key in Events.eventType]?: (props: AdditionalFieldsProps) => JSX.Element;
+    [key in Events.EventType]?: (props: AdditionalFieldsProps) => JSX.Element;
 } = {
     Webinar: (props) => <AudienceTargetFilter {...props} />,
 };
@@ -265,7 +265,7 @@ const AdditionalFields: {
 function getDataKey(
     key: relevantDetailsKey,
     data: Partial<Event>,
-    updatedData: Partial<Event>
+    updatedData: Partial<Event>,
 ): string | number | null | undefined {
     switch (key) {
         //in info
@@ -353,18 +353,17 @@ export default function EventDetails(props: DetailsProps): JSX.Element {
         };
     });
     const sxProps: SxProps = {
-        "&": {
-            ".MuiTextField-root:has(#eventTitle)": {
+        ".MuiTextField-root.eventDetailField": {
+            flex: "1 1 50%",
+            height: "fit-content",
+            minHeight: "min-content",
+            "&:has(#eventLink, #eventTitle)": {
                 width: "100%",
                 flexBasis: "100%",
             },
-            ".MuiTextField-root:has(#eventLink)": {
-                width: "100%",
-                flexBasis: "100%",
-            },
-            "input[type=number]": {
-                textAlign: "right",
-            },
+        },
+        "input[type=number]": {
+            textAlign: "right",
         },
     };
     function printData() {
@@ -377,7 +376,12 @@ export default function EventDetails(props: DetailsProps): JSX.Element {
     }
     if (!data.type) return <></>;
     return (
-        <DialogContent dividers sx={sxProps}>
+        <DialogContent
+            id="eventDetails"
+            className="eventDetails"
+            dividers
+            sx={sxProps}
+        >
             {/* <Button onClick={printData}>Print Data</Button> */}
             {Object.entries(EventTypeConfig[data.type]).map(([key, config]) => {
                 const keyName = key as relevantDetailsKey;
@@ -423,6 +427,7 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
             return (
                 <TextFieldWithTooltip
                     id={id}
+                    className="eventDetailField"
                     name={name.toString()}
                     label={label}
                     value={(value as string) ?? ""}
@@ -439,6 +444,7 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
             return (
                 <TextFieldWithTooltip
                     id={id}
+                    className="eventDetailField"
                     name={name.toString()}
                     type="number"
                     label={label}
@@ -460,8 +466,12 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
             );
         case "date":
             return (
-                <Tooltip title={config.tooltipTitle ?? ""} placement="top-start">
+                <Tooltip
+                    title={config.tooltipTitle ?? ""}
+                    placement="top-start"
+                >
                     <Box
+                        className="eventDetailField"
                         sx={{
                             "&": {
                                 height: "2ch",
@@ -469,14 +479,22 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
                             },
                         }}
                     >
-                        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
+                        <LocalizationProvider
+                            dateAdapter={AdapterDayjs}
+                            adapterLocale="de"
+                        >
                             <DatePicker
                                 // closeOnSelect={false}
                                 label={label}
                                 name={name.toString()}
                                 value={value ? dayjs(value as string) : null}
                                 onChange={(value) => {
-                                    changeHandler(value?.toISOString() ?? "");
+                                    try {
+                                        const dateString = value?.toISOString() ?? "";
+                                        changeHandler(dateString);
+                                    } catch (error) {
+                                        console.error("Error handling date change", { error });
+                                    }
                                 }}
                                 // maxDate={event.date ? dayjs(event.date) : null}
                                 minDate={dayjs()}
@@ -499,6 +517,7 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
             return (
                 <TextFieldWithTooltip
                     id={id}
+                    className="eventDetailField"
                     name={name.toString()}
                     label={label}
                     value={(value as string) ?? ""}
