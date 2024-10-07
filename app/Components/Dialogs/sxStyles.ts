@@ -84,25 +84,17 @@ const DialogDefault: SxProps = {
         "*": {
             textColor: "unset",
         },
-        ".MuiBox-root": {
-            display: "flex",
-            flexWrap: "wrap",
-            // maxHeight: "calc(100% - 64px - 52.5px - 1px)",
-            flexDirection: "column",
-            width: "100%",
-        },
-        ".MuiDialogActions-root": {
-            maxWidth: "100%",
-            padding: "10px 20px",
-            display: "flex",
-            justifyContent: "space-between",
-            borderTop: "1px solid #e0e0e0",
-            ".MuiButton-root": {},
-        },
+        // ".MuiBox-root": {
+        //     display: "flex",
+        //     // flexWrap: "wrap",
+        //     // maxHeight: "calc(100% - 64px - 52.5px - 1px)",
+        //     flexDirection: "column",
+        //     // width: "100%",
+        // },
         ".MuiDialogContent-root": {
             maxWidth: "max(80vw,500px)",
             minWidth: "min(500px,100vw)",
-            width: "max(40vh,500px)",
+            // width: "max(40vh,500px)",
             display: "flex",
             flexWrap: "wrap",
             flex: "0 0 fit-content",
@@ -127,12 +119,21 @@ const DialogDefault: SxProps = {
             padding: "10px",
             borderBottom: "1px solid #e0e0e0",
             textAlign: "center",
+            flexGrow: 0,
+        },
+        ".MuiDialogActions-root": {
+            maxWidth: "100%",
+            padding: "10px 20px",
+            display: "flex",
+            justifyContent: "space-between",
+            borderTop: "1px solid #e0e0e0",
+            flexGrow: 0,
+            ".MuiButton-root": {},
         },
         ".MuiFormControl-root": {
             // padding: "5px",
             minWidth: "20ch",
             margin: "5px",
-            flex: 1,
         },
         ".MuiGrid2-root": {
             maxHeight: "50%",
@@ -160,53 +161,6 @@ const DialogDefault: SxProps = {
         },
         ".textField[hidden]": {
             display: "none",
-        },
-        "&.timelineDialog": {
-            ".MuiPaper-root": {
-                maxWidth: "90vw",
-                minWidth: "max-content",
-                maxHeight: "90vh",
-                height: "fit-content",
-            },
-            ".MuiDialogContent-root": {
-                maxWidth: "max(80vw,1000px)",
-                display: "flex",
-                flexWrap: "wrap",
-                justifyContent: "flex-start",
-                // width: "520px",
-            },
-            ".MuiFormControl-root": {
-                // padding: "5px",
-                minWidth: "20ch",
-                margin: "5px",
-                // flex: 1,
-            },
-            ".MuiDialogContentText-root": {
-                flexBasis: "100%",
-                flexShrink: 0,
-            },
-            ".MuiDialogContent-dividers:nth-of-type(even)": {
-                // display: "none",
-                border: "none",
-            },
-            "#EventTriggerSplit": {
-                display: "flex",
-                flexDirection: "row",
-                flex: 1,
-                maxWidth: "max-content",
-                ".MuiBox-root": {
-                    padding: "5px",
-                },
-            },
-            "#Event": {
-                maxWidth: "600px",
-                flex: 2,
-                borderRight: "1px solid #e0e0e0",
-            },
-            "#Trigger": {
-                flex: 1,
-                padding: "5px",
-            },
         },
     },
 };

@@ -1,4 +1,6 @@
 import { queryKeys } from "@/app/(main)/queryClient/keys";
+import { AddIcon } from "@/app/Definitions/Icons";
+import { Refresh } from "@mui/icons-material";
 import {
     Box,
     Button,
@@ -9,6 +11,7 @@ import {
     MenuItem,
     SxProps,
     TextField,
+    Typography,
 } from "@mui/material";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
@@ -24,49 +27,60 @@ interface CampaignActionButtonsProps {
     groupBy: GroupBy;
     setGroupBy: (groupBy: GroupBy) => void;
 }
-export function CampaignActionButtons({
-    createCampaign,
-    groupBy,
-    setGroupBy,
-}: CampaignActionButtonsProps) {
+export function CampaignActionButtons({ createCampaign, groupBy, setGroupBy }: CampaignActionButtonsProps) {
     const sx: SxProps = {
         width: "100%",
         background: "white",
         display: "flex",
         flexDirection: "row",
-        justifyContent: "space-between",
+        justifyContent: "flex-end",
         padding: "5px",
         borderRadius: "20px",
         border: "1px solid #e0e0e0",
         ".MuiInputBase-root": {
             minWidth: "150px",
         },
+        ".left": {
+            marginRight: "auto",
+        },
     };
     return (
-        <Box
-            sx={sx}
-            id="CampaignActionButtonsContainer"
-        >
-            <Button onClick={createCampaign}>Neue Kampagne</Button>
+        <Box sx={sx} id="CampaignActionButtonsContainer">
+            <CreateCampaignButton createCampaign={createCampaign} />
             <ShowOwnCheckbox />
+            <GroupBySelect groupBy={groupBy} setGroupBy={setGroupBy} />
             <ReloadButton />
-            <GroupBySelect
-                groupBy={groupBy}
-                setGroupBy={setGroupBy}
-            />
         </Box>
     );
 }
 
+interface CreateCampaignButtonProps {
+    createCampaign: CampaignActionButtonsProps["createCampaign"];
+}
+function CreateCampaignButton({ createCampaign }: CreateCampaignButtonProps) {
+    const sx: SxProps = {
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+    };
+    return (
+        <Box sx={sx} className="left">
+            <Button onClick={createCampaign}>
+                <AddIcon />
+                <Typography>Neue Kampagne</Typography>
+            </Button>
+        </Box>
+    );
+}
 function ShowOwnCheckbox() {
     const queryClient = useQueryClient();
     const settings = useQuery({
         queryKey: queryKeys.campaignList.settings(),
         queryFn: async () => {
             return (
-                queryClient.getQueryData<{ showOwnOnly?: boolean }>(
-                    queryKeys.campaignList.settings(),
-                ) ?? { showOwnOnly: false }
+                queryClient.getQueryData<{ showOwnOnly?: boolean }>(queryKeys.campaignList.settings()) ?? {
+                    showOwnOnly: false,
+                }
             );
         },
     });
@@ -87,12 +101,7 @@ function ShowOwnCheckbox() {
         <Box sx={sx}>
             <FormControlLabel
                 label="Nur eigene"
-                control={
-                    <Checkbox
-                        checked={settings.data?.showOwnOnly}
-                        onChange={onChange}
-                    />
-                }
+                control={<Checkbox checked={settings.data?.showOwnOnly} onChange={onChange} />}
             />
         </Box>
     );
@@ -107,21 +116,32 @@ function ReloadButton() {
     const sx: SxProps = useMemo(
         () => ({
             position: "relative",
-            "& > *": {
-                position: "absolute",
-                margin: "auto",
-                display: campaignsQuery.isFetching ? "block" : "none",
+            // "& > *": {
+            //     position: "absolute",
+            //     margin: "auto",
+            //     display: campaignsQuery.isFetching ? "block" : "none",
+            // },
+            ".MuiSvgIcon-root": {
+                fontSize: "40px",
+
+                animation: "spin 1s linear infinite",
+                animationPlayState: campaignsQuery.isFetching ? "running" : "paused",
+            },
+            "@keyframes spin": {
+                from: {
+                    transform: "rotate(0deg)",
+                },
+                to: {
+                    transform: "rotate(360deg)",
+                },
             },
         }),
-        [campaignsQuery.isFetching],
+        [campaignsQuery.isFetching]
     );
     return (
-        <IconButton
-            onClick={onClick}
-            sx={sx}
-        >
-            Reload
-            <CircularProgress />
+        <IconButton onClick={onClick} sx={sx}>
+            <Refresh />
+            {/* <CircularProgress /> */}
         </IconButton>
     );
 }
@@ -147,10 +167,7 @@ function GroupBySelect({ groupBy, setGroupBy }: GroupBySelectProps) {
             >
                 {Object.entries(groupByLabels).map(([value, label]) => {
                     return (
-                        <MenuItem
-                            key={value}
-                            value={value}
-                        >
+                        <MenuItem key={value} value={value}>
                             {label}
                         </MenuItem>
                     );
