@@ -33,11 +33,10 @@ const allowSes = new PolicyStatement({
 });
 reminderTriggerFunction.addToRolePolicy(allowSes);
 
-const dataResources = backend.data.resources;
-
-// Object.values(dataResources.cfnResources.amplifyDynamoDbTables).forEach((table) => {
-//     table.pointInTimeRecoveryEnabled = true;
-// });
+const { amplifyDynamoDbTables } = backend.data.resources.cfnResources;
+for (const table of Object.values(amplifyDynamoDbTables)) {
+    table.pointInTimeRecoveryEnabled = true;
+}
 
 const s3Bucket = backend.storage.resources.bucket;
 const cfnBucket = s3Bucket.node.defaultChild as s3.CfnBucket;
