@@ -1,5 +1,15 @@
 import { CSSProperties } from "react";
-const styleKeys = ["text", "buttonContainer", "responseButton", "largeDivider", "postContent", "debugBox"] as const;
+const styleKeys = [
+    "text",
+    "buttonContainer",
+    "responseButton",
+    "largeDivider",
+    "postContent",
+    "debugBox",
+    "signatureLetterColumn",
+    "signatureSection",
+    "signatureText",
+] as const;
 
 const swinxBlue = "#1e88e5";
 const styles: { [key in (typeof styleKeys)[number]]: CSSProperties } = {
@@ -41,6 +51,16 @@ const styles: { [key in (typeof styleKeys)[number]]: CSSProperties } = {
         border: "1px solid black",
         borderRadius: "5px",
         margin: "10px",
+    },
+    signatureSection: {
+        lineHeight: "16px!important",
+    },
+    signatureLetterColumn: {
+        color: "rgb(52,152,219)",
+        width: "1.5em",
+    },
+    signatureText: {
+        lineHeight: "16px",
     },
 } as const;
 export default styles;

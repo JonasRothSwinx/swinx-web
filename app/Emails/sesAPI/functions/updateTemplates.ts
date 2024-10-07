@@ -1,7 +1,7 @@
 "use server";
 import * as SesHandlerTypes from "@/amplify/functions/sesHandler/types";
 import templateDefinitions, { templateName } from "../../templates";
-import sleep from "@/app/utils/sleep";
+import { sleep } from "@/app/utils";
 import { Prettify } from "@/app/Definitions/types";
 import getSESClient from "../client";
 import {
@@ -54,6 +54,7 @@ export default async function updateTemplates(templateNames: templateName[] = []
     let responses: (CreateEmailTemplateCommandOutput | UpdateEmailTemplateCommandOutput)[] = [];
     let processed = 0;
     const total = updateData.length;
+    console.log(updateData);
     while (updateData.length > 0) {
         const chunk = updateData.splice(0, 1);
         for (let attempts = 0; attempts < 10; attempts++) {
@@ -62,6 +63,7 @@ export default async function updateTemplates(templateNames: templateName[] = []
                     template: chunk[0],
                     existingTemplateNames,
                 });
+                if (!response) continue;
                 // console.log(response);
                 responses = [...responses, response];
                 processed += chunk.length;
@@ -89,41 +91,62 @@ interface ProcessTemplateParams {
     existingTemplateNames: string[];
 }
 async function processTemplate({ template, existingTemplateNames }: ProcessTemplateParams) {
-    const client = await getSESClient();
-    const { name, subjectLine, html, text } = template;
-    const htmlString = await html;
-    const textString = await text;
-    let command: UpdateEmailTemplateCommand | CreateEmailTemplateCommand;
-    if (existingTemplateNames.includes(name)) {
-        //update
-        command = new UpdateEmailTemplateCommand({
-            TemplateName: name,
-            TemplateContent: {
-                Html: fixHrefPlaceholders(htmlString),
-                Subject: subjectLine,
-                Text: textString,
-            },
-        });
-    } else {
-        //create
-        command = new CreateEmailTemplateCommand({
-            TemplateName: name,
-            TemplateContent: {
-                Html: fixHrefPlaceholders(htmlString),
-                Subject: subjectLine,
-                Text: textString,
-            },
-        });
-    }
     try {
-        const response = await client.send(command);
-        return response;
+        const client = await getSESClient();
+        const { name, subjectLine, html, text } = template;
+        const htmlString = await html;
+        const textString = await text;
+        let command: UpdateEmailTemplateCommand | CreateEmailTemplateCommand;
+        if (existingTemplateNames.includes(name)) {
+            //update
+            command = new UpdateEmailTemplateCommand({
+                TemplateName: name,
+                TemplateContent: {
+                    // Html: fixHrefPlaceholders(htmlString),
+                    Html: htmlString,
+                    Subject: subjectLine,
+                    Text: textString,
+                },
+            });
+        } else {
+            //create
+            command = new CreateEmailTemplateCommand({
+                TemplateName: name,
+                TemplateContent: {
+                    // Html: fixHrefPlaceholders(htmlString),
+                    Html: htmlString,
+                    Subject: subjectLine,
+                    Text: textString,
+                },
+            });
+        }
+        try {
+            const response = await client.send(command);
+            return response;
+        } catch (error) {
+            const sesError = error as SESError;
+            if (!(sesError.$metadata?.httpStatusCode === 429)) {
+                console.error(error);
+            }
+            throw error;
+        }
     } catch (error) {
         const sesError = error as SESError;
-        if (!(sesError.$metadata?.httpStatusCode === 429)) {
-            console.error(error);
+        if (sesError.$metadata?.httpStatusCode === 429) {
+            throw error;
+        } else {
+            console.log("---------------------");
+            console.log("Processing Failed for template", template.name);
+            console.log({
+                error: error,
+                template: template.name,
+                subjectLine: template.subjectLine,
+                html: await template.html,
+                text: await template.text,
+            });
+            console.log("---------------------");
+            throw error;
         }
-        throw error;
     }
 }
 

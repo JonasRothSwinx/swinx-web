@@ -1,0 +1,6 @@
+{
+    "depcheck": {
+        "ignoreMatches": ["@types/*", "typescript", "dotenv", "@tanstack/eslint-plugin-query","@aws-amplify/backend"],
+        "special":["bin","webpack"]
+    }
+}

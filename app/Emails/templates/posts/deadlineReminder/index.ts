@@ -1,17 +1,16 @@
 import { EmailLevelDefinition, Template } from "../../types";
-import PostDraftDeadlineReminderEmail, {
+import PostDraftDeadlineReminderEmail from "./PostDeadlineReminderEmail";
+import {
+    templateNames as templateLevelNames,
     subjectLineBase,
-    TemplateVariables,
     defaultParams,
-} from "./PostDeadlineReminderEmail";
+} from "./TemplateVariables";
 import { renderAsync } from "@react-email/render";
 import send from "./send";
 
-const templateBaseName = "PostDraftDeadlineReminder";
-
 const templates: EmailLevelDefinition = {
     new: {
-        name: `${templateBaseName}New`,
+        name: `${templateLevelNames.new}`,
         subjectLine: subjectLineBase,
         html: renderAsync(PostDraftDeadlineReminderEmail({ emailLevel: "new" })),
         text: renderAsync(PostDraftDeadlineReminderEmail({ emailLevel: "new" }), {
@@ -19,7 +18,7 @@ const templates: EmailLevelDefinition = {
         }),
     },
     reduced: {
-        name: `${templateBaseName}Reduced`,
+        name: `${templateLevelNames.reduced}`,
         subjectLine: subjectLineBase,
         html: renderAsync(PostDraftDeadlineReminderEmail({ emailLevel: "reduced" })),
         text: renderAsync(PostDraftDeadlineReminderEmail({ emailLevel: "reduced" }), {

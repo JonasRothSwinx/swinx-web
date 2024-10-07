@@ -1,10 +1,9 @@
 "use server";
 
-import client from "./.dbclient";
-import Influencer from "@/app/ServerFunctions/types/influencer";
+import { client } from "./_dbclient";
+import { EmailTriggers, Influencer, Influencers } from "@/app/ServerFunctions/types";
 import { Nullable, PartialWith } from "@/app/Definitions/types";
 import { Schema } from "@/amplify/data/resource";
-import { EmailTriggers } from "../../types/emailTriggers";
 import { SelectionSet } from "aws-amplify/api";
 
 const selectionSet = [
@@ -29,7 +28,9 @@ type RawData = SelectionSet<Schema["Influencer"]["type"], typeof selectionSet>;
  * @param influencer The influencer object to create
  * @returns The ID of the created influencer
  */
-export async function createNewInfluencer(influencer: Omit<Influencer.Full, "id">): Promise<Nullable<string>> {
+export async function createNewInfluencer(
+    influencer: Omit<Influencers.Full, "id">,
+): Promise<Nullable<string>> {
     //unpacked all properties from influencer
     const {
         firstName,
@@ -85,7 +86,7 @@ export async function getInfluencer(id: string) {
 //#endregion
 
 //#region update
-export async function updateInfluencer(updatedData: PartialWith<Influencer.Full, "id">) {
+export async function updateInfluencer(updatedData: PartialWith<Influencers.Full, "id">) {
     const {
         id,
         firstName,
@@ -129,7 +130,7 @@ export async function updateInfluencer(updatedData: PartialWith<Influencer.Full,
 //#endregion
 
 //#region delete
-export async function deleteInfluencer(influencer: PartialWith<Influencer.Influencer, "id">): Promise<void> {
+export async function deleteInfluencer(influencer: PartialWith<Influencer, "id">): Promise<void> {
     const { id } = influencer;
 
     if (!id) {
@@ -149,7 +150,7 @@ export async function listInfluencers() {
 }
 //#endregion
 
-function validate(influencerRaw: Nullable<RawData>): Nullable<Influencer.Full> {
+function validate(influencerRaw: Nullable<RawData>): Nullable<Influencers.Full> {
     if (!influencerRaw) return null;
     if (!influencerRaw) {
         throw new Error("Influencer not found");
@@ -161,7 +162,7 @@ function validate(influencerRaw: Nullable<RawData>): Nullable<Influencer.Full> {
     if (influencerRaw.emailType && EmailTriggers.isValidEmailType(influencerRaw.emailType)) {
         emailType = influencerRaw.emailType;
     }
-    const influencerOut: Influencer.Full = {
+    const influencerOut: Influencers.Full = {
         id: influencerRaw.id,
         firstName: influencerRaw.firstName,
         lastName: influencerRaw.lastName,
@@ -179,6 +180,6 @@ function validate(influencerRaw: Nullable<RawData>): Nullable<Influencer.Full> {
     return influencerOut;
 }
 
-function validateArray(rawData: RawData[]): Influencer.Full[] {
-    return rawData.map((data) => validate(data)).filter((data): data is Influencer.Full => !!data);
+function validateArray(rawData: RawData[]): Influencers.Full[] {
+    return rawData.map((data) => validate(data)).filter((data): data is Influencers.Full => !!data);
 }

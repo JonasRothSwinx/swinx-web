@@ -1,8 +1,7 @@
+import "@aws-amplify/ui-react/styles.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import ConfigureAmplifyClientSide from "./ConfigureAmplifyClientSide";
-import { Typography } from "@mui/material";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -13,10 +12,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
-        <html lang="en">
-            <body className={inter.className} style={{ height: "100vh", width: "100vw" }}>
-                <ConfigureAmplifyClientSide />
-                <div>{children}</div>
+        <html lang="de">
+            <body
+                id="root"
+                className={inter.className}
+                style={{ height: "100dvh", width: "100dvw" }}
+            >
+                <>{children}</>
             </body>
         </html>
     );

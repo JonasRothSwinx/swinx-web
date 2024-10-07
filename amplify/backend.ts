@@ -1,27 +1,72 @@
 import { defineBackend } from "@aws-amplify/backend";
 import { auth } from "./auth/resource.js";
 import { data } from "./data/resource.js";
+import { storage } from "./storage/resource.js";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as eventBridge from "aws-cdk-lib/aws-events";
 import * as eventBridgeTargets from "aws-cdk-lib/aws-events-targets";
+import * as s3 from "aws-cdk-lib/aws-s3";
 import { Function } from "aws-cdk-lib/aws-lambda";
 import { sesHandler } from "./functions/sesHandler/resource.js";
 import { reminderTrigger } from "./functions/reminderTrigger/resource.js";
 import { PolicyStatement, Effect } from "aws-cdk-lib/aws-iam";
-import { Duration } from "aws-cdk-lib/core";
-import { UsagePlan } from "aws-cdk-lib/aws-apigateway";
-import { randomUUID } from "crypto";
+
 import dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
 export const backend = defineBackend({
     auth,
     data,
+    storage,
     sesHandler,
     reminderTrigger,
 });
 
 const stack = backend.createStack("SwinxWebResources");
+
+// eslint-disable-next-line @typescript-eslint/ban-types -- this is a valid use case
+const reminderTriggerFunction = backend.reminderTrigger.resources.lambda as Function;
+const allowSes = new PolicyStatement({
+    effect: Effect.ALLOW,
+    actions: ["ses:*"],
+    resources: ["*"],
+});
+reminderTriggerFunction.addToRolePolicy(allowSes);
+
+const dataResources = backend.data.resources;
+
+Object.values(dataResources.cfnResources.amplifyDynamoDbTables).forEach((table) => {
+    table.pointInTimeRecoveryEnabled = true;
+});
+
+const s3Bucket = backend.storage.resources.bucket;
+const cfnBucket = s3Bucket.node.defaultChild as s3.CfnBucket;
+
+cfnBucket.corsConfiguration = {
+    corsRules: [
+        {
+            allowedOrigins: ["*"],
+            allowedMethods: [
+                //
+                "GET",
+                "PUT",
+                "POST",
+                "DELETE",
+                "HEAD",
+            ],
+            allowedHeaders: ["*"],
+            exposedHeaders: [
+                //
+                "x-amz-server-side-encryption",
+                "x-amz-request-id",
+                "x-amz-id-2",
+                "ETag",
+                "x-amz-meta-step",
+            ],
+            maxAge: 3000,
+        },
+    ],
+};
 
 //#region SES Handler Lambda & API Gateway
 // // eslint-disable-next-line @typescript-eslint/ban-types -- this is a valid use case
@@ -94,9 +139,9 @@ if (!(process.env.NODE_ENV === "development")) {
     // eslint-disable-next-line @typescript-eslint/ban-types -- Function is an aws-cdk-lib construct here
     const reminderTriggerLambda = backend.reminderTrigger.resources.lambda as Function;
     const rule = new eventBridge.Rule(stack, "ReminderTriggerRule", {
-        enabled: true,
+        enabled: false,
         schedule: eventBridge.Schedule.cron({
-            // minute: "0/10",
+            minute: "0",
             hour: "6",
         }),
 

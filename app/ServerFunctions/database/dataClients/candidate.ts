@@ -1,7 +1,15 @@
-import Influencer from "../../types/influencer";
-import { Candidates } from "../../types/candidates";
+import { Candidate, Influencer, Influencers } from "../../types";
 import database from "../dbOperations";
-import config from "./config";
+import { dataClient } from ".";
+
+/**
+ *
+ */
+export const candidate = {
+    create: createCandidate,
+    delete: deleteCandidate,
+    update: updateCandidate,
+};
 
 /**
  * Create new Candidate and update queryClient cache
@@ -10,20 +18,25 @@ import config from "./config";
  * @returns The created candidate object
  */
 
-export async function createCandidate(
-    influencer: Influencer.Full,
-    assignmentId: string
-): Promise<Candidates.Candidate> {
-    const queryClient = config.getQueryClient();
-    const newCandidate: Omit<Candidates.Candidate, "id"> = {
+async function createCandidate(
+    influencer: Influencers.Full,
+    assignmentId: string,
+): Promise<Candidate> {
+    const queryClient = dataClient.config.getQueryClient();
+    const newCandidate: Omit<Candidate, "id"> = {
         influencer: influencer,
         response: "pending",
+        feedback: null,
+        invitationSent: false,
     };
-    const id = await database.candidate.create({ candidate: newCandidate, candidateAssignmentId: assignmentId });
+    const id = await database.candidate.create({
+        candidate: newCandidate,
+        candidateAssignmentId: assignmentId,
+    });
     if (!id) throw new Error("Failed to create candidate");
-    const createdCandidate: Candidates.Candidate = { ...newCandidate, id };
+    const createdCandidate: Candidate = { ...newCandidate, id };
     queryClient.setQueryData(["candidate", id], createdCandidate);
-    queryClient.setQueryData(["candidates", assignmentId], (prev: Candidates.Candidate[]) => {
+    queryClient.setQueryData(["candidates", assignmentId], (prev: Candidate[]) => {
         if (!prev) {
             return [createdCandidate];
         }
@@ -40,14 +53,14 @@ export async function createCandidate(
  * @param assignmentId The assignment id to link the candidate to
  */
 
-export async function deleteCandidate(candidateId: string, assignmentId: string): Promise<void> {
-    const queryClient = config.getQueryClient();
+async function deleteCandidate(candidateId: string, assignmentId: string): Promise<void> {
+    const queryClient = dataClient.config.getQueryClient();
     const { errors } = await database.candidate.delete({ id: candidateId });
     if (errors) {
         console.error(errors);
         throw new Error(JSON.stringify(errors));
     }
-    queryClient.setQueryData(["candidates", assignmentId], (prev: Candidates.Candidate[]) => {
+    queryClient.setQueryData(["candidates", assignmentId], (prev: Candidate[]) => {
         if (!prev) {
             return [];
         }
@@ -57,12 +70,41 @@ export async function deleteCandidate(candidateId: string, assignmentId: string)
     queryClient.invalidateQueries({ queryKey: ["candidate", candidateId] });
 }
 
+interface UpdateCandidateParams {
+    candidateId: string;
+    updatedValues: Partial<Candidate>;
+    previousCandidate: Candidate;
+}
 /**
- *
+ * Update a candidate
+ * @param candidateId The candidate id to update
+ * @param updatedValues The values to update
+ * @param previousCandidate The previous candidate object
+ * @returns The updated candidate object
  */
-const candidate = {
-    create: createCandidate,
-    delete: deleteCandidate,
-};
-
-export default candidate;
+async function updateCandidate({
+    candidateId,
+    updatedValues,
+    previousCandidate,
+}: UpdateCandidateParams): Promise<Candidate> {
+    // const queryClient = dataClient.config.getQueryClient();
+    const updatedCandidate = { ...previousCandidate, ...updatedValues };
+    const { errors } = await database.candidate.update({
+        candidateId,
+        updatedValues,
+    });
+    if (errors) {
+        console.error(errors);
+        throw new Error(JSON.stringify(errors));
+    }
+    // queryClient.setQueryData(["candidate", candidateId], updatedCandidate);
+    // queryClient.setQueryData(["candidates", updatedCandidate.assignmentId], (prev: Candidates.Candidate[]) => {
+    //     if (!prev) {
+    //         return [updatedCandidate];
+    //     }
+    //     return prev.map((candidate) => (candidate.id === candidateId ? updatedCandidate : candidate));
+    // });
+    // queryClient.refetchQueries({ queryKey: ["candidates", updatedCandidate.assignmentId] });
+    // queryClient.refetchQueries({ queryKey: ["candidate", candidateId] });
+    return updatedCandidate;
+}

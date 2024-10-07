@@ -5,7 +5,22 @@ const nextConfig = {
             test: /\.html$/i,
             loader: "html-loader",
         });
+        config.module.rules.push({
+            test: /\.csv$/i,
+            use: "raw-loader",
+        });
+
+        // config.resolve.fallback = { fs: false };
         return config;
+    },
+    async redirects() {
+        return [
+            {
+                source: "/",
+                destination: "/CampaignList",
+                permanent: true,
+            },
+        ];
     },
     // webpack: {
     //     module: {

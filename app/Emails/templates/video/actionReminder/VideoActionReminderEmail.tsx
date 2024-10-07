@@ -1,33 +1,19 @@
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
+import { EmailTriggers } from "@/app/ServerFunctions/types";
 import { Html, Button, Text, Head, Preview, Container, Link, Hr } from "@react-email/components";
 import styles from "../../styles";
-import { Placeholder } from "../../_components";
+import { Placeholder, Signature } from "../../_components";
 import { DebugToggle, EmailProps } from "../../types";
-import React from "react";
 import DebugTemplates from "../../../DebugTemplates";
+import { TemplateVariables } from "./TemplateVariables";
 
-export type TemplateVariables = {
-    name: string;
-    customerName: string;
-    customerLink: string;
-    // postContent: string;
-    postTime: string;
-};
-const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
+const placeholders: { [key in keyof TemplateVariables]: string } = {
     name: Placeholder({ name: "name" }),
     customerName: Placeholder({ name: "customerName" }),
     customerLink: Placeholder({ name: "customerLink" }),
     // postContent: Placeholder({ name: "postContent" }),
     postTime: Placeholder({ name: "postTime" }),
+    taskPageLink: Placeholder({ name: "taskPageLink" }),
 };
-export const defaultParams: TemplateVariables = {
-    name: "testName",
-    customerName: "TestCustomer",
-    customerLink: "https://www.swinx.de",
-    // postContent: "TestContent",
-    postTime: "09:00",
-};
-export const subjectLineBase = "Erinnerung: Beitragsveröffentlichung";
 
 const EmailTemplates: {
     [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
@@ -47,22 +33,32 @@ VideoPublishReminderEmail.PreviewProps = {
 } satisfies EmailProps;
 
 function NewVideoActionReminder(props: DebugToggle) {
+    const {
+        name,
+        customerName,
+        customerLink,
+        // postContent,
+        postTime,
+        taskPageLink,
+    } = placeholders;
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
             <Preview>Erinnerung: Beitragsveröffentlichung</Preview>
-            <Text style={styles.text}>Hallo {placeholders.name}!</Text>
+            <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
-                Wir möchten sie daran erinnern, dass sie heute um {"{{zeit}}"} einen Beitrag für{" "}
-                {"{{customername}}"}
+                Wir möchten sie daran erinnern, dass sie {postTime} einen Beitrag für {customerName}
                 veröffentlichen sollen.
             </Text>
             <Text style={styles.text}>
                 Wichtig: <br />
                 <ul>
                     <li>
-                        Vergiss bitte nicht <Link href="{{customerLink}}">{"customerName"}</Link>{" "}
-                        aktiv zu markieren (= anklickbar)
+                        Vergiss bitte nicht <Link href={customerLink}>{customerName}</Link> aktiv zu
+                        markieren (= anklickbar)
                     </li>
                     <li>
                         Bitte keine Dritt-Marken /-Personen taggen und am selben Tag auch sonst
@@ -71,26 +67,29 @@ function NewVideoActionReminder(props: DebugToggle) {
                     <li>Bitte verwende das freigegebene Video und den Beitragstext</li>
                 </ul>
             </Text>
-            {/* <Text style={styles.text}>
-                Der freigegebene Beitragstext ist:
-                <br />
-                {"{{PostContent}}"}
-            </Text> */}
             <Text style={styles.text}>
-                Bitte teilen sie uns danach mit, ob alles funktioniert hat.
+                Bitte tragen sie im Anschluss den Link auf den veröffentlichten Beitrag auf unserer
+                Plattform ein
+                <br />
+                Dort können sie auch die für den Beitrag freigegebenen Medien herunterladen.
             </Text>
-            {/* <Container align="left" style={styles.buttonContainer}>
-                <Button style={styles.responseButton} href="https://www.swinx.de">
-                    Zu Swinx
-                </Button>
-            </Container> */}
+            <Button
+                style={styles.responseButton}
+                href={placeholders.taskPageLink.toString()}
+            >
+                Zur Übersicht
+            </Button>
+            <Signature />
         </Html>
     );
 }
 
 function ReducedVideoActionReminder(props: DebugToggle) {
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
             <Preview>Erinnerung: Videoaktion</Preview>
             <Text style={styles.text}>Hallo {placeholders.name}!</Text>
@@ -98,11 +97,18 @@ function ReducedVideoActionReminder(props: DebugToggle) {
                 Wir möchten dich daran erinnern, dass du heute deinen Videobeitrag veröffentlichen
                 musst.
             </Text>
-            <Container align="left" style={styles.buttonContainer}>
-                <Button style={styles.responseButton} href="https://www.swinx.de">
+            <Container
+                align="left"
+                style={styles.buttonContainer}
+            >
+                <Button
+                    style={styles.responseButton}
+                    href="https://www.swinx.de"
+                >
                     Zu Swinx
                 </Button>
             </Container>
+            <Signature />
         </Html>
     );
 }

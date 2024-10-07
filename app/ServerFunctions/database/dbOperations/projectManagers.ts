@@ -1,9 +1,10 @@
 "use server";
 import { SelectionSet } from "aws-amplify/api";
-import client from "./.dbclient";
+import { client } from "./_dbclient";
 import { Schema } from "@/amplify/data/resource";
-import ProjectManagers from "../../types/projectManagers";
+import { ProjectManager } from "../../types";
 import { Nullable } from "@/app/Definitions/types";
+import { Project } from "next/dist/build/swc";
 
 const selectionSet = [
     //
@@ -14,6 +15,7 @@ const selectionSet = [
     "phoneNumber",
     "notes",
     "cognitoId",
+    "jobTitle",
 ] as const;
 
 type RawProjectManager = SelectionSet<Schema["ProjectManager"]["type"], typeof selectionSet>;
@@ -36,8 +38,11 @@ interface GetProjectManagerByCognitoIdParams {
 }
 export async function getProjectManagerByCognitoId({
     cognitoId,
-}: GetProjectManagerByCognitoIdParams): Promise<Nullable<ProjectManagers.ProjectManager>> {
-    const { data, errors } = await client.models.ProjectManager.listByCognitoId({ cognitoId }, { selectionSet });
+}: GetProjectManagerByCognitoIdParams): Promise<Nullable<ProjectManager>> {
+    const { data, errors } = await client.models.ProjectManager.listByCognitoId(
+        { cognitoId },
+        { selectionSet },
+    );
     // console.log({
     //     data: data,
     //     error: JSON.stringify(errors),
@@ -54,24 +59,17 @@ export async function listProjectManagers() {
     const { data, errors } = await client.models.ProjectManager.list({
         selectionSet,
     });
-    console.log({
-        data: data,
-        error: JSON.stringify(errors),
-    });
+    // console.log({
+    //     data: data,
+    //     error: JSON.stringify(errors),
+    // });
     return validateProjectManagers(data);
 }
 //#endregion
 
 //#region Create
 interface CreateProjectManagerParams {
-    projectManager: {
-        firstName: string;
-        lastName: string;
-        email: string;
-        phoneNumber?: string;
-        notes?: string;
-        cognitoId: string;
-    };
+    projectManager: Omit<ProjectManager, "id">;
 }
 export async function createProjectManager({ projectManager }: CreateProjectManagerParams) {
     const { data, errors } = await client.models.ProjectManager.create({ ...projectManager });
@@ -138,9 +136,9 @@ export async function connectToManager({ campaignId, projectManagerId }: Connect
 
 //#region validation
 
-function validateProjectManager(rawData: Nullable<RawProjectManager>): Nullable<ProjectManagers.ProjectManager> {
+function validateProjectManager(rawData: Nullable<RawProjectManager>): Nullable<ProjectManager> {
     if (!rawData) return null;
-    const validatedProjectManager: ProjectManagers.ProjectManager = {
+    const validatedProjectManager: ProjectManager = {
         id: rawData.id,
         firstName: rawData.firstName,
         lastName: rawData.lastName,
@@ -148,14 +146,15 @@ function validateProjectManager(rawData: Nullable<RawProjectManager>): Nullable<
         phoneNumber: rawData.phoneNumber ?? undefined,
         notes: rawData.notes ?? undefined,
         cognitoId: rawData.cognitoId,
+        jobTitle: rawData.jobTitle,
     };
     return validatedProjectManager;
 }
 
-function validateProjectManagers(rawData: RawProjectManager[]): ProjectManagers.ProjectManager[] {
+function validateProjectManagers(rawData: RawProjectManager[]): ProjectManager[] {
     const validatedProjectManagers = rawData
         .map((raw) => validateProjectManager(raw))
-        .filter((x): x is ProjectManagers.ProjectManager => x !== null);
+        .filter((x): x is ProjectManager => x !== null);
     return validatedProjectManagers;
 }
 

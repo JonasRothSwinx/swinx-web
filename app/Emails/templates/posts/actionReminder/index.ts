@@ -1,23 +1,24 @@
 import { EmailLevelDefinition, Template } from "../../types";
-import PostActionReminderMail, {
-    subjectLineBase,
-    TemplateVariables,
+import PostActionReminderMail from "./PostActionReminderMail";
+
+import {
+    templateNames as templateLevelNames,
     defaultParams,
-} from "./PostActionReminderMail";
+    subjectLineBase,
+} from "./TemplateVariables";
 import { renderAsync } from "@react-email/render";
-import { Dayjs } from "@/app/utils/configuredDayJs";
+import { Dayjs } from "@/app/utils";
 import send from "./send";
 
-const templateBaseName = "PostReminder";
 const templates: EmailLevelDefinition = {
     new: {
-        name: `${templateBaseName}New`,
+        name: `${templateLevelNames.new}`,
         subjectLine: subjectLineBase,
         html: renderAsync(PostActionReminderMail({ emailLevel: "new" })),
         text: renderAsync(PostActionReminderMail({ emailLevel: "new" }), { plainText: true }),
     },
     reduced: {
-        name: `${templateBaseName}Reduced`,
+        name: `${templateLevelNames.reduced}`,
         subjectLine: subjectLineBase,
         html: renderAsync(PostActionReminderMail({ emailLevel: "reduced" })),
         text: renderAsync(PostActionReminderMail({ emailLevel: "reduced" }), { plainText: true }),

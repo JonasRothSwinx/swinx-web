@@ -1,17 +1,16 @@
 import { EmailLevelDefinition, MailTemplate, Template } from "../../types";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent";
-import VideoDraftDeadlineReminderEmail, {
-    subjectLineBase,
-    defaultParams,
-} from "./VideoDraftDeadlineReminderEmail";
+import VideoDraftDeadlineReminderEmail from "./VideoDraftDeadlineReminderEmail";
 import { renderAsync } from "@react-email/render";
 import send from "./send";
-
-const templateBaseName = "VideoDraftDeadlineReminder";
+import {
+    templateNames as templateLevelNames,
+    subjectLineBase,
+    defaultParams,
+} from "./TemplateVariables";
 
 const templates: EmailLevelDefinition = {
     new: {
-        name: `${templateBaseName}New`,
+        name: `${templateLevelNames.new}`,
         subjectLine: subjectLineBase,
         html: renderAsync(VideoDraftDeadlineReminderEmail({ emailLevel: "new" })),
         text: renderAsync(VideoDraftDeadlineReminderEmail({ emailLevel: "new" }), {
@@ -19,7 +18,7 @@ const templates: EmailLevelDefinition = {
         }),
     },
     reduced: {
-        name: `${templateBaseName}Reduced`,
+        name: `${templateLevelNames.reduced}`,
         subjectLine: subjectLineBase,
         html: renderAsync(VideoDraftDeadlineReminderEmail({ emailLevel: "reduced" })),
         text: renderAsync(VideoDraftDeadlineReminderEmail({ emailLevel: "reduced" }), {

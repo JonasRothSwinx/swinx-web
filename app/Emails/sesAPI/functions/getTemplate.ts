@@ -14,5 +14,7 @@ export default async function getTemplate({ templateName }: GetTemplateParams) {
         TemplateName: templateName,
     });
     const response = await client.send(command);
-    return response;
+    const returnData: { Html?: string; Text?: string; Subject?: string } =
+        response.TemplateContent ?? {};
+    return returnData;
 }

@@ -1,8 +1,9 @@
 import { PrintIcon, RefreshIcon } from "@/app/Definitions/Icons";
 import { IconButton, Typography } from "@mui/material";
 import { Query, QueryKey, useQuery, useQueryClient, UseQueryResult } from "@tanstack/react-query";
-import { Unstable_Grid2 as Grid } from "@mui/material";
+import { Grid2 as Grid } from "@mui/material";
 import { getUserGroups } from "../ServerFunctions/serverActions";
+import { queryKeys } from "../(main)/queryClient/keys";
 
 interface TimelineDebugDisplayProps {
     data: queryData[];
@@ -12,11 +13,11 @@ type queryData = UseQueryResult & {
     queryKey?: QueryKey;
 };
 
-export default function QueryDebugDisplay(props: TimelineDebugDisplayProps) {
+export function QueryDebugDisplay(props: TimelineDebugDisplayProps) {
     const { data } = props;
     const queryClient = useQueryClient();
     const userGroups = useQuery({
-        queryKey: ["userGroups"],
+        queryKey: queryKeys.currentUser.userGroups(),
         queryFn: () => {
             return getUserGroups();
         },
@@ -63,11 +64,20 @@ export default function QueryDebugDisplay(props: TimelineDebugDisplayProps) {
                             <RefreshIcon />
                         </IconButton>
 
-                        <Grid container width={"100%"}>
-                            <Grid xs={6} style={{ paddingRight: "10px" }}>
+                        <Grid
+                            container
+                            width={"100%"}
+                        >
+                            <Grid
+                                size={6}
+                                style={{ paddingRight: "10px" }}
+                            >
                                 {query.name}
                             </Grid>
-                            <Grid xs={"auto"} style={{ paddingRight: "10px" }}>
+                            <Grid
+                                size={"auto"}
+                                style={{ paddingRight: "10px" }}
+                            >
                                 <StatusDisplay {...query} />
                             </Grid>
                             <ResultsDisplay {...query} />
@@ -113,7 +123,7 @@ function ResultsDisplay(props: queryData) {
              * Return a stringified version of the data inside a scrollable div of max height 200px
              */
             return (
-                <Grid xs={16}>
+                <Grid size={16}>
                     <Typography
                         style={{
                             maxHeight: "200px",

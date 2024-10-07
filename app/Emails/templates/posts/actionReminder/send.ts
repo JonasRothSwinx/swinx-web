@@ -1,45 +1,51 @@
-import { sesHandlerSendEmailTemplateBulk } from "@/amplify/functions/sesHandler/types";
-import sesAPIClient from "../../../sesAPI";
+import { SESClientSendMail as sesAPIClient } from "../../../sesAPI";
 import { SendMailProps } from "../../types";
-import { TemplateVariables, defaultParams } from "./PostActionReminderMail";
-import dayjs from "@/app/utils/configuredDayJs";
-import ErrorLogger from "@/app/ServerFunctions/errorLog";
-import { PostReminder } from ".";
+// import { defaultParams } from "./PostActionReminderMail";
+import {
+    TemplateVariables,
+    templateNames,
+} from "@/app/Emails/templates/posts/actionReminder/TemplateVariables";
+import { dayjs } from "@/app/utils";
 
 export default async function send(props: SendMailProps) {
-    const { level, fromAdress, individualContext } = props;
-
-    if (level === "none") {
-        return;
-    }
-    const templateName = PostReminder.levels[level].name;
-    const templateData = individualContext.reduce((acc, { event, influencer, customer }) => {
-        if (!event || !influencer || !customer) {
-            ErrorLogger.log("Missing context");
-            return acc;
-        }
-        const postTime = dayjs(event.date).format("H:MM");
-        const { company: customerName, profileLink: customerProfileLink } = customer;
-        const postContent = event.info?.eventPostContent ?? "Kein Postinhalt gefunden";
-        return [
-            ...acc,
-            {
-                to: influencer.email,
-                templateData: JSON.stringify({
-                    name: `${influencer.firstName} ${influencer.lastName}`,
-                    postTime,
-                    customerName,
-                    customerProfileLink: customerProfileLink ?? "Invalid",
-                    // postContent,
-                } satisfies TemplateVariables),
-            },
-        ];
-    }, [] as { to: string; templateData: string }[]);
-    const response = await sesAPIClient.sendBulk({
-        from: fromAdress ?? "swinx GmbH <noreply@swinx.de>",
-        templateName,
-        defaultTemplateData: JSON.stringify(defaultParams),
-        bulkTemplateData: templateData,
-    });
-    return response;
+    // const { level, fromAdress, individualContext } = props;
+    // if (level === "none") {
+    //     return;
+    // }
+    // const templateName = templateNames[level];
+    // const templateData = individualContext.reduce((acc, { event, influencer, customer }) => {
+    //     if (!event || !influencer || !customer) {
+    //         console.log("Missing context");
+    //         return acc;
+    //     }
+    //     const postTime = dayjs(event.date).format("H:MM");
+    //     const { company: customerName, profileLink: customerProfileLink } = customer;
+    //     const postContent = event.info?.eventPostContent ?? "Kein Postinhalt gefunden";
+    //     return [
+    //         ...acc,
+    //         {
+    //             to: influencer.email,
+    //             templateData: JSON.stringify({
+    //                 name: `${influencer.firstName} ${influencer.lastName}`,
+    //                 postTime,
+    //                 customerName,
+    //                 customerProfileLink: customerProfileLink ?? "Invalid",
+    //                 // postContent,
+    //             } satisfies TemplateVariables),
+    //         },
+    //     ];
+    // }, [] as { to: string; templateData: string }[]);
+    // const response = await sesAPIClient.sendBulk({
+    //     from: fromAdress ?? "swinx GmbH <noreply@swinx.de>",
+    //     templateName,
+    //     defaultTemplateData: JSON.stringify({
+    //         name: "TestName",
+    //         postTime: "00:00",
+    //         customerName: "TestCustomer",
+    //         customerProfileLink: "https://www.swinx.de",
+    //         // postContent: Array(10).fill("blablabla").join("\n"),
+    //     } satisfies TemplateVariables),
+    //     bulkTemplateData: templateData,
+    // });
+    // return response;
 }

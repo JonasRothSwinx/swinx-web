@@ -1,11 +1,14 @@
-import Assignment from "@/app/ServerFunctions/types/assignment.js";
-import Campaign from "@/app/ServerFunctions/types/campaign.js";
-import { Candidates } from "@/app/ServerFunctions/types/candidates.js";
-import Customer from "@/app/ServerFunctions/types/customer.js";
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers.js";
-import Influencer from "@/app/ServerFunctions/types/influencer.js";
-import ProjectManagers from "@/app/ServerFunctions/types/projectManagers.jsx";
-import TimelineEvent from "@/app/ServerFunctions/types/timelineEvent.js";
+import {
+    Assignment,
+    Campaign,
+    Customer,
+    EmailTriggers,
+    Influencer,
+    ProjectManager,
+    Event,
+    Candidate,
+    Influencers,
+} from "@/app/ServerFunctions/types";
 
 export interface MailTemplate {
     name: string;
@@ -31,14 +34,14 @@ export type SendMailProps = {
 export type SendMailFunction = (props: SendMailProps) => Promise<unknown>;
 
 export type EmailContextProps = {
-    campaign: Campaign.Campaign;
-    event: TimelineEvent.Event;
-    candidates: Candidates.Candidate[];
-    assignment: Assignment.AssignmentFull;
-    influencer: Influencer.WithContactInfo;
-    customer: Customer.Customer;
+    campaign: Campaign;
+    event: Event;
+    candidates: Candidate[];
+    assignment: Assignment;
+    influencer: Influencers.WithContactInfo;
+    customer: Customer;
     taskDescriptions: string[];
-    campaignManager: ProjectManagers.ProjectManager;
+    projectManager: ProjectManager;
 };
 
 export type Template = {

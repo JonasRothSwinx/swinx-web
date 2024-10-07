@@ -8,23 +8,28 @@ import { generateServerClientUsingCookies } from "@aws-amplify/adapter-nextjs/ap
 import dayjs from "dayjs";
 import "dayjs/locale/de";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import sanitize from "../utils/sanitize";
+import { sanitize } from "../utils";
 dayjs.extend(customParseFormat);
 
 // export default { getUserGroups, getUserAttributes };
 const client = generateServerClientUsingCookies<Schema>({ config, cookies });
 
 export async function getUserGroups() {
+    // console.log("getUserGroups");
     const result = await runWithAmplifyServerContext({
         nextServerContext: { cookies },
         operation: async (contextSpec) => {
+            // console.log("fetching session");
             const session = await fetchAuthSession(contextSpec, { forceRefresh: true });
             // console.log("-------------------------------");
             // console.log(client);
             // console.log(cookies(), "---\n", session);
             // console.log("-------------------------------");
+            // console.log("session fetched", session);
+            // console.log("getting Groups");
             const payloadGroups =
                 (session.tokens?.accessToken.payload["cognito:groups"] as string[]) ?? [];
+            // console.log("Groups fetched", payloadGroups);
             // console.log(typeof payloadGroups);
             // if (!payloadGroups || typeof payloadGroups !== Json[]) return [];
             // console.log(payloadGroups);
@@ -47,17 +52,14 @@ export async function getUserAttributes() {
 }
 
 //#region Webinar
-interface WebinarNew {
-    title: string;
-    date: string;
-}
-interface WebinarUpdate {
-    id: string;
-    title?: string;
-    date?: string;
-}
 
 export async function getInviteBaseUrl() {
     const baseUrl = (process.env.BASE_URL ?? "www.google.com") + "/Response?data=";
     return baseUrl;
+}
+
+export async function getEnvironment() {
+    const nodeEnv = process.env.NODE_ENV;
+    const awsBranch = process.env.AWS_BRANCH;
+    return { nodeEnv, awsBranch };
 }

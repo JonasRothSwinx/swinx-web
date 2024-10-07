@@ -1,16 +1,11 @@
-import { EmailTriggers } from "@/app/ServerFunctions/types/emailTriggers";
+import { EmailTriggers } from "@/app/ServerFunctions/types";
 import { Html, Button, Text, Head, Preview, Container } from "@react-email/components";
 import styles from "../../styles";
-import { Placeholder } from "../../_components";
+import { Placeholder, Signature } from "../../_components";
 import { DebugToggle, EmailProps } from "../../types";
-import DebugTemplates from "../../../DebugTemplates";
 
-export type TemplateVariables = {
-    name: string;
-    time: string;
-    webinarTitle: string;
-    topic: string;
-};
+import { TemplateVariables } from "./TemplateVariables";
+import DebugTemplates from "@/app/Emails/DebugTemplates";
 
 export const subjectLineBase = "Erinnerung: Webinar";
 
@@ -19,6 +14,7 @@ export const defaultParams: TemplateVariables = {
     time: "00:00",
     webinarTitle: "TestWebinar",
     topic: "TestTopic",
+    taskPageLink: "https://www.swinx.de",
 };
 
 const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
@@ -26,6 +22,7 @@ const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } =
     time: Placeholder({ name: "time" }),
     webinarTitle: Placeholder({ name: "webinarTitle" }),
     topic: Placeholder({ name: "topic" }),
+    taskPageLink: Placeholder({ name: "taskPageLink" }),
 };
 const EmailTemplates: {
     [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
@@ -47,7 +44,10 @@ WebinarSpeakerDateReminder.PreviewProps = {
 function NewWebinarSpeakerDateReminder(props: DebugToggle) {
     const { name, time, webinarTitle, topic } = props.debug ? defaultParams : placeholders;
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
             <Preview>Erinnerung: Webinar</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
@@ -57,13 +57,24 @@ function NewWebinarSpeakerDateReminder(props: DebugToggle) {
                 <br />
                 Sie werden dabei über {topic} sprechen.
             </Text>
+            {/* <Container> */}
+            <Button
+                style={styles.responseButton}
+                href={placeholders.taskPageLink.toString()}
+            >
+                Zur Übersicht
+            </Button>
+            <Signature />
         </Html>
     );
 }
 
 function ReducedWebinarSpeakerDateReminder(props: DebugToggle) {
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
             <Preview>Erinnerung: Webinar</Preview>
             <Text style={styles.text}>Hallo {placeholders.name}!</Text>
@@ -71,11 +82,18 @@ function ReducedWebinarSpeakerDateReminder(props: DebugToggle) {
                 Wir möchten dich daran erinnern, dass du heute als Speaker in einem Webinar
                 auftreten wirst.
             </Text>
-            <Container align="left" style={styles.buttonContainer}>
-                <Button style={styles.responseButton} href="https://www.swinx.de">
+            <Container
+                align="left"
+                style={styles.buttonContainer}
+            >
+                <Button
+                    style={styles.responseButton}
+                    href="https://www.swinx.de"
+                >
                     Zu Swinx
                 </Button>
             </Container>
+            <Signature />
         </Html>
     );
 }

@@ -1,16 +1,20 @@
 import { Nullable } from "@/app/Definitions/types";
-import { candidates } from "../database/dbOperations";
-import Influencer from "./influencer";
+import { Influencers } from ".";
 
-export namespace Candidates {
-    export type candidateResponse = "pending" | "accepted" | "rejected";
-    export type Candidate = {
-        id: Nullable<string>;
-        influencer: Influencer.WithContactInfo;
-        response: Nullable<string>;
-    };
+const candidateResponseValues = ["pending", "accepted", "rejected"] as const;
+export type candidateResponse = (typeof candidateResponseValues)[number];
+export type Candidate = {
+    id: Nullable<string>;
+    influencer: Influencers.WithContactInfo;
+    response: Nullable<string>;
+    feedback: Nullable<string>;
+    invitationSent: boolean;
+};
 
-    export type CandidateReference = {
-        id: Nullable<string>;
-    };
+export function isValidResponse(response: string): response is candidateResponse {
+    return candidateResponseValues.includes(response as candidateResponse);
 }
+
+export type CandidateReference = {
+    id: Nullable<string>;
+};

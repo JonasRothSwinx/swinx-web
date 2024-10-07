@@ -1,4 +1,5 @@
-module.exports = {
+/** @type {import("@typescript-eslint/utils/dist/ts-eslint/Linter").Linter.Config} c */
+var c = castConfig({
     env: {
         browser: true,
         es2021: true,
@@ -11,6 +12,8 @@ module.exports = {
         "plugin:@typescript-eslint/recommended",
         "plugin:react-hooks/recommended",
         "plugin:react/recommended",
+        "plugin:@tanstack/eslint-plugin-query/recommended",
+        "plugin:deprecation/recommended",
     ],
     overrides: [
         {
@@ -27,6 +30,7 @@ module.exports = {
     parserOptions: {
         ecmaVersion: "latest",
         sourceType: "module",
+        project: "./tsconfig.json",
     },
     plugins: ["@typescript-eslint", "react"],
     settings: {
@@ -35,7 +39,7 @@ module.exports = {
         },
     },
     rules: {
-        "@typescript-eslint/ban-types": "warn",
+        // "@typescript-eslint/ban-types": "warn",
         "@typescript-eslint/ban-ts-comment": "warn",
         "@typescript-eslint/no-empty-function": "off",
         "@typescript-eslint/no-empty-interface": "warn",
@@ -51,4 +55,5 @@ module.exports = {
         "no-inner-declarations": "off",
         "react/react-in-jsx-scope": "off",
     },
-};
+});
+module.exports = c;
