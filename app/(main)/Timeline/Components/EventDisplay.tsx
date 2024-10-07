@@ -20,7 +20,7 @@ import { Query, QueryClient, useQuery, useQueryClient } from "@tanstack/react-qu
 import { AddIcon, DeleteIcon, EditIcon, RefreshIcon } from "@/app/Definitions/Icons";
 import { Nullable, highlightData } from "@/app/Definitions/types";
 import { dataClient } from "@dataClient";
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useConfirm } from "material-ui-confirm";
 import { TimelineEventDialog } from "@/app/Components";
 const config = {
@@ -84,10 +84,7 @@ export function EventDisplay(props: EventProps) {
     //######################################################################################################################
     //#region Styles
     const dateColumns = useMemo(() => (groupBy === "day" ? 2 : 3), [groupBy]);
-    const contentColumns = useMemo(
-        () => totalColumns - dateColumns /* - modifyColumns */,
-        [totalColumns, dateColumns],
-    );
+    const contentColumns = useMemo(() => totalColumns - dateColumns /* - modifyColumns */, [totalColumns, dateColumns]);
     const isOverdue = useMemo(() => {
         if (!event.data) return false;
         const eventDate = dayjs(event.data.date);
@@ -223,26 +220,14 @@ export function EventDisplay(props: EventProps) {
     //#endregion Data State
     //######################################################################################################################
     return (
-        <TableRow
-            id="EventRow"
-            sx={sxProps}
-        >
+        <TableRow id="EventRow" sx={sxProps}>
             {/* <Grid
                 id="Event"
                 container
                 columns={totalColumns}
             > */}
-            {dateColumns > 0 && (
-                <EventDate
-                    date={event.data.date ?? ""}
-                    groupBy={groupBy}
-                    columnSize={dateColumns}
-                />
-            )}
-            <EventContent
-                event={event.data}
-                columnSize={contentColumns}
-            />
+            {dateColumns > 0 && <EventDate date={event.data.date ?? ""} groupBy={groupBy} columnSize={dateColumns} />}
+            <EventContent event={event.data} columnSize={contentColumns} />
             {/* </Grid> */}
             <CircularProgress id="fetchIndicator" />
 
@@ -269,20 +254,10 @@ function EventContent(props: EventContentProps) {
     const { event, columnSize = 10 } = props;
     switch (true) {
         case Events.isSingleEvent(event): {
-            return (
-                <EventContentSingle
-                    event={event}
-                    columnSize={columnSize}
-                />
-            );
+            return <EventContentSingle event={event} columnSize={columnSize} />;
         }
         case Events.isMultiEvent(event): {
-            return (
-                <EventContentMulti
-                    event={event}
-                    columnSize={columnSize}
-                />
-            );
+            return <EventContentMulti event={event} columnSize={columnSize} />;
         }
         default: {
             return <>{"Error: Event Type not recognized"}</>;
@@ -373,10 +348,7 @@ function DeleteButton(props: DeleteButtonProps) {
         });
     };
     return (
-        <IconButton
-            id="deleteButton"
-            onClick={deleteHandler}
-        >
+        <IconButton id="deleteButton" onClick={deleteHandler}>
             <DeleteIcon color="error" />
         </IconButton>
     );
@@ -402,7 +374,7 @@ function EventDate(props: EventDateProps) {
             gap: "1cw",
         },
     };
-    const dateDisplay: { [key in groupBy]: JSX.Element } = {
+    const dateDisplay: { [key in groupBy]: React.JSX.Element } = {
         day: <>{processedDate.format("h:mm")}</>,
         week: (
             // <Box sx={sxProps}>

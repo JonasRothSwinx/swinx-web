@@ -34,14 +34,12 @@ export default function PreviewFrame({ selectedCandidate, assignmentId }: Previe
 
     //#region Queries
     const templates = useQueries({
-        queries: templateDefinitions.mailTypes.campaignInvite.CampaignInvite.templateNames.map(
-            (templateName) => {
-                return {
-                    queryKey: ["template", templateName],
-                    queryFn: () => emailClient.templates.get({ templateName }),
-                };
-            },
-        ),
+        queries: templateDefinitions.mailTypes.campaignInvite.CampaignInvite.templateNames.map((templateName) => {
+            return {
+                queryKey: ["template", templateName],
+                queryFn: () => emailClient.templates.get({ templateName }),
+            };
+        }),
         combine(result) {
             const out: {
                 [key in EmailTriggers.emailLevel]: Nullable<{
@@ -150,7 +148,9 @@ export default function PreviewFrame({ selectedCandidate, assignmentId }: Previe
             return ["", ""];
         }
         return [replaceVariables(html, variables), subjectLine];
-    }, [templates, emailLevel, variables]);
+        //
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [templates.new, templates.none, templates.reduced, emailLevel, variables]);
 
     const sxProps: SxProps = useMemo(
         () =>
@@ -197,16 +197,11 @@ export default function PreviewFrame({ selectedCandidate, assignmentId }: Previe
                     },
                 },
             } satisfies SxProps),
-        [],
+        []
     );
     //#region Data States
     //Loading
-    if (
-        templates.isLoading ||
-        assignment.isLoading ||
-        customer.isLoading ||
-        inviteBaseUrl.isLoading
-    )
+    if (templates.isLoading || assignment.isLoading || customer.isLoading || inviteBaseUrl.isLoading)
         return (
             <Box sx={sxProps}>
                 <Loading />
@@ -219,17 +214,11 @@ export default function PreviewFrame({ selectedCandidate, assignmentId }: Previe
                 isRefetching={templates.isFetching}
                 refreshTemplates={() => templates.original.forEach((x) => x.refetch())}
             />
-            <EmailPreview
-                html={previewHtml}
-                subjectLine={subjectLine}
-            />
+            <EmailPreview html={previewHtml} subjectLine={subjectLine} />
         </Box>
     );
 }
-function replaceVariables(
-    template: string,
-    variables: Partial<inviteTemplateVariables> & SignatureTemplateVariables,
-) {
+function replaceVariables(template: string, variables: Partial<inviteTemplateVariables> & SignatureTemplateVariables) {
     let out = template;
     // debugger;
     Object.entries(variables).forEach(([key, value]) => {
@@ -280,14 +269,11 @@ function AdminRefreshButton({ refreshTemplates, isRefetching }: AdminRefreshButt
                     "100%": { transform: `rotate(360deg)` },
                 },
             } as const),
-        [isRefetching],
+        [isRefetching]
     );
     if (!userGroups.data?.includes("admin")) return null;
     return (
-        <IconButton
-            onClick={refreshTemplates}
-            sx={style}
-        >
+        <IconButton onClick={refreshTemplates} sx={style}>
             <RefreshIcon />
         </IconButton>
     );
@@ -296,10 +282,7 @@ function AdminRefreshButton({ refreshTemplates, isRefetching }: AdminRefreshButt
 function Loading() {
     const styles: SxProps = {};
     return (
-        <Box
-            id="LoadingContainer"
-            sx={styles}
-        >
+        <Box id="LoadingContainer" sx={styles}>
             <Typography variant="h4">Emailvorschau wird geladen</Typography>
             <CircularProgress />
         </Box>
@@ -328,11 +311,5 @@ interface EmailBodyProps {
     html: string;
 }
 function EmailBody({ html }: EmailBodyProps) {
-    return (
-        <iframe
-            id="previewFrame"
-            title="Email Preview"
-            srcDoc={html}
-        />
-    );
+    return <iframe id="previewFrame" title="Email Preview" srcDoc={html} />;
 }

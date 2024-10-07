@@ -9,7 +9,7 @@ import {
     GRID_CHECKBOX_SELECTION_COL_DEF,
 } from "@mui/x-data-grid";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Buttons from "./Buttons";
 import Link from "next/link";
 import EmailPreview from "../../Email Preview";
@@ -52,7 +52,7 @@ export default function InfluencerTable({
     //#endregion
     const candidates = useMemo(() => {
         return assignment.data?.candidates ?? [];
-    }, [assignment]);
+    }, [assignment.data]);
     const [changedCandidates, setChangedCandidates] = useState<changedCandidates>({
         removed: [],
         added: [],
@@ -60,12 +60,8 @@ export default function InfluencerTable({
 
     const [candidatesAfterChange, uninvitedCandidates] = useMemo(() => {
         const candidateCount =
-            (candidates.length ?? 0) +
-            changedCandidates.added.length -
-            changedCandidates.removed.length;
-        const uninvited =
-            candidates.filter((x) => x.invitationSent === false).length +
-            changedCandidates.added.length;
+            (candidates.length ?? 0) + changedCandidates.added.length - changedCandidates.removed.length;
+        const uninvited = candidates.filter((x) => x.invitationSent === false).length + changedCandidates.added.length;
         return [candidateCount, uninvited];
     }, [changedCandidates, candidates]);
 
@@ -97,13 +93,8 @@ export default function InfluencerTable({
                 // console.log(params);
                 return `${row.firstName} ${row.lastName}`;
             },
-            renderCell({
-                row: { linkedinProfile, firstName, lastName },
-            }: {
-                row: Influencers.Full;
-            }) {
-                if (linkedinProfile)
-                    return <Link href={linkedinProfile}>{`${firstName} ${lastName}`}</Link>;
+            renderCell({ row: { linkedinProfile, firstName, lastName } }: { row: Influencers.Full }) {
+                if (linkedinProfile) return <Link href={linkedinProfile}>{`${firstName} ${lastName}`}</Link>;
                 else
                     return (
                         <Typography>
@@ -146,14 +137,9 @@ export default function InfluencerTable({
     ];
     //MARK: - Dialogs
     const [openDialog, setOpenDialog] = useState<openDialog>("none");
-    const dialogs: { [state in openDialog]: () => JSX.Element | null } = {
+    const dialogs: { [state in openDialog]: () => React.JSX.Element | null } = {
         none: () => null,
-        emailPreview: () => (
-            <EmailPreview
-                onClose={EventHandlers.onEmailPreviewClose}
-                assignmentId={assignmentId}
-            />
-        ),
+        emailPreview: () => <EmailPreview onClose={EventHandlers.onEmailPreviewClose} assignmentId={assignmentId} />,
     } as const;
 
     //MARK: - Eventhandlers
@@ -163,11 +149,11 @@ export default function InfluencerTable({
             const selectedInfluencers =
                 influencers.data?.filter((influencer) => selected.includes(influencer.id)) ?? [];
             const removedInfluencers: Candidate[] = candidates.filter(
-                (x) => !selectedInfluencers.find((influencer) => influencer.id === x.influencer.id),
+                (x) => !selectedInfluencers.find((influencer) => influencer.id === x.influencer.id)
             );
 
             const addedInfluencers: Influencers.Full[] = selectedInfluencers.filter(
-                (x) => !candidates.find((candidate) => candidate.influencer.id === x.id),
+                (x) => !candidates.find((candidate) => candidate.influencer.id === x.id)
             );
 
             setChangedCandidates({ removed: removedInfluencers, added: addedInfluencers });
@@ -181,8 +167,7 @@ export default function InfluencerTable({
         submitCandidates: async () => {
             const tasks: Promise<unknown>[] = [];
             // delete removed candidates
-            if (!assignment.data)
-                throw new Error("assignment.data is null, can't submit candidates");
+            if (!assignment.data) throw new Error("assignment.data is null, can't submit candidates");
             if (changedCandidates.removed.length === 0 && changedCandidates.added.length === 0) {
                 console.log("no changes");
                 // return;
@@ -195,21 +180,17 @@ export default function InfluencerTable({
                     ...changedCandidates.removed.map((candidate) => {
                         if (!candidate.id) throw new Error("candidate.id is null");
                         return dataClient.candidate.delete(candidate.id, assignment.data.id);
-                    }),
+                    })
                 );
                 const addedCandidates = changedCandidates.added.filter((influencer) => {
-                    return !assignment.data.candidates?.find(
-                        (candidate) => candidate.influencer.id === influencer.id,
-                    );
+                    return !assignment.data.candidates?.find((candidate) => candidate.influencer.id === influencer.id);
                 });
                 const diff = changedCandidates.added.length - addedCandidates.length;
                 if (diff > 0 && process.env.NODE_ENV === "development")
                     console.log(`removed ${diff} duplicates from addedCandidates`);
                 //create new candidates
                 tasks.push(
-                    ...addedCandidates.map((candidate) =>
-                        dataClient.candidate.create(candidate, assignment.data.id),
-                    ),
+                    ...addedCandidates.map((candidate) => dataClient.candidate.create(candidate, assignment.data.id))
                 );
 
                 await Promise.all(tasks);
@@ -275,10 +256,7 @@ export default function InfluencerTable({
         },
     };
     return (
-        <Box
-            id="InfluencerTableContainer"
-            sx={styles}
-        >
+        <Box id="InfluencerTableContainer" sx={styles}>
             <>{dialogs[openDialog]()}</>
             <DataGrid
                 autoHeight

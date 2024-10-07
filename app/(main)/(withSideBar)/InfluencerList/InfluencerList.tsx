@@ -4,20 +4,8 @@ import { LoadingElement } from "@/app/Components/Loading";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import { Influencers } from "@/app/ServerFunctions/types";
 import { useAuthenticator } from "@aws-amplify/ui-react";
-import {
-    Add as AddIcon,
-    DeleteOutlined as DeleteIcon,
-    Edit as EditIcon,
-} from "@mui/icons-material";
-import {
-    Box,
-    Button,
-    CircularProgress,
-    SxProps,
-    ThemeProvider,
-    Typography,
-    createTheme,
-} from "@mui/material";
+import { Add as AddIcon, DeleteOutlined as DeleteIcon, Edit as EditIcon } from "@mui/icons-material";
+import { Box, Button, CircularProgress, SxProps, ThemeProvider, Typography, createTheme } from "@mui/material";
 import {
     DataGrid,
     GridActionsCellItem,
@@ -31,7 +19,7 @@ import {
     GridToolbarFilterButton,
 } from "@mui/x-data-grid";
 import { generateClient } from "aws-amplify/api";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 import { range } from "@/app/Definitions/utility";
 import { dataClient } from "@dataClient";
@@ -74,12 +62,7 @@ function EditToolbar(props: EditToolbarProps) {
     };
     return (
         <GridToolbarContainer sx={sx}>
-            <Button
-                id="addInfluencer"
-                color="primary"
-                startIcon={<AddIcon />}
-                onClick={handleClick}
-            >
+            <Button id="addInfluencer" color="primary" startIcon={<AddIcon />} onClick={handleClick}>
                 Neuer Influencer
             </Button>
             {/* <Button
@@ -166,7 +149,7 @@ function InfluencerList() {
             };
         },
     };
-    const Dialogs: { [key in dialogType]: () => JSX.Element | null } = {
+    const Dialogs: { [key in dialogType]: () => React.JSX.Element | null } = {
         influencer: () => (
             <InfluencerDialog
                 parent={rows}
@@ -278,13 +261,9 @@ function InfluencerList() {
             },
         },
     };
-    if (influencers.isLoading)
-        return LoadingElement({ textMessage: "Lade Influencer", hideLogo: true });
+    if (influencers.isLoading) return LoadingElement({ textMessage: "Lade Influencer", hideLogo: true });
     return (
-        <Box
-            id="influencerListContainer"
-            sx={sx}
-        >
+        <Box id="influencerListContainer" sx={sx}>
             {Dialogs[openDialog]()}
             <ThemeProvider theme={theme}>
                 <DataGrid

@@ -1,6 +1,6 @@
 import { Campaign, Event, Influencer, Influencers } from "@/app/ServerFunctions/types";
 import { Box, CircularProgress, Grid2 as Grid, SxProps, Typography } from "@mui/material";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import TimelineControls from "./Components/TimelineControls";
 import TimelineViewItem from "./Components/TimelineViewItem";
 
@@ -41,8 +41,7 @@ export default function TimelineView(props: TimelineViewProps) {
     // const [groups, setGroups] = useState<EventGroup[]>([]);
     const [groupBy, setGroupBy] = useState<groupBy>(props.groupBy ?? "week");
     const [editingEvent, setEditingEvent] = useState<Event>();
-    const [controlsPositionState, setControlsPosition] =
-        useState<controlsPosition>(controlsPosition);
+    const [controlsPositionState, setControlsPosition] = useState<controlsPosition>(controlsPosition);
     const [campaign, setCampaign] = useState<Campaign>(props.campaign);
     const [openDialog, setOpenDialog] = useState<openDialog>("none");
     //#endregion States
@@ -158,7 +157,7 @@ export default function TimelineView(props: TimelineViewProps) {
         },
     };
 
-    const Dialogs: { [key in openDialog]: () => JSX.Element } = {
+    const Dialogs: { [key in openDialog]: () => React.JSX.Element } = {
         none: () => <></>,
         editor: () => (
             <TimelineEventDialog
@@ -249,10 +248,7 @@ export default function TimelineView(props: TimelineViewProps) {
     // }
 
     return (
-        <Box
-            sx={styles}
-            id="TimelineViewContainer"
-        >
+        <Box sx={styles} id="TimelineViewContainer">
             {/* Dialogs */}
             {Dialogs[openDialog]()}
             {controlsPositionState === "before" && (
@@ -356,7 +352,7 @@ function TimelineViewContent(props: TimelineViewContentProps) {
         </Grid>
     );
 }
-function Placeholder(): JSX.Element {
+function Placeholder(): React.JSX.Element {
     return (
         <div
             style={{

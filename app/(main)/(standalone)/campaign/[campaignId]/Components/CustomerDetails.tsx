@@ -1,16 +1,7 @@
 import { Campaign, Customer, Customers } from "@/app/ServerFunctions/types";
-import { MouseEvent, SyntheticEvent, useEffect, useState } from "react";
+import React, { MouseEvent, SyntheticEvent, useEffect, useState } from "react";
 import { CustomerDialog } from "@/app/Components/Dialogs";
-import {
-    Accordion,
-    AccordionDetails,
-    AccordionSummary,
-    Box,
-    IconButton,
-    Link,
-    SxProps,
-    Tab,
-} from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Box, IconButton, Link, SxProps, Tab } from "@mui/material";
 import { AddIcon, EditIcon, ExpandMoreIcon, MailIcon } from "@/app/Definitions/Icons";
 import Grid from "@mui/material/Grid2/Grid2";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
@@ -21,7 +12,7 @@ type CustomerDetailsProps = {
     setCampaign: (data: Campaign) => void;
 };
 type CustomerData = (
-    | { name: string; value: string; insertAfter?: JSX.Element; insertBefore?: JSX.Element }
+    | { name: string; value: string; insertAfter?: React.JSX.Element; insertBefore?: React.JSX.Element }
     | "spacer"
     | null
 )[];
@@ -36,11 +27,7 @@ function getCustomerData(customers: Customer[]): CustomerData[] {
                 name: "",
                 value: customer.email,
                 insertBefore: (
-                    <Link
-                        href={`mailto:${customer.email}`}
-                        rel="noreferrer"
-                        target="_blank"
-                    >
+                    <Link href={`mailto:${customer.email}`} rel="noreferrer" target="_blank">
                         <MailIcon />
                     </Link>
                 ),
@@ -56,9 +43,7 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
     //######################
     //#region State
     const [customers, setCustomers] = useState<Partial<Customer>[]>(props.customers);
-    const [customerData, setCustomerData] = useState<CustomerData[]>(
-        getCustomerData(props.customers),
-    );
+    const [customerData, setCustomerData] = useState<CustomerData[]>(getCustomerData(props.customers));
     const [openDialog, setOpenDialog] = useState<openDialog>("none");
     const [tab, setTab] = useState("0");
     //#endregion
@@ -95,7 +80,7 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
         },
     };
 
-    const Dialogs: { [key in openDialog]: JSX.Element | null } = {
+    const Dialogs: { [key in openDialog]: React.JSX.Element | null } = {
         none: null,
         editCustomer: (
             <CustomerDialog
@@ -118,11 +103,7 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
     return (
         <>
             {Dialogs[openDialog]}
-            <Accordion
-                defaultExpanded
-                disableGutters
-                variant="outlined"
-            >
+            <Accordion defaultExpanded disableGutters variant="outlined">
                 <AccordionSummary
                     className={"summaryWithEdit"}
                     expandIcon={<ExpandMoreIcon />}
@@ -136,11 +117,7 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
                 >
                     <Box className={"summaryWithEdit"}>
                         Auftraggeber
-                        <IconButton
-                            className="textPrimary"
-                            onClick={EventHandler.editButtonClicked}
-                            color="inherit"
-                        >
+                        <IconButton className="textPrimary" onClick={EventHandler.editButtonClicked} color="inherit">
                             <EditIcon />
                         </IconButton>
                     </Box>
@@ -161,10 +138,7 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
             </IconButton> */}
                         {customerData.map((dataSet, index) => {
                             return (
-                                <TabPanel
-                                    key={index}
-                                    value={index.toString()}
-                                >
+                                <TabPanel key={index} value={index.toString()}>
                                     {dataSet.map((data, i) => {
                                         if (!data) return null;
                                         if (data === "spacer") {
@@ -179,23 +153,11 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
                                             );
                                         }
                                         return (
-                                            <Grid
-                                                key={i + data.name}
-                                                container
-                                                columnSpacing={8}
-                                            >
-                                                <Grid
-                                                    size={4}
-                                                    display="flex"
-                                                    justifyContent="left"
-                                                >
+                                            <Grid key={i + data.name} container columnSpacing={8}>
+                                                <Grid size={4} display="flex" justifyContent="left">
                                                     {data.name}
                                                 </Grid>
-                                                <Grid
-                                                    size="auto"
-                                                    display="flex"
-                                                    justifyContent="left"
-                                                >
+                                                <Grid size="auto" display="flex" justifyContent="left">
                                                     {data.insertBefore}
                                                     {data.value}
                                                     {data.insertAfter}

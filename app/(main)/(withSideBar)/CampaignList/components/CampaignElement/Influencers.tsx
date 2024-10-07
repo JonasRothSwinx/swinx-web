@@ -24,9 +24,7 @@ export function InfluencersInfo({ campaignId }: InfluencersProps) {
         },
     });
     const influencerIds =
-        assignments.data
-            ?.map((assignment) => assignment.influencer?.id)
-            .filter((x) => x !== undefined) ?? [];
+        assignments.data?.map((assignment) => assignment.influencer?.id).filter((x) => x !== undefined) ?? [];
 
     const influencers = useQueries({
         queries: influencerIds.map((influencerId) => {
@@ -39,7 +37,8 @@ export function InfluencersInfo({ campaignId }: InfluencersProps) {
             };
         }),
     });
-    const isFetchingData = useMemo(() => influencers.some((x) => x.isFetching), [influencers]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const isFetchingData = useMemo(() => influencers.some((x) => x.isFetching), [...influencers]);
     if (campaign.isLoading || influencers.some((x) => x.isLoading)) return <Skeleton />;
     if (influencers.length === 0) return null;
     return (
@@ -48,19 +47,13 @@ export function InfluencersInfo({ campaignId }: InfluencersProps) {
                 <Typography>Keine Influencer</Typography>
             ) : (
                 <>
-                    <Typography
-                        variant="h6"
-                        className="categoryTitle"
-                    >
+                    <Typography variant="h6" className="categoryTitle">
                         Influencer
                     </Typography>
                     {influencers.map(({ data: influencer }) => {
                         if (influencer === undefined) return null;
                         return (
-                            <Box
-                                key={influencer.id}
-                                className="categoryElement"
-                            >
+                            <Box key={influencer.id} className="categoryElement">
                                 {Influencers.getFullName(influencer)}
                             </Box>
                         );

@@ -1,7 +1,7 @@
 import { Event } from "@/app/ServerFunctions/types";
 import { dayjs } from "@/app/utils";
 import { SxProps, Table, TableHead, Typography } from "@mui/material";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { EventGroup, groupBy } from "../Functions/groupEvents";
 import TypedEventGroupDisplay from "./TimelineViewItemTypedGroup";
 
@@ -33,7 +33,7 @@ export default function TimelineViewItem(props: TimelineViewItemProps) {
                 },
             },
         }),
-        [],
+        []
     );
     return (
         <Table
@@ -42,10 +42,7 @@ export default function TimelineViewItem(props: TimelineViewItemProps) {
             key={keyValue}
             sx={sx}
         >
-            <TimelineViewGroupTitle
-                group={group}
-                groupedBy={groupedBy}
-            />
+            <TimelineViewGroupTitle group={group} groupedBy={groupedBy} />
             {group.events.map((event, i) => {
                 return (
                     <TypedEventGroupDisplay
@@ -67,7 +64,7 @@ interface TimelineViewGroupTitleProps {
 function TimelineViewGroupTitle(props: TimelineViewGroupTitleProps) {
     const { group, groupedBy } = props;
     const groupStartDate = dayjs(group.dateGroupStart);
-    const titleContentByGroupType: { [key in groupBy]: () => JSX.Element } = {
+    const titleContentByGroupType: { [key in groupBy]: () => React.JSX.Element } = {
         day: () => (
             <>
                 {groupStartDate.format("ddd, DD.MM")} ({groupStartDate.fromNow()})
@@ -95,14 +92,9 @@ function TimelineViewGroupTitle(props: TimelineViewGroupTitleProps) {
         },
     };
     return (
-        <TableHead
-            id="TimelineViewGroupTitle"
-            sx={sx}
-        >
+        <TableHead id="TimelineViewGroupTitle" sx={sx}>
             {/* <div className={dialogStyles.cellActionSplit}> */}
-            <Typography className={"tableHeaderText"}>
-                {titleContentByGroupType[groupedBy]()}
-            </Typography>
+            <Typography className={"tableHeaderText"}>{titleContentByGroupType[groupedBy]()}</Typography>
             {/* <TimelineViewEditButton editable={editable} editing={editing} setEditing={setEditing} /> */}
             {/* </div> */}
         </TableHead>

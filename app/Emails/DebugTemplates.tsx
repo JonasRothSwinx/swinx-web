@@ -3,7 +3,7 @@ import { Hr, Html } from "@react-email/components";
 import styles from "./templates/styles";
 import { Box } from "@mui/material";
 interface DebugTemplatesProps {
-    templates: { [key: string]: (debug?: boolean) => JSX.Element };
+    templates: { [key: string]: (debug?: boolean) => React.JSX.Element };
 }
 export default function DebugTemplates(props: DebugTemplatesProps) {
     return (

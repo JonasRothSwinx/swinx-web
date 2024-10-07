@@ -8,12 +8,12 @@ import * as React from "react";
 import DebugTemplates from "../../DebugTemplates";
 import { TemplateVariables, defaultParams } from "./TemplateVariables";
 
-const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
+const placeholders: { [key in keyof TemplateVariables]: React.JSX.Element | string } = {
     influencerName: Placeholder({ name: "influencerName" }),
     customerName: Placeholder({ name: "customerName" }),
 };
 const EmailTemplates: {
-    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
+    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => React.JSX.Element;
 } = {
     new: (debug?) => <NewCampaignInvite debug={debug} />,
     reduced: (debug?) => <ReducedCampaignInvite debug={debug} />,
@@ -33,22 +33,19 @@ function NewCampaignInvite(props: DebugToggle) {
     const { influencerName, customerName } = props.debug ? defaultParams : placeholders;
 
     return (
-        <Html
-            dir="ltr"
-            lang="de"
-        >
+        <Html dir="ltr" lang="de">
             <Head />
             <Preview>Rückmeldung zur Kooperationsanfrage</Preview>
             <Body>
                 <Text style={styles.text}>Hallo {influencerName},</Text>
                 <Text style={styles.text}>
-                    Wir hatten gestern ein Meeting mit unserem Auftraggeber {customerName}. In
-                    diesem wurde der Leistungsumfang ein wenig verändert, sodass die bei Ihnen
-                    angefragten Leistungen nicht mehr benötigt werden.
+                    Wir hatten gestern ein Meeting mit unserem Auftraggeber {customerName}. In diesem wurde der
+                    Leistungsumfang ein wenig verändert, sodass die bei Ihnen angefragten Leistungen nicht mehr benötigt
+                    werden.
                     <br />
                     <br />
-                    Es tut mir sehr Leid, dass wir bei dieser Kooperation nicht zusammenkommen.
-                    Vielleicht klappt es bei der nächsten Kampagne mit einer Zusammenarbeit.
+                    Es tut mir sehr Leid, dass wir bei dieser Kooperation nicht zusammenkommen. Vielleicht klappt es bei
+                    der nächsten Kampagne mit einer Zusammenarbeit.
                 </Text>
                 <Signature />
             </Body>
@@ -60,20 +57,15 @@ function ReducedCampaignInvite(props: DebugToggle) {
     const { influencerName, customerName } = props.debug ? defaultParams : placeholders;
 
     return (
-        <Html
-            dir="ltr"
-            lang="de"
-        >
+        <Html dir="ltr" lang="de">
             <Head />
             <Preview>Unser Kunde hat sich nicht für Sie entschieden</Preview>
             <Body>
                 <Text style={styles.text}>Hallo {influencerName}!</Text>
                 <Text style={styles.text}>
-                    Unser Kunde {customerName} hat sich für eine*n andere*n Kooperationspartner
-                    entschieden.
+                    Unser Kunde {customerName} hat sich für eine*n andere*n Kooperationspartner entschieden.
                     <br />
-                    Wir danken Ihnen dennoch für ihr Interesse und freuen uns auf eine zukünftige
-                    Zusammenarbeit.
+                    Wir danken Ihnen dennoch für ihr Interesse und freuen uns auf eine zukünftige Zusammenarbeit.
                 </Text>
             </Body>
         </Html>
