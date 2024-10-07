@@ -63,11 +63,7 @@ export function SideBar() {
         },
     };
     return (
-        <Box
-            id="SideBar"
-            className="sideBar"
-            sx={sx}
-        >
+        <Box id="SideBar" className="sideBar" sx={sx}>
             <SwinxLogo /* raveMode */ />
             <UserView />
             <Box id="sideBarButtons">
@@ -75,21 +71,17 @@ export function SideBar() {
                     //User is not in buttons allowed groups
 
                     if (!sb.allowedGroups.some((x) => groups.data.includes(x))) return null;
-                    return (
-                        <SideBarLink
-                            key={sb.id.toString()}
-                            link={sb.url}
-                            title={sb.title}
-                        />
-                    );
+                    return <SideBarLink key={sb.id.toString()} link={sb.url} title={sb.title} />;
                 })}
-                {environment.data?.awsBranch === "sandbox" && (
-                    <SideBarLink link={"/FollowerAnalysis"} />
-                )}
+                {environment.data?.awsBranch === "sandbox" && <SideBarLink link={"/FollowerAnalysis"} />}
             </Box>
             <Box id="debugButtons">
-                <Typography variant="h6">Debug</Typography>
-                {groups.data.includes("admin") && <DebugButtons />}
+                {groups.data.includes("admin") && (
+                    <>
+                        <Typography variant="h6">Debug</Typography>
+                        <DebugButtons />
+                    </>
+                )}
             </Box>
         </Box>
     );

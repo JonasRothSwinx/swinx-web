@@ -1,5 +1,5 @@
-/** @type {import("@typescript-eslint/utils/dist/ts-eslint/Linter").Linter.Config} c */
-var c = castConfig({
+/** @type {import("@typescript-eslint/utils/dist/ts-eslint/Linter").Linter} c */
+var c = {
     env: {
         browser: true,
         es2021: true,
@@ -55,5 +55,5 @@ var c = castConfig({
         "no-inner-declarations": "off",
         "react/react-in-jsx-scope": "off",
     },
-});
+};
 module.exports = c;

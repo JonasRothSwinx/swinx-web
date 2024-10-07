@@ -9,11 +9,7 @@ import { ProjectManagerDialog } from "@/app/Components";
 import { queryKeys } from "@/app/(main)/queryClient/keys";
 
 export function UserView() {
-    const { user, signOut, authStatus } = useAuthenticator((context) => [
-        context.user,
-        context.authStatus,
-    ]);
-    user.signInDetails?.loginId;
+    const { user, signOut, authStatus } = useAuthenticator((context) => [context.user, context.authStatus]);
     const attributes = useQuery({
         queryKey: queryKeys.currentUser.userAttributes(),
         queryFn: async () => {
@@ -34,6 +30,7 @@ export function UserView() {
             attributes.data.sub !== undefined &&
             userGroups.data &&
             ["projektmanager", "admin"].some((group) => userGroups.data.includes(group)),
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: queryKeys.currentUser.projectManager(),
         queryFn: async () => {
             // console.log("fetching project manager entry");
@@ -82,16 +79,9 @@ export function UserView() {
                     cognitoId={attributes.data.sub}
                 />
             )}
-            <Box
-                id="UserSection"
-                sx={sx}
-            >
+            <Box id="UserSection" sx={sx}>
                 <Typography id="Greeting">Hallo {attributes?.data.given_name ?? ""}</Typography>
-                <Button
-                    sx={{ background: "darkgray", color: "white" }}
-                    variant="outlined"
-                    onClick={signOut}
-                >
+                <Button sx={{ background: "darkgray", color: "white" }} variant="outlined" onClick={signOut}>
                     Abmelden
                 </Button>
                 <Typography variant="h6">Gruppen:</Typography>
