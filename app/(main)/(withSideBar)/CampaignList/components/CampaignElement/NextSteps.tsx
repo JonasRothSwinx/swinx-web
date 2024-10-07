@@ -2,17 +2,7 @@ import { queryKeys } from "@/app/(main)/queryClient/keys";
 import { assignment } from "@/app/ServerFunctions/database/dataClients/assignments";
 import { Campaigns, Event, Assignment, Influencers } from "@/app/ServerFunctions/types";
 import { dataClient } from "@dataClient";
-import {
-    Box,
-    Icon,
-    List,
-    ListItem,
-    ListItemIcon,
-    ListItemText,
-    Skeleton,
-    SxProps,
-    Typography,
-} from "@mui/material";
+import { Box, Icon, List, ListItem, ListItemIcon, ListItemText, Skeleton, SxProps, Typography } from "@mui/material";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { Dayjs, dayjs } from "@/app/utils";
@@ -124,16 +114,15 @@ export function NextSteps({ campaignId }: NextStepsProps) {
             assignments: assignments.map((x) => x.data),
             influencers: influencers.map((x) => x.data),
         });
-    }, [campaign.data, events, assignments]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [campaign.data, ...events, ...assignments]);
     const isFetching = useMemo(() => {
         return [...events, ...assignments].some((x) => x.isFetching);
-    }, [events, assignments]);
-    if ([campaign, ...events, ...assignments].some((x) => x.isLoading))
-        return <Skeleton id="NextStepsSkeleton" />;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [...events, ...assignments]);
+    if ([campaign, ...events, ...assignments].some((x) => x.isLoading)) return <Skeleton id="NextStepsSkeleton" />;
     if ([campaign, ...events, ...assignments].some((x) => x.isError)) {
-        const errors = [campaign, ...events, ...assignments]
-            .filter((x) => x.isError)
-            .map((x) => x.error);
+        const errors = [campaign, ...events, ...assignments].filter((x) => x.isError).map((x) => x.error);
         return (
             <Typography>
                 Error loading next steps
@@ -164,14 +153,8 @@ export function NextSteps({ campaignId }: NextStepsProps) {
         },
     };
     return (
-        <Box
-            className={["categoryContainer", isFetching ? "loading" : ""].join(" ")}
-            sx={sx}
-        >
-            <Typography
-                variant="h6"
-                className="categoryTitle"
-            >
+        <Box className={["categoryContainer", isFetching ? "loading" : ""].join(" ")} sx={sx}>
+            <Typography variant="h6" className="categoryTitle">
                 Nächste Schritte
             </Typography>
             <List>
@@ -194,12 +177,7 @@ interface DetermineNextStepsProps {
     assignments: Assignment[];
     influencers: Influencers.Influencer[];
 }
-function determineNextSteps({
-    campaign,
-    events,
-    assignments,
-    influencers,
-}: DetermineNextStepsProps): string[] {
+function determineNextSteps({ campaign, events, assignments, influencers }: DetermineNextStepsProps): string[] {
     const nextSteps: string[] = [];
     const webinars = events.filter((event) => event.type === "Webinar");
     if (webinars.length === 0) {
@@ -233,10 +211,7 @@ function determineNextSteps({
     assignmentCategories.placeholder.forEach((assignment) => {
         if (assignment.timelineEvents.length === 0) {
             nextSteps.push(`Weise Aufgaben für Influencer ${assignment.placeholderName} zu`);
-        } else if (
-            !assignment.influencer &&
-            (!assignment.candidates || assignment.candidates?.length === 0)
-        ) {
+        } else if (!assignment.influencer && (!assignment.candidates || assignment.candidates?.length === 0)) {
             nextSteps.push(`Finde einen Influencer für ${assignment.placeholderName}`);
         } else if (!assignment.influencer) {
             nextSteps.push(`  Bestätigung von Influencer für ${assignment.placeholderName}`);
@@ -251,9 +226,7 @@ function determineNextSteps({
                     if (
                         event.info &&
                         event.info.draftDeadline &&
-                        ["WAITING_FOR_DRAFT", "WAITING_FOR_APPROVAL", "REJECTED"].includes(
-                            event.status,
-                        )
+                        ["WAITING_FOR_DRAFT", "WAITING_FOR_APPROVAL", "REJECTED"].includes(event.status)
                     ) {
                         return dayjs(event.info?.draftDeadline);
                     } else return dayjs(event.date);
@@ -269,30 +242,26 @@ function determineNextSteps({
                         case "WAITING_FOR_DRAFT": {
                             nextSteps.push(
                                 `Beitragsentwurf von ${influencerName} bis ${dateFormat(
-                                    dayjs(nextEvent.info?.draftDeadline),
-                                )}`,
+                                    dayjs(nextEvent.info?.draftDeadline)
+                                )}`
                             );
                             break;
                         }
                         case "WAITING_FOR_APPROVAL": {
-                            nextSteps.push(
-                                `Beitragsentwurf von  ${influencerName} wartet auf Freigabe!`,
-                            );
+                            nextSteps.push(`Beitragsentwurf von  ${influencerName} wartet auf Freigabe!`);
                             break;
                         }
                         case "APPROVED": {
                             nextSteps.push(
-                                `Beitragsveröffentlichung von ${influencerName} am ${dateFormat(
-                                    nextEvent.date,
-                                )}`,
+                                `Beitragsveröffentlichung von ${influencerName} am ${dateFormat(nextEvent.date)}`
                             );
                             break;
                         }
                         case "REJECTED": {
                             nextSteps.push(
                                 `Angepasster Entwurf von ${influencerName} bis ${dateFormat(
-                                    dayjs(nextEvent.info?.draftDeadline),
-                                )}`,
+                                    dayjs(nextEvent.info?.draftDeadline)
+                                )}`
                             );
                             break;
                         }
@@ -307,8 +276,8 @@ function determineNextSteps({
                         case "WAITING_FOR_DRAFT": {
                             nextSteps.push(
                                 `Videoaufnahme von ${influencerName} bis ${dateFormat(
-                                    dayjs(nextEvent.info?.draftDeadline),
-                                )}`,
+                                    dayjs(nextEvent.info?.draftDeadline)
+                                )}`
                             );
                             break;
                         }
@@ -318,17 +287,15 @@ function determineNextSteps({
                         }
                         case "APPROVED": {
                             nextSteps.push(
-                                `Beitragsveröffentlichung von ${influencerName} am ${dateFormat(
-                                    nextEvent.date,
-                                )}`,
+                                `Beitragsveröffentlichung von ${influencerName} am ${dateFormat(nextEvent.date)}`
                             );
                             break;
                         }
                         case "REJECTED": {
                             nextSteps.push(
                                 `Angepasstes Video von ${influencerName} bis ${dateFormat(
-                                    dayjs(nextEvent.info?.draftDeadline),
-                                )}`,
+                                    dayjs(nextEvent.info?.draftDeadline)
+                                )}`
                             );
                             break;
                         }
@@ -341,17 +308,11 @@ function determineNextSteps({
                 case "Invites": {
                     switch (nextEvent.status) {
                         case "WAITING_FOR_DRAFT": {
-                            nextSteps.push(
-                                `Einladungsversand von ${influencerName} am ${dateFormat(
-                                    nextEvent.date,
-                                )}`,
-                            );
+                            nextSteps.push(`Einladungsversand von ${influencerName} am ${dateFormat(nextEvent.date)}`);
                             break;
                         }
                         case "WAITING_FOR_APPROVAL": {
-                            nextSteps.push(
-                                `${influencerName} hat Screenshot von Einladungen eingeschickt`,
-                            );
+                            nextSteps.push(`${influencerName} hat Screenshot von Einladungen eingeschickt`);
                             break;
                         }
                         default: {
@@ -365,30 +326,26 @@ function determineNextSteps({
                         case "WAITING_FOR_DRAFT": {
                             nextSteps.push(
                                 `Impuls-Videoaufnahme von ${influencerName} bis ${dateFormat(
-                                    dayjs(nextEvent.info?.draftDeadline),
-                                )}`,
+                                    dayjs(nextEvent.info?.draftDeadline)
+                                )}`
                             );
                             break;
                         }
                         case "WAITING_FOR_APPROVAL": {
-                            nextSteps.push(
-                                `Impuls-Video von ${influencerName} wartet auf Freigabe!`,
-                            );
+                            nextSteps.push(`Impuls-Video von ${influencerName} wartet auf Freigabe!`);
                             break;
                         }
                         case "APPROVED": {
                             nextSteps.push(
-                                `Impuls-Beitragsveröffentlichung von ${influencerName} am ${dateFormat(
-                                    nextEvent.date,
-                                )}`,
+                                `Impuls-Beitragsveröffentlichung von ${influencerName} am ${dateFormat(nextEvent.date)}`
                             );
                             break;
                         }
                         case "REJECTED": {
                             nextSteps.push(
                                 `Angepasstes Impuls-Video von ${influencerName} bis ${dateFormat(
-                                    dayjs(nextEvent.info?.draftDeadline),
-                                )}`,
+                                    dayjs(nextEvent.info?.draftDeadline)
+                                )}`
                             );
                             break;
                         }
@@ -403,30 +360,24 @@ function determineNextSteps({
                         case "WAITING_FOR_DRAFT": {
                             nextSteps.push(
                                 `Webinar-Vortrag von ${influencerName} bis ${dateFormat(
-                                    dayjs(nextEvent.info?.draftDeadline),
-                                )}`,
+                                    dayjs(nextEvent.info?.draftDeadline)
+                                )}`
                             );
                             break;
                         }
                         case "WAITING_FOR_APPROVAL": {
-                            nextSteps.push(
-                                `Webinar-Vortrag von ${influencerName} wartet auf Freigabe!`,
-                            );
+                            nextSteps.push(`Webinar-Vortrag von ${influencerName} wartet auf Freigabe!`);
                             break;
                         }
                         case "APPROVED": {
-                            nextSteps.push(
-                                `Webinar-Vortrag von ${influencerName} am ${dateFormat(
-                                    nextEvent.date,
-                                )}`,
-                            );
+                            nextSteps.push(`Webinar-Vortrag von ${influencerName} am ${dateFormat(nextEvent.date)}`);
                             break;
                         }
                         case "REJECTED": {
                             nextSteps.push(
                                 `Angepasster Webinar-Vortrag von ${influencerName} bis ${dateFormat(
-                                    dayjs(nextEvent.info?.draftDeadline),
-                                )}`,
+                                    dayjs(nextEvent.info?.draftDeadline)
+                                )}`
                             );
                             break;
                         }

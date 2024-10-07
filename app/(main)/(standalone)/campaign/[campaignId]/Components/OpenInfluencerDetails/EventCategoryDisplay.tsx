@@ -1,25 +1,20 @@
 import { timelineEventTypesType } from "@/amplify/data/types";
 import { CheckIcon, ExpandMoreIcon } from "@/app/Definitions/Icons";
 import { Event, Events } from "@/app/ServerFunctions/types";
-import {
-    Accordion,
-    AccordionDetails,
-    AccordionSummary,
-    Grid2 as Grid,
-    Typography,
-} from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Grid2 as Grid, Typography } from "@mui/material";
 import { EventCategory } from "./functions/categorizeEvents";
 import dayjs from "dayjs";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { highlightData } from "@/app/Definitions/types";
 import { randomId } from "@mui/x-data-grid-generator";
+import React from "react";
 
 //#region config
 interface CategoryTitleProps {
     events: Event[];
 }
 const CategoryTitle: {
-    [key in Events.singleEventType]: (props: CategoryTitleProps) => JSX.Element;
+    [key in Events.singleEventType]: (props: CategoryTitleProps) => React.JSX.Element;
 } = {
     Invites: (props) => <InviteEventsDisplayTitle {...props} />,
     Post: (props) => <PostEventsDisplayTitle {...props} />,
@@ -34,7 +29,7 @@ interface CategoryDetailsProps {
     highlightData?: highlightData[];
 }
 const CategoryDetails: {
-    [key in Events.singleEventType]: (props: CategoryDetailsProps) => JSX.Element;
+    [key in Events.singleEventType]: (props: CategoryDetailsProps) => React.JSX.Element;
 } = {
     Invites: (props) => <InviteEventsDetails {...props} />,
     Post: (props) => <PostEventsDetails {...props} />,
@@ -127,14 +122,7 @@ function EventFinished(props: { date: string }) {
     }
     return (
         <div style={{ maxHeight: ".8em", overflow: "visible" }}>
-            {date.isBefore(dayjs()) ? (
-                <CheckIcon
-                    color={"success"}
-                    sx={{ overflow: "hidden" }}
-                />
-            ) : (
-                <></>
-            )}
+            {date.isBefore(dayjs()) ? <CheckIcon color={"success"} sx={{ overflow: "hidden" }} /> : <></>}
         </div>
     );
 }
@@ -150,10 +138,7 @@ function InviteEventsDisplayTitle(props: { events: Event[] }) {
     }, 0);
     return (
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Grid
-                container
-                sx={{ width: "100%" }}
-            >
+            <Grid container sx={{ width: "100%" }}>
                 <Grid size={eventTypeColumnWidth}>
                     {Events.getDisplayName(events[0].type, events.length > 1 ? "plur" : "sing")}
                 </Grid>
@@ -193,20 +178,9 @@ function InviteEventItem(props: {
     const { event, setHighlightedEvent } = props;
     if (!Events.isInviteEvent(event)) return <>Error</>;
     return (
-        <div
-            onClick={() => setHighlightedEvent(event)}
-            style={{ backgroundColor: props.highlightData?.color }}
-        >
-            <Grid
-                container
-                columnGap={"10px"}
-            >
-                <Grid
-                    size={4}
-                    paddingRight="5px"
-                    display={"flex"}
-                    justifyContent={"flex-end"}
-                >
+        <div onClick={() => setHighlightedEvent(event)} style={{ backgroundColor: props.highlightData?.color }}>
+            <Grid container columnGap={"10px"}>
+                <Grid size={4} paddingRight="5px" display={"flex"} justifyContent={"flex-end"}>
                     <EventDate date={props.event.date ?? ""} />
                 </Grid>
                 <Grid size={4}>
@@ -215,10 +189,7 @@ function InviteEventItem(props: {
                 <Grid>
                     <Typography>{event.eventTaskAmount}</Typography>
                 </Grid>
-                <Grid
-                    size={1}
-                    sx={{ "& .MuiGrid2-root,&": { overflowY: "hidden!important" } }}
-                >
+                <Grid size={1} sx={{ "& .MuiGrid2-root,&": { overflowY: "hidden!important" } }}>
                     <EventFinished date={props.event.date ?? ""} />
                 </Grid>
             </Grid>
@@ -232,10 +203,7 @@ function PostEventsDisplayTitle(props: { events: Event[] }) {
     const { events } = props;
     return (
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Grid
-                container
-                sx={{ width: "100%" }}
-            >
+            <Grid container sx={{ width: "100%" }}>
                 <Grid size={eventTypeColumnWidth}>
                     {Events.getDisplayName(events[0].type, events.length > 1 ? "plur" : "sing")}
                 </Grid>
@@ -269,30 +237,16 @@ function PostEventItem(props: {
 }) {
     const { event, setHighlightedEvent } = props;
     return (
-        <div
-            onClick={() => setHighlightedEvent(event)}
-            style={{ backgroundColor: props.highlightData?.color }}
-        >
-            <Grid
-                container
-                columnGap={"10px"}
-            >
-                <Grid
-                    size={4}
-                    paddingRight="5px"
-                    display={"flex"}
-                    justifyContent={"flex-end"}
-                >
+        <div onClick={() => setHighlightedEvent(event)} style={{ backgroundColor: props.highlightData?.color }}>
+            <Grid container columnGap={"10px"}>
+                <Grid size={4} paddingRight="5px" display={"flex"} justifyContent={"flex-end"}>
                     <EventDate date={props.event.date ?? ""} />
                 </Grid>
                 <Grid size={4}>
                     <EventDateRelative date={props.event.date ?? ""} />
                 </Grid>
                 <Grid />
-                <Grid
-                    size={1}
-                    sx={{ "& .MuiGrid2-root,&": { overflowY: "hidden!important" } }}
-                >
+                <Grid size={1} sx={{ "& .MuiGrid2-root,&": { overflowY: "hidden!important" } }}>
                     <EventFinished date={props.event.date ?? ""} />
                 </Grid>
             </Grid>
@@ -306,10 +260,7 @@ function WebinarSpeakerEventsDisplayTitle(props: { events: Event[] }) {
     const { events } = props;
     return (
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Grid
-                container
-                sx={{ width: "100%" }}
-            >
+            <Grid container sx={{ width: "100%" }}>
                 <Grid size={eventTypeColumnWidth}>
                     {Events.getDisplayName(events[0].type, events.length > 1 ? "plur" : "sing")}
                 </Grid>
@@ -345,30 +296,16 @@ function WebinarEventItem(props: {
 }) {
     const { event, setHighlightedEvent } = props;
     return (
-        <div
-            onClick={() => setHighlightedEvent(event)}
-            style={{ backgroundColor: props.highlightData?.color }}
-        >
-            <Grid
-                container
-                columnGap={"10px"}
-            >
-                <Grid
-                    size={4}
-                    paddingRight="5px"
-                    display={"flex"}
-                    justifyContent={"flex-end"}
-                >
+        <div onClick={() => setHighlightedEvent(event)} style={{ backgroundColor: props.highlightData?.color }}>
+            <Grid container columnGap={"10px"}>
+                <Grid size={4} paddingRight="5px" display={"flex"} justifyContent={"flex-end"}>
                     <EventDate date={props.event.date ?? ""} />
                 </Grid>
                 <Grid size={4}>
                     <EventDateRelative date={props.event.date ?? ""} />
                 </Grid>
                 <Grid />
-                <Grid
-                    size={1}
-                    sx={{ "& .MuiGrid2-root,&": { overflowY: "hidden!important" } }}
-                >
+                <Grid size={1} sx={{ "& .MuiGrid2-root,&": { overflowY: "hidden!important" } }}>
                     <EventFinished date={props.event.date ?? ""} />
                 </Grid>
             </Grid>
@@ -382,10 +319,7 @@ function VideoEventsDisplayTitle(props: { events: Event[] }) {
     const { events } = props;
     return (
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Grid
-                container
-                sx={{ width: "100%" }}
-            >
+            <Grid container sx={{ width: "100%" }}>
                 <Grid size={eventTypeColumnWidth}>
                     {Events.getDisplayName(events[0].type, events.length > 1 ? "plur" : "sing")}
                 </Grid>
@@ -421,31 +355,16 @@ function VideoEventItem(props: {
 }) {
     const { event, setHighlightedEvent } = props;
     return (
-        <div
-            onClick={() => setHighlightedEvent(event)}
-            style={{ backgroundColor: props.highlightData?.color }}
-        >
-            <Grid
-                container
-                columnGap={"10px"}
-                width={"100%"}
-            >
-                <Grid
-                    size={4}
-                    paddingRight="5px"
-                    display={"flex"}
-                    justifyContent={"flex-end"}
-                >
+        <div onClick={() => setHighlightedEvent(event)} style={{ backgroundColor: props.highlightData?.color }}>
+            <Grid container columnGap={"10px"} width={"100%"}>
+                <Grid size={4} paddingRight="5px" display={"flex"} justifyContent={"flex-end"}>
                     <EventDate date={props.event.date ?? ""} />
                 </Grid>
                 <Grid size={4}>
                     <EventDateRelative date={props.event.date ?? ""} />
                 </Grid>
                 <Grid />
-                <Grid
-                    size={1}
-                    sx={{ "& .MuiGrid2-root,&": { overflowY: "hidden!important" } }}
-                >
+                <Grid size={1} sx={{ "& .MuiGrid2-root,&": { overflowY: "hidden!important" } }}>
                     <EventFinished date={props.event.date ?? ""} />
                 </Grid>
             </Grid>
@@ -459,10 +378,7 @@ function ImpulsVideoEventsDisplayTitle(props: { events: Event[] }) {
     const { events } = props;
     return (
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Grid
-                container
-                sx={{ width: "100%" }}
-            >
+            <Grid container sx={{ width: "100%" }}>
                 <Grid size={eventTypeColumnWidth}>
                     {Events.getDisplayName(events[0].type, events.length > 1 ? "plur" : "sing")}
                 </Grid>
@@ -498,31 +414,16 @@ function ImpulsVideoEventItem(props: {
 }) {
     const { event, setHighlightedEvent } = props;
     return (
-        <div
-            onClick={() => setHighlightedEvent(event)}
-            style={{ backgroundColor: props.highlightData?.color }}
-        >
-            <Grid
-                container
-                columnGap={"10px"}
-                width={"100%"}
-            >
-                <Grid
-                    size={4}
-                    paddingRight="5px"
-                    display={"flex"}
-                    justifyContent={"flex-end"}
-                >
+        <div onClick={() => setHighlightedEvent(event)} style={{ backgroundColor: props.highlightData?.color }}>
+            <Grid container columnGap={"10px"} width={"100%"}>
+                <Grid size={4} paddingRight="5px" display={"flex"} justifyContent={"flex-end"}>
                     <EventDate date={props.event.date ?? ""} />
                 </Grid>
                 <Grid size={4}>
                     <EventDateRelative date={props.event.date ?? ""} />
                 </Grid>
                 <Grid />
-                <Grid
-                    size={1}
-                    sx={{ "& .MuiGrid2-root,&": { overflowY: "hidden!important" } }}
-                >
+                <Grid size={1} sx={{ "& .MuiGrid2-root,&": { overflowY: "hidden!important" } }}>
                     <EventFinished date={props.event.date ?? ""} />
                 </Grid>
             </Grid>

@@ -17,7 +17,7 @@ import { SwinxLogo } from "./Components/SwinxLogo";
 import Title from "./Components/Title";
 import Introduction from "./Components/Introduction";
 import { Engineering } from "@mui/icons-material";
-import { sleep } from "../utils";
+import { CampaignInviteEncodedData, sleep } from "../utils";
 import ResponseButtons from "./Components/ResponseButtons";
 
 export default function ResponseLanding() {

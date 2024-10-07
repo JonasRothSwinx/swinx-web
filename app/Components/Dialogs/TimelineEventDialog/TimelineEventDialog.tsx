@@ -16,7 +16,7 @@ import {
 import { dayjs, Dayjs } from "@/app/utils";
 import { UseMutationResult, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import "dayjs/locale/de";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import DateSelector from "./EventDetails/DateSelector";
 import { submitEvent } from "./actions/submitEvent";
 import EventDetails from "./EventDetails/EventDetails";

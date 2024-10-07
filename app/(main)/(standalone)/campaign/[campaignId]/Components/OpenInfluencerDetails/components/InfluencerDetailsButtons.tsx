@@ -6,16 +6,9 @@ import {
     PersonSearchIcon,
     PrintIcon,
 } from "@/app/Definitions/Icons";
-import {
-    Assignment,
-    Campaign,
-    Influencer,
-    Event,
-    Events,
-    Influencers,
-} from "@/app/ServerFunctions/types";
+import { Assignment, Campaign, Influencer, Event, Events, Influencers } from "@/app/ServerFunctions/types";
 import { Tooltip, IconButton, Box } from "@mui/material";
-import { MouseEvent, useState } from "react";
+import React, { MouseEvent, useState } from "react";
 import { TimelineEventDialog, BudgetDialog } from "@/app/Components/Dialogs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
@@ -26,14 +19,7 @@ import { encodeQueryParams, getTaskPageUrl } from "@/app/utils";
 import Link from "next/link";
 import { queryKeys } from "@/app/(main)/queryClient/keys";
 
-type openDialog =
-    | "none"
-    | "timelineEvent"
-    | "candidates"
-    | "budget"
-    | "notes"
-    | "delete"
-    | "emailPreview";
+type openDialog = "none" | "timelineEvent" | "candidates" | "budget" | "notes" | "delete" | "emailPreview";
 
 export type InfluencerDetailsButtonsOpenDialog = openDialog;
 
@@ -47,15 +33,7 @@ interface InfluencerDetailsButtonProps {
     events: Event[];
 }
 export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
-    const {
-        isProcessing,
-        setIsProcessing,
-        campaign,
-        setCampaign,
-        assignment,
-        influencers,
-        events,
-    } = props;
+    const { isProcessing, setIsProcessing, campaign, setCampaign, assignment, influencers, events } = props;
     const queryClient = useQueryClient();
     const [openDialog, setOpenDialog] = useState<openDialog>("none");
     const userGroups = useQuery({
@@ -94,7 +72,7 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
                 queryClient.setQueryData(["assignment", assignment.id], undefined);
                 queryClient.setQueryData(
                     ["assignments", campaign.id],
-                    prevAssignments.filter((x) => x.id !== assignment.id),
+                    prevAssignments.filter((x) => x.id !== assignment.id)
                 );
                 queryClient.setQueryData(["campaign", campaign.id], {
                     ...prevCampaign,
@@ -137,9 +115,7 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             const newCampaign: Campaign = {
                 ...campaign,
                 assignedInfluencers: [
-                    ...campaign.assignedInfluencers.map((x) =>
-                        x.id === targetAssignment.id ? targetAssignment : x,
-                    ),
+                    ...campaign.assignedInfluencers.map((x) => (x.id === targetAssignment.id ? targetAssignment : x)),
                 ],
             };
             // console.log({ newCampaign, assignments: newCampaign.assignedInfluencers });
@@ -155,7 +131,7 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
         },
     };
     const DialogElements: {
-        [state in openDialog]: () => JSX.Element | null;
+        [state in openDialog]: () => React.JSX.Element | null;
     } = {
         none: () => null,
         timelineEvent: () => (
@@ -210,70 +186,39 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             }}
         >
             {DialogElements[openDialog]()}
-            <Tooltip
-                title="Honorar bearbeiten"
-                placement="top"
-            >
+            <Tooltip title="Honorar bearbeiten" placement="top">
                 <Box>
-                    <IconButton
-                        disabled={isProcessing}
-                        onClick={EventHandlers.openBudget()}
-                    >
+                    <IconButton disabled={isProcessing} onClick={EventHandlers.openBudget()}>
                         <EuroSymbolIcon color={assignment.budget ? "inherit" : "error"} />
                     </IconButton>
                 </Box>
             </Tooltip>
             {hasNecessaryData(assignment, events) && (
-                <Tooltip
-                    title="Kandidaten zuweisen"
-                    placement="top"
-                >
+                <Tooltip title="Kandidaten zuweisen" placement="top">
                     <span>
-                        <IconButton
-                            disabled={isProcessing}
-                            onClick={EventHandlers.openCandidates()}
-                        >
+                        <IconButton disabled={isProcessing} onClick={EventHandlers.openCandidates()}>
                             <PersonSearchIcon />
                         </IconButton>
                     </span>
                 </Tooltip>
             )}
-            <Tooltip
-                title="Aufgaben zuweisen"
-                placement="top"
-            >
+            <Tooltip title="Aufgaben zuweisen" placement="top">
                 <span>
-                    <IconButton
-                        disabled={isProcessing}
-                        onClick={EventHandlers.addEvents()}
-                    >
+                    <IconButton disabled={isProcessing} onClick={EventHandlers.addEvents()}>
                         <AddIcon color={events.length > 0 ? "inherit" : "error"} />
                     </IconButton>
                 </span>
             </Tooltip>
-            <Tooltip
-                title="Löschen"
-                placement="top"
-            >
+            <Tooltip title="Löschen" placement="top">
                 <span>
-                    <IconButton
-                        color="error"
-                        onClick={EventHandlers.confirmDelete()}
-                        disabled={isProcessing}
-                    >
+                    <IconButton color="error" onClick={EventHandlers.confirmDelete()} disabled={isProcessing}>
                         <DeleteIcon />
                     </IconButton>
                 </span>
             </Tooltip>
             {assignment.timelineEvents.length > 0 && (
-                <Tooltip
-                    title="Zur Statuspage des Influencers"
-                    placement="top"
-                >
-                    <Link
-                        href={`/tasks/${assignment.id}`}
-                        target="_blank"
-                    >
+                <Tooltip title="Zur Statuspage des Influencers" placement="top">
+                    <Link href={`/tasks/${assignment.id}`} target="_blank">
                         <IconButton>
                             <ArrowOutwardIcon />
                         </IconButton>
@@ -282,15 +227,9 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             )}
             {userGroups.data?.includes("admin") && (
                 <>
-                    <Tooltip
-                        title="Log assignment"
-                        placement="top"
-                    >
+                    <Tooltip title="Log assignment" placement="top">
                         <span>
-                            <IconButton
-                                disabled={isProcessing}
-                                onClick={() => console.log(assignment)}
-                            >
+                            <IconButton disabled={isProcessing} onClick={() => console.log(assignment)}>
                                 <PrintIcon />
                             </IconButton>
                         </span>

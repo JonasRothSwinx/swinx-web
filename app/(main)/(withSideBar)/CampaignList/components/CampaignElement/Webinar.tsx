@@ -18,9 +18,7 @@ export function Webinar({ campaignId }: WebinarProps) {
             return campaign;
         },
     });
-    const webinarIds = campaign.data?.events
-        ?.filter((event) => event.type === "Webinar")
-        .map((event) => event.id);
+    const webinarIds = campaign.data?.events?.filter((event) => event.type === "Webinar").map((event) => event.id);
 
     const webinars = useQueries({
         queries:
@@ -32,7 +30,8 @@ export function Webinar({ campaignId }: WebinarProps) {
                 },
             })) ?? [],
     });
-    const isFetching = useMemo(() => webinars.some((x) => x.isFetching), [webinars]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const isFetching = useMemo(() => webinars.some((x) => x.isFetching), [...webinars]);
     if (webinars.some((x) => x.isLoading)) return <Skeleton id="WebinarSkeleton" />;
     if (webinars.some((x) => x.isError)) return <Typography>Error loading webinars</Typography>;
     if (webinars.length === 0) return null;
@@ -42,23 +41,15 @@ export function Webinar({ campaignId }: WebinarProps) {
                 <Typography>Keine Webinare</Typography>
             ) : (
                 <>
-                    <Typography
-                        variant="h6"
-                        className="categoryTitle"
-                    >
+                    <Typography variant="h6" className="categoryTitle">
                         Webinare
                     </Typography>
                     {webinars.map(({ data: webinar }) => {
                         if (!webinar) return null;
                         const date = dayjs(webinar.date).format("DD.MM.YYYY");
                         return (
-                            <Box
-                                key={webinar.id}
-                                className="categoryElement"
-                            >
-                                <Typography>
-                                    {`${dateFormat(webinar.date)} - "${webinar.eventTitle}"`}
-                                </Typography>
+                            <Box key={webinar.id} className="categoryElement">
+                                <Typography>{`${dateFormat(webinar.date)} - "${webinar.eventTitle}"`}</Typography>
                             </Box>
                         );
                     })}

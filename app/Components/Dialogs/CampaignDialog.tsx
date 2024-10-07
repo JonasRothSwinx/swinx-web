@@ -13,7 +13,7 @@ import {
     TextField,
 } from "@mui/material";
 import { DateTimeValidationError, PickerChangeHandlerContext } from "@mui/x-date-pickers";
-import { ChangeEvent, useEffect, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import { CustomerDialogContent } from "./CustomerDialog";
 import { Tab } from "@mui/material";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
@@ -52,12 +52,7 @@ type CampaignDialogProps = {
     // parent: Campaign[];
     isOpen?: boolean;
 };
-export function CampaignDialog({
-    isOpen = false,
-    onClose,
-    editing,
-    editingData,
-}: CampaignDialogProps) {
+export function CampaignDialog({ isOpen = false, onClose, editing, editingData }: CampaignDialogProps) {
     const router = useRouter();
     //##################
     //#region States
@@ -134,10 +129,7 @@ export function CampaignDialog({
             // EventHandlers.handleClose(true);
         },
 
-        handleDateChange: (
-            newValue: Dayjs | null,
-            context: PickerChangeHandlerContext<DateTimeValidationError>,
-        ) => {
+        handleDateChange: (newValue: Dayjs | null, context: PickerChangeHandlerContext<DateTimeValidationError>) => {
             // console.log("value", newValue);
             try {
                 const newDate = dayjs(newValue);
@@ -195,16 +187,10 @@ export function CampaignDialog({
                     setBillingAdress={setBillingAdress}
                 />
                 <DialogActions>
-                    <Button
-                        onClick={() => EventHandlers.handleClose(false)}
-                        color="secondary"
-                    >
+                    <Button onClick={() => EventHandlers.handleClose(false)} color="secondary">
                         Abbrechen
                     </Button>
-                    <Button
-                        variant="contained"
-                        type="submit"
-                    >
+                    <Button variant="contained" type="submit">
                         Speichern
                     </Button>
                 </DialogActions>
@@ -223,8 +209,7 @@ interface FormContentProps {
 }
 
 function FormContent(props: FormContentProps) {
-    const { customers, setCustomers, campaign, setCampaign, billingAdress, setBillingAdress } =
-        props;
+    const { customers, setCustomers, campaign, setCampaign, billingAdress, setBillingAdress } = props;
 
     const [tab, setTab] = useState("0");
     const EventHandlers = {
@@ -281,15 +266,10 @@ function FormContent(props: FormContentProps) {
             </IconButton> */}
                     {customers.map((customer, index) => {
                         return (
-                            <TabPanel
-                                key={index}
-                                value={index.toString()}
-                            >
+                            <TabPanel key={index} value={index.toString()}>
                                 <CustomerDialogContent
                                     customer={customer}
-                                    setCustomer={(changedData) =>
-                                        StateChanges.handleCustomerChange(changedData, index)
-                                    }
+                                    setCustomer={(changedData) => StateChanges.handleCustomerChange(changedData, index)}
                                     deleteCustomer={() => StateChanges.deleteCustomer(index)}
                                     index={index}
                                 />
@@ -300,17 +280,11 @@ function FormContent(props: FormContentProps) {
             </DialogContent>
             <DialogContent>
                 <DialogContentText>Budget</DialogContentText>
-                <BudgetInfo
-                    campaign={campaign}
-                    setCampaign={setCampaign}
-                />
+                <BudgetInfo campaign={campaign} setCampaign={setCampaign} />
             </DialogContent>
             <DialogContent>
                 <DialogContentText>Rechnungsadresse</DialogContentText>
-                <BillingAdressInfo
-                    billingAdress={billingAdress}
-                    setBillingAdress={setBillingAdress}
-                />
+                <BillingAdressInfo billingAdress={billingAdress} setBillingAdress={setBillingAdress} />
             </DialogContent>
         </Box>
     );

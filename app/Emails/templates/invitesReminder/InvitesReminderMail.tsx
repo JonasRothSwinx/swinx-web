@@ -8,7 +8,7 @@ import DebugTemplates from "../../DebugTemplates";
 import PlaceholderList from "../_components/placeholderList";
 import { TemplateVariables, defaultParams } from "./TemplateVariables";
 
-const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
+const placeholders: { [key in keyof TemplateVariables]: React.JSX.Element | string } = {
     name: Placeholder({ name: "name" }),
     inviteAmount: Placeholder({ name: "inviteAmount" }),
     customerName: Placeholder({ name: "customerName" }),
@@ -20,7 +20,7 @@ const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } =
     taskPageLink: Placeholder({ name: "taskPageLink" }),
 };
 const EmailTemplates: {
-    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
+    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => React.JSX.Element;
 } = {
     new: (debug?) => <NewInvitesReminder debug={debug} />,
     reduced: (debug?) => <ReducedInvitesReminder debug={debug} />,
@@ -37,59 +37,7 @@ InvitesReminderMail.PreviewProps = {
 } satisfies EmailProps;
 
 function NewInvitesReminder(props: DebugToggle) {
-    const {
-        name,
-        inviteAmount,
-        customerName,
-        eventName,
-        eventLink,
-        filterCountries,
-        actionTime,
-        taskPageLink,
-    } = props.debug ? defaultParams : placeholders;
-    const filterJobGroups = props.debug ? (
-        <ul>
-            {defaultParams.filterJobGroups.map((a, index) => (
-                <li key={index}>{a.jobGroup}</li>
-            ))}
-        </ul>
-    ) : (
-        placeholders.filterJobGroups
-    );
-    return (
-        <Html
-            dir="ltr"
-            lang="de"
-        >
-            <Head />
-            <Preview>Erinnerung: Einladungen</Preview>
-            <Text style={styles.text}>Hallo {name}!</Text>
-            <Text style={styles.text}>
-                Wir möchten sie daran erinnern, dass sie {actionTime} {inviteAmount} Einladungen für
-                das Event <Link href={eventLink as string}>{eventName}</Link> von unserem Kunden{" "}
-                {customerName} versenden sollen.
-                <br />
-                Bitte benutzen sie dafür unsere Browser Extension, mit ihrer personalisierten
-                Filter-Datei, die sie von uns erhalten haben.
-            </Text>
-            <Text style={styles.text}>
-                {`Bitte laden Sie im Anschluss einen Screenshot auf unserer Plattform hoch`}
-            </Text>
-            {/* <Container> */}
-            <Button
-                style={styles.responseButton}
-                href={placeholders.taskPageLink.toString()}
-            >
-                Zur Übersicht
-            </Button>
-            {/* </Container> */}
-            <Signature />
-        </Html>
-    );
-}
-
-function ReducedInvitesReminder(props: DebugToggle) {
-    const { name, inviteAmount, customerName, eventName, eventLink, filterCountries, actionTime } =
+    const { name, inviteAmount, customerName, eventName, eventLink, filterCountries, actionTime, taskPageLink } =
         props.debug ? defaultParams : placeholders;
     const filterJobGroups = props.debug ? (
         <ul>
@@ -101,20 +49,54 @@ function ReducedInvitesReminder(props: DebugToggle) {
         placeholders.filterJobGroups
     );
     return (
-        <Html
-            dir="ltr"
-            lang="de"
-        >
+        <Html dir="ltr" lang="de">
             <Head />
             <Preview>Erinnerung: Einladungen</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
-                Wir möchten dich daran erinnern, dass du {actionTime} {inviteAmount} Einladungen für
-                das Event <Link href={eventLink as string}>{eventName}</Link> von unserem Kunden{" "}
-                {customerName} versenden sollst.
+                Wir möchten sie daran erinnern, dass sie {actionTime} {inviteAmount} Einladungen für das Event{" "}
+                <Link href={eventLink as string}>{eventName}</Link> von unserem Kunden {customerName} versenden sollen.
                 <br />
-                Bitte schicke nur Einladungen an deine Follower*innen aus {filterCountries}, die
-                folgenden Branchen tätig sind:
+                Bitte benutzen sie dafür unsere Browser Extension, mit ihrer personalisierten Filter-Datei, die sie von
+                uns erhalten haben.
+            </Text>
+            <Text style={styles.text}>
+                {`Bitte laden Sie im Anschluss einen Screenshot auf unserer Plattform hoch`}
+            </Text>
+            {/* <Container> */}
+            <Button style={styles.responseButton} href={placeholders.taskPageLink.toString()}>
+                Zur Übersicht
+            </Button>
+            {/* </Container> */}
+            <Signature />
+        </Html>
+    );
+}
+
+function ReducedInvitesReminder(props: DebugToggle) {
+    const { name, inviteAmount, customerName, eventName, eventLink, filterCountries, actionTime } = props.debug
+        ? defaultParams
+        : placeholders;
+    const filterJobGroups = props.debug ? (
+        <ul>
+            {defaultParams.filterJobGroups.map((a, index) => (
+                <li key={index}>{a.jobGroup}</li>
+            ))}
+        </ul>
+    ) : (
+        placeholders.filterJobGroups
+    );
+    return (
+        <Html dir="ltr" lang="de">
+            <Head />
+            <Preview>Erinnerung: Einladungen</Preview>
+            <Text style={styles.text}>Hallo {name}!</Text>
+            <Text style={styles.text}>
+                Wir möchten dich daran erinnern, dass du {actionTime} {inviteAmount} Einladungen für das Event{" "}
+                <Link href={eventLink as string}>{eventName}</Link> von unserem Kunden {customerName} versenden sollst.
+                <br />
+                Bitte schicke nur Einladungen an deine Follower*innen aus {filterCountries}, die folgenden Branchen
+                tätig sind:
                 <br />
                 {filterJobGroups}
                 Bitte teile uns danach mit, ob alles funktioniert hat.

@@ -1,6 +1,7 @@
 import { Button, Container, Head, Html, Preview, Text } from "@react-email/components";
 import styles from "../../../Emails/templates/styles";
 import { Candidates } from "@/app/ServerFunctions/types";
+import React from "react";
 
 interface InfluencerResponseEmailProps {
     response: Candidates.candidateResponse;
@@ -27,21 +28,13 @@ export default function InfluencerResponseEmail({
     }
 }
 
-function Accepted({
-    influencerName,
-    customerCompany,
-    feedback,
-}: Omit<InfluencerResponseEmailProps, "response">) {
+function Accepted({ influencerName, customerCompany, feedback }: Omit<InfluencerResponseEmailProps, "response">) {
     return (
-        <Html
-            dir="ltr"
-            lang="de"
-        >
+        <Html dir="ltr" lang="de">
             <Head />
             <Preview>{influencerName} möchte an der Kamapgne teilnehmen</Preview>
             <Text style={styles.text}>
-                {influencerName} hat bestägtigt, dass er/sie an der Kampagne von {customerCompany}{" "}
-                teilnehmen möchte.
+                {influencerName} hat bestägtigt, dass er/sie an der Kampagne von {customerCompany} teilnehmen möchte.
             </Text>
             {feedback && (
                 <Text>
@@ -58,10 +51,7 @@ function Declined({
     feedback,
 }: Omit<InfluencerResponseEmailProps, "response">) {
     return (
-        <Html
-            dir="ltr"
-            lang="de"
-        >
+        <Html dir="ltr" lang="de">
             <Head />
             <Preview>{InfluencerName} möchte nicht an der Kampagne teilnehmen</Preview>
             <Text style={styles.text}>
@@ -79,15 +69,12 @@ function Declined({
 
 function Pending(InfluencerName: string, customerCompany: string): React.JSX.Element {
     return (
-        <Html
-            dir="ltr"
-            lang="de"
-        >
+        <Html dir="ltr" lang="de">
             <Head />
             <Preview>{InfluencerName} hat seine Entscheidung geändert</Preview>
             <Text style={styles.text}>
-                {InfluencerName} hat seine vorherige Entscheidung zurückgesetzt und wird sich neu
-                über die Teilnahme an der Kampagne von {customerCompany} entscheiden..
+                {InfluencerName} hat seine vorherige Entscheidung zurückgesetzt und wird sich neu über die Teilnahme an
+                der Kampagne von {customerCompany} entscheiden..
             </Text>
         </Html>
     );

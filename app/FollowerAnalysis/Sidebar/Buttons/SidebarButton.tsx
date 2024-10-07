@@ -24,7 +24,7 @@ export class SidebarButton extends React.Component {
             cursor: "pointer",
         },
     };
-    render(): JSX.Element {
+    render(): React.JSX.Element {
         return (
             <Box sx={this.style}>
                 <Link href={this.linkTo}></Link>;

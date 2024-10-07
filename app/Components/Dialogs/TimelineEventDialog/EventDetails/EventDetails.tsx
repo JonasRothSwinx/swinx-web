@@ -257,7 +257,7 @@ interface AdditionalFieldsProps {
     onChange: (data: Partial<Event>[]) => void;
 }
 const AdditionalFields: {
-    [key in Events.EventType]?: (props: AdditionalFieldsProps) => JSX.Element;
+    [key in Events.EventType]?: (props: AdditionalFieldsProps) => React.JSX.Element;
 } = {
     Webinar: (props) => <AudienceTargetFilter {...props} />,
 };
@@ -265,7 +265,7 @@ const AdditionalFields: {
 function getDataKey(
     key: relevantDetailsKey,
     data: Partial<Event>,
-    updatedData: Partial<Event>,
+    updatedData: Partial<Event>
 ): string | number | null | undefined {
     switch (key) {
         //in info
@@ -302,7 +302,7 @@ interface DetailsProps {
     updatedData: Partial<Event>[];
     setUpdatedData: Dispatch<SetStateAction<DetailsProps["updatedData"]>>;
 }
-export default function EventDetails(props: DetailsProps): JSX.Element {
+export default function EventDetails(props: DetailsProps): React.JSX.Element {
     const { applyDetailsChange, data, isEditing = false, setUpdatedData, updatedData } = props;
 
     function handleChange(key: relevantDetailsKey, value: string | number | Dayjs) {
@@ -376,12 +376,7 @@ export default function EventDetails(props: DetailsProps): JSX.Element {
     }
     if (!data.type) return <></>;
     return (
-        <DialogContent
-            id="eventDetails"
-            className="eventDetails"
-            dividers
-            sx={sxProps}
-        >
+        <DialogContent id="eventDetails" className="eventDetails" dividers sx={sxProps}>
             {/* <Button onClick={printData}>Print Data</Button> */}
             {Object.entries(EventTypeConfig[data.type]).map(([key, config]) => {
                 const keyName = key as relevantDetailsKey;
@@ -418,7 +413,7 @@ interface EventDetailFieldProps {
     config: DetailsConfigEntry;
     changeHandler: (value: string | number) => void;
 }
-function EventDetailField(props: EventDetailFieldProps): JSX.Element {
+function EventDetailField(props: EventDetailFieldProps): React.JSX.Element {
     const { id, event, name, value, config, changeHandler } = props;
     if (!config.enabled) return <></>;
     const { label, type } = config;
@@ -466,10 +461,7 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
             );
         case "date":
             return (
-                <Tooltip
-                    title={config.tooltipTitle ?? ""}
-                    placement="top-start"
-                >
+                <Tooltip title={config.tooltipTitle ?? ""} placement="top-start">
                     <Box
                         className="eventDetailField"
                         sx={{
@@ -479,10 +471,7 @@ function EventDetailField(props: EventDetailFieldProps): JSX.Element {
                             },
                         }}
                     >
-                        <LocalizationProvider
-                            dateAdapter={AdapterDayjs}
-                            adapterLocale="de"
-                        >
+                        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
                             <DatePicker
                                 // closeOnSelect={false}
                                 label={label}

@@ -5,8 +5,9 @@ import { Placeholder, Signature } from "../../_components";
 import { DebugToggle, EmailProps } from "../../types";
 import DebugTemplates from "../../../DebugTemplates";
 import { TemplateVariables, defaultParams } from "./TemplateVariables";
+import React from "react";
 
-const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
+const placeholders: { [key in keyof TemplateVariables]: React.JSX.Element | string } = {
     name: Placeholder({ name: "name" }),
     customerName: Placeholder({ name: "customerName" }),
     topic: Placeholder({ name: "topic" }),
@@ -14,7 +15,7 @@ const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } =
     taskPageLink: Placeholder({ name: "taskPageLink" }),
 };
 const EmailTemplates: {
-    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
+    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => React.JSX.Element;
 } = {
     new: (debug?) => <NewVideoDraftDeadlineReminder />,
     reduced: (debug?) => <ReducedVideoDraftDeadlineReminder />,
@@ -31,25 +32,17 @@ VideoDraftDeadlineReminderEmail.PreviewProps = {
 function NewVideoDraftDeadlineReminder(props: DebugToggle) {
     const { name, customerName, topic, actionTime } = props.debug ? defaultParams : placeholders;
     return (
-        <Html
-            dir="ltr"
-            lang="de"
-        >
+        <Html dir="ltr" lang="de">
             <Head />
             <Preview>Erinnerung: Deadline für Video</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
-                Wir möchten sie daran erinnern, dass sie bis {actionTime} noch ein Video für den
-                Kunden {customerName} zum Thema {topic} bei uns einreichen müssen.
+                Wir möchten sie daran erinnern, dass sie bis {actionTime} noch ein Video für den Kunden {customerName}{" "}
+                zum Thema {topic} bei uns einreichen müssen.
             </Text>
-            <Text style={styles.text}>
-                Bitte laden Sie Ihre Aufnahme auf unserer Plattform hoch
-            </Text>
+            <Text style={styles.text}>Bitte laden Sie Ihre Aufnahme auf unserer Plattform hoch</Text>
             {/* <Container> */}
-            <Button
-                style={styles.responseButton}
-                href={placeholders.taskPageLink.toString()}
-            >
+            <Button style={styles.responseButton} href={placeholders.taskPageLink.toString()}>
                 Zur Übersicht
             </Button>
             <Signature />
@@ -60,16 +53,13 @@ function NewVideoDraftDeadlineReminder(props: DebugToggle) {
 function ReducedVideoDraftDeadlineReminder(props: DebugToggle) {
     const { name, customerName, topic } = props.debug ? defaultParams : placeholders;
     return (
-        <Html
-            dir="ltr"
-            lang="de"
-        >
+        <Html dir="ltr" lang="de">
             <Head />
             <Preview>Erinnerung: Deadline für Video</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
-                Wir möchten dich daran erinnern, dass du noch ein Video für den Kunden{" "}
-                {customerName} zum Thema {topic} bei uns einreichen musst.
+                Wir möchten dich daran erinnern, dass du noch ein Video für den Kunden {customerName} zum Thema {topic}{" "}
+                bei uns einreichen musst.
             </Text>
             <Signature />
         </Html>

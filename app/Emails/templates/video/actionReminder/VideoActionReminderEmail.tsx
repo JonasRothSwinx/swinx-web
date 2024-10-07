@@ -5,6 +5,7 @@ import { Placeholder, Signature } from "../../_components";
 import { DebugToggle, EmailProps } from "../../types";
 import DebugTemplates from "../../../DebugTemplates";
 import { TemplateVariables } from "./TemplateVariables";
+import React from "react";
 
 const placeholders: { [key in keyof TemplateVariables]: string } = {
     name: Placeholder({ name: "name" }),
@@ -16,7 +17,7 @@ const placeholders: { [key in keyof TemplateVariables]: string } = {
 };
 
 const EmailTemplates: {
-    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
+    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => React.JSX.Element;
 } = {
     new: (debug?) => <NewVideoActionReminder debug={debug} />,
     reduced: (debug?) => <ReducedVideoActionReminder debug={debug} />,
@@ -42,10 +43,7 @@ function NewVideoActionReminder(props: DebugToggle) {
         taskPageLink,
     } = placeholders;
     return (
-        <Html
-            dir="ltr"
-            lang="de"
-        >
+        <Html dir="ltr" lang="de">
             <Head />
             <Preview>Erinnerung: Beitragsveröffentlichung</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
@@ -57,26 +55,22 @@ function NewVideoActionReminder(props: DebugToggle) {
                 Wichtig: <br />
                 <ul>
                     <li>
-                        Vergiss bitte nicht <Link href={customerLink}>{customerName}</Link> aktiv zu
-                        markieren (= anklickbar)
+                        Vergiss bitte nicht <Link href={customerLink}>{customerName}</Link> aktiv zu markieren (=
+                        anklickbar)
                     </li>
                     <li>
-                        Bitte keine Dritt-Marken /-Personen taggen und am selben Tag auch sonst
-                        keinen anderen Beitrag posten (für 24 h)
+                        Bitte keine Dritt-Marken /-Personen taggen und am selben Tag auch sonst keinen anderen Beitrag
+                        posten (für 24 h)
                     </li>
                     <li>Bitte verwende das freigegebene Video und den Beitragstext</li>
                 </ul>
             </Text>
             <Text style={styles.text}>
-                Bitte tragen sie im Anschluss den Link auf den veröffentlichten Beitrag auf unserer
-                Plattform ein
+                Bitte tragen sie im Anschluss den Link auf den veröffentlichten Beitrag auf unserer Plattform ein
                 <br />
                 Dort können sie auch die für den Beitrag freigegebenen Medien herunterladen.
             </Text>
-            <Button
-                style={styles.responseButton}
-                href={placeholders.taskPageLink.toString()}
-            >
+            <Button style={styles.responseButton} href={placeholders.taskPageLink.toString()}>
                 Zur Übersicht
             </Button>
             <Signature />
@@ -86,25 +80,15 @@ function NewVideoActionReminder(props: DebugToggle) {
 
 function ReducedVideoActionReminder(props: DebugToggle) {
     return (
-        <Html
-            dir="ltr"
-            lang="de"
-        >
+        <Html dir="ltr" lang="de">
             <Head />
             <Preview>Erinnerung: Videoaktion</Preview>
             <Text style={styles.text}>Hallo {placeholders.name}!</Text>
             <Text style={styles.text}>
-                Wir möchten dich daran erinnern, dass du heute deinen Videobeitrag veröffentlichen
-                musst.
+                Wir möchten dich daran erinnern, dass du heute deinen Videobeitrag veröffentlichen musst.
             </Text>
-            <Container
-                align="left"
-                style={styles.buttonContainer}
-            >
-                <Button
-                    style={styles.responseButton}
-                    href="https://www.swinx.de"
-                >
+            <Container align="left" style={styles.buttonContainer}>
+                <Button style={styles.responseButton} href="https://www.swinx.de">
                     Zu Swinx
                 </Button>
             </Container>

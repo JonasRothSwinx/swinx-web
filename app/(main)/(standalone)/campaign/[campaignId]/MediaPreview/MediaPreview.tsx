@@ -20,10 +20,10 @@ import { Event } from "@/app/ServerFunctions/types";
 import { RefreshIcon } from "@/app/Definitions/Icons";
 import { useMemo } from "react";
 
-interface MediaPreview {
+interface MediaPreviewProps {
     campaignId: string;
 }
-export function MediaPreview({ campaignId }: MediaPreview) {
+export function MediaPreview({ campaignId }: MediaPreviewProps) {
     const queryClient = useQueryClient();
     const allFiles = useQuery({
         queryKey: ["files", campaignId],
@@ -67,51 +67,25 @@ export function MediaPreview({ campaignId }: MediaPreview) {
         },
     };
     if (allFiles.isError) return <Typography>Error: {allFiles.error.message}</Typography>;
-    if (allFiles.isLoading)
-        return (
-            <LoadingElement
-                textMessage="Lade Medien für Kampagne"
-                hideLogo
-            />
-        );
+    if (allFiles.isLoading) return <LoadingElement textMessage="Lade Medien für Kampagne" hideLogo />;
     if (allFiles.data && Object.keys(allFiles.data).length === 0)
         return (
-            <Box
-                id="MediaColumn"
-                className="MediaColumn"
-                sx={sx}
-            >
-                <Box
-                    id="TitleContainer"
-                    className="TitleContainer"
-                >
+            <Box id="MediaColumn" className="MediaColumn" sx={sx}>
+                <Box id="TitleContainer" className="TitleContainer">
                     <Typography textAlign={"center"}>Keine Medien warten auf Freigabe</Typography>
                     <RefreshButton />
                 </Box>
             </Box>
         );
     return (
-        <Box
-            id="MediaColumn"
-            className="MediaColumn"
-            sx={sx}
-        >
-            <Box
-                id="TitleContainer"
-                className="TitleContainer"
-            >
+        <Box id="MediaColumn" className="MediaColumn" sx={sx}>
+            <Box id="TitleContainer" className="TitleContainer">
                 <Typography textAlign={"center"}>Medien warten auf Freigabe!</Typography>
                 <RefreshButton />
             </Box>
             {allFiles.data &&
                 Object.entries(allFiles.data).map(([eventId, files]) => {
-                    return (
-                        <EventMediaDisplay
-                            key={eventId}
-                            eventId={eventId}
-                            files={files}
-                        />
-                    );
+                    return <EventMediaDisplay key={eventId} eventId={eventId} files={files} />;
                 })}
             {/* {JSON.stringify(allFiles.data, null, 2)} */}
         </Box>
@@ -143,7 +117,7 @@ async function groupFilesByEvent({ files }: GroupFilesByEvent): Promise<GroupFil
                 out[eventId]?.[dataKey]?.push(file);
             }
             return;
-        }),
+        })
     );
     return out;
 }
@@ -173,10 +147,7 @@ function EventMediaDisplay({ eventId, files }: EventMediaDisplayProps) {
     if (event.isLoading || !event.data) return <Skeleton />;
     if (event.data.status !== "WAITING_FOR_APPROVAL") return null;
     return (
-        <Box
-            className="EventMediaContainer"
-            sx={sx}
-        >
+        <Box className="EventMediaContainer" sx={sx}>
             <Accordion>
                 <AccordionSummary>
                     <EventDescription eventId={eventId} />
@@ -198,10 +169,7 @@ function EventMediaDisplay({ eventId, files }: EventMediaDisplayProps) {
                             },
                         });
                     })}
-                    <EventMediaButtons
-                        eventId={eventId}
-                        campaignId={event.data.campaign.id}
-                    />
+                    <EventMediaButtons eventId={eventId} campaignId={event.data.campaign.id} />
                 </AccordionDetails>
             </Accordion>
         </Box>
@@ -224,8 +192,7 @@ function EventDescription({ eventId }: { eventId: string }) {
     const influencerName = `${assignment.influencer?.firstName} ${assignment.influencer?.lastName}`;
     return (
         <Typography>
-            <strong>{`${eventTypeDictionary[event.data.type]}`}</strong> von{" "}
-            <strong>{`${influencerName}`}</strong> am{" "}
+            <strong>{`${eventTypeDictionary[event.data.type]}`}</strong> von <strong>{`${influencerName}`}</strong> am{" "}
             <strong>{`${dayjs(event.data.date).format("DD.MM")}`}</strong>
         </Typography>
     );
@@ -288,15 +255,8 @@ function EventMediaButtons({ eventId, campaignId }: EventMediaButtonsProps) {
     });
 
     return (
-        <Box
-            sx={sx}
-            className="EventMediaButtons"
-        >
-            <Button
-                disabled={approve.isPending}
-                variant={"contained"}
-                onClick={() => approve.mutate()}
-            >
+        <Box sx={sx} className="EventMediaButtons">
+            <Button disabled={approve.isPending} variant={"contained"} onClick={() => approve.mutate()}>
                 {approve.isPending ? <CircularProgress /> : "Inhalte freigeben"}
             </Button>
         </Box>
@@ -330,7 +290,7 @@ function RefreshButton() {
                 },
             },
         }),
-        [refresh.isPending],
+        [refresh.isPending]
     );
     return (
         // <Box
@@ -338,12 +298,7 @@ function RefreshButton() {
         //     className="RefreshButton"
         // >
         // </Box>
-        <IconButton
-            sx={sx}
-            className="RefreshButton"
-            onClick={() => refresh.mutate()}
-            disabled={refresh.isPending}
-        >
+        <IconButton sx={sx} className="RefreshButton" onClick={() => refresh.mutate()} disabled={refresh.isPending}>
             <RefreshIcon />
         </IconButton>
     );

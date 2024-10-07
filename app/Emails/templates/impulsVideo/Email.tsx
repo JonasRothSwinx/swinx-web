@@ -15,7 +15,7 @@ export const defaultParams: TemplateVariables = {
     taskPageLink: "https://example.com",
 };
 
-const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
+const placeholders: { [key in keyof TemplateVariables]: React.JSX.Element | string } = {
     name: Placeholder({ name: "name" }),
     customerName: Placeholder({ name: "customerName" }),
     dueDate: Placeholder({ name: "dueDate" }),
@@ -24,7 +24,7 @@ const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } =
 };
 
 const EmailTemplates: {
-    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
+    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => React.JSX.Element;
 } = {
     new: (debug?) => <NewReminder debug={debug} />,
     reduced: (debug?) => <ReducedReminder debug={debug} />,
@@ -45,24 +45,16 @@ function NewReminder(props: DebugToggle) {
     const { name, customerName, dueDate, topic } = props.debug ? defaultParams : placeholders;
 
     return (
-        <Html
-            dir="ltr"
-            lang="de"
-        >
+        <Html dir="ltr" lang="de">
             <Head />
             <Preview>Aufnahme für Impulsvideo</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
                 {`Wir möchten sie daran erinnern, dass sie uns bis spätestens ${dueDate} ihre Aufnahme für den Kunden ${customerName} zum Thema ${topic} zuschicken sollen.`}
             </Text>
-            <Text style={styles.text}>
-                {`Bitte laden Sie Ihre Aufnahme auf unserer Plattform hoch`}
-            </Text>
+            <Text style={styles.text}>{`Bitte laden Sie Ihre Aufnahme auf unserer Plattform hoch`}</Text>
             {/* <Container> */}
-            <Button
-                style={styles.responseButton}
-                href={placeholders.taskPageLink.toString()}
-            >
+            <Button style={styles.responseButton} href={placeholders.taskPageLink.toString()}>
                 Zur Übersicht
             </Button>
             {/* </Container> */}
@@ -76,10 +68,7 @@ function ReducedReminder(props: DebugToggle) {
     const { name, customerName, dueDate, topic } = props.debug ? defaultParams : placeholders;
 
     return (
-        <Html
-            dir="ltr"
-            lang="de"
-        >
+        <Html dir="ltr" lang="de">
             <Head />
             <Preview>Aufnahme für Impulsvideo</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>

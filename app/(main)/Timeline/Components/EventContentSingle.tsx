@@ -4,6 +4,7 @@ import { groupBy } from "../Functions/groupEvents";
 import { dayjs } from "@/app/utils";
 import { timelineEventTypesType } from "@/amplify/data/types";
 import { DeleteIcon, EditIcon } from "@/app/Definitions/Icons";
+import React from "react";
 
 interface EventContentProps {
     event: Events.SingleEvent;
@@ -13,7 +14,7 @@ interface EventContentProps {
 type eventType = Events.singleEventType;
 export default function EventContentSingle(props: EventContentProps) {
     const { event, columnSize = 10, editing = false } = props;
-    const EventElement: { [key in eventType]: JSX.Element } = {
+    const EventElement: { [key in eventType]: React.JSX.Element } = {
         Invites: <InviteEventContent event={event} />,
         ImpulsVideo: <ImpulsVideoEventContent event={event} />,
         Post: <PostEventContent event={event} />,
@@ -28,10 +29,7 @@ export default function EventContentSingle(props: EventContentProps) {
         //     xs={columnSize}
         // >
         // </Grid>
-        <TableCell
-            className="EventContentCell"
-            width={"100%"}
-        >
+        <TableCell className="EventContentCell" width={"100%"}>
             <Box className="EventContent">{EventElement[event.type as eventType] ?? <></>}</Box>
         </TableCell>
     );

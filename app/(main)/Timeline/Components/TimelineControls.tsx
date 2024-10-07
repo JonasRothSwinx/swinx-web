@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState } from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import { Campaign, Influencer, Influencers } from "@/app/ServerFunctions/types/";
 import { Box, Button, MenuItem, TextField, Typography } from "@mui/material";
 import { groupBy } from "../Functions/groupEvents";
@@ -46,7 +46,7 @@ export default function TimelineControls(props: TimelineControlsProps) {
         }
         setOpenDialog("None");
     }
-    const Dialogs: { [key in openDialog]: JSX.Element | null } = {
+    const Dialogs: { [key in openDialog]: React.JSX.Element | null } = {
         None: null,
         Timeline: <TimelineEventDialog onClose={onDialogClose} campaignId={campaign.id} editing={false} />,
     };

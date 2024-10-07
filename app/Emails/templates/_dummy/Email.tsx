@@ -14,11 +14,11 @@ export const defaultParams: TemplateVariables = {
     lorem: "ipsum",
 };
 
-const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
+const placeholders: { [key in keyof TemplateVariables]: React.JSX.Element | string } = {
     lorem: Placeholder({ name: "lorem" }),
 };
 const EmailTemplates: {
-    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
+    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => React.JSX.Element;
 } = {
     new: (debug?) => <NewCampaignInvite debug={debug} />,
     reduced: (debug?) => <ReducedCampaignInvite debug={debug} />,
@@ -38,10 +38,7 @@ function NewCampaignInvite(props: DebugToggle) {
     const {} = props.debug ? defaultParams : placeholders;
 
     return (
-        <Html
-            dir="ltr"
-            lang="de"
-        >
+        <Html dir="ltr" lang="de">
             <Head />
             {/* <Preview>Anfrage für Kooperation</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
@@ -69,10 +66,7 @@ function ReducedCampaignInvite(props: DebugToggle) {
     const assignments = props.debug;
 
     return (
-        <Html
-            dir="ltr"
-            lang="de"
-        >
+        <Html dir="ltr" lang="de">
             {/* <Head />
             <Preview>Einladung zur Kampagne</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>

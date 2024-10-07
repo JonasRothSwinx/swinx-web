@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Customer, NextSteps, ProjectManager, Webinar } from ".";
 import { InfluencersInfo } from "./Influencers";
 
-interface CampaignElement {
+interface CampaignElementProps {
     campaignId: string;
     show?: {
         manager?: boolean;
@@ -26,7 +26,7 @@ export function CampaignElement({
         influencer: showInfluencer = true,
         nextSteps: showNextSteps = true,
     } = {},
-}: CampaignElement) {
+}: CampaignElementProps) {
     const campaign = useQuery({
         queryKey: ["campaigns", campaignId],
         queryFn: async () => {
@@ -103,15 +103,8 @@ export function CampaignElement({
         );
     if (!campaign.data) return null;
     return (
-        <Link
-            id="campaignElementLinkWrapper"
-            href={`/campaign/${campaignId}`}
-            passHref
-        >
-            <Box
-                id="campaignElementContent"
-                sx={sx}
-            >
+        <Link id="campaignElementLinkWrapper" href={`/campaign/${campaignId}`} passHref>
+            <Box id="campaignElementContent" sx={sx}>
                 <LoadingIndicator />
                 {showId && <Typography>id: {campaignId}</Typography>}
                 {showManager && <ProjectManager campaignId={campaignId} />}
@@ -125,10 +118,5 @@ export function CampaignElement({
 }
 
 function LoadingIndicator() {
-    return (
-        <CircularProgress
-            id="loadingIndicator"
-            size="20px"
-        />
-    );
+    return <CircularProgress id="loadingIndicator" size="20px" />;
 }

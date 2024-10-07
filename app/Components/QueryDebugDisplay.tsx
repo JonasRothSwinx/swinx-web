@@ -64,20 +64,11 @@ export function QueryDebugDisplay(props: TimelineDebugDisplayProps) {
                             <RefreshIcon />
                         </IconButton>
 
-                        <Grid
-                            container
-                            width={"100%"}
-                        >
-                            <Grid
-                                size={6}
-                                style={{ paddingRight: "10px" }}
-                            >
+                        <Grid container width={"100%"}>
+                            <Grid size={6} style={{ paddingRight: "10px" }}>
                                 {query.name}
                             </Grid>
-                            <Grid
-                                size={"auto"}
-                                style={{ paddingRight: "10px" }}
-                            >
+                            <Grid size={"auto"} style={{ paddingRight: "10px" }}>
                                 <StatusDisplay {...query} />
                             </Grid>
                             <ResultsDisplay {...query} />
@@ -95,15 +86,13 @@ function StatusDisplay(query: queryData) {
         case isLoading:
             return (
                 <Typography color={"darkgoldenrod"}>
-                    Loading...{" "}
-                    {query.failureCount > 0 ? `Failed ${query.failureCount} times` : null}
+                    Loading... {query.failureCount > 0 ? `Failed ${query.failureCount} times` : null}
                 </Typography>
             );
         case isFetching:
             return (
                 <Typography color={"darkgoldenrod"}>
-                    Fetching...{" "}
-                    {query.failureCount > 0 ? `Failed ${query.failureCount} times` : null}
+                    Fetching... {query.failureCount > 0 ? `Failed ${query.failureCount} times` : null}
                 </Typography>
             );
         case isError:

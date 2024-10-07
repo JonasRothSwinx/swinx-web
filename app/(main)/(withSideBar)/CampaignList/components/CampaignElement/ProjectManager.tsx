@@ -24,15 +24,14 @@ export function ProjectManager({ campaignId }: ProjectManagerProps) {
             })) ?? []),
         ],
     });
-    const isFetchingData = useMemo(() => managers.some((x) => x.isFetching), [managers]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const isFetchingData = useMemo(() => managers.some((x) => x.isFetching), [...managers]);
     if (managers.some((x) => x.isLoading)) return <Skeleton />;
     return (
         <Box className={[isFetchingData ? "loading" : ""].join(" ")}>
             {managers.map(({ data: manager }) => {
                 if (!manager) return null;
-                return (
-                    <Typography key={manager.id}>{ProjectManagers.getFullName(manager)}</Typography>
-                );
+                return <Typography key={manager.id}>{ProjectManagers.getFullName(manager)}</Typography>;
             })}
         </Box>
     );

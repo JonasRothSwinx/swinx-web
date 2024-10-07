@@ -14,7 +14,7 @@ import {
     Typography,
 } from "@mui/material";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 
 const groupOptions = ["manager", "none"] as const;
 export type GroupBy = (typeof groupOptions)[number];

@@ -7,7 +7,7 @@ import React from "react";
 import DebugTemplates from "../../../DebugTemplates";
 import { TemplateVariables, defaultParams } from "./TemplateVariables";
 
-const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
+const placeholders: { [key in keyof TemplateVariables]: React.JSX.Element | string } = {
     name: Placeholder({ name: "name" }),
     customerName: Placeholder({ name: "customerName" }),
     topic: Placeholder({ name: "topic" }),
@@ -15,7 +15,7 @@ const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } =
     taskPageLink: Placeholder({ name: "taskPageLink" }),
 };
 const EmailTemplates: {
-    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
+    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => React.JSX.Element;
 } = {
     new: (debug?) => <NewPostDraftDeadlineReminder debug={debug} />,
     reduced: (debug?) => <ReducedDraftPostDeadlineReminder debug={debug} />,
@@ -31,28 +31,20 @@ PostDraftDeadlineReminderEmail.PreviewProps = {
 } satisfies EmailProps;
 
 function NewPostDraftDeadlineReminder(props: DebugToggle) {
-    const { name, customerName, topic, actionTime, taskPageLink } = props.debug
-        ? defaultParams
-        : placeholders;
+    const { name, customerName, topic, actionTime, taskPageLink } = props.debug ? defaultParams : placeholders;
     return (
-        <Html
-            dir="ltr"
-            lang="de"
-        >
+        <Html dir="ltr" lang="de">
             <Head />
             <Preview>Erinnerung: Deadline für Beitragsentwurf</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
-                Wir möchten Sie daran erinnern, dass Sie bis {actionTime} noch einen Beitragsentwurf
-                für den Kunden {customerName}
+                Wir möchten Sie daran erinnern, dass Sie bis {actionTime} noch einen Beitragsentwurf für den Kunden{" "}
+                {customerName}
                 {""}
                 zum Thema {topic} bei uns einreichen müssen.
             </Text>
             <Text style={styles.text}>Bitte laden sie den Entwurf auf unserer Plattform hoch.</Text>
-            <Button
-                style={styles.responseButton}
-                href={placeholders.taskPageLink.toString()}
-            >
+            <Button style={styles.responseButton} href={placeholders.taskPageLink.toString()}>
                 Zur Übersicht
             </Button>
             <Signature />
@@ -63,16 +55,12 @@ function NewPostDraftDeadlineReminder(props: DebugToggle) {
 function ReducedDraftPostDeadlineReminder(props: DebugToggle) {
     const { name, customerName, topic } = props.debug ? defaultParams : placeholders;
     return (
-        <Html
-            dir="ltr"
-            lang="de"
-        >
+        <Html dir="ltr" lang="de">
             <Head />
             <Preview>Erinnerung: Deadline für Beitragsentwurf</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
-                Wir möchten dich daran erinnern, dass du noch einen Beitragsentwurf für den Kunden{" "}
-                {customerName}
+                Wir möchten dich daran erinnern, dass du noch einen Beitragsentwurf für den Kunden {customerName}
                 zum Thema {topic} bei uns einreichen musst.
             </Text>
             <Signature />

@@ -6,6 +6,7 @@ import { ConfigureAmplifyClientSide } from "../Components";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ConfirmProvider } from "material-ui-confirm";
 import { Box, createTheme, ThemeProvider } from "@mui/material";
+import React from "react";
 
 const queryClient = new QueryClient({
     defaultOptions: {

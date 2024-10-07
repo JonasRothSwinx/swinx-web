@@ -4,7 +4,7 @@ import { dataClient } from "@dataClient";
 import { Campaign } from "@/app/ServerFunctions/types";
 import { Box, SxProps, Typography } from "@mui/material";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import React, { useState } from "react";
 import { CampaignActionButtons, GroupBy } from "./ActionBar";
 import { CampaignElement, CampaignsByManager } from "./components";
 import { queryKeys } from "../../queryClient/keys";
@@ -50,14 +50,8 @@ export function CampaignList2() {
             padding: "1rem 0",
         },
     };
-    if (campaigns.isLoading)
-        return (
-            <LoadingElement
-                textMessage="Kampagnen werden geladen"
-                hideLogo
-            />
-        );
-    const dialog: { [key in DialogState]: () => JSX.Element } = {
+    if (campaigns.isLoading) return <LoadingElement textMessage="Kampagnen werden geladen" hideLogo />;
+    const dialog: { [key in DialogState]: () => React.JSX.Element } = {
         none: () => <></>,
         campaign: () => (
             <CampaignDialog
@@ -73,16 +67,11 @@ export function CampaignList2() {
         webinar: () => <></>,
         timelineEvent: () => <></>,
     };
-    const groupedDisplay: { [key in GroupBy]: () => JSX.Element } = {
+    const groupedDisplay: { [key in GroupBy]: () => React.JSX.Element } = {
         none: () => (
             <Box id="CampaignContainer">
                 {campaigns.data?.map((campaign) => {
-                    return (
-                        <CampaignElement
-                            key={campaign.id}
-                            campaignId={campaign.id}
-                        />
-                    );
+                    return <CampaignElement key={campaign.id} campaignId={campaign.id} />;
                 })}
             </Box>
         ),
@@ -91,14 +80,8 @@ export function CampaignList2() {
     return (
         <>
             {dialog[openDialog]()}
-            <Box
-                id="CampaignList"
-                sx={sx}
-            >
-                <Typography
-                    id="Title"
-                    variant="h3"
-                >
+            <Box id="CampaignList" sx={sx}>
+                <Typography id="Title" variant="h3">
                     Kampagnen
                 </Typography>
                 <CampaignActionButtons
