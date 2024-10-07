@@ -6,10 +6,11 @@ import sortEvents, { SortedEvents } from "../Functions/sortEvents";
 import Loading from "./Loading";
 import Descriptions from "./AsssignmentDescriptions";
 import { dataClient } from "../Functions/Database";
+import React from "react";
 
 //MARK: - AssignmentDescription
 type EventTypeDescription = {
-    [key: string]: (props: { events: TimelineEvent[] }) => Nullable<JSX.Element>;
+    [key: string]: (props: { events: TimelineEvent[] }) => Nullable<React.JSX.Element>;
 };
 const eventTypeDescription: EventTypeDescription = {
     Webinar: (props) => null,
