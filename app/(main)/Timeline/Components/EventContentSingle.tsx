@@ -29,8 +29,11 @@ export default function EventContentSingle(props: EventContentProps) {
         //     xs={columnSize}
         // >
         // </Grid>
-        <TableCell className="EventContentCell" width={"100%"}>
-            <Box className="EventContent">{EventElement[event.type as eventType] ?? <></>}</Box>
+        <TableCell
+            className="EventContentCell"
+            width={"100%"}
+        >
+            <Box className="EventContent">{EventElement[event.type] ?? <></>}</Box>
         </TableCell>
     );
 }

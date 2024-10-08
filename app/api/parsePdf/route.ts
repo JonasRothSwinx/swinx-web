@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     const promise = new Promise<string>((resolve, reject) => {
         pdfParser.on("pdfParser_dataError", (errData) => {
             console.error("Error", errData);
-            reject(errData);
+            reject(errData.parserError);
         });
         pdfParser.on("pdfParser_dataReady", (pdfData) => {
             const text = pdfParser.getRawTextContent();

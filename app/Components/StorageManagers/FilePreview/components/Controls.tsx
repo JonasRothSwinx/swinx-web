@@ -91,7 +91,7 @@ function DeleteButton({ path }: ControlsProps) {
             return;
         },
         onError: (error) => {
-            alert("Error deleting file: " + error);
+            alert("Error deleting file: " + error.message);
         },
     });
     return (

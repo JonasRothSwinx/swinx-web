@@ -95,7 +95,7 @@ export default function DebugButtons() {
                 onClick={async () => {
                     console.log(process.env);
                     const client = process.env;
-                    const server = JSON.parse(await debugServerside.getEnv());
+                    const server: unknown = JSON.parse(await debugServerside.getEnv());
                     console.log("env", { client, server });
                 }}
             >

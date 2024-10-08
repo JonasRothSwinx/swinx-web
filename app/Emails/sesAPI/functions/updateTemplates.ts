@@ -36,7 +36,7 @@ export default async function updateTemplates(templateNames: templateName[] = []
             return template;
         });
 
-        newTemplates.filter((template) => !templateNames.includes(template.name as templateName));
+        newTemplates.filter((template) => !templateNames.includes(template.name));
         acc = [...acc, ...newTemplates];
         return acc;
     }, [] as updateData[]);

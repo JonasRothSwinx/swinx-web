@@ -10,7 +10,7 @@ export function TextPreview({ file, showControls, onDataChange }: PreviewProps) 
     const text = useQuery({
         queryKey: [file.path],
         queryFn: async () => {
-            console.log("TextPreview", { file });
+            // console.log("TextPreview", { file });
             const { body, contentType = "text/plain" } = await downloadData({ path: file.path })
                 .result;
             console.log("TextPreview", { body, contentType });
@@ -23,7 +23,7 @@ export function TextPreview({ file, showControls, onDataChange }: PreviewProps) 
 
         const fileName = file.path.split("/").pop();
         if (text.isLoading) {
-            const key = "skeleton" + file.path + file.lastModified;
+            const key = "skeleton" + file.path + file.lastModified?.toString();
             return (
                 <Skeleton
                     key={key}
@@ -33,7 +33,7 @@ export function TextPreview({ file, showControls, onDataChange }: PreviewProps) 
                 />
             );
         }
-        const key = "card" + file.path + file.lastModified;
+        const key = "card" + file.path + file.lastModified?.toString();
         return (
             <Card
                 id="TextPreviewCard"

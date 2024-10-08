@@ -265,7 +265,7 @@ const AdditionalFields: {
 function getDataKey(
     key: relevantDetailsKey,
     data: Partial<Event>,
-    updatedData: Partial<Event>
+    updatedData: Partial<Event>,
 ): string | number | null | undefined {
     switch (key) {
         //in info
@@ -286,7 +286,7 @@ function getDataKey(
             return updatedData[key] ?? data[key];
         }
         default: {
-            console.error(`Unknown key: ${key}`);
+            console.error(`Unknown key: ${key as string}`);
             return null;
         }
     }
@@ -376,7 +376,12 @@ export default function EventDetails(props: DetailsProps): React.JSX.Element {
     }
     if (!data.type) return <></>;
     return (
-        <DialogContent id="eventDetails" className="eventDetails" dividers sx={sxProps}>
+        <DialogContent
+            id="eventDetails"
+            className="eventDetails"
+            dividers
+            sx={sxProps}
+        >
             {/* <Button onClick={printData}>Print Data</Button> */}
             {Object.entries(EventTypeConfig[data.type]).map(([key, config]) => {
                 const keyName = key as relevantDetailsKey;
@@ -461,7 +466,10 @@ function EventDetailField(props: EventDetailFieldProps): React.JSX.Element {
             );
         case "date":
             return (
-                <Tooltip title={config.tooltipTitle ?? ""} placement="top-start">
+                <Tooltip
+                    title={config.tooltipTitle ?? ""}
+                    placement="top-start"
+                >
                     <Box
                         className="eventDetailField"
                         sx={{
@@ -471,7 +479,10 @@ function EventDetailField(props: EventDetailFieldProps): React.JSX.Element {
                             },
                         }}
                     >
-                        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
+                        <LocalizationProvider
+                            dateAdapter={AdapterDayjs}
+                            adapterLocale="de"
+                        >
                             <DatePicker
                                 // closeOnSelect={false}
                                 label={label}

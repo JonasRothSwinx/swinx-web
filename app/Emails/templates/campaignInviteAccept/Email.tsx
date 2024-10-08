@@ -8,7 +8,7 @@ import * as React from "react";
 import DebugTemplates from "../../DebugTemplates";
 import { TemplateVariables, defaultParams } from "./TemplateVariables";
 
-const placeholders: { [key in keyof TemplateVariables]: React.JSX.Element | string } = {
+const placeholders: { [key in keyof TemplateVariables]: string } = {
     influencerName: Placeholder({ name: "influencerName" }),
     customerName: Placeholder({ name: "customerName" }),
     taskPageUrl: Placeholder({ name: "taskPageUrl" }),
@@ -32,17 +32,23 @@ Email.PreviewProps = {
 //MARK: - Subjectline
 export const subjectLineBase = "Rückmeldung zur Kooperationsanfrage";
 function NewCampaignInvite(props: DebugToggle) {
-    const { influencerName, customerName, taskPageUrl } = props.debug ? defaultParams : placeholders;
+    const { influencerName, customerName, taskPageUrl } = props.debug
+        ? defaultParams
+        : placeholders;
 
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
             <Preview>Rückmeldung zur Kooperationsanfrage</Preview>
             <Body>
                 <Text style={styles.text}>Hallo {influencerName},</Text>
                 <Text style={styles.text}>
                     Ich habe gute Neuigkeiten. <br />
-                    Unser Auftraggeber {customerName} war sehr begeistert von Ihrem Interesse an der Kooperation.
+                    Unser Auftraggeber {customerName} war sehr begeistert von Ihrem Interesse an der
+                    Kooperation.
                     <br />
                     <br />
                     Gerne würde {customerName} mit Ihnen zusammenarbeiten.
@@ -51,8 +57,14 @@ function NewCampaignInvite(props: DebugToggle) {
                     Eine Übersicht über ihren Leistungumfang finden Sie auf unserer Plattform.
                 </Text>
                 <Text style={styles.text}>Ich freue mich auf die gemeinsame Zusammenarbeit.</Text>
-                <Container align="left" style={styles.buttonContainer}>
-                    <Button href={taskPageUrl.toString()} style={styles.responseButton}>
+                <Container
+                    align="left"
+                    style={styles.buttonContainer}
+                >
+                    <Button
+                        href={taskPageUrl.toString()}
+                        style={styles.responseButton}
+                    >
                         Zur Leistungsübersicht
                     </Button>
                 </Container>
@@ -66,15 +78,22 @@ function ReducedCampaignInvite(props: DebugToggle) {
     const { influencerName, customerName } = props.debug ? defaultParams : placeholders;
 
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
             <Preview>Unser Kunde hat sich für Sie entschieden</Preview>
             <Body>
                 <Text style={styles.text}>Hallo {influencerName}!</Text>
                 <Text style={styles.text}>
-                    Unser Kunde {customerName} hat sich für Sie entschieden und möchte mit ihnen zusammenarbeiten.
+                    Unser Kunde {customerName} hat sich für Sie entschieden und möchte mit ihnen
+                    zusammenarbeiten.
                 </Text>
-                <Container align="left" style={styles.buttonContainer}>
+                <Container
+                    align="left"
+                    style={styles.buttonContainer}
+                >
                     {/* <Button
                         href="https://www.google.com"
                         style={styles.responseButton}
