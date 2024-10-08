@@ -6,6 +6,8 @@ import {
     GridColDef,
     DataGrid,
     GridToolbarQuickFilter,
+    GridValueGetter,
+    GridRenderCellParams,
     GRID_CHECKBOX_SELECTION_COL_DEF,
 } from "@mui/x-data-grid";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -60,8 +62,12 @@ export default function InfluencerTable({
 
     const [candidatesAfterChange, uninvitedCandidates] = useMemo(() => {
         const candidateCount =
-            (candidates.length ?? 0) + changedCandidates.added.length - changedCandidates.removed.length;
-        const uninvited = candidates.filter((x) => x.invitationSent === false).length + changedCandidates.added.length;
+            (candidates.length ?? 0) +
+            changedCandidates.added.length -
+            changedCandidates.removed.length;
+        const uninvited =
+            candidates.filter((x) => x.invitationSent === false).length +
+            changedCandidates.added.length;
         return [candidateCount, uninvited];
     }, [changedCandidates, candidates]);
 
@@ -89,12 +95,16 @@ export default function InfluencerTable({
             minWidth: 150,
             type: "string",
             hideable: false,
-            valueGetter({ row }: { row: Influencers.Full }) {
+            valueGetter(value, row: Influencers.Full) {
                 // console.log(params);
                 return `${row.firstName} ${row.lastName}`;
             },
-            renderCell({ row: { linkedinProfile, firstName, lastName } }: { row: Influencers.Full }) {
-                if (linkedinProfile) return <Link href={linkedinProfile}>{`${firstName} ${lastName}`}</Link>;
+            renderCell({
+                value,
+                row: { linkedinProfile, firstName, lastName },
+            }: GridRenderCellParams<Influencers.Full, string>) {
+                if (linkedinProfile)
+                    return <Link href={linkedinProfile}>{`${firstName} ${lastName}`}</Link>;
                 else
                     return (
                         <Typography>
@@ -109,7 +119,7 @@ export default function InfluencerTable({
             flex: 1,
             minWidth: 100,
             type: "string",
-            valueGetter({ row }: { row: Influencers.Full }) {
+            valueGetter(value, row: Influencers.Full) {
                 return row.industry;
             },
         },
@@ -119,7 +129,7 @@ export default function InfluencerTable({
             flex: 1,
             minWidth: 100,
             type: "string",
-            valueGetter({ row }: { row: Influencers.Full }) {
+            valueGetter(value, row: Influencers.Full) {
                 return row.topic?.join(", ") ?? "";
             },
         },
@@ -130,7 +140,7 @@ export default function InfluencerTable({
             minWidth: 100,
             type: "number",
             align: "center",
-            valueGetter({ row }: { row: Influencers.Full }) {
+            valueGetter(value, row: Influencers.Full) {
                 return row.followers;
             },
         },
@@ -139,7 +149,12 @@ export default function InfluencerTable({
     const [openDialog, setOpenDialog] = useState<openDialog>("none");
     const dialogs: { [state in openDialog]: () => React.JSX.Element | null } = {
         none: () => null,
-        emailPreview: () => <EmailPreview onClose={EventHandlers.onEmailPreviewClose} assignmentId={assignmentId} />,
+        emailPreview: () => (
+            <EmailPreview
+                onClose={EventHandlers.onEmailPreviewClose}
+                assignmentId={assignmentId}
+            />
+        ),
     } as const;
 
     //MARK: - Eventhandlers
@@ -149,11 +164,11 @@ export default function InfluencerTable({
             const selectedInfluencers =
                 influencers.data?.filter((influencer) => selected.includes(influencer.id)) ?? [];
             const removedInfluencers: Candidate[] = candidates.filter(
-                (x) => !selectedInfluencers.find((influencer) => influencer.id === x.influencer.id)
+                (x) => !selectedInfluencers.find((influencer) => influencer.id === x.influencer.id),
             );
 
             const addedInfluencers: Influencers.Full[] = selectedInfluencers.filter(
-                (x) => !candidates.find((candidate) => candidate.influencer.id === x.id)
+                (x) => !candidates.find((candidate) => candidate.influencer.id === x.id),
             );
 
             setChangedCandidates({ removed: removedInfluencers, added: addedInfluencers });
@@ -167,7 +182,8 @@ export default function InfluencerTable({
         submitCandidates: async () => {
             const tasks: Promise<unknown>[] = [];
             // delete removed candidates
-            if (!assignment.data) throw new Error("assignment.data is null, can't submit candidates");
+            if (!assignment.data)
+                throw new Error("assignment.data is null, can't submit candidates");
             if (changedCandidates.removed.length === 0 && changedCandidates.added.length === 0) {
                 console.log("no changes");
                 // return;
@@ -180,17 +196,21 @@ export default function InfluencerTable({
                     ...changedCandidates.removed.map((candidate) => {
                         if (!candidate.id) throw new Error("candidate.id is null");
                         return dataClient.candidate.delete(candidate.id, assignment.data.id);
-                    })
+                    }),
                 );
                 const addedCandidates = changedCandidates.added.filter((influencer) => {
-                    return !assignment.data.candidates?.find((candidate) => candidate.influencer.id === influencer.id);
+                    return !assignment.data.candidates?.find(
+                        (candidate) => candidate.influencer.id === influencer.id,
+                    );
                 });
                 const diff = changedCandidates.added.length - addedCandidates.length;
                 if (diff > 0 && process.env.NODE_ENV === "development")
                     console.log(`removed ${diff} duplicates from addedCandidates`);
                 //create new candidates
                 tasks.push(
-                    ...addedCandidates.map((candidate) => dataClient.candidate.create(candidate, assignment.data.id))
+                    ...addedCandidates.map((candidate) =>
+                        dataClient.candidate.create(candidate, assignment.data.id),
+                    ),
                 );
 
                 await Promise.all(tasks);
@@ -256,7 +276,10 @@ export default function InfluencerTable({
         },
     };
     return (
-        <Box id="InfluencerTableContainer" sx={styles}>
+        <Box
+            id="InfluencerTableContainer"
+            sx={styles}
+        >
             <>{dialogs[openDialog]()}</>
             <DataGrid
                 autoHeight

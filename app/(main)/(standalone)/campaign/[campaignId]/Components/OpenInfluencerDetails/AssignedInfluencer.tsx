@@ -72,9 +72,9 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): Reac
     const assignmentEvents = useQuery({
         queryKey: ["assignmentEvents", props.assignedInfluencer.id],
         queryFn: async () => {
-            const raw = (await dataClient.event.list.by.assignment(props.assignedInfluencer.id)).filter(
-                (event): event is Events.SingleEvent => Events.isSingleEvent(event)
-            );
+            const raw = (
+                await dataClient.event.list.by.assignment(props.assignedInfluencer.id)
+            ).filter((event): event is Events.SingleEvent => Events.isSingleEvent(event));
             return raw.sort((a, b) => dayjs(a.date).unix() - dayjs(b.date).unix());
         },
         placeholderData: [],
@@ -94,13 +94,21 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): Reac
             queryClient.setQueryData(["campaign", campaignId], updatedCampaign);
             campaign.refetch();
             const newAssignmentEvents = campaign.data?.assignedInfluencers.find(
-                (influencer) => influencer.id === assignedInfluencer.data?.id
+                (influencer) => influencer.id === assignedInfluencer.data?.id,
             )?.timelineEvents;
-            queryClient.setQueryData(["assignmentEvents", assignedInfluencer.data.id], newAssignmentEvents);
+            queryClient.setQueryData(
+                ["assignmentEvents", assignedInfluencer.data.id],
+                newAssignmentEvents,
+            );
             assignmentEvents.refetch();
         },
     };
-    if (campaign.isError || influencers.isError || assignmentEvents.isError || assignedInfluencer.isError) {
+    if (
+        campaign.isError ||
+        influencers.isError ||
+        assignmentEvents.isError ||
+        assignedInfluencer.isError
+    ) {
         const errorMessage: string =
             campaign.error?.message ??
             influencers.error?.message ??
@@ -119,9 +127,11 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): Reac
                 <Typography>There was an error: {errorMessage}</Typography>
                 <IconButton
                     onClick={() => {
-                        [campaign, influencers, assignmentEvents, assignedInfluencer].forEach((query) => {
-                            if (query.isError) query.refetch();
-                        });
+                        [campaign, influencers, assignmentEvents, assignedInfluencer].forEach(
+                            (query) => {
+                                if (query.isError) query.refetch();
+                            },
+                        );
                     }}
                 >
                     <RefreshIcon />
@@ -129,15 +139,30 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): Reac
             </Box>
         );
     }
-    if (campaign.isLoading || influencers.isLoading || assignmentEvents.isLoading || assignedInfluencer.isLoading) {
+    if (
+        campaign.isLoading ||
+        influencers.isLoading ||
+        assignmentEvents.isLoading ||
+        assignedInfluencer.isLoading
+    ) {
         return (
-            <Skeleton variant="rectangular" width={"100%"} height={"100px"} sx={{ borderRadius: "20px" }}></Skeleton>
+            <Skeleton
+                variant="rectangular"
+                width={"100%"}
+                height={"100px"}
+                sx={{ borderRadius: "20px" }}
+            ></Skeleton>
         );
     }
 
     if (!campaign.data || !influencers.data || !assignmentEvents.data || !assignedInfluencer.data) {
         return (
-            <Skeleton variant="rectangular" width={"100%"} height={"100px"} sx={{ borderRadius: "20px" }}></Skeleton>
+            <Skeleton
+                variant="rectangular"
+                width={"100%"}
+                height={"100px"}
+                sx={{ borderRadius: "20px" }}
+            ></Skeleton>
         );
     }
     const sx = {
@@ -154,7 +179,13 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): Reac
         },
     };
     return (
-        <Accordion key={assignedInfluencer.data.id} defaultExpanded disableGutters variant="outlined" sx={sx}>
+        <Accordion
+            key={assignedInfluencer.data.id}
+            defaultExpanded
+            disableGutters
+            variant="outlined"
+            sx={sx}
+        >
             <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
                 sx={{
@@ -166,14 +197,19 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): Reac
                 <div className={"assignmentAccordionHeader"}>
                     <InfluencerName assignedInfluencer={assignedInfluencer.data} />
                     {assignmentEvents.isFetching ? (
-                        <Skeleton variant="rectangular" width={200} height={40} sx={{ borderRadius: "20px" }}>
+                        <Skeleton
+                            variant="rectangular"
+                            width={200}
+                            height={40}
+                            sx={{ borderRadius: "20px" }}
+                        >
                             <CircularProgress />
                         </Skeleton>
                     ) : (
                         <InfluencerDetailsButtons
                             influencers={influencers.data ?? []}
                             assignment={assignedInfluencer.data}
-                            campaign={campaign.data}
+                            campaignId={campaignId}
                             setCampaign={EventHandlers.setCampaign}
                             isProcessing={isProcessing}
                             setIsProcessing={setIsProcessing}
@@ -199,7 +235,12 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): Reac
                                 <Typography>{`Honorar: ${assignedInfluencer.data.budget}€`}</Typography>
                             )}
                             {categorizedEvents.map((category, index) => {
-                                return <EventCategoryDisplay key={index} category={category} />;
+                                return (
+                                    <EventCategoryDisplay
+                                        key={index}
+                                        category={category}
+                                    />
+                                );
                             })}
                         </>
                     )}
