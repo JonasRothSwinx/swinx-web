@@ -1,7 +1,7 @@
 import { Assignment, Assignments, Event, Events } from "@/app/ServerFunctions/types";
 import { MenuItem, SelectChangeEvent, TextField } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 
 interface AssignmentSelectorProps {
     timelineEvent: Partial<Event>;
@@ -32,9 +32,11 @@ export function AssignmentSelector(props: AssignmentSelectorProps) {
             size="medium"
             required
             variant="standard"
-            SelectProps={{
-                value: timelineEvent.assignments?.[0].id ?? "",
-                onChange: onAssignmentChange,
+            slotProps={{
+                select: {
+                    value: timelineEvent.assignments?.[0].id ?? "",
+                    onChange: onAssignmentChange,
+                },
             }}
         >
             {assignedInfluencers.data.map((assignment, i, a) => {

@@ -14,20 +14,18 @@ import {
 } from "./TypedStorageManager";
 import { FilePreview, type PreviewProps } from "./FilePreview";
 import { onUploadSuccess } from "./TypedStorageManager/functions";
+import React from "react";
 
 export type DataType = "image" | "video" | "text" | "mixed";
 
-const StorageManagers: { [key in DataType]: (props: StorageManagerProps) => JSX.Element } = {
+const StorageManagers: { [key in DataType]: (props: StorageManagerProps) => React.JSX.Element } = {
     image: (props) => ImageStorageManager(props),
     video: (props) => VideoStorageManager(props),
     text: (props) => TextStorageManager(props),
     mixed: () => <div>Not Implemented</div>,
 };
 const listFunctions: {
-    [key in DataType]: (props: {
-        campaignId: string;
-        eventId: string;
-    }) => queryClient.ListEventFilesOutput;
+    [key in DataType]: (props: { campaignId: string; eventId: string }) => queryClient.ListEventFilesOutput;
 } = {
     image: ({ campaignId, eventId }) => queryClient.listEventImages({ campaignId, eventId }),
     video: ({ campaignId, eventId }) => queryClient.listEventVideos({ campaignId, eventId }),
@@ -152,37 +150,16 @@ export function StorageManagerDialog({
         },
     };
     return (
-        <Dialog
-            id="StorageManagerWrapper"
-            open
-            onClose={onClose}
-            sx={sx}
-        >
+        <Dialog id="StorageManagerWrapper" open onClose={onClose} sx={sx}>
             <Box className="DialogContent">
-                {hidePreviewSetting ||
-                !currentFiles.data ||
-                currentFiles.data.length === 0 ? null : (
-                    <Box
-                        id="FilePreview"
-                        className="FilePreviewContainer"
-                    >
-                        <FilePreview
-                            files={currentFiles.data ?? []}
-                            dataType={dataType}
-                            showControls={showControls}
-                        />
+                {hidePreviewSetting || !currentFiles.data || currentFiles.data.length === 0 ? null : (
+                    <Box id="FilePreview" className="FilePreviewContainer">
+                        <FilePreview files={currentFiles.data ?? []} dataType={dataType} showControls={showControls} />
                     </Box>
                 )}
                 {!hideUploader && (
-                    <Box
-                        id="StorageManager"
-                        className="StorageManagerContainer"
-                    >
-                        <StorageManager
-                            campaignId={campaignId}
-                            eventId={eventId}
-                            onSuccess={onUploadSuccess}
-                        />
+                    <Box id="StorageManager" className="StorageManagerContainer">
+                        <StorageManager campaignId={campaignId} eventId={eventId} onSuccess={onUploadSuccess} />
                     </Box>
                 )}
             </Box>

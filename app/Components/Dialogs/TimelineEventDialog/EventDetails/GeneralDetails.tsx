@@ -3,9 +3,12 @@ import { DialogContent, MenuItem, SelectChangeEvent, TextField } from "@mui/mate
 import { AssignmentSelector } from "./AssignmentSelector";
 import { Nullable } from "@/app/Definitions/types";
 import { TextFieldWithTooltip } from "@/app/Components/Dialogs/Components";
+import React from "react";
 
 const AssignmentSelectorCreator: {
-    [key in Events.eventType | "none"]: (props: Parameters<typeof AssignmentSelector>[0]) => Nullable<JSX.Element>;
+    [key in Events.EventType | "none"]: (
+        props: Parameters<typeof AssignmentSelector>[0]
+    ) => Nullable<React.JSX.Element>;
 } = {
     ImpulsVideo: (props) => <AssignmentSelector {...props} />,
     Invites: (props) => <AssignmentSelector {...props} />,

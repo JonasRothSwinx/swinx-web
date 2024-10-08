@@ -41,6 +41,18 @@ export type BillingAdress = {
     zip: string;
 };
 
+/**
+ * Campaign Object that only contains the ids of child objects
+ */
+export type Referential = Prettify<
+    Omit<Min, "projectManagers" | "customers"> & {
+        assignmentIds: string[];
+        events: { id: string; type: string }[];
+        projectManagerIds: string[];
+        customerIds: string[];
+    }
+>;
+
 // export type WebinarCampaign = {
 //     webinar: Webinar;
 // } & CampaignStub;

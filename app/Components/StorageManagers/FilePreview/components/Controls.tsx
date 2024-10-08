@@ -1,3 +1,4 @@
+"use client";
 import { Box, Button, SxProps } from "@mui/material";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { downloadData, getUrl, remove } from "aws-amplify/storage";
@@ -90,7 +91,7 @@ function DeleteButton({ path }: ControlsProps) {
             return;
         },
         onError: (error) => {
-            alert("Error deleting file: " + error);
+            alert("Error deleting file: " + error.message);
         },
     });
     return (

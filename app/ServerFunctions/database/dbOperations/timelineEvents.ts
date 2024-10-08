@@ -1,7 +1,7 @@
 "use server";
 
 import { Nullable, PartialWith } from "@/app/Definitions/types";
-import client from "./.dbclient";
+import { client } from "./_dbclient";
 import database from ".";
 import { dayjs } from "@/app/utils";
 import { EmailTriggers, Customer, Event, Assignment, Events, Assignments } from "../../types";
@@ -141,7 +141,7 @@ export async function createTimelineEvent(props: Omit<Event, "id">) {
     );
     if (!data || !data.id) {
         console.error("No ID", data);
-        throw "failed to create Event";
+        throw new Error("failed to create Event");
     }
     //create join table entries
     const assignments = props.assignments ?? [];
@@ -400,19 +400,37 @@ export async function getAssignmentTimelineEvents(assignmentId: string) {
  * @param verbose    - If true, logs additional information about the data validation process
  * @returns An array of Timeline Events
  */
-export async function getCampaignTimelineEvents(campaignId: string, verbose = false) {
+interface GetCampaignTimelineEventsParams {
+    campaignId: string;
+    verbose?: boolean;
+    filters?: { types?: Events.EventType[] };
+}
+export async function getCampaignTimelineEvents({
+    campaignId,
+    verbose,
+    filters,
+}: GetCampaignTimelineEventsParams) {
     // const { data, errors } = await client.models.TimelineEvent.list({
     //     filter: { campaignCampaignTimelineEventsId: { eq: campaignId } },
     //     //@ts-ignore
     //     selectionSet,
     // });
     if (verbose) console.log("getCampaignTimelineEvents", { campaignId });
+    const eventTypeFilter = filters?.types
+        ? { or: [...filters.types.map((type) => ({ timelineEventType: { eq: type.toString() } }))] }
+        : {};
+    let filter = {};
+    if (eventTypeFilter.or) filter = { ...eventTypeFilter };
+
+    // if (filters) {
+    //     console.log("Filters", { filters, filter });
+    // }
     const { data, errors } = await client.models.TimelineEvent.listByCampaign(
         {
             campaignId,
         },
         {
-            filter: {},
+            filter,
             selectionSet: selectionSet,
         },
     );
@@ -598,7 +616,7 @@ function validateEvent(rawEvent: Nullable<RawEvent>): Nullable<Event> {
 
     const parentEvent: Event["parentEvent"] = parentEventId ? { id: parentEventId } : null;
     const childEvents: Event["childEvents"] = childEventsRaw.map((x) => {
-        return { id: x.id, type: x.timelineEventType as Events.eventType };
+        return { id: x.id, type: x.timelineEventType as Events.EventType };
     });
 
     const { date, notes, eventAssignmentAmount, eventTitle, eventTaskAmount } = rawEvent;

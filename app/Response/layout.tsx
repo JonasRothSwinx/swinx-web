@@ -1,4 +1,6 @@
 import { Metadata } from "next";
+import React from "react";
+import "@/app/globals.css";
 
 export const metadata: Metadata = {
     title: "Swinx Kampagneneinladung",

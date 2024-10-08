@@ -24,7 +24,6 @@ export const backend = defineBackend({
 
 const stack = backend.createStack("SwinxWebResources");
 
-// eslint-disable-next-line @typescript-eslint/ban-types -- this is a valid use case
 const reminderTriggerFunction = backend.reminderTrigger.resources.lambda as Function;
 const allowSes = new PolicyStatement({
     effect: Effect.ALLOW,
@@ -33,11 +32,10 @@ const allowSes = new PolicyStatement({
 });
 reminderTriggerFunction.addToRolePolicy(allowSes);
 
-const dataResources = backend.data.resources;
-
-Object.values(dataResources.cfnResources.amplifyDynamoDbTables).forEach((table) => {
+const { amplifyDynamoDbTables } = backend.data.resources.cfnResources;
+for (const table of Object.values(amplifyDynamoDbTables)) {
     table.pointInTimeRecoveryEnabled = true;
-});
+}
 
 const s3Bucket = backend.storage.resources.bucket;
 const cfnBucket = s3Bucket.node.defaultChild as s3.CfnBucket;
@@ -136,7 +134,6 @@ cfnBucket.corsConfiguration = {
  * The reminderTrigger lambda is responsible for sending reminders to users
  */
 if (!(process.env.NODE_ENV === "development")) {
-    // eslint-disable-next-line @typescript-eslint/ban-types -- Function is an aws-cdk-lib construct here
     const reminderTriggerLambda = backend.reminderTrigger.resources.lambda as Function;
     const rule = new eventBridge.Rule(stack, "ReminderTriggerRule", {
         enabled: false,

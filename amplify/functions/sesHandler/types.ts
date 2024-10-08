@@ -1,7 +1,12 @@
 // Full path: <project-root>/amplify/functions/sesHandler/types.ts
-import { EmailTemplateContent, GetEmailTemplateCommandOutput, SendBulkEmailCommandOutput } from "@aws-sdk/client-sesv2";
+import {
+    EmailTemplateContent,
+    GetEmailTemplateCommandOutput,
+    SendBulkEmailCommandOutput,
+} from "@aws-sdk/client-sesv2";
 export type Prettify<T> = {
     [K in keyof T]: Prettify<T[K]>;
+    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 } & unknown;
 
 export type sesHandlerEventBody =
@@ -39,14 +44,18 @@ export type sesHandlerUpdateTemplate = sesHandlerMinimal & {
     operation: "update";
     updateData: { name: string; subjectLine: string; html: string /* text: string */ }[];
 };
-export function isSesHandlerUpdateTemplate(body: sesHandlerEventBody): body is sesHandlerUpdateTemplate {
+export function isSesHandlerUpdateTemplate(
+    body: sesHandlerEventBody,
+): body is sesHandlerUpdateTemplate {
     return body.operation === "update";
 }
 
 export type sesHandlerListTemplate = sesHandlerMinimal & {
     operation: "list";
 };
-export function isseshandlerListTemplate(body: sesHandlerEventBody): body is sesHandlerListTemplate {
+export function isseshandlerListTemplate(
+    body: sesHandlerEventBody,
+): body is sesHandlerListTemplate {
     return body.operation === "list";
 }
 
@@ -55,7 +64,9 @@ export type sesHandlerDeleteTemplate = sesHandlerMinimal & {
     deleteData: { name: string };
 };
 
-export function issseshandlerDeleteTemplate(body: sesHandlerEventBody): body is sesHandlerDeleteTemplate {
+export function issseshandlerDeleteTemplate(
+    body: sesHandlerEventBody,
+): body is sesHandlerDeleteTemplate {
     return body.operation === "delete";
 }
 
@@ -69,7 +80,9 @@ export type sesHandlerSendEmailTemplate = sesHandlerMinimal & {
     };
 };
 
-export function iseshandlersendEmailTemplate(body: sesHandlerEventBody): body is sesHandlerSendEmailTemplate {
+export function iseshandlersendEmailTemplate(
+    body: sesHandlerEventBody,
+): body is sesHandlerSendEmailTemplate {
     return body.operation === "sendEmailTemplate";
 }
 
@@ -86,7 +99,9 @@ export type sesHandlerSendEmailTemplateBulk = sesHandlerMinimal & {
     };
 };
 
-export function isSesHandlerSendEmailTemplateBulk(body: sesHandlerEventBody): body is sesHandlerSendEmailTemplateBulk {
+export function isSesHandlerSendEmailTemplateBulk(
+    body: sesHandlerEventBody,
+): body is sesHandlerSendEmailTemplateBulk {
     return body.operation === "sendEmailTemplateBulk";
 }
 
@@ -101,7 +116,9 @@ export type sesHandlerResponse = {
 };
 export type sesHandlerGetTemplateResponseBody = Prettify<
     sesHandlerResponse & {
-        responseData: Prettify<Pick<GetEmailTemplateCommandOutput, "TemplateName" | "TemplateContent">>;
+        responseData: Prettify<
+            Pick<GetEmailTemplateCommandOutput, "TemplateName" | "TemplateContent">
+        >;
     }
 >;
 export type sesHandlerUpdateTemplateResponseBody = Prettify<

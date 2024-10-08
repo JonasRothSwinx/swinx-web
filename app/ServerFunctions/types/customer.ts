@@ -29,3 +29,6 @@ export function satisfies(arg: unknown): arg is Customer {
         (typeof customer.notes === "string" || customer.notes === null)
     );
 }
+export function getFullName(customer: Customer) {
+    return `${customer.firstName} ${customer.lastName}`.trim();
+}

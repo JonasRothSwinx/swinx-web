@@ -7,7 +7,7 @@ import React from "react";
 import DebugTemplates from "../../../DebugTemplates";
 import { TemplateVariables, defaultParams } from "./TemplateVariables";
 
-const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
+const placeholders: { [key in keyof TemplateVariables]: string } = {
     name: Placeholder({ name: "name" }),
     customerName: Placeholder({ name: "customerName" }),
     topic: Placeholder({ name: "topic" }),
@@ -15,7 +15,7 @@ const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } =
     taskPageLink: Placeholder({ name: "taskPageLink" }),
 };
 const EmailTemplates: {
-    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
+    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => React.JSX.Element;
 } = {
     new: (debug?) => <NewPostDraftDeadlineReminder debug={debug} />,
     reduced: (debug?) => <ReducedDraftPostDeadlineReminder debug={debug} />,

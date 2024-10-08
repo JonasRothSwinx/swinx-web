@@ -17,7 +17,7 @@ export const defaultParams: TemplateVariables = {
     customerCompany: "TestCustomer",
 };
 
-const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
+const placeholders: { [key in keyof TemplateVariables]: string } = {
     name: Placeholder({ name: "name" }),
     // assignments: PlaceholderList({
     //     parentName: "assignments",
@@ -29,7 +29,7 @@ const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } =
     customerCompany: Placeholder({ name: "customerCompany" }),
 };
 const EmailTemplates: {
-    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
+    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => React.JSX.Element;
 } = {
     new: (debug?) => <NewCampaignInvite debug={debug} />,
     reduced: (debug?) => <ReducedCampaignInvite debug={debug} />,

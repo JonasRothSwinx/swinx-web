@@ -12,15 +12,12 @@ import {
     TextField,
 } from "@mui/material";
 import React, { useMemo, useState } from "react";
-import stylesExporter from "../../Main Menu/styles/stylesExporter";
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 import { useQueryClient } from "@tanstack/react-query";
 import sxStyles from "./sxStyles";
-import { Unstable_Grid2 as Grid } from "@mui/material";
+import { Grid2 as Grid } from "@mui/material";
 import { ProjectManager, ProjectManagers } from "@/app/ServerFunctions/types";
-import { randomJobTitle } from "@mui/x-data-grid-generator";
-
-const styles = stylesExporter.dialogs;
+import { queryKeys } from "@/app/(main)/queryClient/keys";
 interface ProjectManagerDialogProps {
     onClose?: () => void;
     firstName?: string;
@@ -69,6 +66,7 @@ export function ProjectManagerDialog(props: ProjectManagerDialogProps) {
                 alert("Fehler beim Erstellen des Projektmanagers");
                 return;
             }
+            queryClient.invalidateQueries({ queryKey: queryKeys.currentUser.projectManager() });
             // debugger;
             EventHandlers.handleClose();
         },
@@ -113,6 +111,7 @@ export function ProjectManagerDialog(props: ProjectManagerDialogProps) {
     return (
         <Dialog
             // ref={modalRef}
+            className="dialog"
             open={true}
             // className={styles.dialog}
             onClose={EventHandlers.handleClose}
@@ -120,7 +119,10 @@ export function ProjectManagerDialog(props: ProjectManagerDialogProps) {
                 component: "form",
                 onSubmit: EventHandlers.submitData,
             }}
-            sx={styles}
+            sx={{
+                ...sxStyles.DialogDefault,
+                ...styles,
+            }}
         >
             <Box>
                 <DialogTitle id="DialogTitle">{"Projekt Manager Daten"}</DialogTitle>

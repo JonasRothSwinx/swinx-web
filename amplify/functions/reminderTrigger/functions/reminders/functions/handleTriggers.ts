@@ -12,7 +12,7 @@ export default async function handleTriggers({ triggers }: HandleTriggerParams) 
     console.log("Handling triggers");
     const tasks: Promise<SendBulkEmailResponse | void>[] = [];
     Object.entries(triggers).forEach(async ([eventTypeRaw, eventTriggers]) => {
-        const eventType = eventTypeRaw as Events.eventType;
+        const eventType = eventTypeRaw as Events.EventType;
         // console.log("Handling event type", eventType);
         Object.entries(eventTriggers).forEach(async ([emailTypeRaw, emailTypeTriggers]) => {
             const emailType = emailTypeRaw as EmailTriggers.emailTriggerType;

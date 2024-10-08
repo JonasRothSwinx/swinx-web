@@ -1,4 +1,11 @@
-import { Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button } from "@mui/material";
+import {
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    TextField,
+    DialogActions,
+    Button,
+} from "@mui/material";
 import { useState } from "react";
 import { TextFieldWithTooltip } from "./Components";
 
@@ -19,7 +26,11 @@ export function BudgetDialog(props: BudgetDialogProps) {
 
     //MUI Component dialog to set dialog. UI is in german language
     return (
-        <Dialog open={true} onClose={onClose}>
+        <Dialog
+            className="dialog"
+            open={true}
+            onClose={onClose}
+        >
             <DialogTitle>Honorar</DialogTitle>
             <DialogContent>
                 <TextFieldWithTooltip
@@ -45,10 +56,16 @@ export function BudgetDialog(props: BudgetDialogProps) {
                 />
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose} color="primary">
+                <Button
+                    onClick={onClose}
+                    color="primary"
+                >
                     Abbrechen
                 </Button>
-                <Button onClick={handleSave} color="primary">
+                <Button
+                    onClick={handleSave}
+                    color="primary"
+                >
                     Speichern
                 </Button>
             </DialogActions>

@@ -1,0 +1,62 @@
+.container {
+    width: 100%;
+    display: grid;
+}
+.entry {
+    display: contents;
+}
+
+/* .cellActionSplit.timeline > div:last-of-type:not(:only-of-type) button,
+.cellActionSplit.timeline > div:last-of-type:not(:only-of-type) input {
+    background: gray;
+} */
+
+.buttonContainer {
+    height: auto;
+}
+.creationForm {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-content: center;
+    gap: 20px;
+    min-width: 0;
+    /* width: 100%; */
+    flex: 1;
+}
+.TextField {
+    color: white;
+    border-color: gray;
+}
+.TextField[hidden] {
+    display: none;
+}
+.ButtonContainer {
+    display: flex;
+    justify-content: space-between;
+}
+/* .TextField label {
+    color: white;
+} */
+/* .creationForm > div {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 20ch;
+    justify-content: flex-end;
+}
+.creationForm input {
+    max-width: 100%;
+    min-width: 20ch;
+}
+.creationForm label {
+    vertical-align: top;
+}
+.creationForm button {
+    width: 100%;
+    flex: 1;
+    height: 2em;
+    max-height: 2em;
+    min-height: 2em;
+} */

@@ -11,7 +11,7 @@ import {
     EmailTrigger,
     EmailTriggers,
 } from "@/app/ServerFunctions/types";
-import client from "./.dbclient";
+import { client } from "./_dbclient";
 import { createCandidate, deleteCandidate } from "./candidate/candidate";
 import { Candidate } from "../../types";
 import { SelectionSet } from "aws-amplify/api";

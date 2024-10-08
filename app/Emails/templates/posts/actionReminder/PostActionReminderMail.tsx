@@ -7,7 +7,7 @@ import React from "react";
 import DebugTemplates from "../../../DebugTemplates";
 import { TemplateVariables, defaultParams } from "./TemplateVariables";
 
-const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
+const placeholders: { [key in keyof TemplateVariables]: string } = {
     name: Placeholder({ name: "name" }),
     postTime: Placeholder({ name: "postTime" }),
     customerName: Placeholder({ name: "customerName" }),
@@ -16,7 +16,7 @@ const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } =
     // postContent: Placeholder({ name: "postContent" }),
 };
 const EmailTemplates: {
-    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
+    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => React.JSX.Element;
 } = {
     new: (debug?) => <NewPostActionReminder />,
     reduced: (debug?) => <ReducedPostActionReminder />,
@@ -51,8 +51,8 @@ function NewPostActionReminder(props: DebugToggle) {
                 <ul>
                     <li>
                         Vergessen Sie bitte nicht,{" "}
-                        <Link href={customerProfileLink as string}>{customerName}</Link> aktiv zu
-                        markieren (= anklickbar).
+                        <Link href={customerProfileLink}>{customerName}</Link> aktiv zu markieren (=
+                        anklickbar).
                     </li>
                     <li>
                         Bitte taggen Sie keine Dritt-Marken/-Personen und posten Sie am selben Tag
@@ -110,9 +110,8 @@ function ReducedPostActionReminder(props: DebugToggle) {
                 Wichtig: <br />
                 <ul>
                     <li>
-                        Vergiss bitte nicht{" "}
-                        <Link href={customerProfileLink as string}>{customerName}</Link> aktiv zu
-                        markieren (= anklickbar)
+                        Vergiss bitte nicht <Link href={customerProfileLink}>{customerName}</Link>{" "}
+                        aktiv zu markieren (= anklickbar)
                     </li>
                     <li>
                         Bitte keine Dritt-Marken /-Personen taggen und am selben Tag auch sonst

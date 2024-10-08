@@ -1,10 +1,9 @@
 import { DeleteIcon } from "@/app/Definitions/Icons";
 import { Event, Events } from "@/app/ServerFunctions/types";
-import { Tooltip, Button } from "@mui/material";
+import { Tooltip, Button, Box, SxProps } from "@mui/material";
 import { DateTimePicker } from "@mui/x-date-pickers";
 import { dayjs, Dayjs } from "@/app/utils";
 import { useMemo } from "react";
-import { styles } from "../../../TimelineEventDialog";
 
 export interface DateProps {
     date: Dayjs | null;
@@ -42,6 +41,17 @@ export function Date(props: DateProps) {
     const minDate = useMemo(() => {
         return dayjs();
     }, []);
+    const sx: SxProps = {
+        maxHeight: "min-content",
+        ".MuiFormControl-root": {
+            ".MuiInputBase-root": {
+                maxHeight: "20px",
+            },
+            ".MuiFormLabel-root": {
+                // transform: "translate(0, 10px) scale(1)",
+            },
+        },
+    };
     return (
         <Tooltip
             title={
@@ -51,7 +61,10 @@ export function Date(props: DateProps) {
             }
             placement="top-start"
         >
-            <div className={styles.cellActionSplit}>
+            <Box
+                className={"cellActionSplit"}
+                sx={sx}
+            >
                 <DateTimePicker
                     disabled={isFixedDate}
                     // closeOnSelect={false}
@@ -71,6 +84,9 @@ export function Date(props: DateProps) {
                         textField: {
                             required: true,
                             variant: "standard",
+                            InputLabelProps: {
+                                shrink: true,
+                            },
                         },
                     }}
                 />
@@ -85,7 +101,7 @@ export function Date(props: DateProps) {
                         <DeleteIcon />
                     </Button>
                 )}
-            </div>
+            </Box>
         </Tooltip>
     );
 }

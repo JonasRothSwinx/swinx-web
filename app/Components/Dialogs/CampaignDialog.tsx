@@ -13,20 +13,16 @@ import {
     TextField,
 } from "@mui/material";
 import { DateTimeValidationError, PickerChangeHandlerContext } from "@mui/x-date-pickers";
-import { ChangeEvent, useEffect, useState } from "react";
-import stylesExporter from "../../Main Menu/styles/stylesExporter";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import { CustomerDialogContent } from "./CustomerDialog";
 import { Tab } from "@mui/material";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { AddIcon } from "@/app/Definitions/Icons";
-import { deleteCustomer } from "@/app/ServerFunctions/database/dbOperations/customers";
-import { dataClient } from "@/app/ServerFunctions/database";
+import { dataClient } from "@dataClient";
 import sxStyles from "./sxStyles";
 import { useQuery } from "@tanstack/react-query";
 import { TextFieldWithTooltip } from "./Components";
 import { useRouter } from "next/navigation";
-
-const styles = stylesExporter.dialogs;
 
 const initialCustomer: Customer = {
     firstName: "",
@@ -53,29 +49,14 @@ type CampaignDialogProps = {
     onClose?: (hasChanged?: boolean) => void;
     editing?: boolean;
     editingData?: Campaign;
-    parent: Campaign[];
-    setParent: React.Dispatch<React.SetStateAction<Campaign[]>>;
+    // parent: Campaign[];
     isOpen?: boolean;
 };
-export function CampaignDialog(props: CampaignDialogProps) {
-    //##################
-    //#region Prop Destructuring
-    const {
-        isOpen = false,
-        onClose,
-        editing,
-        editingData,
-        parent: rows,
-        setParent: setRows,
-    } = props;
-    //#endregion Prop Destructuring
-    //##################
-
+export function CampaignDialog({ isOpen = false, onClose, editing, editingData }: CampaignDialogProps) {
     const router = useRouter();
     //##################
     //#region States
     const [campaign, setCampaign] = useState<Campaign>(initialData);
-    const [changedData, setChangedData] = useState<Partial<Campaign>>(editingData ?? {});
     const [customers, setCustomers] = useState<Partial<Customer>[]>(editingData?.customers ?? [{}]);
     const [billingAdress, setBillingAdress] = useState<Campaigns.BillingAdress>({
         name: "",
@@ -148,10 +129,7 @@ export function CampaignDialog(props: CampaignDialogProps) {
             // EventHandlers.handleClose(true);
         },
 
-        handleDateChange: (
-            newValue: Dayjs | null,
-            context: PickerChangeHandlerContext<DateTimeValidationError>,
-        ) => {
+        handleDateChange: (newValue: Dayjs | null, context: PickerChangeHandlerContext<DateTimeValidationError>) => {
             // console.log("value", newValue);
             try {
                 const newDate = dayjs(newValue);
@@ -187,8 +165,11 @@ export function CampaignDialog(props: CampaignDialogProps) {
         <Dialog
             // ref={modalRef}
             open={isOpen}
-            // className={styles.dialog}
-            onClose={() => EventHandlers.handleClose(false)}
+            className="dialog"
+            onClose={(event, reason) => {
+                if (reason === "backdropClick" || reason === "escapeKeyDown") return;
+                EventHandlers.handleClose(false);
+            }}
             PaperProps={{
                 component: "form",
                 onSubmit: EventHandlers.onSubmit,
@@ -206,16 +187,10 @@ export function CampaignDialog(props: CampaignDialogProps) {
                     setBillingAdress={setBillingAdress}
                 />
                 <DialogActions>
-                    <Button
-                        onClick={() => EventHandlers.handleClose(false)}
-                        color="secondary"
-                    >
+                    <Button onClick={() => EventHandlers.handleClose(false)} color="secondary">
                         Abbrechen
                     </Button>
-                    <Button
-                        variant="contained"
-                        type="submit"
-                    >
+                    <Button variant="contained" type="submit">
                         Speichern
                     </Button>
                 </DialogActions>
@@ -234,8 +209,7 @@ interface FormContentProps {
 }
 
 function FormContent(props: FormContentProps) {
-    const { customers, setCustomers, campaign, setCampaign, billingAdress, setBillingAdress } =
-        props;
+    const { customers, setCustomers, campaign, setCampaign, billingAdress, setBillingAdress } = props;
 
     const [tab, setTab] = useState("0");
     const EventHandlers = {
@@ -292,15 +266,10 @@ function FormContent(props: FormContentProps) {
             </IconButton> */}
                     {customers.map((customer, index) => {
                         return (
-                            <TabPanel
-                                key={index}
-                                value={index.toString()}
-                            >
+                            <TabPanel key={index} value={index.toString()}>
                                 <CustomerDialogContent
                                     customer={customer}
-                                    setCustomer={(changedData) =>
-                                        StateChanges.handleCustomerChange(changedData, index)
-                                    }
+                                    setCustomer={(changedData) => StateChanges.handleCustomerChange(changedData, index)}
                                     deleteCustomer={() => StateChanges.deleteCustomer(index)}
                                     index={index}
                                 />
@@ -311,17 +280,11 @@ function FormContent(props: FormContentProps) {
             </DialogContent>
             <DialogContent>
                 <DialogContentText>Budget</DialogContentText>
-                <BudgetInfo
-                    campaign={campaign}
-                    setCampaign={setCampaign}
-                />
+                <BudgetInfo campaign={campaign} setCampaign={setCampaign} />
             </DialogContent>
             <DialogContent>
                 <DialogContentText>Rechnungsadresse</DialogContentText>
-                <BillingAdressInfo
-                    billingAdress={billingAdress}
-                    setBillingAdress={setBillingAdress}
-                />
+                <BillingAdressInfo billingAdress={billingAdress} setBillingAdress={setBillingAdress} />
             </DialogContent>
         </Box>
     );
@@ -349,7 +312,7 @@ function BillingAdressInfo(props: InfoProps) {
                 value={billingAdress.name}
                 onChange={handleChange}
                 // fullWidth
-                className={styles.TextField}
+                className={"textField"}
                 variant="standard"
             />
             <TextFieldWithTooltip
@@ -358,7 +321,7 @@ function BillingAdressInfo(props: InfoProps) {
                 value={billingAdress.street}
                 onChange={handleChange}
                 // fullWidth
-                className={styles.TextField}
+                className={"textField"}
                 variant="standard"
             />
             <TextFieldWithTooltip
@@ -367,7 +330,7 @@ function BillingAdressInfo(props: InfoProps) {
                 value={billingAdress.city}
                 onChange={handleChange}
                 // fullWidth
-                className={styles.TextField}
+                className={"textField"}
                 variant="standard"
             />
             <TextFieldWithTooltip
@@ -376,7 +339,7 @@ function BillingAdressInfo(props: InfoProps) {
                 value={billingAdress.zip}
                 onChange={handleChange}
                 // fullWidth
-                className={styles.TextField}
+                className={"textField"}
                 variant="standard"
             />
         </DialogContent>
@@ -408,7 +371,7 @@ function BudgetInfo(props: BudgetinfoProps) {
                 value={campaign.budget ?? ""}
                 onChange={handleChange}
                 // fullWidth
-                className={styles.TextField}
+                className={"textField"}
                 variant="standard"
                 InputProps={{
                     inputProps: { min: 0, style: { textAlign: "right" } },

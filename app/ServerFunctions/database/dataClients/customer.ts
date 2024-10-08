@@ -1,6 +1,6 @@
-import database from "../dbOperations";
+import { database } from "../dbOperations";
 import { Customer } from "../../types/";
-import { config } from ".";
+import { dataClient } from ".";
 import { Nullable } from "@/app/Definitions/types";
 
 export const customer = {
@@ -21,7 +21,7 @@ export async function create(
     customer: Omit<Customer, "id">,
     campaignId: string,
 ): Promise<Customer> {
-    const queryClient = config.getQueryClient();
+    const queryClient = dataClient.config.getQueryClient();
     const id = await database.customer.create(customer, campaignId);
     if (!id) throw new Error("Failed to create customer");
     const newCustomer = { ...customer, id };
@@ -38,7 +38,7 @@ export async function updateCustomer({
     updatedData,
     previousData,
 }: UpdateCustomer): Promise<Customer> {
-    const queryClient = config.getQueryClient();
+    const queryClient = dataClient.config.getQueryClient();
     // await database.customer.update(updatedData)
     const updatedCustomer: Customer = {
         ...previousData,
@@ -52,16 +52,14 @@ interface GetCustomer {
 }
 
 async function getCustomer({ id }: GetCustomer): Promise<Nullable<Customer>> {
-    const queryClient = config.getQueryClient();
-    const customer = await queryClient.fetchQuery({
-        queryKey: ["customer", id],
-        queryFn: () => database.customer.get(id),
-    });
+    const queryClient = dataClient.config.getQueryClient();
+    const customer = await database.customer.get(id);
+    // console.log("customer", id, customer);
     return customer;
 }
 
 async function listCustomersByCampaign(campaignId: string): Promise<Customer[]> {
-    const queryClient = config.getQueryClient();
+    const queryClient = dataClient.config.getQueryClient();
     try {
         const customers = await queryClient.fetchQuery({
             queryKey: ["customers", campaignId],

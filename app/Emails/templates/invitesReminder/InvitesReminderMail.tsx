@@ -8,19 +8,19 @@ import DebugTemplates from "../../DebugTemplates";
 import PlaceholderList from "../_components/placeholderList";
 import { TemplateVariables, defaultParams } from "./TemplateVariables";
 
-const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
+const placeholders: { [key in keyof TemplateVariables]: string } = {
     name: Placeholder({ name: "name" }),
     inviteAmount: Placeholder({ name: "inviteAmount" }),
     customerName: Placeholder({ name: "customerName" }),
     eventName: Placeholder({ name: "eventName" }),
     eventLink: Placeholder({ name: "eventLink" }),
-    filterJobGroups: PlaceholderList({ parentName: "filterJobGroups", listItemName: "jobGroup" }),
-    filterCountries: Placeholder({ name: "filterCountries" }),
+    // filterJobGroups: PlaceholderList({ parentName: "filterJobGroups", listItemName: "jobGroup" }),
+    // filterCountries: Placeholder({ name: "filterCountries" }),
     actionTime: Placeholder({ name: "actionTime" }),
     taskPageLink: Placeholder({ name: "taskPageLink" }),
 };
 const EmailTemplates: {
-    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
+    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => React.JSX.Element;
 } = {
     new: (debug?) => <NewInvitesReminder debug={debug} />,
     reduced: (debug?) => <ReducedInvitesReminder debug={debug} />,
@@ -37,25 +37,9 @@ InvitesReminderMail.PreviewProps = {
 } satisfies EmailProps;
 
 function NewInvitesReminder(props: DebugToggle) {
-    const {
-        name,
-        inviteAmount,
-        customerName,
-        eventName,
-        eventLink,
-        filterCountries,
-        actionTime,
-        taskPageLink,
-    } = props.debug ? defaultParams : placeholders;
-    const filterJobGroups = props.debug ? (
-        <ul>
-            {defaultParams.filterJobGroups.map((a, index) => (
-                <li key={index}>{a.jobGroup}</li>
-            ))}
-        </ul>
-    ) : (
-        placeholders.filterJobGroups
-    );
+    const { name, inviteAmount, customerName, eventName, eventLink, actionTime, taskPageLink } =
+        props.debug ? defaultParams : placeholders;
+
     return (
         <Html
             dir="ltr"
@@ -66,7 +50,7 @@ function NewInvitesReminder(props: DebugToggle) {
             <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
                 Wir möchten sie daran erinnern, dass sie {actionTime} {inviteAmount} Einladungen für
-                das Event <Link href={eventLink as string}>{eventName}</Link> von unserem Kunden{" "}
+                das Event <Link href={eventLink}>{eventName}</Link> von unserem Kunden{" "}
                 {customerName} versenden sollen.
                 <br />
                 Bitte benutzen sie dafür unsere Browser Extension, mit ihrer personalisierten
@@ -89,17 +73,10 @@ function NewInvitesReminder(props: DebugToggle) {
 }
 
 function ReducedInvitesReminder(props: DebugToggle) {
-    const { name, inviteAmount, customerName, eventName, eventLink, filterCountries, actionTime } =
-        props.debug ? defaultParams : placeholders;
-    const filterJobGroups = props.debug ? (
-        <ul>
-            {defaultParams.filterJobGroups.map((a, index) => (
-                <li key={index}>{a.jobGroup}</li>
-            ))}
-        </ul>
-    ) : (
-        placeholders.filterJobGroups
-    );
+    const { name, inviteAmount, customerName, eventName, eventLink, actionTime } = props.debug
+        ? defaultParams
+        : placeholders;
+
     return (
         <Html
             dir="ltr"
@@ -110,13 +87,9 @@ function ReducedInvitesReminder(props: DebugToggle) {
             <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
                 Wir möchten dich daran erinnern, dass du {actionTime} {inviteAmount} Einladungen für
-                das Event <Link href={eventLink as string}>{eventName}</Link> von unserem Kunden{" "}
+                das Event <Link href={eventLink}>{eventName}</Link> von unserem Kunden{" "}
                 {customerName} versenden sollst.
                 <br />
-                Bitte schicke nur Einladungen an deine Follower*innen aus {filterCountries}, die
-                folgenden Branchen tätig sind:
-                <br />
-                {filterJobGroups}
                 Bitte teile uns danach mit, ob alles funktioniert hat.
             </Text>
             {/* <Container align="left" style={styles.buttonContainer}>

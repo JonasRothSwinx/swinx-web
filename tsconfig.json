@@ -24,15 +24,20 @@
             }
         ],
         "paths": {
-            "@/*": ["./*"]
+            "@/*": ["./*"],
+            "@database": ["./app/ServerFunctions/database/dbOperations"],
+            "@database/*": ["./app/ServerFunctions/database/dbOperations/*"],
+            "@dataClient": ["./app/ServerFunctions/database/dataClients"],
+            "@dataClient/*": ["./app/ServerFunctions/database/dataClients/*"]
         }
     },
     "include": [
+        "eslint.config.mjs",
         "next-env.d.ts",
         "**/*.ts",
         "**/*.tsx",
         ".next/types/**/*.ts",
-        "app/ServerFunctions/database/dbOperations/.dbclient.ts",
+        "app/ServerFunctions/database/dbOperations/_dbclient.ts",
         "app/ServerFunctions/database/dbOperations/index.ts"
     ],
     "exclude": ["node_modules"]

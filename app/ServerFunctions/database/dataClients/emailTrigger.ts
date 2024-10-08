@@ -2,10 +2,9 @@
  * Database Client for Email Triggers
  */
 
-import { config, influencer } from ".";
+import { dataClient } from ".";
 import dbOperations from "../dbOperations";
 import { EmailTrigger, EmailTriggers, Event } from "../../types/";
-import { dataClient } from "..";
 import { PartialWith } from "@/app/Definitions/types";
 import { dayjs, Dayjs } from "@/app/utils";
 
@@ -31,7 +30,7 @@ async function createEmailTrigger(
 ): Promise<EmailTrigger> {
     try {
         // console.log("In datacclient emailTrigger createEmailTrigger", trigger);
-        const queryClient = config.getQueryClient();
+        const queryClient = dataClient.config.getQueryClient();
 
         const id = await dbOperations.emailTrigger.create({ ...trigger });
         if (!id) throw new Error("Failed to create email trigger");
@@ -57,7 +56,7 @@ async function createEmailTrigger(
  * @returns The list of email triggers
  */
 export async function listEmailTriggers(): Promise<EmailTrigger[]> {
-    const queryClient = config.getQueryClient();
+    const queryClient = dataClient.config.getQueryClient();
     const emailTriggers = queryClient.getQueryData<EmailTrigger[]>(["emailTriggers"]);
     if (emailTriggers) {
         return emailTriggers;
@@ -79,7 +78,7 @@ export async function updateEmailTrigger(
     updatedData: Partial<Omit<EmailTriggers.EmailTriggerEventRef, "event">>,
     previousTrigger: Omit<EmailTrigger, "id"> & { id: string },
 ): Promise<EmailTrigger> {
-    const queryClient = config.getQueryClient();
+    const queryClient = dataClient.config.getQueryClient();
 
     await dbOperations.emailTrigger.update({
         ...updatedData,
@@ -110,7 +109,7 @@ export async function updateEmailTrigger(
 export async function deleteEmailTrigger(
     trigger: Pick<EmailTrigger, "id"> & { id: string },
 ): Promise<void> {
-    const queryClient = config.getQueryClient();
+    const queryClient = dataClient.config.getQueryClient();
     await dbOperations.emailTrigger.delete(trigger);
     queryClient.setQueryData(["emailTrigger", trigger.id], undefined);
     queryClient.setQueryData(["emailTriggers"], (prev: EmailTrigger[]) => {
@@ -129,7 +128,7 @@ export async function deleteEmailTrigger(
  * @returns The list of email triggers
  */
 export async function getEmailTriggersForEvent(event: Pick<Event, "id">): Promise<EmailTrigger[]> {
-    const queryClient = config.getQueryClient();
+    const queryClient = dataClient.config.getQueryClient();
     // const triggers = queryClient.getQueryData<EmailTrigger[]>(["emailTriggers"]);
     // if (triggers) {
     //     return triggers.filter((trigger) => trigger.event.id === event.id);
@@ -155,7 +154,7 @@ export async function getEmailTriggersForDateRange(props: {
     useCache?: boolean;
 }): Promise<EmailTrigger[]> {
     const { startDate, endDate, useCache = false } = props;
-    const queryClient = config.getQueryClient();
+    const queryClient = dataClient.config.getQueryClient();
     const triggers = queryClient.getQueryData<EmailTrigger[]>(["emailTriggers"]);
     if (triggers && useCache) {
         return triggers.filter((trigger) =>
@@ -199,7 +198,7 @@ async function validateEmailTrigger(
     if (!event?.id) {
         throw new Error(`Event ID is required for email trigger with ID ${id}`);
     }
-    const fullEvent = await dataClient.timelineEvent.get(event.id);
+    const fullEvent = await dataClient.event.get(event.id);
     if (!fullEvent) {
         throw new Error(`Event with ID ${event.id} not found`);
     }

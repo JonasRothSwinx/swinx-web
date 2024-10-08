@@ -1,6 +1,6 @@
 import { Candidate, Influencer, Influencers } from "../../types";
 import database from "../dbOperations";
-import { config } from ".";
+import { dataClient } from ".";
 
 /**
  *
@@ -22,7 +22,7 @@ async function createCandidate(
     influencer: Influencers.Full,
     assignmentId: string,
 ): Promise<Candidate> {
-    const queryClient = config.getQueryClient();
+    const queryClient = dataClient.config.getQueryClient();
     const newCandidate: Omit<Candidate, "id"> = {
         influencer: influencer,
         response: "pending",
@@ -54,7 +54,7 @@ async function createCandidate(
  */
 
 async function deleteCandidate(candidateId: string, assignmentId: string): Promise<void> {
-    const queryClient = config.getQueryClient();
+    const queryClient = dataClient.config.getQueryClient();
     const { errors } = await database.candidate.delete({ id: candidateId });
     if (errors) {
         console.error(errors);
@@ -87,7 +87,7 @@ async function updateCandidate({
     updatedValues,
     previousCandidate,
 }: UpdateCandidateParams): Promise<Candidate> {
-    // const queryClient = config.getQueryClient();
+    // const queryClient = dataClient.config.getQueryClient();
     const updatedCandidate = { ...previousCandidate, ...updatedValues };
     const { errors } = await database.candidate.update({
         candidateId,

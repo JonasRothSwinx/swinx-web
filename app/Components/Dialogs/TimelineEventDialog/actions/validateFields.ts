@@ -5,7 +5,7 @@ type necesaryKeyInfo = {
     targetAudience?: (keyof Event["targetAudience"])[];
     campaign?: (keyof Event["campaign"])[];
 };
-const necessaryKeys: { [key in Events.eventType]?: necesaryKeyInfo } = {
+const necessaryKeys: { [key in Events.EventType]?: necesaryKeyInfo } = {
     Invites: {
         flat: ["type", "eventTaskAmount", "assignments", "parentEvent"],
         campaign: ["id"],
@@ -13,7 +13,7 @@ const necessaryKeys: { [key in Events.eventType]?: necesaryKeyInfo } = {
 };
 export default function validateFields(
     event: Partial<Event>,
-    type: Events.eventType,
+    type: Events.EventType,
 ): event is Event {
     const keys = necessaryKeys[type];
     if (!keys) return true;

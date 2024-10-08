@@ -74,7 +74,10 @@ export default async function send(props: SendMailProps) {
     const campaignId = assignment.campaign.id;
     const baseUrl = await getInviteBaseUrl();
 
-    const senderAdress = `${senderName} <${senderEmail}>` ?? "swinx GmbH <noreply@swinx.de>";
+    const senderAdress =
+        senderName && senderEmail
+            ? `${senderName} <${senderEmail}>`
+            : "swinx GmbH <noreply@swinx.de>";
     const defaultTemplateData: TemplateVariables = {
         name: "Error 418: Teapot",
         // assignments: commonVariables.assignments,

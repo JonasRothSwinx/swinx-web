@@ -9,7 +9,6 @@ import { queryClient, queryServer } from "@/app/Components/StorageManagers/funct
 import { ConfirmProvider, useConfirm } from "material-ui-confirm";
 import { StorageManagerProps } from "@/app/Components/StorageManagers/TypedStorageManager";
 import { CheckIcon } from "@/app/Definitions/Icons";
-import { assignment } from "@/app/ServerFunctions/database/dataClients";
 import { usePathname } from "next/navigation";
 
 //#region Definitions
@@ -742,6 +741,7 @@ function SubmitLinkDialog({ open, onClose, task, campaignId }: SubmitLinkDialogP
                     variant="contained"
                     onClick={async () => {
                         submitLink.mutate();
+                        return;
                     }}
                 >
                     Absenden

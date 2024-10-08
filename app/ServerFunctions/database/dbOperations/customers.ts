@@ -1,7 +1,7 @@
 "use server";
 import { Nullable } from "@/app/Definitions/types";
 import { Customer } from "@/app/ServerFunctions/types";
-import client from "./.dbclient";
+import { client } from "./_dbclient";
 import { SelectionSet } from "aws-amplify/api";
 import { Schema } from "@/amplify/data/resource";
 

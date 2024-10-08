@@ -5,8 +5,9 @@ import { Placeholder, Signature } from "../../_components";
 import { DebugToggle, EmailProps } from "../../types";
 import DebugTemplates from "../../../DebugTemplates";
 import { TemplateVariables, defaultParams } from "./TemplateVariables";
+import React from "react";
 
-const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
+const placeholders: { [key in keyof TemplateVariables]: string } = {
     name: Placeholder({ name: "name" }),
     customerName: Placeholder({ name: "customerName" }),
     topic: Placeholder({ name: "topic" }),
@@ -14,7 +15,7 @@ const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } =
     taskPageLink: Placeholder({ name: "taskPageLink" }),
 };
 const EmailTemplates: {
-    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
+    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => React.JSX.Element;
 } = {
     new: (debug?) => <NewVideoDraftDeadlineReminder />,
     reduced: (debug?) => <ReducedVideoDraftDeadlineReminder />,

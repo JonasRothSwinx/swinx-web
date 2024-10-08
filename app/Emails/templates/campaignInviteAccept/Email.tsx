@@ -8,13 +8,13 @@ import * as React from "react";
 import DebugTemplates from "../../DebugTemplates";
 import { TemplateVariables, defaultParams } from "./TemplateVariables";
 
-const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
+const placeholders: { [key in keyof TemplateVariables]: string } = {
     influencerName: Placeholder({ name: "influencerName" }),
     customerName: Placeholder({ name: "customerName" }),
     taskPageUrl: Placeholder({ name: "taskPageUrl" }),
 };
 const EmailTemplates: {
-    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
+    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => React.JSX.Element;
 } = {
     new: (debug?) => <NewCampaignInvite debug={debug} />,
     reduced: (debug?) => <ReducedCampaignInvite debug={debug} />,

@@ -2,7 +2,7 @@
 
 import { Nullable, PartialWith } from "@/app/Definitions/types";
 import { EmailTriggers, Event, Influencers } from "../../types";
-import client from "./.dbclient";
+import { client } from "./_dbclient";
 import { SelectionSet } from "aws-amplify/api";
 import { Schema } from "@/amplify/data/resource";
 

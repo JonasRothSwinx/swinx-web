@@ -5,9 +5,10 @@ import { DataType } from "../StorageManagerDialog";
 import { ImagePreview, VideoPreview, TextPreview, Controls } from "./components";
 import { ListPaginateWithPathOutput } from "aws-amplify/storage";
 import { ConfirmProvider } from "material-ui-confirm";
+import React from "react";
 
 const typePreview: {
-    [key in DataType]: (props: PreviewProps) => JSX.Element;
+    [key in DataType]: (props: PreviewProps) => React.JSX.Element;
 } = {
     image: (props) => <ImagePreview {...props} />,
     video: (props) => <VideoPreview {...props} />,
@@ -43,16 +44,10 @@ export function FilePreview({ files, dataType, showControls }: FilePreviewProps)
     };
 
     return (
-        <Box
-            id="FilePreviewCardContainer"
-            key={"FilePreviewCardContainer" + dataType}
-            sx={sx}
-        >
+        <Box id="FilePreviewCardContainer" key={"FilePreviewCardContainer" + dataType} sx={sx}>
             <ConfirmProvider>
                 {files.map((file, index) => {
-                    const [campaignId, eventId, fileType, fileName] = file.path
-                        .split("/")
-                        .slice(-4);
+                    const [campaignId, eventId, fileType, fileName] = file.path.split("/").slice(-4);
 
                     const Element = typePreview[fileType as DataType];
                     try {

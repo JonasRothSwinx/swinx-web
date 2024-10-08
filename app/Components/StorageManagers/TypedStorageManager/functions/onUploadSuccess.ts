@@ -25,7 +25,7 @@ export async function onUploadSuccess({
             currentFiles.data.map(async (prevFile) => {
                 if (prevFile.path === file.key) return Promise.resolve();
                 await remove({ path: prevFile.path });
-            })
+            }),
         )
             .then(async () => {
                 await queryClient.invalidateQueries({
@@ -33,9 +33,13 @@ export async function onUploadSuccess({
                 });
             })
             .catch((error) => {
+                if (!(error instanceof Error)) return;
                 console.error("onUploadSuccessError", { currentFiles, error });
             });
-        await queryClient.setQueryData([eventId, dataType], [{ path: file.key, lastModified: new Date() }]);
+        await queryClient.setQueryData(
+            [eventId, dataType],
+            [{ path: file.key, lastModified: new Date() }],
+        );
         await queryClient.invalidateQueries({
             queryKey: [file.key],
         });

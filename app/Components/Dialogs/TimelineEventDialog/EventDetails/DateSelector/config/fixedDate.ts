@@ -6,7 +6,7 @@ interface FixedDateParams {
     parentEvent: Nullable<Event>;
 }
 export const getFixedDate: {
-    [key in Events.eventType | "none"]: (params: Prettify<FixedDateParams>) => Dayjs | null;
+    [key in Events.EventType | "none"]: (params: Prettify<FixedDateParams>) => Dayjs | null;
 } = {
     none: () => null,
 
@@ -20,7 +20,7 @@ export const getFixedDate: {
 };
 
 export const isFixedDate: {
-    [key in Events.eventType | "none"]: boolean;
+    [key in Events.EventType | "none"]: boolean;
 } = {
     none: false,
 

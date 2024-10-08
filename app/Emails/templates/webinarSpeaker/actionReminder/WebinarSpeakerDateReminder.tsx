@@ -6,6 +6,7 @@ import { DebugToggle, EmailProps } from "../../types";
 
 import { TemplateVariables } from "./TemplateVariables";
 import DebugTemplates from "@/app/Emails/DebugTemplates";
+import React from "react";
 
 export const subjectLineBase = "Erinnerung: Webinar";
 
@@ -17,7 +18,7 @@ export const defaultParams: TemplateVariables = {
     taskPageLink: "https://www.swinx.de",
 };
 
-const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } = {
+const placeholders: { [key in keyof TemplateVariables]: string } = {
     name: Placeholder({ name: "name" }),
     time: Placeholder({ name: "time" }),
     webinarTitle: Placeholder({ name: "webinarTitle" }),
@@ -25,7 +26,7 @@ const placeholders: { [key in keyof TemplateVariables]: JSX.Element | string } =
     taskPageLink: Placeholder({ name: "taskPageLink" }),
 };
 const EmailTemplates: {
-    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => JSX.Element;
+    [key in Exclude<EmailTriggers.emailLevel, "none">]: (debug?: boolean) => React.JSX.Element;
 } = {
     new: (debug?) => <NewWebinarSpeakerDateReminder debug={debug} />,
     reduced: (debug?) => <ReducedWebinarSpeakerDateReminder debug={debug} />,
