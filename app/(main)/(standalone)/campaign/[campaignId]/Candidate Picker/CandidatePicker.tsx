@@ -14,6 +14,7 @@ import InfluencerTable from "./InfluencerTable";
 interface CandidatePickerProps {
     influencers: Influencers.Full[];
     assignmentId: string;
+    campaignId: string;
     setAssignment: (assignment: Assignment, updatedValues?: Partial<Assignment>) => void;
     onClose: (hasChanged?: boolean, newDialog?: InfluencerDetailsButtonsOpenDialog) => void;
 }
@@ -21,6 +22,7 @@ interface CandidatePickerProps {
 export function CandidatePickerTabs({
     setAssignment,
     assignmentId,
+    campaignId,
     onClose,
 }: CandidatePickerProps) {
     const queryClient = useQueryClient(); //TODO: change props to only require assignmentId, get asignemnt by query

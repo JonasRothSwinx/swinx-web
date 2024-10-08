@@ -6,7 +6,14 @@ import {
     PersonSearchIcon,
     PrintIcon,
 } from "@/app/Definitions/Icons";
-import { Assignment, Campaign, Influencer, Event, Events, Influencers } from "@/app/ServerFunctions/types";
+import {
+    Assignment,
+    Campaign,
+    Influencer,
+    Event,
+    Events,
+    Influencers,
+} from "@/app/ServerFunctions/types";
 import { Tooltip, IconButton, Box } from "@mui/material";
 import React, { MouseEvent, useState } from "react";
 import { TimelineEventDialog, BudgetDialog } from "@/app/Components/Dialogs";
@@ -19,7 +26,14 @@ import { encodeQueryParams, getTaskPageUrl } from "@/app/utils";
 import Link from "next/link";
 import { queryKeys } from "@/app/(main)/queryClient/keys";
 
-type openDialog = "none" | "timelineEvent" | "candidates" | "budget" | "notes" | "delete" | "emailPreview";
+type openDialog =
+    | "none"
+    | "timelineEvent"
+    | "candidates"
+    | "budget"
+    | "notes"
+    | "delete"
+    | "emailPreview";
 
 export type InfluencerDetailsButtonsOpenDialog = openDialog;
 
@@ -27,19 +41,30 @@ interface InfluencerDetailsButtonProps {
     setIsProcessing: (state: boolean) => void;
     isProcessing: boolean;
     setCampaign: (campaign: Campaign) => void;
-    campaign: Campaign;
+    campaignId: string;
     assignment: Assignment;
     influencers: Influencers.Full[];
     events: Event[];
 }
-export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
-    const { isProcessing, setIsProcessing, campaign, setCampaign, assignment, influencers, events } = props;
+export function InfluencerDetailsButtons({
+    isProcessing,
+    setIsProcessing,
+    setCampaign,
+    assignment,
+    influencers,
+    campaignId,
+    events,
+}: InfluencerDetailsButtonProps) {
     const queryClient = useQueryClient();
     const [openDialog, setOpenDialog] = useState<openDialog>("none");
     const userGroups = useQuery({
         queryKey: queryKeys.currentUser.userGroups(),
         queryFn: () => getUserGroups(),
         placeholderData: [],
+    });
+    const campaign = useQuery({
+        queryKey: queryKeys.campaign.one(campaignId),
+        queryFn: () => dataClient.campaign.get(campaignId),
     });
 
     const EventHandlers = {
@@ -64,33 +89,33 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             },
             onMutate: async () => {
                 await queryClient.cancelQueries({ queryKey: ["assignment", assignment.id] });
-                await queryClient.cancelQueries({ queryKey: ["assignments", campaign.id] });
-                await queryClient.cancelQueries({ queryKey: ["campaign", campaign.id] });
+                await queryClient.cancelQueries({ queryKey: ["assignments", campaignId] });
+                await queryClient.cancelQueries({ queryKey: ["campaign", campaignId] });
                 const prevCampaign = campaign;
-                const prevAssignments = campaign.assignedInfluencers;
+                const prevAssignments = campaign.data?.assignedInfluencers ?? [];
 
                 queryClient.setQueryData(["assignment", assignment.id], undefined);
                 queryClient.setQueryData(
-                    ["assignments", campaign.id],
-                    prevAssignments.filter((x) => x.id !== assignment.id)
+                    ["assignments", campaignId],
+                    prevAssignments.filter((x) => x.id !== assignment.id),
                 );
-                queryClient.setQueryData(["campaign", campaign.id], {
+                queryClient.setQueryData(queryKeys.campaign.one(campaignId), {
                     ...prevCampaign,
                     assignedInfluencers: prevAssignments.filter((x) => x.id !== assignment.id),
                 });
                 return { prevCampaign, prevAssignments };
             },
             onSettled: () => {
-                queryClient.invalidateQueries({ queryKey: ["assignments", campaign.id] });
-                queryClient.invalidateQueries({ queryKey: ["campaign", campaign.id] });
+                queryClient.invalidateQueries({ queryKey: ["assignments", campaignId] });
+                queryClient.invalidateQueries({ queryKey: queryKeys.campaign.one(campaignId) });
             },
             onError: (error, _, context) => {
                 console.error(error);
                 const { prevCampaign, prevAssignments } = context ?? {};
                 if (prevCampaign && prevAssignments) {
                     queryClient.setQueryData(["assignment", assignment.id], assignment);
-                    queryClient.setQueryData(["assignments", campaign.id], prevAssignments);
-                    queryClient.setQueryData(["campaign", campaign.id], prevCampaign);
+                    queryClient.setQueryData(["assignments", campaignId], prevAssignments);
+                    queryClient.setQueryData(queryKeys.campaign.one(campaignId), prevCampaign);
                 }
             },
         }),
@@ -108,14 +133,17 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
         setAssignment: (targetAssignment: Assignment, updatedValues?: Partial<Assignment>) => {
             // debugger;
             // console.log(targetAssignment);
+            if (!campaign.data) return;
             if (updatedValues) {
                 const id = targetAssignment.id;
                 dataClient.assignment.update({ ...updatedValues, id }, targetAssignment);
             }
             const newCampaign: Campaign = {
-                ...campaign,
+                ...campaign.data,
                 assignedInfluencers: [
-                    ...campaign.assignedInfluencers.map((x) => (x.id === targetAssignment.id ? targetAssignment : x)),
+                    ...campaign.data.assignedInfluencers.map((x) =>
+                        x.id === targetAssignment.id ? targetAssignment : x,
+                    ),
                 ],
             };
             // console.log({ newCampaign, assignments: newCampaign.assignedInfluencers });
@@ -139,12 +167,13 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
                 // isOpen={openDialog === "timelineEvent"}
                 onClose={EventHandlers.onDialogClose}
                 targetAssignment={assignment}
-                campaignId={campaign.id}
+                campaignId={campaignId}
             />
         ),
         candidates: () => (
             <CandidatePickerTabs
                 influencers={influencers}
+                campaignId={campaignId}
                 assignmentId={assignment.id}
                 onClose={EventHandlers.onDialogClose}
                 setAssignment={EventHandlers.setAssignment}
@@ -176,6 +205,8 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
         // />
         notes: () => null,
     };
+    if (campaign.isLoading || userGroups.isLoading) return null;
+    if (!campaign.data) return null;
     return (
         <div
             onClick={EventHandlers.preventClickthrough}
@@ -186,39 +217,70 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             }}
         >
             {DialogElements[openDialog]()}
-            <Tooltip title="Honorar bearbeiten" placement="top">
+            <Tooltip
+                title="Honorar bearbeiten"
+                placement="top"
+            >
                 <Box>
-                    <IconButton disabled={isProcessing} onClick={EventHandlers.openBudget()}>
+                    <IconButton
+                        disabled={isProcessing}
+                        onClick={EventHandlers.openBudget()}
+                    >
                         <EuroSymbolIcon color={assignment.budget ? "inherit" : "error"} />
                     </IconButton>
                 </Box>
             </Tooltip>
             {hasNecessaryData(assignment, events) && (
-                <Tooltip title="Kandidaten zuweisen" placement="top">
+                <Tooltip
+                    title="Kandidaten zuweisen"
+                    placement="top"
+                >
                     <span>
-                        <IconButton disabled={isProcessing} onClick={EventHandlers.openCandidates()}>
+                        <IconButton
+                            disabled={isProcessing}
+                            onClick={EventHandlers.openCandidates()}
+                        >
                             <PersonSearchIcon />
                         </IconButton>
                     </span>
                 </Tooltip>
             )}
-            <Tooltip title="Aufgaben zuweisen" placement="top">
+            <Tooltip
+                title="Aufgaben zuweisen"
+                placement="top"
+            >
                 <span>
-                    <IconButton disabled={isProcessing} onClick={EventHandlers.addEvents()}>
+                    <IconButton
+                        disabled={isProcessing}
+                        onClick={EventHandlers.addEvents()}
+                    >
                         <AddIcon color={events.length > 0 ? "inherit" : "error"} />
                     </IconButton>
                 </span>
             </Tooltip>
-            <Tooltip title="Löschen" placement="top">
+            <Tooltip
+                title="Löschen"
+                placement="top"
+            >
                 <span>
-                    <IconButton color="error" onClick={EventHandlers.confirmDelete()} disabled={isProcessing}>
+                    <IconButton
+                        color="error"
+                        onClick={EventHandlers.confirmDelete()}
+                        disabled={isProcessing}
+                    >
                         <DeleteIcon />
                     </IconButton>
                 </span>
             </Tooltip>
             {assignment.timelineEvents.length > 0 && (
-                <Tooltip title="Zur Statuspage des Influencers" placement="top">
-                    <Link href={`/tasks/${assignment.id}`} target="_blank">
+                <Tooltip
+                    title="Zur Statuspage des Influencers"
+                    placement="top"
+                >
+                    <Link
+                        href={`/tasks/${assignment.id}`}
+                        target="_blank"
+                    >
                         <IconButton>
                             <ArrowOutwardIcon />
                         </IconButton>
@@ -227,9 +289,15 @@ export function InfluencerDetailsButtons(props: InfluencerDetailsButtonProps) {
             )}
             {userGroups.data?.includes("admin") && (
                 <>
-                    <Tooltip title="Log assignment" placement="top">
+                    <Tooltip
+                        title="Log assignment"
+                        placement="top"
+                    >
                         <span>
-                            <IconButton disabled={isProcessing} onClick={() => console.log(assignment)}>
+                            <IconButton
+                                disabled={isProcessing}
+                                onClick={() => console.log(assignment)}
+                            >
                                 <PrintIcon />
                             </IconButton>
                         </span>

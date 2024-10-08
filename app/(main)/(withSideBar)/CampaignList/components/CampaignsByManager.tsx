@@ -78,7 +78,7 @@ export function CampaignsByManager() {
                 ),
             };
         });
-    }, [campaigns.data, managers.data, settings.data]);
+    }, [campaigns.data, managers.data, settings.data, currentManager.data?.id]);
 
     const sx: SxProps = {
         display: "flex",
