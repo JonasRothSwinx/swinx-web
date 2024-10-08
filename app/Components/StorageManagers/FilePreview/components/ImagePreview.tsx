@@ -34,7 +34,7 @@ export function ImagePreview({
         if (!url.data)
             return (
                 <Skeleton
-                    key={"skeleton" + file.path + file.lastModified}
+                    key={"skeleton" + file.path + file.lastModified?.toString()}
                     variant="rounded"
                     width={100}
                     height={200}
@@ -46,7 +46,7 @@ export function ImagePreview({
         return (
             <Card
                 raised
-                key={"card" + file.path + file.lastModified}
+                key={"card" + file.path + file.lastModified?.toString()}
                 sx={sx}
             >
                 {/* <CardActionArea> */}

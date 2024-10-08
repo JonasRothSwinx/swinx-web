@@ -741,6 +741,7 @@ function SubmitLinkDialog({ open, onClose, task, campaignId }: SubmitLinkDialogP
                     variant="contained"
                     onClick={async () => {
                         submitLink.mutate();
+                        return;
                     }}
                 >
                     Absenden

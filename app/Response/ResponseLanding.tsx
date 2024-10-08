@@ -1,5 +1,13 @@
 import { Candidates } from "@/app/ServerFunctions/types";
-import { Box, Button, CircularProgress, Icon, SxProps, Typography, useMediaQuery } from "@mui/material";
+import {
+    Box,
+    Button,
+    CircularProgress,
+    Icon,
+    SxProps,
+    Typography,
+    useMediaQuery,
+} from "@mui/material";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -27,7 +35,7 @@ export default function ResponseLanding() {
     const dataParams = params.get("data");
     const decodedParams: CampaignInviteEncodedData = (() => {
         try {
-            return JSON.parse(atob(dataParams ?? btoa("{}")));
+            return JSON.parse(atob(dataParams ?? btoa("{}"))) as CampaignInviteEncodedData;
         } catch (e) {
             return {
                 assignmentId: "",
@@ -236,7 +244,7 @@ export default function ResponseLanding() {
                 },
             },
         }),
-        []
+        [],
     );
     //#endregion
     //MARK: - Event Handler
@@ -314,13 +322,24 @@ export default function ResponseLanding() {
         CampaignData.isLoading ||
         parentEvent.isLoading
     ) {
-        return <Loading textMessage="Kampagne wird geladen" spinnerSize={100} />;
+        return (
+            <Loading
+                textMessage="Kampagne wird geladen"
+                spinnerSize={100}
+            />
+        );
     }
     if (queries.some((query) => query.isError) || !queries.every((query) => query.data)) {
         return <Typography id="ErrorText">Ein Fehler ist aufgetreten</Typography>;
     }
     //assure that query data is present
-    if (!candidate.data || !assignmentData.data || !events.data || !CampaignData.data || !parentEvent.data) {
+    if (
+        !candidate.data ||
+        !assignmentData.data ||
+        !events.data ||
+        !CampaignData.data ||
+        !parentEvent.data
+    ) {
         return <Typography id="ErrorText">Ein Fehler ist aufgetreten</Typography>;
     }
     if (candidate.data.response && candidate.data.response !== "pending") {
@@ -335,7 +354,10 @@ export default function ResponseLanding() {
     //Temporary fix for the issue
 
     return (
-        <Box id="ResponseLandingContainer" sx={styles}>
+        <Box
+            id="ResponseLandingContainer"
+            sx={styles}
+        >
             <Title />
             <Box id="ResponseLandingScrollableContent">
                 <Introduction

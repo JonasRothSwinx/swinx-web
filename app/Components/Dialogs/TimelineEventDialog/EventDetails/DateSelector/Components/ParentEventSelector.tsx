@@ -63,6 +63,7 @@ export function ParentEventSelector({
 
     const Handler = {
         onParentEventChange: (e: SelectChangeEvent<unknown>) => {
+            if (typeof e.target.value !== "string") return;
             const value = e.target.value;
             const selectedEvent = parentEventChoices.data?.find((event) => event.id === value);
             if (!selectedEvent) {

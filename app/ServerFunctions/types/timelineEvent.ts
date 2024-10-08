@@ -29,7 +29,7 @@ export function isEventReference(event: unknown): event is EventReference {
         testEvent !== null &&
         typeof testEvent.id === "string" &&
         typeof testEvent.type === "string" &&
-        eventValues.includes(testEvent.type as EventType)
+        eventValues.includes(testEvent.type)
     );
 }
 
@@ -139,7 +139,7 @@ export function isSingleEvent(event: unknown, verbose = false): event is SingleE
         if (verbose) console.error("isSingleEvent: Missing type");
         return false;
     }
-    if (!singleEventValues.includes(testEvent.type as singleEventType)) {
+    if (!singleEventValues.includes(testEvent.type)) {
         if (verbose) console.error("isSingleEvent: Invalid type");
         return false;
     }

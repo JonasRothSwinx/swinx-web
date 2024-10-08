@@ -141,7 +141,7 @@ export async function createTimelineEvent(props: Omit<Event, "id">) {
     );
     if (!data || !data.id) {
         console.error("No ID", data);
-        throw "failed to create Event";
+        throw new Error("failed to create Event");
     }
     //create join table entries
     const assignments = props.assignments ?? [];

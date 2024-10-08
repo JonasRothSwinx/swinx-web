@@ -8,14 +8,14 @@ import DebugTemplates from "../../DebugTemplates";
 import PlaceholderList from "../_components/placeholderList";
 import { TemplateVariables, defaultParams } from "./TemplateVariables";
 
-const placeholders: { [key in keyof TemplateVariables]: React.JSX.Element | string } = {
+const placeholders: { [key in keyof TemplateVariables]: string } = {
     name: Placeholder({ name: "name" }),
     inviteAmount: Placeholder({ name: "inviteAmount" }),
     customerName: Placeholder({ name: "customerName" }),
     eventName: Placeholder({ name: "eventName" }),
     eventLink: Placeholder({ name: "eventLink" }),
-    filterJobGroups: PlaceholderList({ parentName: "filterJobGroups", listItemName: "jobGroup" }),
-    filterCountries: Placeholder({ name: "filterCountries" }),
+    // filterJobGroups: PlaceholderList({ parentName: "filterJobGroups", listItemName: "jobGroup" }),
+    // filterCountries: Placeholder({ name: "filterCountries" }),
     actionTime: Placeholder({ name: "actionTime" }),
     taskPageLink: Placeholder({ name: "taskPageLink" }),
 };
@@ -37,34 +37,33 @@ InvitesReminderMail.PreviewProps = {
 } satisfies EmailProps;
 
 function NewInvitesReminder(props: DebugToggle) {
-    const { name, inviteAmount, customerName, eventName, eventLink, filterCountries, actionTime, taskPageLink } =
+    const { name, inviteAmount, customerName, eventName, eventLink, actionTime, taskPageLink } =
         props.debug ? defaultParams : placeholders;
-    const filterJobGroups = props.debug ? (
-        <ul>
-            {defaultParams.filterJobGroups.map((a, index) => (
-                <li key={index}>{a.jobGroup}</li>
-            ))}
-        </ul>
-    ) : (
-        placeholders.filterJobGroups
-    );
+
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
             <Preview>Erinnerung: Einladungen</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
-                Wir möchten sie daran erinnern, dass sie {actionTime} {inviteAmount} Einladungen für das Event{" "}
-                <Link href={eventLink as string}>{eventName}</Link> von unserem Kunden {customerName} versenden sollen.
+                Wir möchten sie daran erinnern, dass sie {actionTime} {inviteAmount} Einladungen für
+                das Event <Link href={eventLink}>{eventName}</Link> von unserem Kunden{" "}
+                {customerName} versenden sollen.
                 <br />
-                Bitte benutzen sie dafür unsere Browser Extension, mit ihrer personalisierten Filter-Datei, die sie von
-                uns erhalten haben.
+                Bitte benutzen sie dafür unsere Browser Extension, mit ihrer personalisierten
+                Filter-Datei, die sie von uns erhalten haben.
             </Text>
             <Text style={styles.text}>
                 {`Bitte laden Sie im Anschluss einen Screenshot auf unserer Plattform hoch`}
             </Text>
             {/* <Container> */}
-            <Button style={styles.responseButton} href={placeholders.taskPageLink.toString()}>
+            <Button
+                style={styles.responseButton}
+                href={placeholders.taskPageLink.toString()}
+            >
                 Zur Übersicht
             </Button>
             {/* </Container> */}
@@ -74,31 +73,23 @@ function NewInvitesReminder(props: DebugToggle) {
 }
 
 function ReducedInvitesReminder(props: DebugToggle) {
-    const { name, inviteAmount, customerName, eventName, eventLink, filterCountries, actionTime } = props.debug
+    const { name, inviteAmount, customerName, eventName, eventLink, actionTime } = props.debug
         ? defaultParams
         : placeholders;
-    const filterJobGroups = props.debug ? (
-        <ul>
-            {defaultParams.filterJobGroups.map((a, index) => (
-                <li key={index}>{a.jobGroup}</li>
-            ))}
-        </ul>
-    ) : (
-        placeholders.filterJobGroups
-    );
+
     return (
-        <Html dir="ltr" lang="de">
+        <Html
+            dir="ltr"
+            lang="de"
+        >
             <Head />
             <Preview>Erinnerung: Einladungen</Preview>
             <Text style={styles.text}>Hallo {name}!</Text>
             <Text style={styles.text}>
-                Wir möchten dich daran erinnern, dass du {actionTime} {inviteAmount} Einladungen für das Event{" "}
-                <Link href={eventLink as string}>{eventName}</Link> von unserem Kunden {customerName} versenden sollst.
+                Wir möchten dich daran erinnern, dass du {actionTime} {inviteAmount} Einladungen für
+                das Event <Link href={eventLink}>{eventName}</Link> von unserem Kunden{" "}
+                {customerName} versenden sollst.
                 <br />
-                Bitte schicke nur Einladungen an deine Follower*innen aus {filterCountries}, die folgenden Branchen
-                tätig sind:
-                <br />
-                {filterJobGroups}
                 Bitte teile uns danach mit, ob alles funktioniert hat.
             </Text>
             {/* <Container align="left" style={styles.buttonContainer}>
