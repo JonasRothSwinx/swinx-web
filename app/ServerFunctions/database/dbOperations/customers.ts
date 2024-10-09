@@ -85,10 +85,12 @@ export async function updateCustomer(customer: Customer) {
 //#endregion
 
 //#region Delete
-export async function deleteCustomer(customer: Customer) {
-    if (!customer.id) throw new Error("Missing Data");
-
-    const { errors } = await client.models.Customer.delete({ id: customer.id });
+interface DeleteCustomer {
+    id: string;
+}
+export async function deleteCustomer({ id }: DeleteCustomer) {
+    if (!id) throw new Error("Missing Data");
+    const { errors } = await client.models.Customer.delete({ id });
     console.log(errors);
 }
 //#endregion

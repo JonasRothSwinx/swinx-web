@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { Customer, NextSteps, ProjectManager, Webinar } from ".";
 import { InfluencersInfo } from "./Influencers";
+import { queryKeys } from "@/app/(main)/queryClient/keys";
 
 interface CampaignElementProps {
     campaignId: string;
@@ -28,7 +29,7 @@ export function CampaignElement({
     } = {},
 }: CampaignElementProps) {
     const campaign = useQuery({
-        queryKey: ["campaigns", campaignId],
+        queryKey: queryKeys.campaign.one(campaignId),
         queryFn: async () => {
             const campaign = await dataClient.campaign.getRef(campaignId);
             return campaign;
@@ -103,8 +104,15 @@ export function CampaignElement({
         );
     if (!campaign.data) return null;
     return (
-        <Link id="campaignElementLinkWrapper" href={`/campaign/${campaignId}`} passHref>
-            <Box id="campaignElementContent" sx={sx}>
+        <Link
+            id="campaignElementLinkWrapper"
+            href={`/campaign/${campaignId}`}
+            passHref
+        >
+            <Box
+                id="campaignElementContent"
+                sx={sx}
+            >
                 <LoadingIndicator />
                 {showId && <Typography>id: {campaignId}</Typography>}
                 {showManager && <ProjectManager campaignId={campaignId} />}
@@ -118,5 +126,10 @@ export function CampaignElement({
 }
 
 function LoadingIndicator() {
-    return <CircularProgress id="loadingIndicator" size="20px" />;
+    return (
+        <CircularProgress
+            id="loadingIndicator"
+            size="20px"
+        />
+    );
 }

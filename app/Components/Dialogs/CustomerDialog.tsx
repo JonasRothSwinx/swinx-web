@@ -26,16 +26,12 @@ interface CustomerDialogProps {
     customers: Partial<Customer>[];
     editing: boolean;
     editingData?: Partial<Customer>[];
-    setCustomers: React.Dispatch<React.SetStateAction<Partial<Customer>[]>>;
+    // setCustomers: React.Dispatch<React.SetStateAction<Partial<Customer>[]>>;
     onClose?: (hasChanged: boolean) => void;
 }
 
-export function CustomerDialog(props: CustomerDialogProps) {
-    // debugger;
-    //##################
-    //#region Variables
-    const { onClose, editing, editingData, setCustomers, customers } = props;
-    //#endregion Variables
+export function CustomerDialog({ onClose, editing, editingData, customers }: CustomerDialogProps) {
+    // debugger;s
     //##################
 
     //##################

@@ -64,7 +64,7 @@ export function InfluencerDetailsButtons({
     });
     const campaign = useQuery({
         queryKey: queryKeys.campaign.one(campaignId),
-        queryFn: () => dataClient.campaign.get(campaignId),
+        queryFn: () => dataClient.campaign.getRef(campaignId),
     });
 
     const EventHandlers = {
@@ -92,7 +92,13 @@ export function InfluencerDetailsButtons({
                 await queryClient.cancelQueries({ queryKey: ["assignments", campaignId] });
                 await queryClient.cancelQueries({ queryKey: ["campaign", campaignId] });
                 const prevCampaign = campaign;
-                const prevAssignments = campaign.data?.assignedInfluencers ?? [];
+
+                const prevAssignments =
+                    campaign.data?.assignmentIds
+                        .map((id) => {
+                            return queryClient.getQueryData<Assignment>(["assignment", id]);
+                        })
+                        .filter((x): x is Assignment => !!x) ?? [];
 
                 queryClient.setQueryData(["assignment", assignment.id], undefined);
                 queryClient.setQueryData(
@@ -138,16 +144,19 @@ export function InfluencerDetailsButtons({
                 const id = targetAssignment.id;
                 dataClient.assignment.update({ ...updatedValues, id }, targetAssignment);
             }
-            const newCampaign: Campaign = {
-                ...campaign.data,
-                assignedInfluencers: [
-                    ...campaign.data.assignedInfluencers.map((x) =>
-                        x.id === targetAssignment.id ? targetAssignment : x,
-                    ),
-                ],
-            };
+
+            //FIXME: implement setAssignment
+
+            // const newCampaign: Campaign = {
+            //     ...campaign.data,
+            //     assignedInfluencers: [
+            //         ...campaign.data.assignedInfluencers.map((x) =>
+            //             x.id === targetAssignment.id ? targetAssignment : x,
+            //         ),
+            //     ],
+            // };
             // console.log({ newCampaign, assignments: newCampaign.assignedInfluencers });
-            setCampaign(newCampaign);
+            // setCampaign(newCampaign);
         },
         openBudget: () => (e: MouseEvent) => {
             e.stopPropagation();

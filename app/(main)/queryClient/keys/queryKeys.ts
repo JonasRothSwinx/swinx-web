@@ -15,6 +15,11 @@ export const campaignKeys = {
         one: (campaignId: string, influencerId: string) =>
             [...influencerKeys.all, influencerId] as const,
     },
+    relations: {
+        customers: {
+            all: (campaignId: string) => [...campaignKeys.one(campaignId), "customers"] as const,
+        },
+    },
 };
 
 export const projectManagerKeys = {

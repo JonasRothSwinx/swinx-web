@@ -33,6 +33,7 @@ export async function getCampaign(id: string): Promise<Nullable<Campaigns.Min>> 
 export async function getCampaignWithReferences(
     id: string,
 ): Promise<Nullable<Campaigns.Referential>> {
+    console.log("getCampaignWithReferences");
     const { data, errors } = await client.models.Campaign.get(
         { id },
         {
@@ -43,7 +44,9 @@ export async function getCampaignWithReferences(
         console.log({ errors });
         throw new Error(JSON.stringify(errors));
     }
+    console.log("validating");
     const validatedData = validate.referential.one(data);
+    console.log("validated");
     return validatedData;
     throw new Error("Not Implemented");
 }

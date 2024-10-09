@@ -6,7 +6,7 @@ import TimelineViewItem from "./Components/TimelineViewItem";
 
 import { dataClient } from "@dataClient";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { EventGroup, groupBy, groupEvents } from "./Functions/groupEvents";
 import { TimelineEventDialog, QueryDebugDisplay } from "@/app/Components";
 import { queryKeys } from "../queryClient/keys";
@@ -15,58 +15,56 @@ type orientation = "horizontal" | "vertical";
 type controlsPosition = "before" | "after" | "none";
 type openDialog = "none" | "editor";
 export interface TimelineViewProps {
-    campaign: Campaign;
-    setCampaign: (data: Campaign) => void;
+    campaignId: string;
+    // setCampaign: (data: Campaign) => void;
     maxItems?: number;
     // eventDialogProps: TimelineEventDialogProps;
     orientation?: orientation;
     controlsPosition?: controlsPosition;
     groupBy?: groupBy;
     editable?: boolean;
-    influencers: Influencers.Full[];
+    // influencers: Influencers.Full[];
 }
 
-export default function TimelineView(props: TimelineViewProps) {
+export default function TimelineView({
+    // maxItems,
+    // setCampaign: setParent,
+    // editable = false,
+    campaignId,
+    orientation = "vertical",
+    controlsPosition = "none",
+    groupBy: groupByInit = "week",
+}: TimelineViewProps) {
     const queryClient = useQueryClient();
-    const {
-        maxItems,
-        orientation = "vertical",
-        controlsPosition = "none",
-        setCampaign: setParent,
-        editable = false,
-    } = props;
+
+    const campaign = useQuery({
+        queryKey: queryKeys.campaign.one(campaignId),
+        queryFn: async () => {
+            const campaign = await dataClient.campaign.getRef(campaignId);
+            return campaign;
+        },
+    });
 
     //############################################
     //#region States
     // const [groups, setGroups] = useState<EventGroup[]>([]);
-    const [groupBy, setGroupBy] = useState<groupBy>(props.groupBy ?? "week");
+    const [groupBy, setGroupBy] = useState<groupBy>(groupByInit);
     const [editingEvent, setEditingEvent] = useState<Event>();
-    const [controlsPositionState, setControlsPosition] = useState<controlsPosition>(controlsPosition);
-    const [campaign, setCampaign] = useState<Campaign>(props.campaign);
+    const [controlsPositionState, setControlsPosition] =
+        useState<controlsPosition>(controlsPosition);
     const [openDialog, setOpenDialog] = useState<openDialog>("none");
     //#endregion States
     //############################################
 
     //############################################
     //#region Queries
-    const influencers = useQuery({
-        queryKey: ["influencers", props.influencers],
-        queryFn: () => {
-            return props.influencers;
-        },
-        placeholderData: [],
-    });
-    const events = useQuery({
-        queryKey: [campaign.id, "events"],
-        queryFn: async () => {
-            const events = await dataClient.event.list.by.campaign({
-                campaignId: campaign.id,
-            });
-            events.map((event) => {
-                queryClient.setQueryData(["event", event.id], event);
-            });
-            return events;
-        },
+
+    const events = useQueries({
+        queries:
+            campaign.data?.events.map((event) => ({
+                queryKey: queryKeys.event.one(event.id),
+                queryFn: () => dataClient.event.get(event.id),
+            })) ?? [],
     });
 
     const highlightedEventIds = useQuery({
@@ -77,14 +75,10 @@ export default function TimelineView(props: TimelineViewProps) {
         placeholderData: [],
     });
 
-    const groups = useQuery({
-        queryKey: ["groups", events.data, campaign.id, groupBy],
-        enabled: events.isSuccess,
-        queryFn: () => {
-            return groupEvents(events.data ?? [], groupBy);
-        },
-        placeholderData: [],
-    });
+    const groups = useMemo(() => {
+        const eventsData = events.map((event) => event.data).filter((data) => data !== undefined);
+        return groupEvents(eventsData, groupBy);
+    }, [events, groupBy]);
 
     const userGroups = useQuery({
         queryKey: queryKeys.currentUser.userGroups(),
@@ -99,19 +93,6 @@ export default function TimelineView(props: TimelineViewProps) {
     //############################################
     //#region Effects
     // useWhatChanged([events, groupBy, campaign, controlsPosition], "events.data, groupBy, campaign, controlsPosition");
-    useEffect(() => {
-        // console.log("Events changed, updating groups");
-        // queryClient.invalidateQueries({ queryKey: ["groups", campaign.id] });
-        // groups.refetch();
-        // console.log("Events changed, updating groups");
-        return () => {};
-    }, [events.data, groupBy, campaign]); // eslint-disable-line react-hooks/exhaustive-deps
-
-    useEffect(() => {
-        // console.log("Campaign changed, updating events");
-
-        return () => {};
-    }, [campaign]);
 
     useEffect(() => {
         setControlsPosition(controlsPosition);
@@ -125,32 +106,16 @@ export default function TimelineView(props: TimelineViewProps) {
         onDialogClose: (hasChanged?: boolean) => {
             setOpenDialog("none");
             if (hasChanged) {
-                queryClient.invalidateQueries({
-                    queryKey: ["events", campaign.id],
-                    refetchType: "all",
+                campaign.data?.events.forEach((event) => {
+                    queryClient.invalidateQueries({ queryKey: queryKeys.event.one(event.id) });
                 });
-                queryClient.invalidateQueries({
-                    queryKey: ["groups", campaign.id],
-                    refetchType: "all",
-                });
-                groups.refetch();
-                events.refetch();
-                queryClient.refetchQueries();
             }
         },
         onDataChange: () => {
             console.log("Data changed");
-            queryClient.invalidateQueries({
-                queryKey: ["groups", campaign.id],
-                refetchType: "all",
+            campaign.data?.events.forEach((event) => {
+                queryClient.invalidateQueries({ queryKey: queryKeys.event.one(event.id) });
             });
-            queryClient.invalidateQueries({
-                queryKey: ["events", campaign.id],
-                refetchType: "all",
-            });
-            groups.refetch();
-            events.refetch();
-            queryClient.refetchQueries();
         },
         setDialog: (open: openDialog) => {
             setOpenDialog(open);
@@ -164,7 +129,7 @@ export default function TimelineView(props: TimelineViewProps) {
                 onClose={EventHandlers.onDialogClose}
                 editing={true}
                 editingData={editingEvent}
-                campaignId={campaign.id}
+                campaignId={campaignId}
                 targetAssignment={editingEvent?.assignments[0] ?? undefined}
             />
         ),
@@ -202,25 +167,17 @@ export default function TimelineView(props: TimelineViewProps) {
         };
     }, []);
 
-    if (events.isLoading || groups.isLoading || influencers.isLoading) {
+    if (events.some((event) => event.isLoading)) {
         return <Placeholder />;
     }
-    if (!events.data || !groups.data || !influencers.data) {
-        return (
-            <Box>
-                <Typography id="StatusState">Keine Daten</Typography>
-            </Box>
-        );
-    }
-    if (events.data.length === 0 || groups.data.length === 0)
+
+    if (events.length === 0 || groups.length === 0)
         return (
             <Box sx={styles}>
                 {controlsPositionState === "before" && (
                     <TimelineControls
                         {...{ groupBy, setGroupBy }}
-                        setCampaign={setCampaign}
-                        influencers={influencers.data ?? []}
-                        campaign={campaign}
+                        campaignId={campaignId}
                         onDataChange={EventHandlers.onDataChange}
                     />
                 )}
@@ -228,15 +185,13 @@ export default function TimelineView(props: TimelineViewProps) {
                 {controlsPositionState === "after" && (
                     <TimelineControls
                         {...{ groupBy, setGroupBy }}
-                        setCampaign={setParent}
-                        influencers={influencers.data}
-                        campaign={campaign}
+                        campaignId={campaignId}
                         onDataChange={EventHandlers.onDataChange}
                     />
                 )}
             </Box>
         );
-    if (events.isError || groups.isError || influencers.isError) {
+    if (events.some((event) => event.isError)) {
         return (
             <Box sx={styles}>
                 <Typography id="StatusState">Error</Typography>
@@ -248,41 +203,29 @@ export default function TimelineView(props: TimelineViewProps) {
     // }
 
     return (
-        <Box sx={styles} id="TimelineViewContainer">
+        <Box
+            sx={styles}
+            id="TimelineViewContainer"
+        >
             {/* Dialogs */}
             {Dialogs[openDialog]()}
             {controlsPositionState === "before" && (
                 <TimelineControls
                     {...{ groupBy, setGroupBy }}
-                    setCampaign={setCampaign}
-                    influencers={influencers.data ?? []}
-                    campaign={campaign}
+                    campaignId={campaignId}
                     onDataChange={EventHandlers.onDataChange}
                 />
             )}
-            {userGroups.data?.includes("admin") && (
-                <QueryDebugDisplay
-                    data={[
-                        { ...events, name: "events" },
-                        { ...groups, name: "groups" },
-                        { ...highlightedEventIds, name: "highlightedEventIds" },
-                        // { ...influencers, name: "influencers" },
-                    ]}
-                />
-            )}
             <TimelineViewContent
-                {...props}
-                influencers={influencers.data}
-                groups={groups.data}
+                campaignId={campaignId}
+                groups={groups}
                 setEditingEvent={setEditingEvent}
                 setDialog={EventHandlers.setDialog}
             />
             {controlsPositionState === "after" && (
                 <TimelineControls
                     {...{ groupBy, setGroupBy }}
-                    setCampaign={setParent}
-                    influencers={influencers.data}
-                    campaign={campaign}
+                    campaignId={campaignId}
                     onDataChange={EventHandlers.onDataChange}
                 />
             )}
@@ -291,30 +234,28 @@ export default function TimelineView(props: TimelineViewProps) {
 }
 
 interface TimelineViewContentProps {
-    campaign: Campaign;
+    campaignId: string;
     maxItems?: number;
     // eventDialogProps: TimelineEventDialogProps;
     orientation?: orientation;
     controlsPosition?: controlsPosition;
     groupBy?: groupBy;
     editable?: boolean;
-    influencers: Influencers.Full[];
     groups: EventGroup[];
     setEditingEvent: (event: Event) => void;
     setDialog: (open: openDialog) => void;
 }
-function TimelineViewContent(props: TimelineViewContentProps) {
-    const {
-        campaign,
-        maxItems,
-        orientation,
-        groupBy = "week",
-        editable = false,
-        groups,
-        setEditingEvent,
-        setDialog,
-    } = props;
 
+function TimelineViewContent({
+    campaignId,
+    maxItems,
+    orientation,
+    groupBy = "week",
+    editable = false,
+    groups,
+    setEditingEvent,
+    setDialog,
+}: TimelineViewContentProps) {
     const EventHandlers = {
         editEvent: (event: Event) => {
             setEditingEvent(event);
@@ -345,7 +286,7 @@ function TimelineViewContent(props: TimelineViewContentProps) {
                         groupedBy={groupBy}
                         editEvent={EventHandlers.editEvent}
                         editable={editable}
-                        campaignId={campaign.id}
+                        campaignId={campaignId}
                     />
                 );
             })}

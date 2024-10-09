@@ -1,4 +1,4 @@
-import database from "../dbOperations";
+import { database } from "../dbOperations";
 import { Influencers } from "../../types";
 import { PartialWith } from "@/app/Definitions/types";
 import { dataClient } from ".";
@@ -36,13 +36,17 @@ async function createInfluencer(
     const queryClient = dataClient.config.getQueryClient();
     const id = await database.influencer.create(influencer);
     if (!id) throw new Error("Failed to create influencer");
-    const createdInfluencer = { ...influencer, id };
-    queryClient.setQueryData(queryKeys.influencer.one(id), { ...influencer, id });
+    const createdInfluencer: Influencers.Full = {
+        ...influencer,
+        id,
+        createdAt: new Date().toISOString(),
+    };
+    queryClient.setQueryData(queryKeys.influencer.one(id), { createdInfluencer });
     queryClient.setQueryData(queryKeys.influencer.all, (prev: Influencers.Full[]) => {
         if (!prev) {
             return [createdInfluencer];
         }
-        return [...prev, createdInfluencer];
+        return [createdInfluencer, ...prev];
     });
     return createdInfluencer;
 }

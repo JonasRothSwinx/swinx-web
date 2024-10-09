@@ -18,12 +18,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     });
 
     return (
-        <Box id="withSideBarRoot" sx={{ display: "flex", width: "100%", height: "100%" }}>
+        <Box
+            id="withSideBarRoot"
+            sx={{ display: "flex", width: "100%", height: "100%" }}
+        >
             {usergroups.isLoading ? (
                 <LoadingElement hideLogo />
             ) : (
                 <>
-                    {["projektmanager", "admin"].some((group) => usergroups.data?.includes(group)) ? (
+                    {["projektmanager", "admin"].some((group) =>
+                        usergroups.data?.includes(group),
+                    ) ? (
                         <>{children}</>
                     ) : (
                         <Box
@@ -34,7 +39,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                             justifyContent="center"
                             flexDirection="column"
                         >
-                            <Typography variant="h6">Sie haben keine Berechtigung für diese Seite</Typography>
+                            <Typography variant="h6">
+                                Sie haben keine Berechtigung für diese Seite
+                            </Typography>
                         </Box>
                     )}
                     <SideBar />

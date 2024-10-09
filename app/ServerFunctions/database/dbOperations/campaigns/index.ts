@@ -14,5 +14,6 @@ export const campaign = {
     get: get.getCampaign,
     getRef: get.getCampaignWithReferences,
     delete: deleteItem.deleteCampaign,
+    deleteRef: deleteItem.deleteCampaignRef,
     connect: { toManager: connect.connectToManager },
 };
