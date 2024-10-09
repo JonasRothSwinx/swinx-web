@@ -13,6 +13,7 @@ import CustomerDetails from "./Components/CustomerDetails";
 import OpenInfluencerDetails from "./Components/OpenInfluencerDetails/OpenInfluencerDetails";
 import CampaignDetailsButtons from "./Components/TopButtons";
 import { MediaPreview } from "./MediaPreview";
+import { queryKeys } from "@/app/(main)/queryClient/keys";
 
 interface CampaignDetailsProps {
     campaignId: string;
@@ -22,17 +23,17 @@ export default function CampaignDetails({ campaignId }: CampaignDetailsProps) {
     const router = useRouter();
     const queryClient = useQueryClient();
     const campaign = useQuery({
-        queryKey: ["campaign", campaignId],
-        queryFn: () => dataClient.campaign.get(campaignId),
+        queryKey: queryKeys.campaign.one(campaignId),
+        queryFn: () => dataClient.campaign.getRef(campaignId),
         refetchOnWindowFocus: false,
     });
-    const influencers = useQuery({
-        queryKey: ["influencers"],
-        queryFn: () => dataClient.influencer.list(),
-        placeholderData: [],
-        refetchOnWindowFocus: false,
-    });
-    const [assignmentData, setAssignmentData] = useState<Assignment[]>([]);
+    // const influencers = useQuery({
+    //     queryKey: queryKeys.influencer.all,
+    //     queryFn: () => dataClient.influencer.list(),
+    //     placeholderData: [],
+    //     refetchOnWindowFocus: false,
+    // });
+    // const [assignmentData, setAssignmentData] = useState<Assignment[]>([]);
     const highlightQuery = useQuery<highlightData[]>({
         queryKey: ["highlightedEvents"],
         queryFn: async () => {
@@ -53,26 +54,26 @@ export default function CampaignDetails({ campaignId }: CampaignDetailsProps) {
     //     queryClient.setQueryData(["campaign", campaignId], campaign);
     // }
     // console.log(campaign);
-    const EventHandlers = {
-        dialogClose: () => {
-            queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
-            // queryClient.invalidateQueries("campaigns");
-        },
-        handleClose: () => {
-            router.push("/");
-            // window.history.pushState({}, "", "/");
-            // redirect("/");
-        },
-        updateCampaign: () => {
-            queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
-            campaign.refetch();
-        },
-        setCampaign: (updatedCampaign: Campaign) => {
-            console.log("setCampaign", updatedCampaign);
-            queryClient.setQueryData(["campaign", campaignId], updatedCampaign);
-            campaign.refetch();
-        },
-    };
+    // const EventHandlers = {
+    //     dialogClose: () => {
+    //         queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
+    //         // queryClient.invalidateQueries("campaigns");
+    //     },
+    //     handleClose: () => {
+    //         router.push("/");
+    //         // window.history.pushState({}, "", "/");
+    //         // redirect("/");
+    //     },
+    //     updateCampaign: () => {
+    //         queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
+    //         campaign.refetch();
+    //     },
+    //     setCampaign: (updatedCampaign: Campaign) => {
+    //         console.log("setCampaign", updatedCampaign);
+    //         queryClient.setQueryData(["campaign", campaignId], updatedCampaign);
+    //         campaign.refetch();
+    //     },
+    // };
     const styles: SxProps = useMemo(() => {
         return {
             "&.campaignDetailsPage": {
@@ -183,12 +184,7 @@ export default function CampaignDetails({ campaignId }: CampaignDetailsProps) {
                 className={"campaignDetailsContent"}
             >
                 <CustomErrorBoundary message="Error loading.... Buttons?">
-                    <CampaignDetailsButtons
-                        updateCampaign={EventHandlers.updateCampaign}
-                        handleClose={EventHandlers.handleClose}
-                        campaign={campaign.data}
-                        isLoading={campaign.isFetching}
-                    />
+                    <CampaignDetailsButtons campaignId={campaignId} />
                 </CustomErrorBoundary>
 
                 <Grid
@@ -205,19 +201,15 @@ export default function CampaignDetails({ campaignId }: CampaignDetailsProps) {
                         flexDirection={"column"}
                     >
                         <CustomErrorBoundary message="Error loading customer details">
-                            <CustomerDetails
-                                campaign={campaign.data}
-                                customers={campaign?.data.customers}
-                                setCampaign={EventHandlers.setCampaign}
-                            />
+                            <CustomerDetails campaignId={campaignId} />
                         </CustomErrorBoundary>
                         <CustomErrorBoundary message="Error loading influencer details">
                             <OpenInfluencerDetails
-                                influencers={influencers.data ?? []}
+                                // influencers={influencers.data ?? []}
                                 campaignId={campaignId}
-                                setCampaign={EventHandlers.setCampaign}
-                                events={campaign.data.campaignTimelineEvents ?? []}
-                                placeholders={campaign.data.assignedInfluencers}
+                                // setCampaign={EventHandlers.setCampaign}
+                                // events={campaign.data.campaignTimelineEvents ?? []}
+                                // placeholders={campaign.data.assignedInfluencers}
                             />
                         </CustomErrorBoundary>
                     </Grid>
@@ -258,9 +250,7 @@ export default function CampaignDetails({ campaignId }: CampaignDetailsProps) {
                     >
                         <CustomErrorBoundary message="Error loading timeline">
                             <TimelineView
-                                setCampaign={EventHandlers.setCampaign}
-                                influencers={influencers.data ?? []}
-                                campaign={campaign.data}
+                                campaignId={campaignId}
                                 orientation="vertical"
                                 controlsPosition="before"
                                 editable

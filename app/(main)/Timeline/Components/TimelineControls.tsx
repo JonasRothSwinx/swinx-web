@@ -7,18 +7,23 @@ import { useQueryClient } from "@tanstack/react-query";
 import { TimelineEventDialog } from "@/app/Components";
 
 interface TimelineControlsProps {
-    campaign: Campaign;
-    setCampaign: (campaign: Campaign) => void;
+    campaignId: string;
     groupBy: groupBy;
     setGroupBy: (value: groupBy) => void;
-    influencers: Influencers.Full[];
     onDataChange: () => void;
 }
 type openDialog = "None" | "Timeline";
 
-export default function TimelineControls(props: TimelineControlsProps) {
+export default function TimelineControls({
+    groupBy,
+    setGroupBy,
+    campaignId,
+    // campaign,
+    // influencers,
+    // setCampaign: setRows,
+    onDataChange,
+}: TimelineControlsProps) {
     const queryClient = useQueryClient();
-    const { groupBy, setGroupBy, campaign, influencers, setCampaign: setRows, onDataChange } = props;
     const [openDialog, setOpenDialog] = useState<openDialog>("None");
 
     const ClickHandlers = {
@@ -48,7 +53,13 @@ export default function TimelineControls(props: TimelineControlsProps) {
     }
     const Dialogs: { [key in openDialog]: React.JSX.Element | null } = {
         None: null,
-        Timeline: <TimelineEventDialog onClose={onDialogClose} campaignId={campaign.id} editing={false} />,
+        Timeline: (
+            <TimelineEventDialog
+                onClose={onDialogClose}
+                campaignId={campaignId}
+                editing={false}
+            />
+        ),
     };
     return (
         <Box id="TimelineControls">

@@ -4,8 +4,20 @@ import { LoadingElement } from "@/app/Components/Loading";
 import { getUserGroups } from "@/app/ServerFunctions/serverActions";
 import { Influencers } from "@/app/ServerFunctions/types";
 import { useAuthenticator } from "@aws-amplify/ui-react";
-import { Add as AddIcon, DeleteOutlined as DeleteIcon, Edit as EditIcon } from "@mui/icons-material";
-import { Box, Button, CircularProgress, SxProps, ThemeProvider, Typography, createTheme } from "@mui/material";
+import {
+    Add as AddIcon,
+    DeleteOutlined as DeleteIcon,
+    Edit as EditIcon,
+} from "@mui/icons-material";
+import {
+    Box,
+    Button,
+    CircularProgress,
+    SxProps,
+    ThemeProvider,
+    Typography,
+    createTheme,
+} from "@mui/material";
 import {
     DataGrid,
     GridActionsCellItem,
@@ -30,6 +42,8 @@ import { QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
 import { animals, colors, names, uniqueNamesGenerator } from "unique-names-generator";
 import { GridToolbarDensitySelector } from "@mui/x-data-grid";
 import { useDemoData } from "@mui/x-data-grid-generator";
+import { queryKeys } from "../../queryClient/keys";
+import CsvUpload from "./CsvUpload/CsvUpload";
 
 const theme = createTheme({}, { deDE, pickersDeDE, coreDeDE });
 
@@ -62,9 +76,15 @@ function EditToolbar(props: EditToolbarProps) {
     };
     return (
         <GridToolbarContainer sx={sx}>
-            <Button id="addInfluencer" color="primary" startIcon={<AddIcon />} onClick={handleClick}>
+            <Button
+                id="addInfluencer"
+                color="primary"
+                startIcon={<AddIcon />}
+                onClick={handleClick}
+            >
                 Neuer Influencer
             </Button>
+            <CsvUpload />
             {/* <Button
                 color="primary"
                 startIcon={<AddIcon />}
@@ -89,7 +109,7 @@ function InfluencerList() {
     const [editingData, setEditingData] = useState<Influencers.Full>();
     const [editing, setEditing] = useState(false);
     const influencers = useQuery({
-        queryKey: ["influencers"],
+        queryKey: queryKeys.influencer.all,
         queryFn: () => dataClient.influencer.list(),
     });
     // const [dialogOtions, setDialogOptions] = useState<DialogOptions>({});
@@ -261,9 +281,13 @@ function InfluencerList() {
             },
         },
     };
-    if (influencers.isLoading) return LoadingElement({ textMessage: "Lade Influencer", hideLogo: true });
+    if (influencers.isLoading)
+        return LoadingElement({ textMessage: "Lade Influencer", hideLogo: true });
     return (
-        <Box id="influencerListContainer" sx={sx}>
+        <Box
+            id="influencerListContainer"
+            sx={sx}
+        >
             {Dialogs[openDialog]()}
             <ThemeProvider theme={theme}>
                 <DataGrid

@@ -19,6 +19,7 @@ const selectionSet = [
     "followers",
     "linkedinProfile",
     "emailType",
+    // "createdAt",
 ] as const;
 
 type RawData = SelectionSet<Schema["Influencer"]["type"], typeof selectionSet>;
@@ -144,8 +145,23 @@ export async function deleteInfluencer(influencer: PartialWith<Influencer, "id">
 }
 
 export async function listInfluencers() {
-    const { data } = await client.models.Influencer.list({ selectionSet });
-    const dataOut = validateArray(data);
+    const storedData = [];
+    let storedNextToken: null | string | undefined = null;
+    do {
+        const { data, errors, nextToken } = await client.models.Influencer.list({
+            selectionSet,
+            nextToken: storedNextToken,
+        });
+        // console.log(response.nextToken);
+        storedNextToken = nextToken as string;
+        if (errors) {
+            throw new Error(errors.map((error) => error.message).join("\n"));
+        }
+        if (data) {
+            storedData.push(...data);
+        }
+    } while (!!storedNextToken);
+    const dataOut = validateArray(storedData);
     return dataOut;
 }
 //#endregion
@@ -175,6 +191,7 @@ function validate(influencerRaw: Nullable<RawData>): Nullable<Influencers.Full> 
         topic: influencerRaw.topic ?? [],
         followers: influencerRaw.followers,
         linkedinProfile: influencerRaw.linkedinProfile,
+        // createdAt: influencerRaw.createdAt,
     };
 
     return influencerOut;

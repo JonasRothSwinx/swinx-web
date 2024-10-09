@@ -1,18 +1,30 @@
 import { Campaign, Customer, Customers } from "@/app/ServerFunctions/types";
 import React, { MouseEvent, SyntheticEvent, useEffect, useState } from "react";
 import { CustomerDialog } from "@/app/Components/Dialogs";
-import { Accordion, AccordionDetails, AccordionSummary, Box, IconButton, Link, SxProps, Tab } from "@mui/material";
+import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
+    Box,
+    IconButton,
+    Link,
+    SxProps,
+    Tab,
+} from "@mui/material";
 import { AddIcon, EditIcon, ExpandMoreIcon, MailIcon } from "@/app/Definitions/Icons";
 import Grid from "@mui/material/Grid2/Grid2";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
+import { dataClient } from "@/app/ServerFunctions/database/dataClients";
+import { useQueries, useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/app/(main)/queryClient/keys";
 
-type CustomerDetailsProps = {
-    customers: Customer[];
-    campaign: Campaign;
-    setCampaign: (data: Campaign) => void;
-};
 type CustomerData = (
-    | { name: string; value: string; insertAfter?: React.JSX.Element; insertBefore?: React.JSX.Element }
+    | {
+          name: string;
+          value: string;
+          insertAfter?: React.JSX.Element;
+          insertBefore?: React.JSX.Element;
+      }
     | "spacer"
     | null
 )[];
@@ -27,7 +39,11 @@ function getCustomerData(customers: Customer[]): CustomerData[] {
                 name: "",
                 value: customer.email,
                 insertBefore: (
-                    <Link href={`mailto:${customer.email}`} rel="noreferrer" target="_blank">
+                    <Link
+                        href={`mailto:${customer.email}`}
+                        rel="noreferrer"
+                        target="_blank"
+                    >
                         <MailIcon />
                     </Link>
                 ),
@@ -37,27 +53,48 @@ function getCustomerData(customers: Customer[]): CustomerData[] {
     return data;
 }
 type openDialog = "none" | "editCustomer";
+type CustomerDetailsProps = {
+    campaignId: string;
+};
+export default function CustomerDetails({
+    campaignId: campaignId,
+}: CustomerDetailsProps): React.JSX.Element {
+    const campaign = useQuery({
+        queryKey: queryKeys.campaign.one(campaignId),
+        queryFn: () => dataClient.campaign.getRef(campaignId),
+    });
 
-export default function CustomerDetails(props: CustomerDetailsProps) {
-    const { campaign, setCampaign } = props;
+    const customersQueries = useQueries({
+        queries:
+            campaign.data?.customerIds.map((customerId) => ({
+                queryKey: queryKeys.customer.one(customerId),
+                queryFn: () => dataClient.customer.get({ id: customerId }),
+            })) ?? [],
+    });
+    const [customers, setCustomers] = useState<Customer[]>([]);
+
     //######################
     //#region State
-    const [customers, setCustomers] = useState<Partial<Customer>[]>(props.customers);
-    const [customerData, setCustomerData] = useState<CustomerData[]>(getCustomerData(props.customers));
+
+    const [customerData, setCustomerData] = useState<CustomerData[]>([]);
     const [openDialog, setOpenDialog] = useState<openDialog>("none");
     const [tab, setTab] = useState("0");
     //#endregion
     //######################
-
     useEffect(() => {
-        setCustomerData(getCustomerData(props.customers));
+        setCustomers(customersQueries.map((x) => x.data).filter((x): x is Customer => !!x));
         return () => {};
-    }, [props.customers]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [...customersQueries]);
+    useEffect(() => {
+        setCustomerData(getCustomerData(customers));
+        return () => {};
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [customers]);
 
     const EventHandler = {
         onDialogClose: () => {
             setOpenDialog("none");
-            DataHandler.setCustomers(customers);
         },
         editButtonClicked: (e: MouseEvent) => {
             e.preventDefault();
@@ -76,7 +113,7 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
                 if (Customers.satisfies(x)) return x;
                 throw new Error("Invalid data");
             });
-            setCampaign({ ...campaign, customers: verifiedData });
+            // setCampaign({ ...campaign, customers: verifiedData });
         },
     };
 
@@ -86,7 +123,6 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
             <CustomerDialog
                 customers={customers}
                 editing={true}
-                setCustomers={setCustomers}
                 editingData={customers}
                 onClose={EventHandler.onDialogClose}
             />
@@ -103,7 +139,11 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
     return (
         <>
             {Dialogs[openDialog]}
-            <Accordion defaultExpanded disableGutters variant="outlined">
+            <Accordion
+                defaultExpanded
+                disableGutters
+                variant="outlined"
+            >
                 <AccordionSummary
                     className={"summaryWithEdit"}
                     expandIcon={<ExpandMoreIcon />}
@@ -117,7 +157,11 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
                 >
                     <Box className={"summaryWithEdit"}>
                         Auftraggeber
-                        <IconButton className="textPrimary" onClick={EventHandler.editButtonClicked} color="inherit">
+                        <IconButton
+                            className="textPrimary"
+                            onClick={EventHandler.editButtonClicked}
+                            color="inherit"
+                        >
                             <EditIcon />
                         </IconButton>
                     </Box>
@@ -138,7 +182,10 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
             </IconButton> */}
                         {customerData.map((dataSet, index) => {
                             return (
-                                <TabPanel key={index} value={index.toString()}>
+                                <TabPanel
+                                    key={index}
+                                    value={index.toString()}
+                                >
                                     {dataSet.map((data, i) => {
                                         if (!data) return null;
                                         if (data === "spacer") {
@@ -153,11 +200,23 @@ export default function CustomerDetails(props: CustomerDetailsProps) {
                                             );
                                         }
                                         return (
-                                            <Grid key={i + data.name} container columnSpacing={8}>
-                                                <Grid size={4} display="flex" justifyContent="left">
+                                            <Grid
+                                                key={i + data.name}
+                                                container
+                                                columnSpacing={8}
+                                            >
+                                                <Grid
+                                                    size={4}
+                                                    display="flex"
+                                                    justifyContent="left"
+                                                >
                                                     {data.name}
                                                 </Grid>
-                                                <Grid size="auto" display="flex" justifyContent="left">
+                                                <Grid
+                                                    size="auto"
+                                                    display="flex"
+                                                    justifyContent="left"
+                                                >
                                                     {data.insertBefore}
                                                     {data.value}
                                                     {data.insertAfter}
