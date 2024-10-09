@@ -11,7 +11,12 @@ export async function deleteCampaign(
 
     const tasks: Promise<unknown>[] = [];
     //Remove Customer
-    tasks.push(...campaign.customers.map((customer) => database.customer.delete(customer)));
+    tasks.push(
+        ...campaign.customers.map((customer) => {
+            if (!customer.id) return Promise.resolve();
+            return database.customer.delete({ id: customer.id });
+        }),
+    );
 
     //Remove TimelineEvents
     tasks.push(
@@ -23,4 +28,16 @@ export async function deleteCampaign(
 
     await Promise.all(tasks);
     await client.models.Campaign.delete({ id: campaign.id });
+}
+export async function deleteCampaignRef(
+    campaignId: string,
+    customerIds: string[],
+    eventIds: string[],
+) {
+    const tasks: Promise<unknown>[] = [];
+    tasks.push(client.models.Campaign.delete({ id: campaignId }));
+    tasks.push(...customerIds.map((id) => database.customer.delete({ id })));
+    tasks.push(...eventIds.map((id) => database.timelineEvent.delete({ id })));
+    await Promise.all(tasks);
+    return;
 }

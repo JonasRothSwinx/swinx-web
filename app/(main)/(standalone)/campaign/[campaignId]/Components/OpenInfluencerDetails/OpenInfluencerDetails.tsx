@@ -25,22 +25,23 @@ import AssignedInfluencer from "./AssignedInfluencer";
 import { dataClient } from "@dataClient";
 
 type OpenInfluencerDetailsProps = {
-    influencers: Influencers.Full[];
+    // influencers: Influencers.Full[];
     campaignId: string;
-    setCampaign: (campaign: Campaign) => void;
-    placeholders: Assignment[];
-    events: Event[];
+    // setCampaign: (campaign: Campaign) => void;
+    // placeholders: Assignment[];
+    // events: Event[];
 };
 
 type eventDict = { [key: string]: Event[] };
 
-export default function OpenInfluencerDetails(props: OpenInfluencerDetailsProps) {
-    const { campaignId, setCampaign, events, placeholders, influencers } = props;
+export default function OpenInfluencerDetails({
+    campaignId,
+}: // setCampaign,
+// events,
+// placeholders,
+// influencers,
+OpenInfluencerDetailsProps) {
     const queryClient = useQueryClient();
-    // const campaign = useQuery({
-    //     queryKey: ["campaign", campaignId],
-    //     queryFn: () => dataClient.campaign.get(campaignId),
-    // });
     const assignments = useQuery({
         queryKey: ["assignments", campaignId],
         queryFn: ({ queryKey }) => {

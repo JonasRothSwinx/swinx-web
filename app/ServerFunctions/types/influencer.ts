@@ -7,6 +7,7 @@ export type Influencer = Prettify<Reference | InfluencerWithName | Full>;
 type Basic = {
     id: string;
     isTemp?: boolean;
+    createdAt?: string;
 };
 type NameInfo = {
     firstName: string;

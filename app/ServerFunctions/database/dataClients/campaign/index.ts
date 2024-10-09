@@ -8,8 +8,9 @@ import * as list from "./list";
 export const campaign = {
     create: create.createCampaign,
     delete: deleteItem.deleteCampaign,
+    deleteRef: deleteItem.deleteCampaignRef,
     get: get.getCampaign,
-    getRef: get.getCampaignWithIds,
+    getRef: get.getCampaignRefs,
     list: list.listCampaigns,
     listRef: list.listRef,
 };

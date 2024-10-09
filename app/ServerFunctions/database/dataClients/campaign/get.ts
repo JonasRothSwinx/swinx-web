@@ -1,6 +1,7 @@
 import { database } from "@database";
 import { dataClient } from "@dataClient";
 import { Campaign, Campaigns } from "@/app/ServerFunctions/types";
+import { Nullable } from "@/app/Definitions/types";
 
 /**
  * Get a campaign by id
@@ -22,9 +23,12 @@ export async function getCampaign(id: string): Promise<Campaign> {
  *
  * @param id
  */
-export async function getCampaignWithIds(id: string): Promise<Campaigns.Referential> {
+export async function getCampaignRefs(id: string): Promise<Campaigns.Referential> {
     // const campaign = await database.campaign.
-    throw new Error("Not Implemented");
+    const campaign: Nullable<Campaigns.Referential> = await database.campaign.getRef(id);
+    if (!campaign) throw new Error("Campaign not found");
+    console.log(campaign, id, { campaign });
+    return campaign;
 }
 /**
  * Resolve CampaignMin to CampaignFull
