@@ -3,16 +3,21 @@ import { Box, Typography } from "@mui/material";
 import { useQueryClient } from "@tanstack/react-query";
 import { TimelineEvent, Webinar } from "../../Functions/Database/types";
 import Loading from "../Loading";
+import { queryKeys } from "../../queryKeys";
 
 //MARK: WebinarSpeakerDescription
 interface WebinarSpeakerDescriptionProps {
     events: TimelineEvent[];
+    parentEventId: string;
 }
-export default function WebinarSpeakerDescription({ events }: WebinarSpeakerDescriptionProps) {
+export default function WebinarSpeakerDescription({
+    events,
+    parentEventId,
+}: WebinarSpeakerDescriptionProps) {
     const queryClient = useQueryClient();
-    const webinar = queryClient.getQueryData<Webinar>(["parentEvent"]);
+    const webinar = queryClient.getQueryData<Webinar>(queryKeys.event.parent(parentEventId));
     if (!events || !webinar) {
-        queryClient.refetchQueries();
+        // queryClient.refetchQueries();
         return <Loading />;
     }
     return (

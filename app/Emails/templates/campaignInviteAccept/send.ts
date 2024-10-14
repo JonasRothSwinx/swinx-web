@@ -19,12 +19,12 @@ export default async function send(props: SendMailProps) {
 
     if (level === "none") return;
     // Check if all required data is present
-    if (!customer || !individualContext || !campaignManager || !campaign || !assignment) {
+    if (!customer || !individualContext || !campaignManager /* || !campaign  */ || !assignment) {
         const missingContext = {
             customer: !!customer,
             individualContext: !!individualContext,
             campaignManager: !!campaignManager,
-            campaign: !!campaign,
+            // campaign: !!campaign,
             assignment: !!assignment,
         };
         Object.entries(missingContext).forEach(([key, value]) => {

@@ -84,7 +84,7 @@ export default function Task({
             },
             ".MuiAccordionSummary-root:last-child": {
                 borderBottom: "none",
-                backgroundColor: "red",
+                // backgroundColor: "red",
             },
             ".MuiAccordionDetails-root": {
                 padding: 0,

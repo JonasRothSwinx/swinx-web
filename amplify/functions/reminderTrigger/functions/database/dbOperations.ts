@@ -65,6 +65,13 @@ export async function getEmailTriggersForDateRange({
     } catch (error) {
         console.error(error);
     }
+    if (emailTriggers.length === 0) {
+        console.log("No triggers found for today, stopping reminder routine");
+        return [];
+    } else {
+        console.log(`Found ${emailTriggers.length} triggers for today, parsing data`);
+    }
+
     const items: EmailTriggerData[] = parseEmailTriggers(emailTriggers);
     console.log(JSON.stringify(items[0], null, 2));
     // console.log({ items });
@@ -151,6 +158,34 @@ function parseEmailTrigger(data: ListEmailTriggersQueryItem): EmailTriggerData |
         const rawParentEvent = rawEvent.parentEvent;
         const rawProjectManagers = rawCampaign.projectManagers.items.map((x) => x.projectManager);
         const rawCustomer = rawCampaign.customers.items[0];
+        if (!rawAssignment) {
+            console.log("No assignment found", { data });
+            return null;
+        }
+        if (!rawInfluencer) {
+            console.log("No influencer found", { data });
+            return null;
+        }
+        if (!rawParentEvent) {
+            console.log("No parent event found", { data });
+            return null;
+        }
+        if (!rawEvent) {
+            console.log("No event found", { data });
+            return null;
+        }
+        if (!rawCampaign) {
+            console.log("No campaign found", { data });
+            return null;
+        }
+        if (!rawCustomer) {
+            console.log("No customer found", { data });
+            return null;
+        }
+        if (!rawProjectManagers) {
+            console.log("No project managers found", { data });
+            return null;
+        }
 
         const parsedCustomer: EmailTriggerData["customer"] = {
             id: rawCustomer.id,
@@ -258,7 +293,7 @@ function parseEmailTrigger(data: ListEmailTriggersQueryItem): EmailTriggerData |
         };
         return out;
     } catch (error) {
-        console.log("Error parsing email trigger", error);
+        console.log("Error parsing email trigger", { error, rawData: data });
         return null;
     }
 }

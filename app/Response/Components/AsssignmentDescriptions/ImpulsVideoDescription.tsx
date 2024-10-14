@@ -10,9 +10,9 @@ interface WebinarSpeakerDescriptionProps {
 }
 export default function ImpulsVideoDescription({ events }: WebinarSpeakerDescriptionProps) {
     const queryClient = useQueryClient();
-    const webinar = queryClient.getQueryData<Webinar>(["parentEvent"]);
-    if (!events || !webinar) {
-        queryClient.refetchQueries();
+    // const webinar = queryClient.getQueryData<Webinar>(["parentEvent"]);
+    if (!events) {
+        // queryClient.refetchQueries();
         return <Loading />;
     }
 

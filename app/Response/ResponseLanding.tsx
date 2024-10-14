@@ -27,6 +27,7 @@ import Introduction from "./Components/Introduction";
 import { Engineering } from "@mui/icons-material";
 import { CampaignInviteEncodedData, sleep } from "../utils";
 import ResponseButtons from "./Components/ResponseButtons";
+import { queryKeys } from "./queryKeys";
 
 export default function ResponseLanding() {
     const params = useSearchParams();
@@ -52,7 +53,7 @@ export default function ResponseLanding() {
     //#region Queries
     const candidate = useQuery({
         enabled: !!candidateId,
-        queryKey: ["candidate", candidateId],
+        queryKey: queryKeys.candidate.one(candidateId),
         queryFn: () => {
             return dataClient.getCandidate({ id: candidateId });
         },
@@ -60,7 +61,7 @@ export default function ResponseLanding() {
 
     const assignmentData = useQuery({
         enabled: !!assignmentId,
-        queryKey: ["assignment", assignmentId],
+        queryKey: queryKeys.assignment.one(assignmentId),
         queryFn: () => {
             return dataClient.getAssignmentData({ id: assignmentId });
         },
@@ -68,36 +69,30 @@ export default function ResponseLanding() {
 
     const events = useQuery({
         enabled: !!assignmentId,
-        queryKey: [assignmentId, "events"] as const,
+        queryKey: queryKeys.assignment.events.all(assignmentId),
         queryFn: async () => {
             const events = await dataClient.getEventsByAssignment({ id: assignmentId });
             return events;
         },
     });
 
-    // const sortedEvents = useQuery({
-    //     enabled: !!events.data,
-    //     queryKey: ["sortedEvents"],
-    //     queryFn: () => {
-    //         if (!events.data) return {};
-    //         return sortEvents({ events: events.data });
-    //     },
-    // });
+    const parentEventId = useMemo(() => {
+        return events.data?.[0].parentEventId;
+    }, [events.data]);
 
     const CampaignData = useQuery({
         enabled: !!campaignId,
-        queryKey: ["campaign", campaignId],
+        queryKey: queryKeys.campaign.one(campaignId),
         queryFn: () => {
             return dataClient.getCampaignInfo({ id: campaignId });
         },
     });
 
     const parentEvent = useQuery({
-        enabled: !!events.data,
-        queryKey: [events.data?.[0], "parentEvent"],
+        enabled: !!parentEventId,
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps
+        queryKey: queryKeys.event.parent(parentEventId ?? ""),
         queryFn: async () => {
-            const firstEvent = events.data?.[0];
-            const parentEventId = firstEvent?.parentEventId;
             if (!parentEventId) throw new Error("No parent event found");
             // console.log({ firstEvent, parentEventId });
             const response = await dataClient.getEventInfo({ id: parentEventId });
@@ -261,7 +256,7 @@ export default function ResponseLanding() {
                 response,
                 feedback,
             });
-            queryClient.setQueryData(["candidate"], {
+            queryClient.setQueryData(queryKeys.candidate.one(candidateId), {
                 ...candidate.data,
                 feedback: feedback,
                 response: response,
@@ -278,7 +273,7 @@ export default function ResponseLanding() {
         },
         resetResponse: async () => {
             await EventHandler.processResponse("pending");
-            queryClient.setQueryData(["candidate"], {
+            queryClient.setQueryData(queryKeys.candidate.one(candidateId), {
                 ...candidate.data,
                 response: "pending",
             });
@@ -366,8 +361,15 @@ export default function ResponseLanding() {
                     CampaignData={CampaignData.data}
                 />
                 <br />
-                <AssignmentDescription assignmentId={assignmentId} />
-                <br />
+                {parentEventId && (
+                    <>
+                        <AssignmentDescription
+                            assignmentId={assignmentId}
+                            parentEventId={parentEventId}
+                        />
+                        <br />
+                    </>
+                )}
                 <InterestDescriptionText />
             </Box>
             <ResponseButtons processResponse={EventHandler.processResponse} />

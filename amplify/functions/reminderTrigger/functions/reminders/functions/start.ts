@@ -4,6 +4,7 @@ import { getEmailTriggers } from "./getEmailTriggers";
 import groupTriggers from "./groupTriggers";
 import handleTriggers from "./handleTriggers";
 import { schemaIntrospection } from "../../database/dbOperations";
+import { logGroupedTriggers } from "./logging/logGroupedTriggers";
 
 const devBranches = ["sandbox", "dev"];
 export default async function startReminderRoutine(): Promise<boolean> {
@@ -22,8 +23,8 @@ export default async function startReminderRoutine(): Promise<boolean> {
     }
     const isDev = devBranches.includes(awsBranch ?? "<error>");
     const [startTime, endTime] = isDev
-        ? [dayjs().subtract(10, "year"), dayjs().add(10, "year")]
-        : [dayjs(), dayjs().endOf("day").add(1, "day")];
+        ? [dayjs().subtract(10, "year").startOf("day"), dayjs().add(10, "year")]
+        : [dayjs().startOf("day"), dayjs().endOf("day").add(1, "day")];
     const emailTriggers = await getEmailTriggers({ startDate: startTime, endDate: endTime });
     console.log(`Found ${emailTriggers.length} triggers for today`);
     console.log("Triggers", JSON.stringify(emailTriggers, null, 2));
@@ -32,7 +33,9 @@ export default async function startReminderRoutine(): Promise<boolean> {
         return true;
     }
     const groupedTriggers = await groupTriggers(emailTriggers);
-    console.log("Grouped triggers", JSON.stringify(groupedTriggers, null, 2));
+    // console.log("Grouped triggers", JSON.stringify(groupedTriggers, null, 2));
+    logGroupedTriggers(groupedTriggers);
+
     const tasks = await handleTriggers({ triggers: groupedTriggers });
     console.log(`Tasks created: ${tasks.length}`);
     await Promise.all(tasks);
@@ -41,6 +44,7 @@ export default async function startReminderRoutine(): Promise<boolean> {
     console.log("Finished reminder routine");
     return true;
 }
+
 export async function introspection() {
     await schemaIntrospection();
 }
