@@ -15,7 +15,7 @@ interface SendDecisionNotification {
     rejectedCandidates: Candidate[];
     projectManagers: ProjectManager[];
     customer: Customer;
-    campaign: Campaign;
+    // campaign: Campaign;
     assignment: Assignment;
 }
 export async function sendDecisionNotification({
@@ -23,7 +23,7 @@ export async function sendDecisionNotification({
     rejectedCandidates,
     projectManagers,
     customer,
-    campaign,
+    // campaign,
     assignment,
 }: SendDecisionNotification) {
     console.log("Sending decision notification");
@@ -35,7 +35,6 @@ export async function sendDecisionNotification({
     const commonContext: Partial<EmailContextProps> = {
         customer,
         projectManager: primaryProjectManager,
-        campaign,
         assignment,
     };
 

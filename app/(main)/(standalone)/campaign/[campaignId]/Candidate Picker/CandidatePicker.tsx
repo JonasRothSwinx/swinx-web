@@ -1,8 +1,8 @@
-import { Assignment, Candidates, Influencers } from "@/app/ServerFunctions/types";
+import { Assignment, Candidates, Customer, Influencers } from "@/app/ServerFunctions/types";
 import { dataClient } from "@dataClient";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { Box, Dialog, Grow, Link, Skeleton, SxProps, Tab, Typography } from "@mui/material";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueries, useQuery, useQueryClient, UseQueryResult } from "@tanstack/react-query";
 import { useConfirm } from "material-ui-confirm";
 import React, { useEffect, useState } from "react";
 import { InfluencerDetailsButtonsOpenDialog } from "../Components/OpenInfluencerDetails/components/InfluencerDetailsButtons";
@@ -39,6 +39,22 @@ export function CandidatePickerTabs({
         queryFn: () => dataClient.campaign.getRef(campaignId),
     });
 
+    const primaryCustomer = useQuery({
+        enabled: !!campaign.data,
+        queryKey: queryKeys.customer.one(campaign.data?.customerIds[0] ?? ""),
+        queryFn: () => dataClient.customer.get({ id: campaign.data?.customerIds[0] ?? "" }),
+    });
+
+    const projectManagers = useQueries({
+        queries:
+            campaign.data?.projectManagerIds?.map((id) => {
+                return {
+                    queryKey: queryKeys.projectManager.one(id),
+                    queryFn: () => dataClient.projectManager.get({ id }),
+                };
+            }) ?? [],
+    });
+
     const [tabValue, setTabValue] = useState("none");
     useEffect(() => {}, [assignment.data]);
 
@@ -51,83 +67,90 @@ export function CandidatePickerTabs({
             onClose();
             // setChangedCandidates({ removed: [], added: [] });
         },
-        //FIXME: implement assignInfluencer to work with CampaignRef
-        // assignInfluencer: async (candidate: Candidates.Candidate) => {
-        //     if (!assignment.data || !campaign.data || !assignment.data.candidates) return;
-        //     try {
-        //         await confirm({
-        //             title: `Möchtest du ${candidate.influencer.firstName} wirklich endgültig für diese Position zuweisen?`,
-        //             description: "Alle anderen Kandidaten erhalten hierbei eine Absagemail",
-        //             confirmationText: "Ja",
-        //             cancellationText: "Nein",
-        //         });
-        //     } catch (error) {
-        //         return;
-        //     }
-        //     if (candidate.influencer.emailLevel === "none") {
-        //         await confirm({
-        //             title: `${Influencers.getFullName(
-        //                 candidate.influencer,
-        //             )} erhält keine automatischen Emails`,
-        //             description: `Bitte kontaktiere sie/ihn persönlich unter\n ${candidate.influencer.email}`,
-        //             confirmationText: "Ok",
-        //             hideCancelButton: true,
-        //             allowClose: false,
-        //         });
-        //     }
-        //     const newAssignment: Assignment = {
-        //         ...assignment.data,
-        //         candidates: [...(assignment.data.candidates ?? []), candidate],
-        //     };
-        //     dataClient.assignment.update(
-        //         {
-        //             id: assignment.data.id,
-        //             candidates: [],
-        //             influencer: candidate.influencer,
-        //             isPlaceholder: false,
-        //         },
-        //         assignment.data,
-        //     );
-        //     onClose();
-        //     const emailNone = await sendDecisionNotification({
-        //         acceptedCandidate: candidate,
-        //         rejectedCandidates: assignment.data.candidates.filter((c) => c.id !== candidate.id),
-        //         customer: campaign.data.customers[0],
-        //         projectManagers: campaign.data.projectManagers,
-        //         campaign: campaign.data,
-        //         assignment: assignment.data,
-        //     });
-        //     if (emailNone.length > 0) {
-        //         await confirm({
-        //             title: "Einige Influencer erhalten keine automatische Absage",
-        //             description: (
-        //                 <Typography>
-        //                     Bitte kontaktiere sie persönlich:
-        //                     {emailNone.map((c) => {
-        //                         return (
-        //                             <React.Fragment key={c.id}>
-        //                                 <br />
-        //                                 <Link
-        //                                     target="_blank"
-        //                                     href={`mailto:${c.influencer.email}`}
-        //                                 >
-        //                                     {`${Influencers.getFullName(c.influencer)}: ${
-        //                                         c.influencer.email
-        //                                     }`}
-        //                                 </Link>
-        //                             </React.Fragment>
-        //                         );
-        //                     })}
-        //                 </Typography>
-        //             ),
-        //             confirmationText: "Ok",
-        //             hideCancelButton: true,
-        //             allowClose: false,
-        //         });
-        //     }
+        assignInfluencer: async (candidate: Candidates.Candidate) => {
+            if (
+                !assignment.data ||
+                !campaign.data ||
+                !assignment.data.candidates ||
+                !primaryCustomer.data
+            )
+                return;
+            try {
+                await confirm({
+                    title: `Möchtest du ${candidate.influencer.firstName} wirklich endgültig für diese Position zuweisen?`,
+                    description: "Alle anderen Kandidaten erhalten hierbei eine Absagemail",
+                    confirmationText: "Ja",
+                    cancellationText: "Nein",
+                });
+            } catch (error) {
+                return;
+            }
+            if (candidate.influencer.emailLevel === "none") {
+                await confirm({
+                    title: `${Influencers.getFullName(
+                        candidate.influencer,
+                    )} erhält keine automatischen Emails`,
+                    description: `Bitte kontaktiere sie/ihn persönlich unter\n ${candidate.influencer.email}`,
+                    confirmationText: "Ok",
+                    hideCancelButton: true,
+                    allowClose: false,
+                });
+            }
+            const newAssignment: Assignment = {
+                ...assignment.data,
+                candidates: [...(assignment.data.candidates ?? []), candidate],
+            };
+            dataClient.assignment.update(
+                {
+                    id: assignment.data.id,
+                    candidates: [],
+                    influencer: candidate.influencer,
+                    isPlaceholder: false,
+                },
+                assignment.data,
+            );
+            onClose();
+            const emailNone = await sendDecisionNotification({
+                acceptedCandidate: candidate,
+                rejectedCandidates: assignment.data.candidates.filter((c) => c.id !== candidate.id),
+                customer: primaryCustomer.data,
+                projectManagers: projectManagers
+                    .map((pm) => pm.data)
+                    .filter((pm) => pm !== undefined && pm !== null),
+                // campaign: campaign.data,
+                assignment: assignment.data,
+            });
+            if (emailNone.length > 0) {
+                await confirm({
+                    title: "Einige Influencer erhalten keine automatische Absage",
+                    description: (
+                        <Typography>
+                            Bitte kontaktiere sie persönlich:
+                            {emailNone.map((c) => {
+                                return (
+                                    <React.Fragment key={c.id}>
+                                        <br />
+                                        <Link
+                                            target="_blank"
+                                            href={`mailto:${c.influencer.email}`}
+                                        >
+                                            {`${Influencers.getFullName(c.influencer)}: ${
+                                                c.influencer.email
+                                            }`}
+                                        </Link>
+                                    </React.Fragment>
+                                );
+                            })}
+                        </Typography>
+                    ),
+                    confirmationText: "Ok",
+                    hideCancelButton: true,
+                    allowClose: false,
+                });
+            }
 
-        //     console.log("assignInfluencer");
-        // },
+            console.log("assignInfluencer");
+        },
 
         handleTabChange: (event: React.SyntheticEvent, newValue: string) => {
             console.log({ event, newValue });
@@ -215,10 +238,10 @@ export function CandidatePickerTabs({
                 </Grow>
                 <Grow in={tabValue === "response"}>
                     <TabPanel value={"response"}>
-                        {/* <CandidateResponses
+                        <CandidateResponses
                             assignmentId={assignmentId}
                             assignInfluencer={EventHandlers.assignInfluencer}
-                        /> */}
+                        />
                     </TabPanel>
                 </Grow>
             </TabContext>

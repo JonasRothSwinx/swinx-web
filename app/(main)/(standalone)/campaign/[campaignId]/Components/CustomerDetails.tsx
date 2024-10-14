@@ -64,33 +64,33 @@ export default function CustomerDetails({
         queryFn: () => dataClient.campaign.getRef(campaignId),
     });
 
-    const customersQueries = useQueries({
+    const customers = useQueries({
         queries:
             campaign.data?.customerIds.map((customerId) => ({
                 queryKey: queryKeys.customer.one(customerId),
                 queryFn: () => dataClient.customer.get({ id: customerId }),
             })) ?? [],
     });
-    const [customers, setCustomers] = useState<Customer[]>([]);
+    // const [customers, setCustomers] = useState<Customer[]>([]);
 
     //######################
     //#region State
 
-    const [customerData, setCustomerData] = useState<CustomerData[]>([]);
+    // const [customerData, setCustomerData] = useState<CustomerData[]>([]);
     const [openDialog, setOpenDialog] = useState<openDialog>("none");
     const [tab, setTab] = useState("0");
     //#endregion
     //######################
-    useEffect(() => {
-        setCustomers(customersQueries.map((x) => x.data).filter((x): x is Customer => !!x));
-        return () => {};
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [...customersQueries]);
-    useEffect(() => {
-        setCustomerData(getCustomerData(customers));
-        return () => {};
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [customers]);
+    // useEffect(() => {
+    //     setCustomers(customersQueries.map((x) => x.data).filter((x): x is Customer => !!x));
+    //     return () => {};
+    //     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, customersQueries);
+    // useEffect(() => {
+    //     setCustomerData(getCustomerData(customers));
+    //     return () => {};
+    //     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, [customers]);
 
     const EventHandler = {
         onDialogClose: () => {
@@ -117,13 +117,13 @@ export default function CustomerDetails({
         },
     };
 
-    const Dialogs: { [key in openDialog]: React.JSX.Element | null } = {
-        none: null,
-        editCustomer: (
+    const Dialogs: { [key in openDialog]: () => React.JSX.Element | null } = {
+        none: () => null,
+        editCustomer: () => (
             <CustomerDialog
-                customers={customers}
+                customers={customers.map((x) => x.data).filter((x): x is Customer => !!x)}
                 editing={true}
-                editingData={customers}
+                editingData={customers.map((x) => x.data).filter((x): x is Customer => !!x)}
                 onClose={EventHandler.onDialogClose}
             />
         ),
@@ -138,7 +138,7 @@ export default function CustomerDetails({
     };
     return (
         <>
-            {Dialogs[openDialog]}
+            {Dialogs[openDialog]()}
             <Accordion
                 defaultExpanded
                 disableGutters
@@ -169,7 +169,7 @@ export default function CustomerDetails({
                 <AccordionDetails>
                     <TabContext value={tab}>
                         <TabList onChange={EventHandler.handleTabChange()}>
-                            {customerData.map((_, index) => (
+                            {customers.map((_, index) => (
                                 <Tab
                                     key={index}
                                     value={index.toString()}
@@ -177,59 +177,72 @@ export default function CustomerDetails({
                                 />
                             ))}
                         </TabList>
-                        {/* <IconButton onClick={EventHandler.addSubstitute}>
-                <AddIcon />
-            </IconButton> */}
-                        {customerData.map((dataSet, index) => {
+                        {customers.map((customer, index) => {
+                            if (!customer.data) return null;
                             return (
-                                <TabPanel
-                                    key={index}
-                                    value={index.toString()}
-                                >
-                                    {dataSet.map((data, i) => {
-                                        if (!data) return null;
-                                        if (data === "spacer") {
-                                            return (
-                                                <div
-                                                    style={{
-                                                        height: "1em",
-                                                        borderTop: "1px solid black",
-                                                    }}
-                                                    key={`spacer${i}`}
-                                                />
-                                            );
-                                        }
-                                        return (
-                                            <Grid
-                                                key={i + data.name}
-                                                container
-                                                columnSpacing={8}
-                                            >
-                                                <Grid
-                                                    size={4}
-                                                    display="flex"
-                                                    justifyContent="left"
-                                                >
-                                                    {data.name}
-                                                </Grid>
-                                                <Grid
-                                                    size="auto"
-                                                    display="flex"
-                                                    justifyContent="left"
-                                                >
-                                                    {data.insertBefore}
-                                                    {data.value}
-                                                    {data.insertAfter}
-                                                </Grid>
-                                            </Grid>
-                                        );
-                                    })}
-                                </TabPanel>
+                                <CustomerPanel
+                                    key={customer.data.id}
+                                    customer={customer.data}
+                                    index={index}
+                                />
                             );
                         })}
                     </TabContext>
                 </AccordionDetails>
             </Accordion>
         </>
+    );
+}
+
+interface CustomerPanelProps {
+    index: number;
+    customer: Customer;
+}
+function CustomerPanel({ customer, index }: CustomerPanelProps): React.JSX.Element | null {
+    const dataSet = getCustomerData([customer])[0];
+    return (
+        <TabPanel
+            key={index}
+            value={index.toString()}
+        >
+            {dataSet.map((data, i) => {
+                if (!data) return null;
+                if (data === "spacer") {
+                    return (
+                        <div
+                            style={{
+                                height: "1em",
+                                borderTop: "1px solid black",
+                            }}
+                            key={`spacer${i}`}
+                        />
+                    );
+                }
+                return (
+                    <Grid
+                        key={i + data.name}
+                        container
+                        columnSpacing={8}
+                    >
+                        <Grid
+                            size={4}
+                            display="flex"
+                            justifyContent="left"
+                        >
+                            {data.name}
+                        </Grid>
+                        <Grid
+                            size="auto"
+                            display="flex"
+                            justifyContent="left"
+                        >
+                            {data.insertBefore}
+                            {data.value}
+                            {data.insertAfter}
+                        </Grid>
+                    </Grid>
+                );
+            })}
+        </TabPanel>
     );
 }

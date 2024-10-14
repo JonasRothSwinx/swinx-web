@@ -125,6 +125,8 @@ export async function getCampaignInfo({ id }: GetCampaignInfoParams) {
                 //
                 "id",
                 "customers.company",
+                "timelineEvents.id",
+                "timelineEvents.timelineEventType",
             ],
         },
     );

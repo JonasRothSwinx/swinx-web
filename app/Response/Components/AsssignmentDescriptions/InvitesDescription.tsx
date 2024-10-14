@@ -23,11 +23,11 @@ interface InvitesDescriptionProps {
 }
 export default function InvitesDescription({ events }: InvitesDescriptionProps) {
     const queryClient = useQueryClient();
-    const webinar = queryClient.getQueryData<Webinar>(["parentEvent"]);
+    // const webinar = queryClient.getQueryData<Webinar>(queryKeys.event.parentEvent());
     const style: SxProps = useMemo(() => ({}), []);
-    if (!events || !webinar) {
-        queryClient.refetchQueries();
-        return <Loading />;
+    if (!events /*  || !webinar */) {
+        // queryClient.refetchQueries();
+        // return <Loading />;
     }
     return (
         <Box
@@ -42,12 +42,12 @@ export default function InvitesDescription({ events }: InvitesDescriptionProps) 
                     <Typography>
                         An folgenden Terminen werden Sie Einladungen zum Event des Kunden an Ihre
                         Follower*innen verschicken.
-                        <br />
+                        {/* <br />
                         Zielgruppe für das Event sind Profile aus{" "}
                         {displayCountryString(webinar.targetAudience?.country ?? [])} innerhalb der
-                        folgenden Branchen:
+                        folgenden Branchen: */}
                     </Typography>
-                    <Box>
+                    {/* <Box>
                         <List>
                             {webinar.targetAudience?.industry?.map((industry) => (
                                 <Typography key={industry}>
@@ -56,7 +56,7 @@ export default function InvitesDescription({ events }: InvitesDescriptionProps) 
                                 </Typography>
                             ))}
                         </List>
-                    </Box>
+                    </Box> */}
                 </Box>
                 <Table id="InvitesTable">
                     <TableHead>

@@ -20,7 +20,14 @@ export const listEmailTriggers = /* GraphQL */ `query ListEmailTriggers(
         $nextToken: String
         $limit: Int
 ) {
-    listEmailTriggers(filter: {date: {between: [$startDate, $endDate]}}, limit: $limit, nextToken: $nextToken) {
+    listEmailTriggers(
+        filter: {
+            active: { eq:true },
+            sent:{ eq:false },
+            date: { between: [$startDate, $endDate] }
+            },
+        limit: $limit,
+        nextToken: $nextToken) {
         items{
             id
             date

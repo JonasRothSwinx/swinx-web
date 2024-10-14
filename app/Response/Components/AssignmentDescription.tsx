@@ -7,10 +7,15 @@ import Loading from "./Loading";
 import Descriptions from "./AsssignmentDescriptions";
 import { dataClient } from "../Functions/Database";
 import React from "react";
+import { queryKeys } from "../queryKeys";
+import { queryClient } from "@/app/Components/StorageManagers/functions";
 
 //MARK: - AssignmentDescription
 type EventTypeDescription = {
-    [key: string]: (props: { events: TimelineEvent[] }) => Nullable<React.JSX.Element>;
+    [key: string]: (props: {
+        events: TimelineEvent[];
+        parentEventId: string;
+    }) => Nullable<React.JSX.Element>;
 };
 const eventTypeDescription: EventTypeDescription = {
     Webinar: (props) => null,
@@ -22,12 +27,13 @@ const eventTypeDescription: EventTypeDescription = {
 };
 interface AssignmentDescriptionProps {
     assignmentId: string;
+    parentEventId: string;
 }
-export function AssignmentDescription({ assignmentId }: AssignmentDescriptionProps) {
-    // const queryClient = useQueryClient();
+export function AssignmentDescription({ assignmentId, parentEventId }: AssignmentDescriptionProps) {
+    const queryClient = useQueryClient();
     const events = useQuery({
         enabled: !!assignmentId,
-        queryKey: [assignmentId, "events"],
+        queryKey: queryKeys.assignment.events.all(assignmentId),
         queryFn: async () => {
             const events = await dataClient.getEventsByAssignment({ id: assignmentId });
             return events;
@@ -36,24 +42,32 @@ export function AssignmentDescription({ assignmentId }: AssignmentDescriptionPro
 
     const sortedEvents = useQuery({
         enabled: !!events.data,
-        queryKey: [{ events: events.data }, "sortedEvents"],
+        queryKey: queryKeys.assignment.events.sorted(assignmentId),
         queryFn: () => {
-            if (!events.data) return {};
-            return sortEvents({ events: events.data });
+            const data = queryClient.getQueryData<TimelineEvent[]>(
+                queryKeys.assignment.events.all(assignmentId),
+            );
+            if (!data) return null;
+            return sortEvents({ events: data });
         },
     });
     const descriptionOrder = ["Invites", "Post", "Video", "ImpulsVideo", "WebinarSpeaker"];
     if (sortedEvents.isLoading) return <Loading />;
     if (sortedEvents.isError) return <Box>Error</Box>;
-    if (!sortedEvents.data) return <Box>No data</Box>;
+    if (sortedEvents.data === null || !sortedEvents.data) return <Box>No data</Box>;
     return (
         <Box id="AssignmentDescriptionsContainer">
             {descriptionOrder.map((type) => {
+                if (sortedEvents.data === null) return null;
                 return sortedEvents.data[type as keyof SortedEvents] ? (
-                    <Box key={type} id="AssignmentDescriptionGroup">
+                    <Box
+                        key={type}
+                        id="AssignmentDescriptionGroup"
+                    >
                         {/* <Typography variant="h5">{type}</Typography> */}
                         {eventTypeDescription[type as keyof EventTypeDescription]?.({
                             events: sortedEvents.data[type as keyof SortedEvents],
+                            parentEventId,
                         }) ?? null}
                     </Box>
                 ) : null;

@@ -12,48 +12,49 @@ import { dataClient } from "@dataClient";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import CampaignDetails from "./CampaignDetails";
 
-const queryClient = new QueryClient({
-    defaultOptions: {
-        queries: {
-            refetchOnWindowFocus: false,
-            // staleTime: Infinity,
-            retry: true,
-        },
-    },
-});
-dataClient.config.setQueryClient(queryClient);
+// const queryClient = new QueryClient({
+//     defaultOptions: {
+//         queries: {
+//             refetchOnWindowFocus: false,
+//             // staleTime: Infinity,
+//             retry: true,
+//         },
+//     },
+// });
+// dataClient.config.setQueryClient(queryClient);
 
-const confirmProviderProps: Omit<ConfirmProviderProps, "children"> = {
-    defaultOptions: {
-        confirmationText: "Ok",
-        cancellationText: "Abbrechen",
-        title: "Bestätigung",
-        contentProps: {
-            sx: {
-                "&": {
-                    ".MuiTypography-root": {
-                        whiteSpace: "pre-wrap",
-                    },
-                },
-            },
-        },
-    },
-};
+// const confirmProviderProps: Omit<ConfirmProviderProps, "children"> = {
+//     defaultOptions: {
+//         confirmationText: "Ok",
+//         cancellationText: "Abbrechen",
+//         title: "Bestätigung",
+//         contentProps: {
+//             sx: {
+//                 "&": {
+//                     ".MuiTypography-root": {
+//                         whiteSpace: "pre-wrap",
+//                     },
+//                 },
+//             },
+//         },
+//     },
+// };
 interface CampaignProps {
     campaignId: string;
 }
 function Campaign({ params, params: { campaignId } }: { params: CampaignProps }) {
     console.log("Campaign", params);
     const { user, authStatus } = useAuthenticator((context) => [context.user, context.authStatus]);
-    return (
-        <Authenticator.Provider>
-            <ConfirmProvider {...confirmProviderProps}>
-                <QueryClientProvider client={queryClient}>
-                    {authStatus === "authenticated" && <CampaignDetails campaignId={campaignId} />}
-                    <ReactQueryDevtools initialIsOpen={false} />
-                </QueryClientProvider>
-            </ConfirmProvider>
-        </Authenticator.Provider>
-    );
+    // return (
+    //     <Authenticator.Provider>
+    //         <ConfirmProvider {...confirmProviderProps}>
+    //             <QueryClientProvider client={queryClient}>
+    //                 {authStatus === "authenticated" && <CampaignDetails campaignId={campaignId} />}
+    //                 <ReactQueryDevtools initialIsOpen={false} />
+    //             </QueryClientProvider>
+    //         </ConfirmProvider>
+    //     </Authenticator.Provider>
+    // );
+    return <>{authStatus === "authenticated" && <CampaignDetails campaignId={campaignId} />}</>;
 }
 export default withAuthenticator(Campaign);

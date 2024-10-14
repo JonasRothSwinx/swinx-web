@@ -31,7 +31,7 @@ export default function CandidateResponses({
     assignInfluencer,
 }: CandidateResponsesProps) {
     const assignment = useQuery({
-        queryKey: ["assignment", assignmentId],
+        queryKey: queryKeys.assignment.one(assignmentId),
         queryFn: () => dataClient.assignment.get(assignmentId),
     });
     const candidates = useMemo(() => {

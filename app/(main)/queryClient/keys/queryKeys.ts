@@ -20,6 +20,7 @@ export const campaignKeys = {
             all: (campaignId: string) => [...campaignKeys.one(campaignId), "customers"] as const,
         },
     },
+    customerIds: (campaignId: string) => [...campaignKeys.one(campaignId), "customerIds"] as const,
 };
 
 export const projectManagerKeys = {
