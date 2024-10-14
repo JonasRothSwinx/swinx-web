@@ -33,6 +33,8 @@ export function CampaignsByManager() {
     });
     const campaigns = useQuery({
         enabled: !!currentManager.data,
+
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: queryKeys.campaign.all,
         queryFn: async () => {
             console.log("Fetching campaigns", settings.data);

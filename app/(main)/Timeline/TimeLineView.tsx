@@ -29,7 +29,7 @@ export interface TimelineViewProps {
 export default function TimelineView({
     // maxItems,
     // setCampaign: setParent,
-    // editable = false,
+    editable = false,
     campaignId,
     orientation = "vertical",
     controlsPosition = "none",
@@ -181,7 +181,7 @@ export default function TimelineView({
                         onDataChange={EventHandlers.onDataChange}
                     />
                 )}
-                <div id="StatusState">Keine Events</div>;
+                <Box id="StatusState">Keine Events</Box>;
                 {controlsPositionState === "after" && (
                     <TimelineControls
                         {...{ groupBy, setGroupBy }}
@@ -221,6 +221,7 @@ export default function TimelineView({
                 groups={groups}
                 setEditingEvent={setEditingEvent}
                 setDialog={EventHandlers.setDialog}
+                editable={editable}
             />
             {controlsPositionState === "after" && (
                 <TimelineControls

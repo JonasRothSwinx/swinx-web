@@ -20,7 +20,7 @@ interface CampaignDetailsProps {
 }
 
 export default function CampaignDetails({ campaignId }: CampaignDetailsProps) {
-    const router = useRouter();
+    // const router = useRouter();
     const queryClient = useQueryClient();
     const campaign = useQuery({
         queryKey: queryKeys.campaign.one(campaignId),
