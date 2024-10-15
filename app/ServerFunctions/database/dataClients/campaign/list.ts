@@ -26,7 +26,7 @@ export async function listCampaigns(): Promise<Campaign[]> {
 
             // queryClient.refetchQueries({ queryKey: ["campaign", campaign.id] });
             return resolvedCampaign;
-        }),
+        })
     );
 
     return resolvedCampaigns;
@@ -37,28 +37,38 @@ interface ListParams {
         managerIds?: string[];
     };
 }
-export async function listRef({ verbose = false, filters }: ListParams = {}): Promise<
-    Campaigns.Referential[]
-> {
+export async function listRef({ verbose = false, filters }: ListParams = {}): Promise<Campaigns.Referential[]> {
     // debugger;
+    return listRefByManagerIds({ managerIds: filters?.managerIds ?? [] });
     const queryClient = dataClient.config.getQueryClient();
     if (verbose) console.log("Listing campaigns");
-    const campaigns = (await listRefDirect({ verbose })).filter((campaign) => {
-        // debugger;
-        let valid = true;
-        if (!filters) return valid;
-        if (filters.managerIds) {
-            valid = filters.managerIds.some((managerId) =>
-                campaign.projectManagerIds.includes(managerId),
-            );
-            if (!valid) return false;
-        }
-        return valid;
-    });
+    const campaigns = await listRefDirect({ verbose });
     // const campaigns = await database.campaign.listRef(verbose);
 
     if (verbose) console.log("Campaigns listed", campaigns);
     campaigns.forEach((campaign) => {
+        queryClient.setQueryData(queryKeys.campaign.one(campaign.id), campaign);
+    });
+    return campaigns.filter((campaign) => {
+        // debugger;
+        let valid = true;
+        if (!filters) return valid;
+        if (filters.managerIds !== undefined) {
+            valid = filters.managerIds.some((managerId) => campaign.projectManagerIds.includes(managerId));
+            if (!valid) return false;
+        }
+        return valid;
+    });
+}
+interface ListByManagerIdsParams {
+    managerIds: string[];
+}
+export async function listRefByManagerIds({ managerIds }: ListByManagerIdsParams): Promise<Campaigns.Referential[]> {
+    if (managerIds.length === 0) return [];
+    const queryClient = dataClient.config.getQueryClient();
+    const campaigns = await database.campaign.listRefByManagerIds(managerIds);
+    campaigns.forEach((campaign) => {
+        queryClient.cancelQueries({ queryKey: queryKeys.campaign.one(campaign.id) });
         queryClient.setQueryData(queryKeys.campaign.one(campaign.id), campaign);
     });
     return campaigns;

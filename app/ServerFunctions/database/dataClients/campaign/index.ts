@@ -13,4 +13,5 @@ export const campaign = {
     getRef: get.getCampaignRefs,
     list: list.listCampaigns,
     listRef: list.listRef,
+    listRefByManagerIds: list.listRefByManagerIds,
 };

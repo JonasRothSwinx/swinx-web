@@ -13,9 +13,7 @@ export const validate = {
         many: validateCampaignsWithReferences,
     },
 };
-async function validateCampaign(
-    rawCampaign: Nullable<RawCampaign>,
-): Promise<Nullable<Campaigns.Min>> {
+async function validateCampaign(rawCampaign: Nullable<RawCampaign>): Promise<Nullable<Campaigns.Min>> {
     if (!rawCampaign) {
         return null;
     }
@@ -55,7 +53,7 @@ async function validateCampaign(
         };
         return dataOut;
     } catch (error) {
-        console.error(error);
+        console.log("campaign failed to validate", { rawCampaign, error });
         return null;
     }
 }
@@ -65,7 +63,7 @@ async function validateCampaigns(rawCampaigns: RawCampaign[]): Promise<Campaigns
 }
 
 async function validateCampaignWithReferences(
-    rawCampaign: Nullable<RawCampaignWithReferences>,
+    rawCampaign: Nullable<RawCampaignWithReferences>
 ): Promise<Nullable<Campaigns.Referential>> {
     if (!rawCampaign) {
         console.error("Missing Data");
@@ -87,15 +85,13 @@ async function validateCampaignWithReferences(
         };
         return parsedCampaign;
     } catch (error) {
-        console.error(error);
+        console.log("campaign failed to validate", { rawCampaign, error });
         return null;
     }
 }
 
 async function validateCampaignsWithReferences(
-    rawCampaigns: Nullable<RawCampaignWithReferences>[],
+    rawCampaigns: Nullable<RawCampaignWithReferences>[]
 ): Promise<Campaigns.Referential[]> {
-    return (await Promise.all(rawCampaigns.map(validateCampaignWithReferences))).filter(
-        (x) => x !== null,
-    );
+    return (await Promise.all(rawCampaigns.map(validateCampaignWithReferences))).filter((x) => x !== null);
 }

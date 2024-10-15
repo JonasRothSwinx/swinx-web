@@ -11,6 +11,7 @@ export const campaign = {
     create: create.createNewCampaign,
     list: list.listCampaigns,
     listRef: list.listRef,
+    listRefByManagerIds: list.listRefByManagerIds,
     get: get.getCampaign,
     getRef: get.getCampaignWithReferences,
     delete: deleteItem.deleteCampaign,

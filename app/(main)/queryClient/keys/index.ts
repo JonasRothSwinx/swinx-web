@@ -6,8 +6,8 @@ import {
     projectManagerKeys,
     eventKeys,
     assignmentKeys,
-    campaignListKeys,
 } from "./queryKeys";
+import { campaignListKeys } from "./campaignList";
 
 export const queryKeys = {
     campaign: campaignKeys,

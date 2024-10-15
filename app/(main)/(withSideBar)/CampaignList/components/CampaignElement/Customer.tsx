@@ -30,7 +30,9 @@ export function Customer({ campaignId }: CustomerProps) {
     if (customer.isLoading) {
         return (
             <>
-                <Skeleton />
+                <Typography variant="h6" className="categoryTitle">
+                    Kunde:
+                </Typography>
                 <Skeleton />
             </>
         );
@@ -38,10 +40,7 @@ export function Customer({ campaignId }: CustomerProps) {
     if (!customer.data) return null;
     return (
         <Box className={["categoryContainer", customer.isFetching ? "loading" : ""].join(" ")}>
-            <Typography
-                variant="h6"
-                className="categoryTitle"
-            >
+            <Typography variant="h6" className="categoryTitle">
                 Kunde:
             </Typography>
             <Typography>{customer.data.company}</Typography>
