@@ -40,6 +40,7 @@ function Folder({ prefix }: FolderParams) {
     }
     useEffect(() => {
         listKeys();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [prefix]);
     return (
         <Box
