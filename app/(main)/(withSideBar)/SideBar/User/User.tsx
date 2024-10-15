@@ -3,13 +3,14 @@ import { FetchUserAttributesOutput, fetchAuthSession } from "aws-amplify/auth";
 import { useEffect, useState } from "react";
 import { getUserAttributes, getUserGroups } from "../../../../ServerFunctions/serverActions";
 import { Box, Button, SxProps, Typography } from "@mui/material";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { dataClient } from "@dataClient";
 import { ProjectManagerDialog } from "@/app/Components";
 import { queryKeys } from "@/app/(main)/queryClient/keys";
 
 export function UserView() {
     const { user, signOut, authStatus } = useAuthenticator((context) => [context.user, context.authStatus]);
+    const queryClient = useQueryClient();
     const attributes = useQuery({
         queryKey: queryKeys.currentUser.userAttributes(),
         queryFn: async () => {
@@ -81,7 +82,14 @@ export function UserView() {
             )}
             <Box id="UserSection" sx={sx}>
                 <Typography id="Greeting">Hallo {attributes?.data.given_name ?? ""}</Typography>
-                <Button sx={{ background: "darkgray", color: "white" }} variant="outlined" onClick={signOut}>
+                <Button
+                    sx={{ background: "darkgray", color: "white" }}
+                    variant="outlined"
+                    onClick={() => {
+                        queryClient.removeQueries({ queryKey: queryKeys.currentUser.all });
+                        signOut();
+                    }}
+                >
                     Abmelden
                 </Button>
                 <Typography variant="h6">Gruppen:</Typography>

@@ -1,20 +1,28 @@
+import { data } from "@/amplify/data/resource";
 import { queryKeys } from "@/app/(main)/queryClient/keys";
 import { AddIcon } from "@/app/Definitions/Icons";
+import { dataClient } from "@/app/ServerFunctions/database/dataClients";
 import { Refresh } from "@mui/icons-material";
 import {
     Box,
     Button,
     Checkbox,
+    Chip,
     CircularProgress,
     FormControlLabel,
     IconButton,
+    ListItem,
+    ListItemText,
     MenuItem,
+    Skeleton,
     SxProps,
     TextField,
     Typography,
 } from "@mui/material";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useMemo } from "react";
+import { ProjectManagers } from "@/app/ServerFunctions/types";
+import { CampaignListSettings } from "../config/types";
 
 const groupOptions = ["manager", "none"] as const;
 export type GroupBy = (typeof groupOptions)[number];
@@ -47,8 +55,9 @@ export function CampaignActionButtons({ createCampaign, groupBy, setGroupBy }: C
     return (
         <Box sx={sx} id="CampaignActionButtonsContainer">
             <CreateCampaignButton createCampaign={createCampaign} />
-            <ShowOwnCheckbox />
-            <GroupBySelect groupBy={groupBy} setGroupBy={setGroupBy} />
+            {/* <ShowOwnCheckbox /> */}
+            {/* <GroupBySelect groupBy={groupBy} setGroupBy={setGroupBy} /> */}
+            <SelectManager />
             <ReloadButton />
         </Box>
     );
@@ -74,15 +83,11 @@ function CreateCampaignButton({ createCampaign }: CreateCampaignButtonProps) {
 }
 function ShowOwnCheckbox() {
     const queryClient = useQueryClient();
-    const settings = useQuery({
+    const settings = useQuery<CampaignListSettings>({
         queryKey: queryKeys.campaignList.settings(),
-        queryFn: async () => {
-            return (
-                queryClient.getQueryData<{ showOwnOnly?: boolean }>(queryKeys.campaignList.settings()) ?? {
-                    showOwnOnly: false,
-                }
-            );
-        },
+        // queryFn: async () => {
+        //     return queryClient.getQueryData<CampaignListSettings>(queryKeys.campaignList.settings());
+        // },
     });
     async function onChange(e: React.ChangeEvent<HTMLInputElement>) {
         await queryClient.setQueryData(queryKeys.campaignList.settings(), {
@@ -109,9 +114,15 @@ function ShowOwnCheckbox() {
 
 function ReloadButton() {
     const queryClient = useQueryClient();
-    const campaignsQuery = useQuery({ queryKey: queryKeys.campaign.all });
+    const settings = useQuery<CampaignListSettings>({
+        queryKey: queryKeys.campaignList.settings(),
+    });
+    const campaignsQuery = useQuery({
+        enabled: !!settings.data,
+        queryKey: queryKeys.campaignList.displayed.withSetting(settings.data!),
+    });
     function onClick() {
-        queryClient.invalidateQueries({ queryKey: queryKeys.campaign.all });
+        queryClient.invalidateQueries({ queryKey: queryKeys.campaignList.displayed.all() });
     }
     const sx: SxProps = useMemo(
         () => ({
@@ -172,6 +183,74 @@ function GroupBySelect({ groupBy, setGroupBy }: GroupBySelectProps) {
                         </MenuItem>
                     );
                 })}
+            </TextField>
+        </Box>
+    );
+}
+
+function SelectManager() {
+    const queryClient = useQueryClient();
+    const managers = useQuery({
+        queryKey: queryKeys.projectManager.all,
+        queryFn: async () => {
+            return dataClient.projectManager.list();
+        },
+    });
+    const settings = useQuery<CampaignListSettings>({
+        queryKey: queryKeys.campaignList.settings(),
+        // queryFn: async () => {
+        //     return queryClient.getQueryData<CampaignListSettings>(queryKeys.campaignList.settings());
+        // },
+    });
+    function onChange(e: React.ChangeEvent<HTMLInputElement>) {
+        console.log(e.target.value);
+        const value = e.target.value as unknown as string[];
+        if (!Array.isArray(value)) {
+            console.error("Value is not an array");
+            return;
+        }
+        queryClient.setQueryData(queryKeys.campaignList.settings(), {
+            ...settings.data,
+            showManagerIds: value,
+        });
+    }
+    if (!settings.data) return <Skeleton width={100} />;
+    return (
+        <Box>
+            <TextField
+                select
+                label="Manager"
+                // value={""}
+                onChange={onChange}
+                slotProps={{
+                    select: {
+                        multiple: true,
+                        value: settings.data.showManagerIds ?? [],
+                        renderValue: (selected) => {
+                            if ((selected as string[]).length === 0) {
+                                return null;
+                            }
+                            return (
+                                <Box sx={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                                    {(selected as string[]).map((value) => {
+                                        const manager = managers.data?.find((manager) => manager.id === value);
+                                        if (!manager) return null;
+                                        return <Chip key={manager.id} label={ProjectManagers.getFullName(manager)} />;
+                                    })}
+                                </Box>
+                            );
+                        },
+                    },
+                }}
+            >
+                {managers.data?.map((manager) => {
+                    return (
+                        <MenuItem key={manager.id} value={manager.id}>
+                            <Checkbox checked={settings.data?.showManagerIds?.includes(manager.id)} />
+                            <ListItemText primary={ProjectManagers.getFullName(manager)} />
+                        </MenuItem>
+                    );
+                }) ?? []}
             </TextField>
         </Box>
     );

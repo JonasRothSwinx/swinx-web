@@ -7,18 +7,15 @@ import { useMemo } from "react";
 import { CampaignElement } from "./CampaignElement/_CampaignElement";
 import { queryKeys } from "@/app/(main)/queryClient/keys";
 import { getUserAttributes, getUserGroups } from "@/app/ServerFunctions/serverActions";
+import { CampaignListSettings } from "../config/types";
 
 export function CampaignsByManager() {
     const queryClient = useQueryClient();
-    const settings = useQuery({
+    const settings = useQuery<CampaignListSettings>({
         queryKey: queryKeys.campaignList.settings(),
-        queryFn: async () => {
-            return (
-                queryClient.getQueryData<{ showOwnOnly?: boolean }>(
-                    queryKeys.campaignList.settings(),
-                ) ?? { showOwnOnly: false }
-            );
-        },
+        // queryFn: async () => {
+        //     return queryClient.getQueryData<CampaignListSettings>(queryKeys.campaignList.settings());
+        // },
     });
     const currentManager = useQuery({
         queryKey: queryKeys.currentUser.projectManager(),
@@ -32,10 +29,10 @@ export function CampaignsByManager() {
         },
     });
     const campaigns = useQuery({
-        enabled: !!currentManager.data,
+        enabled: !!currentManager.data && !!settings.data,
 
         // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: queryKeys.campaign.all,
+        queryKey: queryKeys.campaignList.displayed.withSetting(settings.data!),
         queryFn: async () => {
             console.log("Fetching campaigns", settings.data);
             // if (settings.data?.showOwnOnly) {
@@ -45,7 +42,9 @@ export function CampaignsByManager() {
             //     });
             //     return campaigns;
             // }
-            const campaigns = await dataClient.campaign.listRef({});
+            const campaigns = await dataClient.campaign.listRef({
+                filters: { managerIds: settings.data?.showManagerIds },
+            });
             return campaigns;
         },
     });
@@ -76,7 +75,7 @@ export function CampaignsByManager() {
             return {
                 manager,
                 campaigns: filteredCampaigns.filter((campaign) =>
-                    campaign.projectManagerIds.some((x) => x === manager.id),
+                    campaign.projectManagerIds.some((x) => x === manager.id)
                 ),
             };
         });
@@ -126,22 +125,14 @@ export function CampaignsByManager() {
             },
         },
     };
-    if (campaigns.isLoading || managers.isLoading) return <LoadingElement />;
+    if (campaigns.isLoading || managers.isLoading) return <LoadingElement hideLogo />;
     return (
-        <Box
-            id="groupedCampaignContainer"
-            sx={sx}
-        >
+        <Box id="groupedCampaignContainer" sx={sx}>
             {groupedCampaigns.map(({ manager, campaigns }) => {
                 if (campaigns.length === 0) return null;
                 return (
-                    <Box
-                        id="managerCampaignGroup"
-                        key={manager.id}
-                    >
-                        <Typography className="managerName">
-                            {ProjectManagers.getFullName(manager)}
-                        </Typography>
+                    <Box id="managerCampaignGroup" key={manager.id}>
+                        <Typography className="managerName">{ProjectManagers.getFullName(manager)}</Typography>
                         <Box id="campaignContainer">
                             {campaigns.map((campaign) => (
                                 <CampaignElement

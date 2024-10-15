@@ -6,7 +6,9 @@ import { ConfigureAmplifyClientSide } from "../Components";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ConfirmProvider } from "material-ui-confirm";
 import { Box, createTheme, ThemeProvider } from "@mui/material";
-import React from "react";
+import React, { useEffect, useMemo } from "react";
+import { queryKeys } from "./queryClient/keys";
+import { getUserGroups } from "../ServerFunctions/serverActions";
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -17,6 +19,7 @@ const queryClient = new QueryClient({
         },
     },
 });
+queryClient.setQueryData(queryKeys.campaignList.settings(), { showManagerIds: [] });
 dataClient.config.init(queryClient);
 const theme = createTheme({
     palette: {
@@ -27,8 +30,20 @@ const theme = createTheme({
     },
     shape: { borderRadius: 20 },
 });
+const ReactQueryDevtoolsProduction = React.lazy(() =>
+    import("@tanstack/react-query-devtools/production").then((d) => ({
+        default: d.ReactQueryDevtools,
+    }))
+);
 
 function Layout({ children }: { children: React.ReactNode }) {
+    const [showDevTools, setShowDevTools] = React.useState(false);
+    useEffect(() => {
+        getUserGroups().then((groups) => {
+            setShowDevTools(groups.includes("admin"));
+        });
+    }, []);
+
     return (
         <>
             {/* <ThemeProvider theme={theme}> */}
@@ -52,6 +67,11 @@ function Layout({ children }: { children: React.ReactNode }) {
                         }}
                     >
                         <ReactQueryDevtools initialIsOpen={false} />
+                        {showDevTools && (
+                            <React.Suspense fallback={null}>
+                                <ReactQueryDevtoolsProduction />
+                            </React.Suspense>
+                        )}
                         {children}
                     </ConfirmProvider>
                 </QueryClientProvider>
