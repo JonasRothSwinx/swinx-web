@@ -2,7 +2,7 @@ import { PartialWith } from "@/app/Definitions/types";
 import { randomDesk, randomId } from "@mui/x-data-grid-generator";
 import { dataClient } from ".";
 import { Assignment, Assignments } from "../../types";
-import database from "../dbOperations";
+import { database } from "../dbOperations";
 
 /**
  * Assignment database operations
@@ -61,9 +61,9 @@ async function listAssignments(): Promise<Assignment[]> {
         assignments.map(async (assignment) => {
             const resolvedAssignment = await resolveAssignmentReferences(assignment);
             queryClient.setQueryData(["assignment", assignment.id], resolvedAssignment);
-            queryClient.refetchQueries({ queryKey: ["assignment", assignment.id] });
+            // queryClient.refetchQueries({ queryKey: ["assignment", assignment.id] });
             return resolvedAssignment;
-        }),
+        })
     );
     return resolvedAssignments;
 }
@@ -95,7 +95,7 @@ async function getAssignment(id: string): Promise<Assignment> {
 
 async function updateAssignment(
     updatedData: PartialWith<Assignment, "id">,
-    previousAssignment: Assignment,
+    previousAssignment: Assignment
 ): Promise<Assignment> {
     const queryClient = dataClient.config.getQueryClient();
     const campaignId = previousAssignment.campaign.id;
@@ -106,9 +106,7 @@ async function updateAssignment(
         if (!prev) {
             return [updatedAssignment];
         }
-        return prev.map((assignment) =>
-            assignment.id === updatedAssignment.id ? updatedAssignment : assignment,
-        );
+        return prev.map((assignment) => (assignment.id === updatedAssignment.id ? updatedAssignment : assignment));
     });
     queryClient.refetchQueries({ queryKey: ["assignments", campaignId] });
     queryClient.refetchQueries({ queryKey: ["assignment", updatedData.id] });
@@ -125,7 +123,7 @@ async function deleteAssignment(id: string): Promise<void> {
     await database.assignment.delete({ id });
     queryClient.setQueryData(["assignment", id], undefined);
     queryClient.setQueryData(["assignments"], (prev: Assignment[]) =>
-        prev?.filter((assignment) => assignment.id !== id),
+        prev?.filter((assignment) => assignment.id !== id)
     );
     queryClient.refetchQueries({ queryKey: ["assignments"] });
     queryClient.refetchQueries({ queryKey: ["assignment", id] });
@@ -150,7 +148,7 @@ async function byCampaign(campaignId: string): Promise<Assignment[]> {
             queryClient.setQueryData(["assignment", assignment.id], resolvedAssignment);
             // queryClient.refetchQueries({ queryKey: ["assignment", assignment.id] });
             return resolvedAssignment;
-        }),
+        })
     );
     return resolvedAssignments;
 }

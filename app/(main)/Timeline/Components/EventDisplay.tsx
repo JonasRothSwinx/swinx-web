@@ -23,6 +23,7 @@ import { dataClient } from "@dataClient";
 import React, { useMemo, useState } from "react";
 import { useConfirm } from "material-ui-confirm";
 import { TimelineEventDialog } from "@/app/Components";
+import { queryKeys } from "../../queryClient/keys";
 const config = {
     lineheight: 20,
 };
@@ -47,16 +48,10 @@ export function EventDisplay(props: EventProps) {
     //######################################################################################################################
     //#region Query
     const event = useQuery({
-        queryKey: ["timelineEvent", id, props.event, tempId],
+        queryKey: queryKeys.event.one(id),
         queryFn: () => {
             if (tempId !== undefined) return props.event;
             return dataClient.event.get(id);
-        },
-    });
-    const campaign = useQuery({
-        queryKey: ["campaign", campaignId],
-        queryFn: () => {
-            return dataClient.campaign.get(campaignId);
         },
     });
     //#endregion Query
@@ -84,10 +79,7 @@ export function EventDisplay(props: EventProps) {
     //######################################################################################################################
     //#region Styles
     const dateColumns = useMemo(() => (groupBy === "day" ? 2 : 3), [groupBy]);
-    const contentColumns = useMemo(
-        () => totalColumns - dateColumns /* - modifyColumns */,
-        [totalColumns, dateColumns],
-    );
+    const contentColumns = useMemo(() => totalColumns - dateColumns /* - modifyColumns */, [totalColumns, dateColumns]);
     const isOverdue = useMemo(() => {
         if (!event.data) return false;
         const eventDate = dayjs(event.data.date);
@@ -208,41 +200,27 @@ export function EventDisplay(props: EventProps) {
 
     //######################################################################################################################
     //#region Data State
-    if (!event.data || !campaign.data) return <></>;
-    if (event.isLoading || campaign.isLoading) return <Skeleton width={"100%"} />;
-    if (event.isError || campaign.isError)
+    if (!event.data) return <></>;
+    if (event.isLoading) return <Skeleton width={"100%"} />;
+    if (event.isError)
         return (
             <Typography>
                 Error
                 <br />
                 Event: {JSON.stringify(event.error)}
-                <br />
-                Campaign: {JSON.stringify(campaign.error)}
             </Typography>
         );
     //#endregion Data State
     //######################################################################################################################
     return (
-        <TableRow
-            id="EventRow"
-            sx={sxProps}
-        >
+        <TableRow id="EventRow" sx={sxProps}>
             {/* <Grid
                 id="Event"
                 container
                 columns={totalColumns}
             > */}
-            {dateColumns > 0 && (
-                <EventDate
-                    date={event.data.date ?? ""}
-                    groupBy={groupBy}
-                    columnSize={dateColumns}
-                />
-            )}
-            <EventContent
-                event={event.data}
-                columnSize={contentColumns}
-            />
+            {dateColumns > 0 && <EventDate date={event.data.date ?? ""} groupBy={groupBy} columnSize={dateColumns} />}
+            <EventContent event={event.data} columnSize={contentColumns} />
             {/* </Grid> */}
             <CircularProgress id="fetchIndicator" />
 
@@ -252,7 +230,7 @@ export function EventDisplay(props: EventProps) {
                         deleteFunction: EventHandlers.deleteFunction,
                         event: event.data,
                         setEvent: EventHandlers.setEvent,
-                        campaign: campaign.data,
+                        campaignId,
                     } satisfies ModifyButtonGroupProps)}
                 />
             )}
@@ -269,20 +247,10 @@ function EventContent(props: EventContentProps) {
     const { event, columnSize = 10 } = props;
     switch (true) {
         case Events.isSingleEvent(event): {
-            return (
-                <EventContentSingle
-                    event={event}
-                    columnSize={columnSize}
-                />
-            );
+            return <EventContentSingle event={event} columnSize={columnSize} />;
         }
         case Events.isMultiEvent(event): {
-            return (
-                <EventContentMulti
-                    event={event}
-                    columnSize={columnSize}
-                />
-            );
+            return <EventContentMulti event={event} columnSize={columnSize} />;
         }
         default: {
             return <>{"Error: Event Type not recognized"}</>;
@@ -297,18 +265,17 @@ function EventContent(props: EventContentProps) {
 //#region ModifyButtonGroup
 interface ModifyButtonGroupProps {
     deleteFunction: () => void;
-    campaign: Campaign;
+    campaignId: string;
     event: Event;
     setEvent: (updatedData: Partial<Event>) => void;
 }
-function ModifyButtonGroup(props: ModifyButtonGroupProps) {
-    const { setEvent, event, deleteFunction, campaign } = props;
+function ModifyButtonGroup({ setEvent, event, deleteFunction, campaignId }: ModifyButtonGroupProps) {
     return (
         <Box id="modifyButtonGroup">
             <EditButton //
                 setEvent={setEvent}
                 event={event}
-                campaign={campaign}
+                campaignId={campaignId}
             />
             <DeleteButton deleteFunction={deleteFunction} />
         </Box>
@@ -317,10 +284,9 @@ function ModifyButtonGroup(props: ModifyButtonGroupProps) {
 interface EditButtonProps {
     setEvent: (updatedData: Partial<Event>) => void;
     event: Event;
-    campaign: Campaign;
+    campaignId: string;
 }
-function EditButton(props: EditButtonProps) {
-    const { event, campaign } = props;
+function EditButton({ event, campaignId }: EditButtonProps) {
     const [isOpen, setIsOpen] = useState(false);
 
     const EventHandler = {
@@ -338,7 +304,7 @@ function EditButton(props: EditButtonProps) {
                 <TimelineEventDialog
                     onClose={EventHandler.closeDialog}
                     editingData={event}
-                    campaignId={campaign.id}
+                    campaignId={campaignId}
                     editing={true}
                     targetAssignment={event.assignments ? event.assignments[0] : undefined}
                 />
@@ -373,10 +339,7 @@ function DeleteButton(props: DeleteButtonProps) {
         });
     };
     return (
-        <IconButton
-            id="deleteButton"
-            onClick={deleteHandler}
-        >
+        <IconButton id="deleteButton" onClick={deleteHandler}>
             <DeleteIcon color="error" />
         </IconButton>
     );

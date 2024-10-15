@@ -20,6 +20,7 @@ import { InfluencerDetailsButtons } from "./components/InfluencerDetailsButtons"
 import { InfluencerName } from "./components/InfluencerName";
 import { QueryDebugDisplay } from "@/app/Components";
 import { dataClient } from "@dataClient";
+import { queryKeys } from "@/app/(main)/queryClient/keys";
 
 interface AssignedInfluencerProps {
     campaignId: string;
@@ -43,24 +44,17 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): Reac
 
     const queryClient = useQueryClient();
     const campaign = useQuery({
-        queryKey: ["campaign", campaignId],
-        queryFn: () => dataClient.campaign.get(campaignId),
+        queryKey: queryKeys.campaign.one(campaignId),
+        queryFn: () => dataClient.campaign.getRef(campaignId),
     });
-    const campaignEvents = useQuery({
-        // eslint-disable-next-line @tanstack/query/exhaustive-deps
-        queryKey: ["campaignEvents", campaignId],
-        queryFn: async () => {
-            return campaign.data?.campaignTimelineEvents ?? [];
-        },
-        placeholderData: [],
-    });
+
     const influencers = useQuery({
-        queryKey: ["influencers"],
+        queryKey: queryKeys.influencer.all,
         queryFn: () => dataClient.influencer.list(),
         placeholderData: [],
     });
     const assignedInfluencer = useQuery({
-        queryKey: ["assignment", props.assignedInfluencer.id],
+        queryKey: queryKeys.assignment.one(props.assignedInfluencer.id),
         queryFn: async () => {
             if (props.assignedInfluencer.id.startsWith("placeholder")) return null;
             const assignment = await dataClient.assignment.get(props.assignedInfluencer.id);
@@ -72,9 +66,9 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): Reac
     const assignmentEvents = useQuery({
         queryKey: ["assignmentEvents", props.assignedInfluencer.id],
         queryFn: async () => {
-            const raw = (
-                await dataClient.event.list.by.assignment(props.assignedInfluencer.id)
-            ).filter((event): event is Events.SingleEvent => Events.isSingleEvent(event));
+            const raw = (await dataClient.event.list.by.assignment(props.assignedInfluencer.id)).filter(
+                (event): event is Events.SingleEvent => Events.isSingleEvent(event)
+            );
             return raw.sort((a, b) => dayjs(a.date).unix() - dayjs(b.date).unix());
         },
         placeholderData: [],
@@ -92,23 +86,15 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): Reac
         setCampaign: (updatedCampaign: Campaign) => {
             if (!assignedInfluencer.data || assignedInfluencer.data === null) return;
             queryClient.setQueryData(["campaign", campaignId], updatedCampaign);
-            campaign.refetch();
-            const newAssignmentEvents = campaign.data?.assignedInfluencers.find(
-                (influencer) => influencer.id === assignedInfluencer.data?.id,
-            )?.timelineEvents;
-            queryClient.setQueryData(
-                ["assignmentEvents", assignedInfluencer.data.id],
-                newAssignmentEvents,
-            );
-            assignmentEvents.refetch();
+            // campaign.refetch();
+            // const newAssignmentEvents = campaign.data?.assignedInfluencers.find(
+            //     (influencer) => influencer.id === assignedInfluencer.data?.id
+            // )?.timelineEvents;
+            // queryClient.setQueryData(["assignmentEvents", assignedInfluencer.data.id], newAssignmentEvents);
+            // assignmentEvents.refetch();
         },
     };
-    if (
-        campaign.isError ||
-        influencers.isError ||
-        assignmentEvents.isError ||
-        assignedInfluencer.isError
-    ) {
+    if (campaign.isError || influencers.isError || assignmentEvents.isError || assignedInfluencer.isError) {
         const errorMessage: string =
             campaign.error?.message ??
             influencers.error?.message ??
@@ -127,11 +113,9 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): Reac
                 <Typography>There was an error: {errorMessage}</Typography>
                 <IconButton
                     onClick={() => {
-                        [campaign, influencers, assignmentEvents, assignedInfluencer].forEach(
-                            (query) => {
-                                if (query.isError) query.refetch();
-                            },
-                        );
+                        [campaign, influencers, assignmentEvents, assignedInfluencer].forEach((query) => {
+                            if (query.isError) query.refetch();
+                        });
                     }}
                 >
                     <RefreshIcon />
@@ -139,30 +123,15 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): Reac
             </Box>
         );
     }
-    if (
-        campaign.isLoading ||
-        influencers.isLoading ||
-        assignmentEvents.isLoading ||
-        assignedInfluencer.isLoading
-    ) {
+    if (campaign.isLoading || influencers.isLoading || assignmentEvents.isLoading || assignedInfluencer.isLoading) {
         return (
-            <Skeleton
-                variant="rectangular"
-                width={"100%"}
-                height={"100px"}
-                sx={{ borderRadius: "20px" }}
-            ></Skeleton>
+            <Skeleton variant="rectangular" width={"100%"} height={"100px"} sx={{ borderRadius: "20px" }}></Skeleton>
         );
     }
 
     if (!campaign.data || !influencers.data || !assignmentEvents.data || !assignedInfluencer.data) {
         return (
-            <Skeleton
-                variant="rectangular"
-                width={"100%"}
-                height={"100px"}
-                sx={{ borderRadius: "20px" }}
-            ></Skeleton>
+            <Skeleton variant="rectangular" width={"100%"} height={"100px"} sx={{ borderRadius: "20px" }}></Skeleton>
         );
     }
     const sx = {
@@ -179,13 +148,7 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): Reac
         },
     };
     return (
-        <Accordion
-            key={assignedInfluencer.data.id}
-            defaultExpanded
-            disableGutters
-            variant="outlined"
-            sx={sx}
-        >
+        <Accordion key={assignedInfluencer.data.id} defaultExpanded disableGutters variant="outlined" sx={sx}>
             <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
                 sx={{
@@ -197,12 +160,7 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): Reac
                 <div className={"assignmentAccordionHeader"}>
                     <InfluencerName assignedInfluencer={assignedInfluencer.data} />
                     {assignmentEvents.isFetching ? (
-                        <Skeleton
-                            variant="rectangular"
-                            width={200}
-                            height={40}
-                            sx={{ borderRadius: "20px" }}
-                        >
+                        <Skeleton variant="rectangular" width={200} height={40} sx={{ borderRadius: "20px" }}>
                             <CircularProgress />
                         </Skeleton>
                     ) : (
@@ -235,12 +193,7 @@ export default function AssignedInfluencer(props: AssignedInfluencerProps): Reac
                                 <Typography>{`Honorar: ${assignedInfluencer.data.budget}€`}</Typography>
                             )}
                             {categorizedEvents.map((category, index) => {
-                                return (
-                                    <EventCategoryDisplay
-                                        key={index}
-                                        category={category}
-                                    />
-                                );
+                                return <EventCategoryDisplay key={index} category={category} />;
                             })}
                         </>
                     )}
