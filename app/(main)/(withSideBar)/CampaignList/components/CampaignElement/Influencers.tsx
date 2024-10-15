@@ -37,12 +37,10 @@ export function InfluencersInfo({ campaignId }: InfluencersProps) {
             };
         }),
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const isFetchingData = useMemo(() => influencers.some((x) => x.isFetching), [...influencers]);
     if (campaign.isLoading || influencers.some((x) => x.isLoading)) return <Skeleton />;
     if (influencers.length === 0) return null;
     return (
-        <Box className={["categoryContainer", isFetchingData ? "loading" : ""].join(" ")}>
+        <Box className={["categoryContainer", influencers.some((x) => x.isFetching) ? "loading" : ""].join(" ")}>
             {influencers.length === 0 ? (
                 <Typography>Keine Influencer</Typography>
             ) : (
