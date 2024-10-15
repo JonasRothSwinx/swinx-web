@@ -1,6 +1,7 @@
 export enum sideBarButtonId {
     campaigns,
     influencers,
+    inviteAnalysis,
 }
 export const sideBarButtons = [
     {
@@ -16,5 +17,12 @@ export const sideBarButtons = [
         description: "Influencer Menu Description placeholder",
         allowedGroups: ["admin", "projektmanager"],
         url: "/InfluencerList",
+    },
+    {
+        id: sideBarButtonId.inviteAnalysis,
+        title: "Invite Analysis",
+        description: "Invite Analysis Menu Description placeholder",
+        allowedGroups: ["admin"],
+        url: "/InviteAnalysis",
     },
 ];

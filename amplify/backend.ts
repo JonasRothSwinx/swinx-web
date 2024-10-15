@@ -148,6 +148,10 @@ if (!(process.env.NODE_ENV === "development")) {
     backend.addOutput({
         custom: {
             reminderTriggerArn: rule.ruleArn,
+            inviteBucket: {
+                name: "swinx-invite-analysis",
+                region: "eu-west-1",
+            },
         },
     });
 }
