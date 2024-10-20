@@ -7,6 +7,7 @@ import weekday from "dayjs/plugin/weekday";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import duration from "dayjs/plugin/duration";
 import objectSupport from "dayjs/plugin/objectSupport";
+import devHelper from "dayjs/plugin/devHelper";
 import "dayjs/locale/de";
 
 dayjs.extend(relativeTime);
@@ -17,7 +18,9 @@ dayjs.extend(weekday);
 dayjs.extend(isSameOrAfter);
 dayjs.extend(duration);
 dayjs.extend(objectSupport);
+dayjs.extend(devHelper);
 dayjs.locale("de");
 
 export { dayjs };
 export { type Dayjs } from "dayjs";
+export { type Duration } from "dayjs/plugin/duration";

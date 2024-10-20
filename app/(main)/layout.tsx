@@ -8,7 +8,7 @@ import { ConfirmProvider } from "material-ui-confirm";
 import { Box, createTheme, ThemeProvider } from "@mui/material";
 import React, { useEffect, useMemo } from "react";
 import { queryKeys } from "./queryClient/keys";
-import { getUserGroups } from "../ServerFunctions/serverActions";
+import { getEnvironment, getUserGroups } from "../ServerFunctions/serverActions";
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -33,14 +33,19 @@ const theme = createTheme({
 const ReactQueryDevtoolsProduction = React.lazy(() =>
     import("@tanstack/react-query-devtools/production").then((d) => ({
         default: d.ReactQueryDevtools,
-    }))
+    })),
 );
 
 function Layout({ children }: { children: React.ReactNode }) {
     const [showDevTools, setShowDevTools] = React.useState(false);
+    const [environment, setEnvironment] =
+        React.useState<Awaited<ReturnType<typeof getEnvironment>>>();
     useEffect(() => {
         getUserGroups().then((groups) => {
             setShowDevTools(groups.includes("admin"));
+        });
+        getEnvironment().then((env) => {
+            setEnvironment(env);
         });
     }, []);
 
@@ -66,11 +71,14 @@ function Layout({ children }: { children: React.ReactNode }) {
                             },
                         }}
                     >
-                        <ReactQueryDevtools initialIsOpen={false} />
-                        {showDevTools && (
-                            <React.Suspense fallback={null}>
-                                <ReactQueryDevtoolsProduction />
-                            </React.Suspense>
+                        {environment && environment.awsBranch === "sandbox" ? (
+                            <ReactQueryDevtools initialIsOpen={false} />
+                        ) : (
+                            showDevTools && (
+                                <React.Suspense fallback={null}>
+                                    <ReactQueryDevtoolsProduction />
+                                </React.Suspense>
+                            )
                         )}
                         {children}
                     </ConfirmProvider>

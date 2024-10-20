@@ -1,4 +1,4 @@
-export { dayjs, type Dayjs } from "./configuredDayJs";
+export { dayjs, type Dayjs, type Duration } from "./configuredDayJs";
 export {
     encodeQueryParams,
     type InfluencerTaskEncodedData,

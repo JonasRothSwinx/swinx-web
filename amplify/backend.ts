@@ -133,6 +133,7 @@ cfnBucket.corsConfiguration = {
  * The rule is scheduled to run every 6 hours, starting at 6:00 AM UTC+1
  * The reminderTrigger lambda is responsible for sending reminders to users
  */
+let ruleArn = "";
 if (!(process.env.NODE_ENV === "development")) {
     const reminderTriggerLambda = backend.reminderTrigger.resources.lambda as Function;
     const rule = new eventBridge.Rule(stack, "ReminderTriggerRule", {
@@ -144,14 +145,15 @@ if (!(process.env.NODE_ENV === "development")) {
 
         description: "Rule to trigger the reminderTrigger lambda",
     });
+    ruleArn = rule.ruleArn;
     rule.addTarget(new eventBridgeTargets.LambdaFunction(reminderTriggerLambda));
-    backend.addOutput({
-        custom: {
-            reminderTriggerArn: rule.ruleArn,
-            inviteBucket: {
-                name: "swinx-invite-analysis",
-                region: "eu-west-1",
-            },
-        },
-    });
 }
+backend.addOutput({
+    custom: {
+        reminderTriggerArn: ruleArn,
+        inviteBucket: {
+            name: "swinx-invite-analysis",
+            region: "eu-west-1",
+        },
+    },
+});
