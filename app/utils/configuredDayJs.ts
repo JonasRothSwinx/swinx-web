@@ -8,6 +8,7 @@ import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import duration from "dayjs/plugin/duration";
 import objectSupport from "dayjs/plugin/objectSupport";
 import devHelper from "dayjs/plugin/devHelper";
+import customParseFormat from "dayjs/plugin/customParseFormat";
 import "dayjs/locale/de";
 
 dayjs.extend(relativeTime);
@@ -19,6 +20,7 @@ dayjs.extend(isSameOrAfter);
 dayjs.extend(duration);
 dayjs.extend(objectSupport);
 dayjs.extend(devHelper);
+dayjs.extend(customParseFormat);
 dayjs.locale("de");
 
 export { dayjs };

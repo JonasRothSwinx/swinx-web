@@ -48,6 +48,7 @@ export function EventDisplay(props: EventProps) {
     //######################################################################################################################
     //#region Query
     const event = useQuery({
+        // eslint-disable-next-line @tanstack/query/exhaustive-deps
         queryKey: queryKeys.event.one(id),
         queryFn: () => {
             if (tempId !== undefined) return props.event;
@@ -195,6 +196,17 @@ export function EventDisplay(props: EventProps) {
         };
     }, [highlightData, event.isFetching, editable, event.data?.isCompleted, isOverdue]);
 
+    const [isOpen, setIsOpen] = useState(false);
+
+    const EventHandler = {
+        openDialog: () => {
+            setIsOpen(true);
+        },
+        closeDialog: () => {
+            setIsOpen(false);
+        },
+    };
+
     //#endregion Styles
     //######################################################################################################################
 
@@ -213,28 +225,41 @@ export function EventDisplay(props: EventProps) {
     //#endregion Data State
     //######################################################################################################################
     return (
-        <TableRow id="EventRow" sx={sxProps}>
-            {/* <Grid
-                id="Event"
-                container
-                columns={totalColumns}
-            > */}
-            {dateColumns > 0 && <EventDate date={event.data.date ?? ""} groupBy={groupBy} columnSize={dateColumns} />}
-            <EventContent event={event.data} columnSize={contentColumns} />
-            {/* </Grid> */}
-            <CircularProgress id="fetchIndicator" />
-
-            {editable && (
-                <ModifyButtonGroup
-                    {...({
-                        deleteFunction: EventHandlers.deleteFunction,
-                        event: event.data,
-                        setEvent: EventHandlers.setEvent,
-                        campaignId,
-                    } satisfies ModifyButtonGroupProps)}
+        <>
+            {isOpen && (
+                <TimelineEventDialog
+                    onClose={EventHandler.closeDialog}
+                    editingData={event.data}
+                    editing={true}
+                    campaignId={campaignId}
+                    targetAssignment={event.data.assignments ? event.data.assignments[0] : undefined}
                 />
             )}
-        </TableRow>
+            <TableRow
+                id="EventRow"
+                sx={sxProps}
+                onClick={() => {
+                    EventHandler.openDialog();
+                }}
+            >
+                {dateColumns > 0 && (
+                    <EventDate date={event.data.date ?? ""} groupBy={groupBy} columnSize={dateColumns} />
+                )}
+                <EventContent event={event.data} columnSize={contentColumns} />
+                <CircularProgress id="fetchIndicator" />
+
+                {editable && (
+                    <ModifyButtonGroup
+                        {...({
+                            deleteFunction: EventHandlers.deleteFunction,
+                            event: event.data,
+                            setEvent: EventHandlers.setEvent,
+                            campaignId,
+                        } satisfies ModifyButtonGroupProps)}
+                    />
+                )}
+            </TableRow>
+        </>
     );
 }
 //######################################################################################################################

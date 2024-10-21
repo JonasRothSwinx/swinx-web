@@ -1,6 +1,6 @@
 import { Event } from "@/app/ServerFunctions/types";
 import { dayjs } from "@/app/utils";
-import { SxProps, Table, TableHead, Typography } from "@mui/material";
+import { SxProps, Table, TableCell, TableHead, TableRow, Typography } from "@mui/material";
 import React, { useMemo } from "react";
 import { EventGroup, groupBy } from "../Functions/groupEvents";
 import TypedEventGroupDisplay from "./TimelineViewItemTypedGroup";
@@ -94,9 +94,13 @@ function TimelineViewGroupTitle(props: TimelineViewGroupTitleProps) {
     return (
         <TableHead id="TimelineViewGroupTitle" sx={sx}>
             {/* <div className={dialogStyles.cellActionSplit}> */}
+            {/* <TableRow>
+                <TableCell> */}
             <Typography className={"tableHeaderText"}>{titleContentByGroupType[groupedBy]()}</Typography>
             {/* <TimelineViewEditButton editable={editable} editing={editing} setEditing={setEditing} /> */}
             {/* </div> */}
+            {/* </TableCell>
+            </TableRow> */}
         </TableHead>
     );
 }

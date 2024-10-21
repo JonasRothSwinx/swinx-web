@@ -1,6 +1,6 @@
 import { highlightData } from "@/app/Definitions/types";
 import { Event, Events } from "@/app/ServerFunctions/types";
-import { SxProps, Table, TableBody, TableHead, TableRow, Typography } from "@mui/material";
+import { SxProps, Table, TableBody, TableCell, TableHead, TableRow, Typography } from "@mui/material";
 import { randomId } from "@mui/x-data-grid-generator";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
@@ -52,15 +52,12 @@ export default function TypedEventGroupDisplay(props: TypedEventGroupDisplayProp
                 },
             },
         }),
-        [],
+        []
     );
 
     if (hiddenEventTypes.includes(eventGroup.type)) return <></>;
     return (
-        <Table
-            id="TimelineViewGroupContent"
-            sx={sx}
-        >
+        <Table id="TimelineViewGroupContent" sx={sx}>
             <GroupTitle type={eventGroup.type} />
             <GroupContent
                 events={eventGroup.events}
@@ -95,12 +92,14 @@ function GroupTitle(props: GroupTitleProps) {
                 },
             },
         }),
-        [],
+        []
     );
     return (
         <TableHead sx={sx}>
             <TableRow className="TitleRow">
+                {/* <TableCell> */}
                 <Typography id="GroupTitle">{props.type}</Typography>
+                {/* </TableCell> */}
             </TableRow>
         </TableHead>
     );

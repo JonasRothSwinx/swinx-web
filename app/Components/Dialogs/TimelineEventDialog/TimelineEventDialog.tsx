@@ -12,6 +12,7 @@ import {
     SxProps,
     Typography,
 } from "@mui/material";
+import { TabContext, TabList, TabPanel } from "@mui/lab";
 
 import { dayjs, Dayjs } from "@/app/utils";
 import { UseMutationResult, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -113,6 +114,7 @@ export function TimelineEventDialog(props: TimelineEventDialogProps) {
             return getUserGroups();
         },
     });
+    const [tabIndex, setTabIndex] = useState("event");
     // const [dates, setDates] = useState<{ number: number; dates: (Dayjs | null)[] }>({
     //     number: 1,
     //     dates: [editingData ? dayjs(editingData.date) : dayjs()],
@@ -489,7 +491,6 @@ export function TimelineEventDialog(props: TimelineEventDialogProps) {
             </DialogTitle>
             <Box id="EventTriggerSplit" className="eventTriggerSplit" sx={sx}>
                 <Box id="Event">
-                    {/* <button onClick={handleCloseModal}>x</button> */}
                     <GeneralDetails
                         event={timelineEvent}
                         editing={editing}
@@ -507,7 +508,6 @@ export function TimelineEventDialog(props: TimelineEventDialogProps) {
                         setUpdatedData={setUpdatedData}
                     />
 
-                    {/* Details */}
                     <EventDetails
                         key="EventDetails"
                         applyDetailsChange={(data: Partial<Event>[]) =>
@@ -523,6 +523,19 @@ export function TimelineEventDialog(props: TimelineEventDialogProps) {
                     <EmailTriggerMenu eventId={timelineEvent.id} eventType={timelineEvent.type} />
                 )}
             </Box>
+            <TabContext value={tabIndex}>
+                <Box>
+                    <TabList
+                        onChange={(e, newValue) => {
+                            if (!(typeof newValue === "string")) return;
+                            setTabIndex(newValue);
+                        }}
+                    >
+                        <TabPanel value="event">Event</TabPanel>
+                        <TabPanel value="trigger">Trigger</TabPanel>
+                    </TabList>
+                </Box>
+            </TabContext>
             <DialogActions
                 sx={{
                     justifyContent: "space-between",
