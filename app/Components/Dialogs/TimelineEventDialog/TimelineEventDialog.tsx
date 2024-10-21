@@ -523,7 +523,7 @@ export function TimelineEventDialog(props: TimelineEventDialogProps) {
                     <EmailTriggerMenu eventId={timelineEvent.id} eventType={timelineEvent.type} />
                 )}
             </Box>
-            <TabContext value={tabIndex}>
+            {/* <TabContext value={tabIndex}>
                 <Box>
                     <TabList
                         onChange={(e, newValue) => {
@@ -535,7 +535,7 @@ export function TimelineEventDialog(props: TimelineEventDialogProps) {
                         <TabPanel value="trigger">Trigger</TabPanel>
                     </TabList>
                 </Box>
-            </TabContext>
+            </TabContext> */}
             <DialogActions
                 sx={{
                     justifyContent: "space-between",
